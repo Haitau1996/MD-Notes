@@ -1,6 +1,8 @@
-# c ++ primer notes
+# c++ primer notes
 
-## Chapter 1 开始
+## Part 1 基础 
 
-**文件结束符** EOF,在win中是\<c-z>再按Enter,Unix中为\<c-D>
+**文件结束符** EOF,在win中是\<c-z>再按Enter,Unix中为\<c-D><br>
+**字符串** 编译器在每个字符串结尾会加一个空字符（'\0'）<br>
+**赋值和初始化** 前者是在变量定义后给值，后者是在变量创建时给值<br>
 
