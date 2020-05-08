@@ -54,6 +54,67 @@ int main() {
 typedef unsign int size_t
 #endif
 ```
+normally,the maximum possible vaule for size_t is `SIZE_MAX`.<br>
+
+**Pointer Arithmeric**
+* 指针自增/自减
+* 两个指针之间作差/对比
+
+## Dynamic Memory Management in C
+
+动态分配内存一个很大的作用就是帮助实现高级的数据结构，如linked list 或者 queue<br>
+**动态分配步骤**
+* 使用malloc分配内存
+* 使用内存完成程序的部分
+* 使用free释放内存
+
+```c
+int *pi = (int*)malloc(sizeof(int));
+*pi = 5;
+printf("*pi:%d\n",*pi);
+free(pi);
+```
+
+malloc 使用的argument决定了分配内存的大小，成功返回一个指向heap地址的指针，失败则返回NLLL.<br>
+在实际使用中发现，有时候free的内存仍可以通过指针取它的地址，因此一个合理的做法是free之后的指针赋NULL。<br>
+**Memory leaks**<br>
+losing the address:
+```c
+int *pi = (int *) malloc(sizeof(int));
+*pi = 5;
+...
+int *pi = (int *) malloc(sizeof(int));
+```
+![avator](figure/2-1.png)<br>
+
+还有一种，就是指针遍历之后变成了NULL，就遗失了相应的信息。<br>
+**hiden memory leaks**
+
+**Allocation Functions**<br>
+![funciton](figure/2-2.png)<br>
+malloc的函数原型为<br>
+`void* malloc(size_t)`
+具体作的事情，有几点需要注意：<br>
+* memory从heap中分配
+* 除非cleared，内存不会变化
+* 返回的为第一个byte的地址
+
+**cast or not** 在早期没有void类型的pointer时候，分配内存要显示表示出来pointer的类型，但是void指针可以指向任何东西，现在就不需要了，但是基于下面两个理由，我们依旧认为cast是一个好的习惯：<br>
+* 方便记录malloc的类型
+* 和c++/早期的C兼容
+
+**几个典型的错误**<br>
+* 分配了内存，但是没有往里面写东西就取数据，特别是面对char*想用作string时候问题特别明显
+* malloc要的内存size不对
+* 使用malloc初始化global 或者static的指针，但是我们可以用于赋值。
+```c
+static int *pi;
+pi = malloc(sizeof(int));
+```
+这种做法是允许的。
+
+**Using the calloc Funciton** `void *callloc(size_t numElement, size_t elementSize)` , 用来辅助malloc的运行，相当于`malloc(numElement*elementSize)`之后再`memset`为0.<br>
+**Using the realloc Function** `void *realloc(viod *ptr, size_t size)`,它的具体行为如下：<br>
+![behavior](figure/2-3.png)<br>
 
 
- 
