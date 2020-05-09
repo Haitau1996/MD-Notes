@@ -87,7 +87,7 @@ int *pi = (int *) malloc(sizeof(int));
 ```
 ![avator](figure/2-1.png)<br>
 
-还有一种，就是指针遍历之后变成了NULL，就遗失了相应的信息。<br>
+还有一种，就是指针遍历之后变成了NULL，就丢失了相应的信息。<br>
 **hiden memory leaks**
 
 **Allocation Functions**<br>
@@ -116,5 +116,35 @@ pi = malloc(sizeof(int));
 **Using the calloc Funciton** `void *callloc(size_t numElement, size_t elementSize)` , 用来辅助malloc的运行，相当于`malloc(numElement*elementSize)`之后再`memset`为0.<br>
 **Using the realloc Function** `void *realloc(viod *ptr, size_t size)`,它的具体行为如下：<br>
 ![behavior](figure/2-3.png)<br>
+其中重要的一点是，使用它要求分配更多的内存，地址可能会发生变化。<br>
+**Variable Length Arrays** (since c99) <font color = red >允许在函数中的变长数组</font>.
+```c
+void compute(int size){
+    char* buffer[size];
+    ...
+}
+```
 
+size大小为runtime确定，而此前数组大小必须在编译时候确定。<br>
+**Deallocating Memory Using free Function** <br>
+![free](figure/2-4.png)<br>
+但是需要注意，free不是由malloc定义的指针是未定义的行为。
+```c
+int mun;
+int *pi = &num;
+free(pi);
+```
+
+此外，free之后指针再取地址上的值也是未定义的行为，free之后再定义为NULL.<br>
+![free](figure/2-5.png)<br>
+**Double Free** 一个很重要事情是，不要对同一块内存free两次，如
+```c
+p1  = (int*)malloc(sizeof(int));
+int *p2 = p1;
+free(p1);
+...
+free(p2);
+```
+
+这种做法相当于对同一个内存做了两次free, 会引起corrupt heap和程序终止.<br>
 
