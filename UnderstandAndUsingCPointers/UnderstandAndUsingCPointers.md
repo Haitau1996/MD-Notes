@@ -182,4 +182,30 @@ foo();
 
 ## Pointers and Functions
 
+**程序的堆和栈** 
+![stack](figure/3-1.png)<br>
+一般而言，自己管理的内存在于程序的堆区，而函数调用栈和堆分别占用内存的低地址区和高地址区域，main调用的funciton1调用了function2,这样从上面就可以看出函数调用栈的LIFO特性（<font color= red> Last In First Out</font>）<br>
+**管理stack frame** <br>
+![stack frame](figure/3-2.png)<br>
+每个stack frame有很多东西，其中包括系统管理的stack and base pointer用于管理stack,返回地址，local data和parameter的存储。<br>
+它们一般是按照Opposite的order去Push到stack中，而一个语句块相当于mini function。<br>
+**Passing and returning by Pointers** <br>
+by pointer很重要的一点是可以改变pointer指向的地址的值，同时对于比较大的数据结构，拷贝带来的消耗也明显减少。<br>
+![by value](figure/3-3.png)<br>
+对于不想要修改的数据，可以选择<font color=red> passing a Pointer to const </font>.
+```c
+void passingAddressOfConst(const int* num1,int *num2){
+    *num2 = *num1;
+}
+```
+返回一个指针很简单，只需要将函数声明为对应的指针类型，一般有两种做法：<br>
+* 在函数内部分配内存(malloc),处理完返回指针，这时候调用者需要自己deallocatingei内存。
+* 将内存地址传参进入函数，这时候调用人需要自己分配和释放内存。
+
+![return pointer](figure/3-4.png)<br>
+常见的问题有以下的部分：<br>
+* 返回没有初始化的内存
+* 返回一个invalid的地址
+* 返回一个<font color=red>local </font> 变量的地址
+* 返回了地址但是用完之后没有free
 
