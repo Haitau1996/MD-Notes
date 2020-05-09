@@ -208,4 +208,3 @@ void passingAddressOfConst(const int* num1,int *num2){
 * 返回一个invalid的地址
 * 返回一个<font color=red>local </font> 变量的地址
 * 返回了地址但是用完之后没有free
-
