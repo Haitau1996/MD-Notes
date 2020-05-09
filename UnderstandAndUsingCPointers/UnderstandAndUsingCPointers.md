@@ -147,4 +147,39 @@ free(p2);
 ```
 
 这种做法相当于对同一个内存做了两次free, 会引起corrupt heap和程序终止.<br>
+**Dangling Pointers** pointer被free之后依然指向原来的地址，会带来一系列的问题：<br>
+* 对该地址取值导致不可预测的行为
+* 该地址不可accessible时候的分割错误
+* 安全问题
+
+常见的问题就是多个指针指向同一个东西，然后一个free之后另外的指针还在操作。<br>
+```c
+int *p1 = (int *) malloc(sizeof(int));
+*p1 = 5;
+...
+int *p2 = p1;
+...
+free(p1);
+...
+*p2 = 10;//Dangling Pointer
+```
+
+还有一种可能是在语句块中，一般将他们处理成stack frame,其中释放之后，还有指针指向这些地方。<br>
+```c
+{
+    int tmp = 5;
+    pi = &tmp;
+}//pi 这时候成了dangling pointer
+foo();
+```
+
+其地址如下图所示：<br>
+![foo](figure/2-6.png)<br>
+**Dealing with Dangling Pointers** 有很多处理这种的方式，包括：<br>
+* free的指针设置成NULL
+* 使用自己定义的free函数
+* 第三方工具检查
+
+## Pointers and Functions
+
 
