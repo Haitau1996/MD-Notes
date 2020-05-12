@@ -208,3 +208,19 @@ void passingAddressOfConst(const int* num1,int *num2){
 * 返回一个invalid的地址
 * 返回一个<font color=red>local </font> 变量的地址
 * 返回了地址但是用完之后没有free
+
+**Passing Null Pointers** <br>
+```c
+int* allocateArray(int *arr,int size,int value){
+    if(arr != NULL){
+        for(int i = 0; i < size; i++){
+            arr[i] = value;
+        }
+    }
+    return arr; // arr为一个pointer
+}
+```
+调用的时候，首先使用一个malloc分配好内存，再传入函数。<br>
+
+# Pointers and Arrays
+
