@@ -222,5 +222,6 @@ int* allocateArray(int *arr,int size,int value){
 ```
 调用的时候，首先使用一个malloc分配好内存，再传入函数。<br>
 
+
 # Pointers and Arrays
 
