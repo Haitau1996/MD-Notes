@@ -221,7 +221,33 @@ int* allocateArray(int *arr,int size,int value){
 }
 ```
 调用的时候，首先使用一个malloc分配好内存，再传入函数。<br>
+**Passing A pointer to a Pointer**<br>
 
 
-# Pointers and Arrays
+## Pointers and Arrays
+**Quick Review**<br>
+使用sizeof去读取一个array的地址，返回的是length*`sizeof(dataType)`.<br>
+单独去使用array名字的时候，它相当于是一个指向首元素地址的指针常量。<br>
+有一个经常发生的问题就是out bound，需要相当小心，因为内置的array不会帮助我们去check.<br>
+**Difference** <br>
+* vect[i] 一般是从vect地址开始，移动i个单位，载取其中的内容，而vect+i为在地址上做运算，再从新地址取内容。（区别不大）
+* sizeof运算符得到的结果不同，一个是之前说的，一个是pointer的size;
+* pointer pv为lvalue,可以做更改，如`pv++`,但是vect不是lvalue,并且不能更改。
+
+**malloc 和 realloc** <br>
+malloc得到的空间可以使用array的interface去使用，更加直观，如
+```c
+int *pv = (int*)malloc(5 * sizeof(int));
+for(int i = 0; i<5; i++){
+    pv[i] = i+1;
+}
+```
+
+在变长数组出现之前，可以使用realloc去改变相应的size。
+
+**passing a 1-D Array**<br>
+注意pass的时候一定要传入size,并且不能用sizeof直接得到，因为array可能不是满的，如传入一个空间为20的array，只有10个元素，传入再sort可能出现意想不到的结果。<br>
+传入1-D的array,同样可以用pointer的notation去操作，传入首元素的指针，也可以使用array的notation去操作。<br>
+
+**Passing a 1-D array of Pointers**<br>
 
