@@ -250,4 +250,7 @@ for(int i = 0; i<5; i++){
 传入1-D的array,同样可以用pointer的notation去操作，传入首元素的指针，也可以使用array的notation去操作。<br>
 
 **Passing a 1-D array of Pointers**<br>
+# Pointers and Arrays
 
+<font color=red>指针和数组并不是完全可以交换的</font>。</br>
+在大多数情况下，使用array传递数据必须带上数据的size，因为使用size of会出现意料不到的后果。
