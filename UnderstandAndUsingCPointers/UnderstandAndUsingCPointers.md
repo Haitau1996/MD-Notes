@@ -270,3 +270,5 @@ vector[i];
 * Pointer `pv` 为一个lvalue, and must be capable of being modified,但是array名是无法更新其value的。<br>
 * 使用sizeof得到的结果不相同。
 
+**使用malloc和realloc管理array内存** 需要注意的是，使用realloc之后不需要再free，否则相当于做了两次free，程序会终止。<br>
+**Passing a 1-D Array** 传入的时候，因为我们不知道array的大小，必须同时传入size，如果传入的size大小不合适，程序依旧会按照该大小去访问内存，导致出错。但是对于string就没有这个必要，因为string有自己的终止符`NUL`。此外，传入的array相当于指向首个element的pointer，因此可以用array和pointer的notation去操作传入的数据。<br>
