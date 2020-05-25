@@ -272,3 +272,15 @@ vector[i];
 
 **使用malloc和realloc管理array内存** 需要注意的是，使用realloc之后不需要再free，否则相当于做了两次free，程序会终止。<br>
 **Passing a 1-D Array** 传入的时候，因为我们不知道array的大小，必须同时传入size，如果传入的size大小不合适，程序依旧会按照该大小去访问内存，导致出错。但是对于string就没有这个必要，因为string有自己的终止符`NUL`。此外，传入的array相当于指向首个element的pointer，因此可以用array和pointer的notation去操作传入的数据。<br>
+**Using a 1-D Array of Pointers** 
+```c
+int* arr[5]; // 定义了一个由5个指针构成的array
+for(size_t i = 0; i< 5; i++){
+    arr[i] = (int*)malloc(sizeof(int));
+    *arr[i] = i;
+}
+//for loop 也可以写成
+*(arr + i) = (int*)malloc(sizeof(int));//用指针对array notation 的指针赋值
+**(arr + i) = i; //用pointer to pointer dereference arr[i]的东西，赋值
+```
+<font color=red>理解这种各种各样神奇的表示方法的要点在于，用pointer和array的notation都可以去访问array的元素，我们只需要从左到右读，并且不忽略括号即可</font>。<br>
