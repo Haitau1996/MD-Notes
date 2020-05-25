@@ -250,7 +250,23 @@ for(int i = 0; i<5; i++){
 传入1-D的array,同样可以用pointer的notation去操作，传入首元素的指针，也可以使用array的notation去操作。<br>
 
 **Passing a 1-D array of Pointers**<br>
-# Pointers and Arrays
+## Pointers and Arrays
 
 <font color=red>指针和数组并不是完全可以交换的</font>。</br>
-在大多数情况下，使用array传递数据必须带上数据的size，因为使用size of会出现意料不到的后果。
+在大多数情况下，使用array传递数据必须带上数据的size，因为array的内部表示没有携带关于number of elements的信息，使用size of会出现意料不到的后果。<br>
+**multi-D Arrays** 实际上，在实现多维数组时候，计算机是按照row-column-rank的反顺序将信息存储在一片连续的空间中的.<br>
+**Pointer Notation** pointer和array有很多相似的地方，
+```c
+int vector[5] = {1,2,3,4,5};
+int *pv = vector;
+```
+这样的话，下面的结果是相同的
+```c
+*(pv + i);
+*(vector +1);
+vector[i];
+```
+**Difference Between Arrays and Pointers** <br>
+* Pointer `pv` 为一个lvalue, and must be capable of being modified,但是array名是无法更新其value的。<br>
+* 使用sizeof得到的结果不相同。
+
