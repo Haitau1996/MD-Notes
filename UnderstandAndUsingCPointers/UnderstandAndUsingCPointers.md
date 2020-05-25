@@ -270,4 +270,3 @@ vector[i];
 * Pointer `pv` 为一个lvalue, and must be capable of being modified,但是array名是无法更新其value的。<br>
 * 使用sizeof得到的结果不相同。
 
-
