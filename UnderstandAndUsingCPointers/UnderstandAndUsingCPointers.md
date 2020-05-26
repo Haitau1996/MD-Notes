@@ -250,6 +250,10 @@ for(int i = 0; i<5; i++){
 传入1-D的array,同样可以用pointer的notation去操作，传入首元素的指针，也可以使用array的notation去操作。<br>
 
 **Passing a 1-D array of Pointers**<br>
+
+#### function Pointers
+excution functions in an order that may be not known at compile time and without using conditional statements.
+
 ## Pointers and Arrays
 
 <font color=red>指针和数组并不是完全可以交换的</font>。</br>
