@@ -222,7 +222,34 @@ int* allocateArray(int *arr,int size,int value){
 ```
 调用的时候，首先使用一个malloc分配好内存，再传入函数。<br>
 **Passing A pointer to a Pointer**<br>
-
+#### function Pointers
+excution functions in an order that may be not known at compile time and without using conditional statements.<br>
+![func ptr](/figure/3-5.png)<br>
+<font color=red> 注意要用到括号，不然就会理解成为返回一个pointer的function而不是function pointer.</font><br>
+**使用function pointer** 
+```c
+int (*fptr)(int);
+int square(int num){
+    return num * num;
+} 
+int n = 5;
+ftpr = square;
+ftpr(n);
+```
+同时，也可以使用function作为函数的参数列表。
+```c
+int add(int num1,int num2){
+    return num1 +num2;
+}
+int subtract(int num1,int num2){
+    return num1 - num2;
+}
+typedef int (*foperation)(int,int);
+int compute(foperation operation,int num1,num2){
+    return operation(num1,num2);
+}
+printf("%d",compute(add,3,5));
+```
 
 ## Pointers and Arrays
 **Quick Review**<br>
@@ -251,10 +278,6 @@ for(int i = 0; i<5; i++){
 
 **Passing a 1-D array of Pointers**<br>
 
-#### function Pointers
-excution functions in an order that may be not known at compile time and without using conditional statements.
-
-## Pointers and Arrays
 
 <font color=red>指针和数组并不是完全可以交换的</font>。</br>
 在大多数情况下，使用array传递数据必须带上数据的size，因为array的内部表示没有携带关于number of elements的信息，使用size of会出现意料不到的后果。<br>
@@ -288,3 +311,4 @@ for(size_t i = 0; i< 5; i++){
 **(arr + i) = i; //用pointer to pointer dereference arr[i]的东西，赋值
 ```
 <font color=red>理解这种各种各样神奇的表示方法的要点在于，用pointer和array的notation都可以去访问array的元素，我们只需要从左到右读，并且不忽略括号即可</font>。<br>
+**Multi-D Arrays and Pointers** <br>
