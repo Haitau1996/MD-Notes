@@ -222,7 +222,7 @@ int* allocateArray(int *arr,int size,int value){
 ```
 调用的时候，首先使用一个malloc分配好内存，再传入函数。<br>
 **Passing A pointer to a Pointer**<br>
-#### function Pointers
+##### function Pointers
 excution functions in an order that may be not known at compile time and without using conditional statements.<br>
 ![func ptr](/figure/3-5.png)<br>
 <font color=red> 注意要用到括号，不然就会理解成为返回一个pointer的function而不是function pointer.</font><br>
@@ -311,4 +311,12 @@ for(size_t i = 0; i< 5; i++){
 **(arr + i) = i; //用pointer to pointer dereference arr[i]的东西，赋值
 ```
 <font color=red>理解这种各种各样神奇的表示方法的要点在于，用pointer和array的notation都可以去访问array的元素，我们只需要从左到右读，并且不忽略括号即可</font>。<br>
-**Multi-D Arrays and Pointers** <br>
+**Pointers and Multi-D Arrays** <br>
+首先使用array的notation去定义一个2-D的array:
+```c
+int matrix[2][5] = {{1,2,3,4,5},{6,7,8,9,10}};
+int (*pmatrix)[5] = matrix;
+```
+有没有括号之间的区别：<br>
+`int (*pmatrix)[5]`: 一个指向array的指针 
+`int   *pmatrix[5]`: 一个由5个to int 指针构成的array.
