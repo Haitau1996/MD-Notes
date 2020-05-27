@@ -190,7 +190,7 @@ foo();
 每个stack frame有很多东西，其中包括系统管理的stack and base pointer用于管理stack,返回地址，local data和parameter的存储。<br>
 它们一般是按照Opposite的order去Push到stack中，而一个语句块相当于mini function。<br>
 **Passing and returning by Pointers** <br>
-by pointer很重要的一点是可以改变pointer指向的地址的值，同时对于比较大的数据结构，拷贝带来的消耗也明显减少。<br>
+ by pointer很重要的一点是可以改变pointer指向的地址的值，同时对于比较大的数据结构，拷贝带来的消耗也明显减少。<br>
 ![by value](figure/3-3.png)<br>
 对于不想要修改的数据，可以选择<font color=red> passing a Pointer to const </font>.
 ```c
