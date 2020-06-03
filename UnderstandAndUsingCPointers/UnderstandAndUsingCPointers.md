@@ -250,6 +250,35 @@ int compute(foperation operation,int num1,num2){
 }
 printf("%d",compute(add,3,5));
 ```
+<font color=red>函数指针也可以作为返回值,或者构成array</font><br>
+```c
+typedef int (*fptrOperation)(int,int); //
+fptrOperation select(char opcode){
+    switch(opcode){
+        case '+': return add;
+        case '-': return subtract;
+    }
+}
+int evaluate(char op, int num1,int num2){
+    fptrOperation oper = select(op);
+    teturn oper(num1,num2);
+}
+```
+**function pointer** 也可以用于判断是否相等
+```c
+fptrOperation ftpr1 = add;
+if(ftpr1 == add){
+    ...
+}
+```
+**Function pointer Cast** 使用`void*`无法很好的处理function pointer的问题，但是我们可以先定义一个指向void函数的指针，然后再cast到指向int,(int,int)等等。
+```c
+typedef void (*fptrBase)();
+fptrBase basePointer;
+fptrOperation opera = add;
+basePointer = (fptrOperation)add;
+basePointer(3,5);
+``` 
 
 ## Pointers and Arrays
 **Quick Review**<br>
