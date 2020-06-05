@@ -351,3 +351,7 @@ int (*pmatrix)[5] = matrix;
 `int   *pmatrix[5]`: 一个由5个to int 指针构成的array
 
 ## Pointers and Strings
+// TODO: 第五章的string 暂时跳过
+
+## Pointers and Structures 
+
