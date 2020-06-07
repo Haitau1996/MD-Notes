@@ -354,3 +354,44 @@ int (*pmatrix)[5] = matrix;
 // TODO:  第五章的string 暂时跳过
 
 ## Pointers and Structures 
+### Introduction
+结构体定义的两种方式：
+* 使用`struct`关键字直接定义
+* 使用typedef，使得接下来使用该结构体更加方便。
+```c
+struct _Persion{
+    char* firstName;
+    char* lastName;
+    char* title;
+    unsigned int age;
+};
+typedef struct _Persion{
+    char* firstName;
+    char* lastName;
+    char* title;
+    unsigned int age;
+} Persion;
+Persion chenht;
+Persion *ptrChenht;
+ptrChenht = (Persion*)malloc(sizeof(Persion));
+```
+上面的两种方式定义Persion的一个实例chenht，取用结构体数据的方式也不一样：
+* 简单的实例化用dot notation就可以额，如`chenht.first = (char *)malloc(strlen("haitao")+1)`;
+* 后面用指针的实例化要使用point to operator(->),如 `ptrChenht->firstName = (char*)malloc(strlen("haitao")+1)`;或者指针+dot operator方法`(*ptrChenht).firstName=...`
+
+### Struct memory allocation
+一般而言，structure的size是individual fields size的和，但是实际上要比这更大，因为padding会在structure 的field之间occur.这时候需要注意两点：
+* 做pointer算术的时候必须小心
+* array of structure 的element之间可能会有extra memory.
+
+如：
+```c
+typdedef struce _alterntePersion{
+    char* firstName;
+    char* lastName;
+    char% title;
+    short age; // two byte
+} alternatePersion;
+printf("%d \n", sizeof(alternatePersion) ); // result 16
+alternatePersion people[30];
+```
