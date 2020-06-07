@@ -351,6 +351,7 @@ int (*pmatrix)[5] = matrix;
 `int   *pmatrix[5]`: 一个由5个to int 指针构成的array
 
 ## Pointers and Strings
+
 // TODO:  第五章的string 暂时跳过
 
 ## Pointers and Structures 
@@ -398,3 +399,20 @@ alternatePersion people[30];
 ### Structure 内存 deallocation
 <font color=red> allocation 一个结构体的时候，运行时环境不会自动allocation结构体中的指针，同样，deallocation的时候也不会，这些都需要手动操作。</font><br>
 // TODO: 添加内存分配的图片
+### Avoiding malloc/free Overhead
+一般而言，如果结构体重复allocate和deallocate，有时候会出现overhead, 导致性能严重降低。解决这个问题的方法就是维护自己的list of allocated structures. 用户不需要某个instance of structure时候，将它归还给池子，要的时候从池子里获取。<br>
+但是这也会导致一些问题，比如，如果池子太小，就要一直allocate/deallocate，如果池子太大就会占用太多没必要的空间。<br>
+
+### Using Pointers to Support Data Structure
+
+在这里我们会实现四种常见的数据结构：
+- [ ] Linked List: A single-linkde List.
+- [ ] Queue: A simple first-in-first-out queue.
+- [ ] Stack: A simple stack.
+= [ ] Tree: A binary tree.
+
+// TODO:
+
+## Security issues and the improper use of pointers
+
+
