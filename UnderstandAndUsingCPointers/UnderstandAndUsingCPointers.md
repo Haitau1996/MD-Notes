@@ -395,3 +395,6 @@ typdedef struce _alterntePersion{
 printf("%d \n", sizeof(alternatePersion) ); // result 16
 alternatePersion people[30];
 ```
+### Structure 内存 deallocation
+<font color=red> allocation 一个结构体的时候，运行时环境不会自动allocation结构体中的指针，同样，deallocation的时候也不会，这些都需要手动操作。</font><br>
+// TODO: 添加内存分配的图片
