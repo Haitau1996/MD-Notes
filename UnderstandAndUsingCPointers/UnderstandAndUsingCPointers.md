@@ -409,7 +409,7 @@ alternatePersion people[30];
 - [ ] Linked List: A single-linkde List.
 - [ ] Queue: A simple first-in-first-out queue.
 - [ ] Stack: A simple stack.
-= [ ] Tree: A binary tree.
+- [ ] Tree: A binary tree.
 
 // TODO:
 
