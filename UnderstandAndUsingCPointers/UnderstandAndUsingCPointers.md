@@ -355,6 +355,7 @@ int (*pmatrix)[5] = matrix;
 // TODO:  第五章的string 暂时跳过
 
 ## Pointers and Structures 
+
 ### Introduction
 结构体定义的两种方式：
 * 使用`struct`关键字直接定义
@@ -406,13 +407,13 @@ alternatePersion people[30];
 ### Using Pointers to Support Data Structure
 
 在这里我们会实现四种常见的数据结构：
-- [ ] Linked List: A single-linkde List.
-- [ ] Queue: A simple first-in-first-out queue.
-- [ ] Stack: A simple stack.
-= [ ] Tree: A binary tree.
+- [x] Linked List: A single-linkde List.
+- [x] Queue: A simple first-in-first-out queue.
+- [x] Stack: A simple stack.
+- [x] Tree: A binary tree.
 
 // TODO:
 
 ## Security issues and the improper use of pointers
 
-
+使用C语言写安全的程序非常困难，主要是由于程序的固有属性决定的，如C语言不会帮助检查array的pointer越界，同时错误使用Pointer也是很多安全问题的来源。<br>
