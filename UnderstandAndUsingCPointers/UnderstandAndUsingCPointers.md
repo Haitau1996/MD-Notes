@@ -224,7 +224,7 @@ int* allocateArray(int *arr,int size,int value){
 **Passing A pointer to a Pointer**<br>
 ##### function Pointers
 excution functions in an order that may be not known at compile time and without using conditional statements.<br>
-![func ptr](/figure/3-5.png)<br>
+![func ptr](figure/3-5.png)<br>
 <font color=red> 注意要用到括号，不然就会理解成为返回一个pointer的function而不是function pointer.</font><br>
 **使用function pointer** 
 ```c
