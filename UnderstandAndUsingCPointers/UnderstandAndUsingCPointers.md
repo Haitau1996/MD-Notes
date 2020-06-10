@@ -416,3 +416,37 @@ alternatePersion people[30];
 ## Security issues and the improper use of pointers
 
 使用C语言写安全的程序非常困难，主要是由于程序的固有属性决定的，如C语言不会帮助检查array的pointer越界，同时错误使用Pointer也是很多安全问题的来源。<br> 
+### 指针声明和初始化
+```c
+int* ptr1, ptr2;// 不是好的习惯,ptr2是一个int类型而不是指向int的指针
+int *ptr1, *ptr2; //推荐使用
+```
+同时，我们推荐使用typedef而不是macro.
+```c
+#define PINT int*
+PINT ptr1,ptr2;    //避免使用
+typedef int* PINT;
+PINT ptr1,ptr2;   //推荐使用
+```
+使用指针的时候，我们要避免野指针问题：
+```c
+int *ptr;
+...
+printf("%d\n", *ptr);
+```
+怎样避免未初始化指针的问题
+- 使用NULL去初始化指针
+- 使用assert断言
+- 使用第三方工具
+
+```c
+int *ptr = NULL;
+...
+if(ptr == NULL){
+    // ptr 没有被赋值
+} else{
+    //正常使用该指针
+}
+```
+`assert(ptr != NULL);`使用断言，如果断言成功则无事发生，失败的话则程序退出。<br>
+### 指针使用问题
