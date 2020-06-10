@@ -411,6 +411,7 @@ alternatePersion people[30];
 - [x] Stack: A simple stack.
 - [x] Tree: A binary tree.
 
-// TODO:
+// TODO: to implement a real data structure by my self
+
 
 ## Security issues and the improper use of pointers
