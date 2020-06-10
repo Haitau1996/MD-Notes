@@ -19,3 +19,13 @@ Connect 具备的性质<br>
 * Symmetric
 
 #### Quick Find
+具体的数据结构： 
+- [x] 使用一个size为n的array，id[]
+- [x] 如果两者id一样的话，那么就认为是connected
+
+优缺点： find query非常快，但是union需要消耗太多资源。<br>
+具体实现过程中需要注意的地方：
+* 初始构造函数需要给id[i]赋值为i
+* union时候需要遍历整个array.
+
+#### Quick Union
