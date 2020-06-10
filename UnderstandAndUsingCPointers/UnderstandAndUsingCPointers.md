@@ -450,3 +450,24 @@ if(ptr == NULL){
 ```
 `assert(ptr != NULL);`使用断言，如果断言成功则无事发生，失败的话则程序退出。<br>
 ### 指针使用问题
+Buffer overflow occurs when <font color=red> memory outside the object's bound is overwritten</font>.<br>
+#### Test for NULL
+用malloc返回的指针一定要检查是否为NULL。
+```c
+float *vec = malloc(20 *sizeof(float));
+if(vec == NULL){
+    // malloc 没有要到内存
+}else{
+    // do something with the pointer
+}
+```
+#### Dereference 操作符的错误使用
+```c
+// correct use
+int num;
+int *ptr = &num;
+// misuse
+int num;
+int *ptr;
+*ptr = &num;//除了定义时候，其他时候的*ptr中*是作为解引用存在的
+```
