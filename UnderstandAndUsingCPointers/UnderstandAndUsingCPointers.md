@@ -415,4 +415,4 @@ alternatePersion people[30];
 
 ## Security issues and the improper use of pointers
 
-使用C语言写安全的程序非常困难，主要是由于程序的固有属性决定的，如C语言不会帮助检查array的pointer越界，同时错误使用Pointer也是很多安全问题的来源。<br>## Pointers and Structures 
+使用C语言写安全的程序非常困难，主要是由于程序的固有属性决定的，如C语言不会帮助检查array的pointer越界，同时错误使用Pointer也是很多安全问题的来源。<br> 
