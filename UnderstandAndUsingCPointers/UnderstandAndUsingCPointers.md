@@ -497,8 +497,9 @@ void replace(char buffer[], char replacement, size_t size) {
     }
 }
 //之后，使用该方式调用
-    strcpy_s(name,"Alexanderiii");
+    strcpy(name,"Alexanderiii");
     replace(name,'+',sizeof(name));
 ```
 问题就在于，strcpy这个函数是允许buffer overflow,假设用户是按照正确的方式pass size,因此我们在使用这类函数的时候要非常的小心，同时pass一个buffer的size去加一层保险。
 #### misusing of sizeof operator
+有时候，我们直接使用sizeof对array求bound，但是这个大部分时候都是有问题的，如我们对一个int array求bound，那么需要用`sizeof(arr)/sizeof(int)`才能得到正确的结果，诸如此类。
