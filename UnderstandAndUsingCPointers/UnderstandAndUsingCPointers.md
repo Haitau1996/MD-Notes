@@ -520,8 +520,21 @@ if(name != NULL){
 ```
 此外，我们可以<font color=red>使用static analysis tools.</font>
 
-### String 的安全问题
+#### String 的安全问题
 现在一般直到，使用strcpy和strcat可能导致buffer overflow,传入size_t的参数可能缓解这个问题，现在可以使用strcpy_s和strcat_s，它们遇到overflow时候会返回error.同样，scanf_s 和 wscanf_s 函数也可以解决buffer overflow的问题。
 
-### Pointer 算术运算和结构体
-<font color=red> 指针算术运算严格只运用于array中，</font> 
+#### Pointer 算术运算和结构体
+<font color=red> 指针算术运算严格只运用于array中，Structure的field可能没有allocate在一块连续的内存区域，因此不应该使用指针算术。</font>如以下例子中：<br>
+```c
+typedef struct _Persion{
+    char name[10];
+    int age;
+} Persion;
+Persion chenht;
+char* pc = chenht.name;
+int *pi = &(chenht.age);
+printf("%d",(char *)(pi)-pc);//这种类型转换可能不安全
+```
+从结果上看，name 和 age之间有两个闲置的byte没有使用。
+
+#### Function pointer的问题
