@@ -41,3 +41,4 @@ Connect 具备的性质<br>
 - weighting : 把small 的 tree放在下面，因此没有item距离root比较远。
 - Path Compression: 加上weighting, 将时间减到`O(n+lg*M)`
 
+### Analysis of Algorithms
