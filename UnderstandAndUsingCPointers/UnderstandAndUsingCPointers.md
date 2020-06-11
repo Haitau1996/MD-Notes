@@ -397,7 +397,10 @@ alternatePersion people[30];
 ```
 ### Structure 内存 deallocation
 <font color=red> allocation 一个结构体的时候，运行时环境不会自动allocation结构体中的指针，同样，deallocation的时候也不会，这些都需要手动操作。</font><br>
-// TODO: 添加内存分配的图片
+![structure uninitialzed](figure/6-1.png)<br>
+在自己分配内存平且赋值之后，就变成了:<br>
+![initialzed](figure/6-2.png)<br>
+
 ### Avoiding malloc/free Overhead
 一般而言，如果结构体重复allocate和deallocate，有时候会出现overhead, 导致性能严重降低。解决这个问题的方法就是维护自己的list of allocated structures. 用户不需要某个instance of structure时候，将它归还给池子，要的时候从池子里获取。<br>
 但是这也会导致一些问题，比如，如果池子太小，就要一直allocate/deallocate，如果池子太大就会占用太多没必要的空间。<br>
@@ -411,6 +414,7 @@ alternatePersion people[30];
 - [x] Tree: A binary tree.
 
 // TODO: to implement a real data structure by my self
+
 
 
 ## Security issues and the improper use of pointers
@@ -471,3 +475,30 @@ int num;
 int *ptr;
 *ptr = &num;//除了定义时候，其他时候的*ptr中*是作为解引用存在的
 ```
+**Danging Pointer** 除非用于类似于VTable的方式处理函数指针，其他时候应该没有安全问题。<br>
+#### 使用array边界之外的memory
+```c
+    char firstName[8] ="1234567";
+    char middleName[8]="1234567";
+    char lastName[8] = "1234567";
+    middleName[-2] = 'X';
+    middleName[0] = 'X';
+    middleName[10] ='X';
+```
+在内存上，就变成了这样：<br>
+![invalid address](figure/7-1.png)
+#### 使用不正确的array size
+```c
+void replace(char buffer[], char replacement, size_t size) {
+    size_t count = 0;
+    while(*buffer != '\0' && count++<size) {
+        *buffer = replacement;
+        buffer++;
+    }
+}
+//之后，使用该方式调用
+    strcpy_s(name,"Alexanderiii");
+    replace(name,'+',sizeof(name));
+```
+问题就在于，strcpy这个函数是允许buffer overflow,假设用户是按照正确的方式pass size,因此我们在使用这类函数的时候要非常的小心，同时pass一个buffer的size去加一层保险。
+#### misusing of sizeof operator
