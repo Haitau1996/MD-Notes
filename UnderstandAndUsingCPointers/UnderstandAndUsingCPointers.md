@@ -503,3 +503,25 @@ void replace(char buffer[], char replacement, size_t size) {
 问题就在于，strcpy这个函数是允许buffer overflow,假设用户是按照正确的方式pass size,因此我们在使用这类函数的时候要非常的小心，同时pass一个buffer的size去加一层保险。
 #### misusing of sizeof operator
 有时候，我们直接使用sizeof对array求bound，但是这个大部分时候都是有问题的，如我们对一个int array求bound，那么需要用`sizeof(arr)/sizeof(int)`才能得到正确的结果，诸如此类。
+#### Bounded Pointers
+这个条款的意思是，再严格控制pointer valid区域中使用。首先说明它的tedious的用法：
+```c
+#define SIZE 32
+
+char name[SIZE];
+char *p = name;
+if(name != NULL){
+    if(p>=name && p < name+SIZE){
+        // 使用pointer
+    } else{
+        // valid pointer, do something
+    }
+}
+```
+此外，我们可以<font color=red>使用static analysis tools.</font>
+
+### String 的安全问题
+现在一般直到，使用strcpy和strcat可能导致buffer overflow,传入size_t的参数可能缓解这个问题，现在可以使用strcpy_s和strcat_s，它们遇到overflow时候会返回error.同样，scanf_s 和 wscanf_s 函数也可以解决buffer overflow的问题。
+
+### Pointer 算术运算和结构体
+<font color=red> 指针算术运算严格只运用于array中，</font> 
