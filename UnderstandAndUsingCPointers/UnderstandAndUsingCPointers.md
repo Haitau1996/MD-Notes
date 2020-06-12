@@ -538,3 +538,36 @@ printf("%d",(char *)(pi)-pc);//这种类型转换可能不安全
 从结果上看，name 和 age之间有两个闲置的byte没有使用。
 
 #### Function pointer的问题
+一个可能的错误是，使用function pointer去得到一个数值，然后用这个数值用于boolen的判断，如果忘记了括号，那么function pointer的值一直不为0，被认定为true.<br>
+同时，fptr的签名和指向函数的签名不一致的时候，也会出现未定义的行为。<br>
+```c
+int (*ftpr)(int,int);
+int tripAdd(int n1, int n2, int n3){
+    return n1+n2+n3;
+}
+ftpr = tripAdd;//error:在c++中会报错，需要用reinterpret_cast<>()做显式类型转换
+ftpr(2,3);
+```
+### memory deallocation Issues
+#### Double free
+```c
+char *name = (char*)malloc(...);
+char *newName = name;
+...
+free(name);
+...
+free(newName);
+```
+解决的一个办法是，如果将一个指针free之后,将该指针的值设为nullptr.<br>
+#### Clearing Sensitive Data
+```c
+char *name = (char *)malloc(...);
+...
+memset(name,0,sizeof(name));
+free(name);
+```
+因为释放内存之后，操作系统不一定会zero out 内存上的值，其他程序还有可能访问到该程序的数据。
+#### Using static analysis tools
+如GCC的-Wall选项可以帮助捕捉更多的问题，具体需要参考其他的资料。
+
+## Odds and Ends
