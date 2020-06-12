@@ -571,3 +571,4 @@ free(name);
 如GCC的-Wall选项可以帮助捕捉更多的问题，具体需要参考其他的资料。
 
 ## Odds and Ends
+### Casting Pointers
