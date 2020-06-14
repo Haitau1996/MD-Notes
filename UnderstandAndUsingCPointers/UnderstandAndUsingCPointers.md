@@ -572,3 +572,35 @@ free(name);
 
 ## Odds and Ends
 ### Casting Pointers
+我们可以使用字节转换来干很多事情：
+- accessing a special purpose address
+- Assigning an address to represent a port
+- Determining a machine's endianness(字节顺序)
+
+```c
+int num = 8;
+int *pi = (int*)num;
+```
+这种做法非常危险，因为指向的地址不一定由该程序管理，更长见的做法是将pointer cast 成 int，做完相对的运算之后再cast回去，这种做法也不推荐，更好的实践是使用一个**union**，可以存一个int或者int *.
+```c
+pi = &num;
+printf("before casting: %p\n",pi);
+int tmp = (int)pi;
+pi = (int*)tmp;
+printf("casting back: %p \n",pi);
+```
+#### accessing a special purpose address
+在嵌入式系统的媒体访问中，经常要用到这个方式。例如，在有的low-level OS 核心中，video RAM为`0XB8000`,显示的第一行第一列的字母就存在该地址。
+```c
+#define VIDEO_BASE 0X8000
+int *vedio = (int*)VEDIO_BASE;
+*vedio = 'A'
+```
+但是如果需要访问location zero的地址，有时候编译将它视为`NULL`,对于low-level kernel程序，经常要方位地址0，这种时候有以下做法：
+
+- set pointer to zero(有时候不管用)
+- assign a zero to int, 然后 cast 到 int*
+- 使用一个Union
+- 使用`memset`函数去assign a zero to a pointer`memset((void*)&ptr,0,sizeof(prt))`
+
+#### Accessing a Port
