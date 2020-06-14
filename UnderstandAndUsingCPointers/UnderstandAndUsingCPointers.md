@@ -601,6 +601,14 @@ int *vedio = (int*)VEDIO_BASE;
 - set pointer to zero(有时候不管用)
 - assign a zero to int, 然后 cast 到 int*
 - 使用一个Union
-- 使用`memset`函数去assign a zero to a pointer`memset((void*)&ptr,0,sizeof(prt))`
+- 使用`memset`函数去assign a zero to a pointer`memset((void*)&ptr,0,sizeof(ptr))`
 
 #### Accessing a Port
+Port即是软件概念也是硬件概念，一般而言，软件access一个port是OS的一部分，下面是一个使用port的实例：
+```
+#define PORT 0XB0000000
+unsigned int volatile *const port = (unsigned int*) port;
+```
+其中，volatile关键词意思是<font color=red> the variable can be changed outside of the program.</font>
+
+#### Accessing Memory using DMA

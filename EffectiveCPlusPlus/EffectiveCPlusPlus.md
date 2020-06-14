@@ -17,3 +17,19 @@ C++为一个多范式的编程语言，同时支持过程形式、面向对象�
 ```c
 const double AspectRatio = 1.653;
 ```
+常量的定义有两点值得注意的：
+
+- 顶层指针（指针指向同一个可变对象）和底层指针（无法通过指针修改对象），同时string比char * based 字符串要好
+- class专属的常量，为了将作用域限制在class内部，让它作为member data，同时为了常量只有一个实体，让它成为一个静态成员
+
+旧的编译器不支持static成员在其声明时候获得初值，则可以将初值放在定义式中
+```c++
+// in the header file
+class ConstEstimate{
+    private:
+        static const double FudgeFactor;
+    ...
+};
+// in the implementation file
+const double ConstEstimate::FudgeFactor = 1.35;
+```
