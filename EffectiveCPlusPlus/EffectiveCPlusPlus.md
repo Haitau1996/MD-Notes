@@ -46,8 +46,8 @@ class GamePlayer{
 对这种trick，我们需要了解，该行为比较像`#define`而不是const，给const取地址是合法的，但是给enum和define取通常都是不合法的。<br>
 预处理会带来一些问题，如
 ```c++
-#define CALL_MAX(a,b) f(((a)>(b)) ? (a) :(b))
-CALL_MAX(++a,b);// a会被累加2次
+#define CALL_WITH_MAX(a,b) f(((a)>(b)) ? (a) :(b))
+CALL_WITH_MAX(++a,b);// a会被累加2次
 ```
 这种时候可以写出template的inline函数：
 ```c++
@@ -60,3 +60,35 @@ inline void callWithMax(const T&a, const T&b){
 - 对于函数的宏，最好用inline函数替换#define
 
 ### Item 3 : Use const whenever possiable
+const允许语义约束，指定变量不可更改，编译器会强制试试这项约束，只要这是事实，就应该明确要求，让编译器保证该约束不会被违反。对于顶层指针和底层指针，只要记住：如果const出现在*左边，则被指向的对象是一个常量，而右边则表示指针本身是一个常量。
+```c++
+void f1(const Widget* pw);
+void f2(Widget const* pw);
+//两者意思相同，都是指向一个Widget类型常量的指针
+```
+对于迭代器，也有类似的做法，如果希望迭代器指向的数据不可变动，可以声明为const_iterator,如果希望迭代器本身不可变，声明为const。当然，const威力最大的场景在于函数声明中：
+```c++
+class Rational{...};
+const Rational operator*(const Rational& lhs,const Rational& rhs);
+```
+如果不声明为const，那么客户就可以这样写：
+```
+Rational a,b,c;
+...
+(a*b) = c; // 用c给a*b的结果赋值，加了const之后返回一个const Rational那么就会找出这个错误
+```
+#### Const menber function
+将成员函数声明为const的一个很大的作用是，使得该函数可以操作const对象。pass by reference-to-const的一个前提就是可以用const修饰成员函数，<font color=red>否则一般的函数操作const对象，编译器无法得知它是否会改变对象的值，因此报错。</font>
+// todo: 重新读21-26页
+
+### Item 4: 确定对象使用前已经被初始化
+c++初始化问题：
+```c++
+int x;  //大多数平台确定了x被初始化
+class Point{
+    int x,y; 
+};
+...
+Point p;// 数据成员x,y没有被初始化
+```
+一般而言，C part of c++初始化可能导致运行期成本，不保证发生初始化，non-C parts of c++，规则就相反。内置类型在使用之前将它初始化，对于内置类型之外的类型，初始化<font color=red>由构造函数负责，确保构造函数将对象的每一个成员都初始化。</font>构造函数比较好的写法是member initialization list替换赋值动作
