@@ -170,7 +170,9 @@ Empty e2(e1); // copy constructor
 e2 = e1;      // copy assignment operator
 ```
 需要注意的是，编译器自身产生的destructor是一个non-virtual的析构函数，除非base class自己声明有virtual的析构函数。<br>
-当我们写了一个构造函数的时候，编译器不会生成默认沟赵函数，但是因为没有copy构造函数和copy赋值operator，编译器依旧会自己默认一个。
+当我们写了一个构造函数的时候，编译器不会生成默认沟赵函数，但是因为没有copy构造函数和copy赋值operator，编译器依旧会自己默认一个。<br>
+编译器生成的copy 构造函数将传入的object每个data member为初值设定新object的值。万一有条件不符合，编译器拒绝给class生成operator=.
+
 
 ### Item 6 如果不想用编译器自动生成的函数，就应该明确拒绝
 
