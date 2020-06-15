@@ -79,7 +79,6 @@ Rational a,b,c;
 ```
 #### Const menber function
 将成员函数声明为const的一个很大的作用是，使得该函数可以操作const对象。pass by reference-to-const的一个前提就是可以用const修饰成员函数，<font color=red>否则一般的函数操作const对象，编译器无法得知它是否会改变对象的值，因此报错。</font>
-// todo: 重新读24-26页
 ```c++
 class TextBlock {
 public:
@@ -142,7 +141,7 @@ public:
 ...
 };
 ```
-实际使用的过程中，为了避免no-const operator[]递归调用自己，先将*this从原始的TextBlock& 做static_cast成为const TextBlock&，然后从const operator[]的返回值中移除const。
+实际使用的过程中，为了避免no-const operator[]递归调用自己，先将*this从原始的TextBlock& 做static_cast成为const TextBlock&，然后从const operator[]的返回值中移除const。但是，反过来做是不建议的，因为使用const_cast去掉了const的性质之后，操作十分不安全。
 
 ### Item 4: 确定对象使用前已经被初始化
 c++初始化问题：
