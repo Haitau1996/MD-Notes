@@ -612,3 +612,4 @@ unsigned int volatile *const port = (unsigned int*) port;
 其中，volatile关键词意思是<font color=red> the variable can be changed outside of the program.</font>
 
 #### Accessing Memory using DMA
+Direct Memory Access(DMA) 是用于辅助

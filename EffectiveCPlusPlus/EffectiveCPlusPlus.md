@@ -164,15 +164,28 @@ Point p;// 数据成员x,y没有被初始化
 - copy assignment 操作符
 - 析构函数
 ```c++
-Empty e1;   // default constructor;
-            // destructor
+Empty e1;       // default constructor;
+                // destructor
 Empty e2(e1); // copy constructor
 e2 = e1;      // copy assignment operator
 ```
 需要注意的是，编译器自身产生的destructor是一个non-virtual的析构函数，除非base class自己声明有virtual的析构函数。<br>
 当我们写了一个构造函数的时候，编译器不会生成默认沟赵函数，但是因为没有copy构造函数和copy赋值operator，编译器依旧会自己默认一个。<br>
-编译器生成的copy 构造函数将传入的object每个data member为初值设定新object的值。万一有条件不符合，编译器拒绝给class生成operator=.
-
+编译器生成的copy 构造函数将传入的object每个data member为初值设定新object的值。万一有条件不符合，编译器拒绝给class生成operator=.<br>
+例如，我们有一个class包含两个data member，一个referce to string，一个const T，那么使用这个class实例化两个实例，a,b，令a = b 就会出问题，因为reference自身不可变动，而const T也不能再赋值，这种情况下编译器不知道如何生成一个copy assignment operator。
 
 ### Item 6 如果不想用编译器自动生成的函数，就应该明确拒绝
 
+有的使用场景中，不允许拷贝赋值和拷贝assignment operator，我们不主动拒绝的话，编译器会声明我们不想要的函数。这种时候一个常见的做法是将copy constructor和copy assignment operator声明为private，这样的话member function和friend function还可以调用他们，如果足够聪明，只声明不调用的话不慎调用会得到一个linkage error.
+```c++
+class HomeForSale{
+    public:
+        ...
+    private:
+        HomeForSale(const HomeForSale&);
+        HomeForSale& operator=(const HomeForSale&);
+};
+```
+更好的做法是将这种东西放到一个base类中，然后HomeForSale用private的方式继承该类，这样任何人，<font color=red>甚至是member函数或者friend函数</font>都无法尝试拷贝该对象。使用该方法可能会引发多继承的问题，涉及的empty base class optimization，这将在Item 39、40中讨论。
+
+### Item 7 为多态基类声明virtual析构函数
