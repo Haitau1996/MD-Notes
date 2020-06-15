@@ -158,8 +158,19 @@ Point p;// 数据成员x,y没有被初始化
 
 ## 构造、析构和赋值操作
 ### Item 5 了解c++默认编写并且调用了哪些函数
-如果自己没有声明，那么编译器就会为它声明下面三个函数：
+如果自己没有声明，那么编译器就会为它声明下面几个函数：
+- 默认构造函数
 - copy 构造函数
 - copy assignment 操作符
 - 析构函数
+```c++
+Empty e1;   // default constructor;
+            // destructor
+Empty e2(e1); // copy constructor
+e2 = e1;      // copy assignment operator
+```
+需要注意的是，编译器自身产生的destructor是一个non-virtual的析构函数，除非base class自己声明有virtual的析构函数。<br>
+当我们写了一个构造函数的时候，编译器不会生成默认沟赵函数，但是因为没有copy构造函数和copy赋值operator，编译器依旧会自己默认一个。
+
+### Item 6 如果不想用编译器自动生成的函数，就应该明确拒绝
 
