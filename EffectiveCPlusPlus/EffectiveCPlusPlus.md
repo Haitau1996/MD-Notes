@@ -94,8 +94,8 @@ private:
 ```
 值得注意的的是，函数返回的是一个reference to char，如果只是返回char，那么它是local变量，对它赋值没有意义。成员函数为const有两个流行概念，物理const 和 逻辑const:
 
-- menber function只有在不改变对象的任何成员变量时候才可以说是const，但是实际上，通过指针可能可以改变对象成员的值。
-- 逻辑const:const成员函数可以修改对象的某些bits，但是只有在客户端侦测不出时候才可以如此
+- menber function只有在不改变对象的任何成员变量时候才可以说是const，但是实际上，通过指针可能可以改变对象成员的值。（编译器强制）
+- 逻辑const:const成员函数可以修改对象的某些bits，但是只有在客户端侦测不出时候才可以如此（写程序遵循的守则）
 
 C++中有个与const相关的wiggle room叫做mutable, 它将释放掉non-static成员变量的bitwise constness,
 ```c++
@@ -118,6 +118,31 @@ std::size_t CTextBlock::length() const
 }
 ```
 #### const 和 non-const成员函数中避免重复
+如果member function不单返回一个reference指向字符，而且做了很多操作，那么重载函数就变得非常复杂并且没有必要，我们真正要做的是实现一次，然后通过常量性转除去实现：
+```c++
+class TextBlock {
+public:
+    ...
+    const char& operator[](std::size_t position) const // same as before
+    {
+        ...
+        ...
+        ...
+        return text[position];
+    }
+    char& operator[](std::size_t position) // now just calls const op[]
+    {
+        return
+        const_cast<char&>( // cast away const on
+                           // op[]’s return type;
+                static_cast<const TextBlock&>(*this) // add const to *this’s type;
+                [position] // call const version of op[]
+        );
+    }
+...
+};
+```
+实际使用的过程中，为了避免no-const operator[]递归调用自己，先将*this从原始的TextBlock& 做static_cast成为const TextBlock&，然后从const operator[]的返回值中移除const。
 
 ### Item 4: 确定对象使用前已经被初始化
 c++初始化问题：
