@@ -214,6 +214,9 @@ AMOV::~AMOV(){ }  // 必须为这个pure virtual析构函数提供一份定义
 当然，这些性质的讨论都是适用于<font color=red>polymorohic base class</font>, 但是并非所有的base class设计都是为了多态用途，他们不需要virtual析构函数。
 
 ### Item 8 别让异常逃离析构函数
+//todo: copy code here
+只要析构函数突出异常，即使并非使用容器或者vector，程序也可能过早结束或者出现不明确的行为。如果析构函数必须执行某个动作，而该动作可能在失败时抛出异常，这种情况该怎么办？<br>
+
 //todo : item 8.9
 
 ### Item 10 令operator=返回一个reference to *this
@@ -235,3 +238,6 @@ class Widget{
 };
 ```
 对于其他赋值相关的运算，+=和-=之类，也建议遵循这个规则。
+//todo: 这部分剩下的item
+
+## 资源管理
