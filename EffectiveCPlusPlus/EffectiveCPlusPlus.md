@@ -33,3 +33,30 @@ class ConstEstimate{
 // in the implementation file
 const double ConstEstimate::FudgeFactor = 1.35;
 ```
+还有一种情况，就是在class编译期间需要一个常量，但是编译器不允许static整型完成in class初值，使用**enum hack**的补偿做法：
+```c++
+class GamePlayer{
+    private:
+        enum{NumTurns = 5};
+        ...
+        int Scores[NumTurns];
+        ...
+};
+```
+对这种trick，我们需要了解，该行为比较像`#define`而不是const，给const取地址是合法的，但是给enum和define取通常都是不合法的。<br>
+预处理会带来一些问题，如
+```c++
+#define CALL_MAX(a,b) f(((a)>(b)) ? (a) :(b))
+CALL_MAX(++a,b);// a会被累加2次
+```
+这种时候可以写出template的inline函数：
+```c++
+template<typename T>
+inline void callWithMax(const T&a, const T&b){
+    f(a>b ? a :b);
+}
+```
+- 对于单纯的常量，最好用const和enum替换#define
+- 对于函数的宏，最好用inline函数替换#define
+
+### Item 3 : Use const whenever possiable
