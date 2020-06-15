@@ -79,7 +79,45 @@ Rational a,b,c;
 ```
 #### Const menber function
 将成员函数声明为const的一个很大的作用是，使得该函数可以操作const对象。pass by reference-to-const的一个前提就是可以用const修饰成员函数，<font color=red>否则一般的函数操作const对象，编译器无法得知它是否会改变对象的值，因此报错。</font>
-// todo: 重新读21-26页
+// todo: 重新读24-26页
+```c++
+class TextBlock {
+public:
+    ...
+    const char& operator[](std::size_t position) const // operator[] for
+        { return text[position]; } // const objects
+    char& operator[](std::size_t position) // operator[] for
+        { return text[position]; } // non-const objects
+private:
+    std::string text;
+};
+```
+值得注意的的是，函数返回的是一个reference to char，如果只是返回char，那么它是local变量，对它赋值没有意义。成员函数为const有两个流行概念，物理const 和 逻辑const:
+
+- menber function只有在不改变对象的任何成员变量时候才可以说是const，但是实际上，通过指针可能可以改变对象成员的值。
+- 逻辑const:const成员函数可以修改对象的某些bits，但是只有在客户端侦测不出时候才可以如此
+
+C++中有个与const相关的wiggle room叫做mutable, 它将释放掉non-static成员变量的bitwise constness,
+```c++
+class CTextBlock {
+public:
+    ...
+    std::size_t length() const;
+private:
+    char *pText;
+    mutable std::size_t textLength; // these data members may
+    mutable bool lengthIsValid;     // always be modified, even in
+};                                  // const member functions
+std::size_t CTextBlock::length() const
+{
+    if (!lengthIsValid) {
+    textLength = std::strlen(pText); // now fine
+    lengthIsValid = true; // also fine
+    }
+    return textLength;
+}
+```
+#### const 和 non-const成员函数中避免重复
 
 ### Item 4: 确定对象使用前已经被初始化
 c++初始化问题：
