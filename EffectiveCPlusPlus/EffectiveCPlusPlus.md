@@ -214,3 +214,24 @@ AMOV::~AMOV(){ }  // 必须为这个pure virtual析构函数提供一份定义
 当然，这些性质的讨论都是适用于<font color=red>polymorohic base class</font>, 但是并非所有的base class设计都是为了多态用途，他们不需要virtual析构函数。
 
 ### Item 8 别让异常逃离析构函数
+//todo : item 8.9
+
+### Item 10 令operator=返回一个reference to *this
+赋值的时候，人们常常将这个写成一个连锁形式：
+```c++
+int x,y,z;
+x = y = z = 15;
+//赋值时候的右结合，转义为x = (y = (z=15))
+```
+为了实现这种行为，赋值操作符必须返回一个reference指向操作符左侧实参：
+```c++
+class Widget{
+    public:
+        Widget& operator = (const Widget& rhs){
+            ...
+            return *this;
+        }
+    ...
+};
+```
+对于其他赋值相关的运算，+=和-=之类，也建议遵循这个规则。
