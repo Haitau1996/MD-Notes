@@ -214,10 +214,71 @@ AMOV::~AMOV(){ }  // 必须为这个pure virtual析构函数提供一份定义
 当然，这些性质的讨论都是适用于<font color=red>polymorohic base class</font>, 但是并非所有的base class设计都是为了多态用途，他们不需要virtual析构函数。
 
 ### Item 8 别让异常逃离析构函数
-//todo: copy code here
+```c++
+class Widget {
+    public:
+        ...
+        ~Widget() { ... } // assume this might emit an exception
+};
+void doSomething(){
+    std::vector<Widget> v;
+    ...
+}                           // v is automatically destroyed here
+```
 只要析构函数突出异常，即使并非使用容器或者vector，程序也可能过早结束或者出现不明确的行为。如果析构函数必须执行某个动作，而该动作可能在失败时抛出异常，这种情况该怎么办？<br>
+```c++
+class DBConnection {
+    public:
+        ...
+        static DBConnection create(); // function to return
+        // DBConnection objects; params
+        // omitted for simplicity
+        void close(); // close connection; throw an
+}; // exception if closing fails
+class DBConn { // class to manage DBConnection
+    public: // objects
+        ...
+        ~DBConn() // make sure database connections
+        { // are always closed
+                db.close();
+        }
+    private:
+        DBConnection db;
+};
+```
+一个做法是使用另一个class，这个class包含DBConnection的数据，并且在析构函数中调用close(),如果程序正常运行，那么这个部分没有问题，如果close()出错，那么这依旧会导致异常离开析构函数，有两个办法可以解决这个问题：
 
-//todo : item 8.9
+- close()抛出异常就结束程序
+- 吞下调用close()发生的异常
+
+但是这两种做法都没有吸引力，更好的做法是重新设计DBConn的接口，如提供一个close()，赋予客户操作”因该操作而发生的异常“，并且追踪管理的connect是否关闭，否的话由connect的析构函数将它关闭。
+```c++
+class DBConn {
+    public:
+        ...
+        void close() // new function for
+        { // client use
+            db.close();
+            closed = true;
+        }
+        ~DBConn(){
+            if (!closed) {
+                try { // close the connection
+                db.close(); // if the client didn’t
+                }
+                catch (...) { // if closing fails,
+                make log entry that call to close failed; // note that and
+                ... // terminate or swallow
+                }
+            }
+        }
+    private:
+        DBConnection db;
+        bool closed;
+};
+```
+### Item 9 不要在构造和析构函数中调用virtual函数
+**Java /C#在这方面和c++不同**
 
 ### Item 10 令operator=返回一个reference to *this
 赋值的时候，人们常常将这个写成一个连锁形式：
