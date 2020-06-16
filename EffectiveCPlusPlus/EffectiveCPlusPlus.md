@@ -258,7 +258,7 @@ class DBConn {
         ...
         void close() // new function for
         { // client use
-            db.close();
+            db.close();// 这个地方可能导致异常
             closed = true;
         }
         ~DBConn(){
