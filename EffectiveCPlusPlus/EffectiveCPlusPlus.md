@@ -164,15 +164,141 @@ Point p;// 数据成员x,y没有被初始化
 - copy assignment 操作符
 - 析构函数
 ```c++
-Empty e1;   // default constructor;
-            // destructor
+Empty e1;       // default constructor;
+                // destructor
 Empty e2(e1); // copy constructor
 e2 = e1;      // copy assignment operator
 ```
 需要注意的是，编译器自身产生的destructor是一个non-virtual的析构函数，除非base class自己声明有virtual的析构函数。<br>
 当我们写了一个构造函数的时候，编译器不会生成默认沟赵函数，但是因为没有copy构造函数和copy赋值operator，编译器依旧会自己默认一个。<br>
-编译器生成的copy 构造函数将传入的object每个data member为初值设定新object的值。万一有条件不符合，编译器拒绝给class生成operator=.
-
+编译器生成的copy 构造函数将传入的object每个data member为初值设定新object的值。万一有条件不符合，编译器拒绝给class生成operator=.<br>
+例如，我们有一个class包含两个data member，一个referce to string，一个const T，那么使用这个class实例化两个实例，a,b，令a = b 就会出问题，因为reference自身不可变动，而const T也不能再赋值，这种情况下编译器不知道如何生成一个copy assignment operator。
 
 ### Item 6 如果不想用编译器自动生成的函数，就应该明确拒绝
 
+有的使用场景中，不允许拷贝赋值和拷贝assignment operator，我们不主动拒绝的话，编译器会声明我们不想要的函数。这种时候一个常见的做法是将copy constructor和copy assignment operator声明为private，这样的话member function和friend function还可以调用他们，如果足够聪明，只声明不调用的话不慎调用会得到一个linkage error.
+```c++
+class HomeForSale{
+    public:
+        ...
+    private:
+        HomeForSale(const HomeForSale&);
+        HomeForSale& operator=(const HomeForSale&);
+};
+```
+更好的做法是将这种东西放到一个base类中，然后HomeForSale用private的方式继承该类，这样任何人，<font color=red>甚至是member函数或者friend函数</font>都无法尝试拷贝该对象。使用该方法可能会引发多继承的问题，涉及的empty base class optimization，这将在Item 39、40中讨论。
+
+### Item 7 为多态基类声明virtual析构函数
+在很多时候，我们使用指针得到一个derived class对象，而那个对象却经过一个base class的指针被删除，带来的问题是诡异的“局部销毁”，而derived class的析构函数没有被调用。解决该问题的方法十分简单，<font color=red>给base class一个virtual析构函数</font>.
+```c++
+class TimeKeeper{
+    public:
+        TimeKeeper();//默认构造函数
+        virtual ~TimeKeeper();
+        ...
+};
+TimeKeeper* ptk= getTimeKeeper();
+...
+delete ptk;
+```
+这并不意味着virtual函数很好，对于不作为base class的情况，virtual析构函数会带来一系列的问题，没有virtual析构函数的情况下，一个自己定义的Point2D对象可以作为一个64-bit的量传给c/fortran,对于virtual函数，对象必须携带某些信息，用于决定哪个virtual函数会被调用，这种事由virtual table pointer(vptr) 的机制实现。因此，一般而言，只有带class内至少有一个virtual函数的的时候，才为它声明virtual析构函数。<br>
+同样的，对于不带virtual析构函数的class，包括所有的STL容器（vector,list,set,unordered_map)和std::string，不要从他们那里继承。<br>
+class带一个pure virtual析构函数，pure virtual函数导致抽象class，不能被实例化。如果希望得到类似的class又没有其他的纯虚函数，可以给class声明一个纯虚的析构函数：
+```c++
+class AMOV{
+    public:
+        virtual ~AMOV()=0;  // pure virtual destructor
+}
+AMOV::~AMOV(){ }  // 必须为这个pure virtual析构函数提供一份定义
+```
+当然，这些性质的讨论都是适用于<font color=red>polymorohic base class</font>, 但是并非所有的base class设计都是为了多态用途，他们不需要virtual析构函数。
+
+### Item 8 别让异常逃离析构函数
+```c++
+class Widget {
+    public:
+        ...
+        ~Widget() { ... } // assume this might emit an exception
+};
+void doSomething(){
+    std::vector<Widget> v;
+    ...
+}                           // v is automatically destroyed here
+```
+只要析构函数突出异常，即使并非使用容器或者vector，程序也可能过早结束或者出现不明确的行为。如果析构函数必须执行某个动作，而该动作可能在失败时抛出异常，这种情况该怎么办？<br>
+```c++
+class DBConnection {
+    public:
+        ...
+        static DBConnection create(); // function to return
+        // DBConnection objects; params
+        // omitted for simplicity
+        void close(); // close connection; throw an
+}; // exception if closing fails
+class DBConn { // class to manage DBConnection
+    public: // objects
+        ...
+        ~DBConn() // make sure database connections
+        { // are always closed
+                db.close();
+        }
+    private:
+        DBConnection db;
+};
+```
+一个做法是使用另一个class，这个class包含DBConnection的数据，并且在析构函数中调用close(),如果程序正常运行，那么这个部分没有问题，如果close()出错，那么这依旧会导致异常离开析构函数，有两个办法可以解决这个问题：
+
+- close()抛出异常就结束程序
+- 吞下调用close()发生的异常
+
+但是这两种做法都没有吸引力，更好的做法是重新设计DBConn的接口，如提供一个close()，赋予客户操作”因该操作而发生的异常“，并且追踪管理的connect是否关闭，否的话由connect的析构函数将它关闭。
+```c++
+class DBConn {
+    public:
+        ...
+        void close() // new function for
+        { // client use
+            db.close();// 这个地方可能导致异常
+            closed = true;
+        }
+        ~DBConn(){
+            if (!closed) {
+                try { // close the connection
+                db.close(); // if the client didn’t
+                }
+                catch (...) { // if closing fails,
+                make log entry that call to close failed; // note that and
+                ... // terminate or swallow
+                }
+            }
+        }
+    private:
+        DBConnection db;
+        bool closed;
+};
+```
+### Item 9 不要在构造和析构函数中调用virtual函数
+**Java /C#在这方面和c++不同**
+
+### Item 10 令operator=返回一个reference to *this
+赋值的时候，人们常常将这个写成一个连锁形式：
+```c++
+int x,y,z;
+x = y = z = 15;
+//赋值时候的右结合，转义为x = (y = (z=15))
+```
+为了实现这种行为，赋值操作符必须返回一个reference指向操作符左侧实参：
+```c++
+class Widget{
+    public:
+        Widget& operator = (const Widget& rhs){
+            ...
+            return *this;
+        }
+    ...
+};
+```
+对于其他赋值相关的运算，+=和-=之类，也建议遵循这个规则。
+//todo: 这部分剩下的item
+
+## 资源管理
