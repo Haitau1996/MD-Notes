@@ -304,6 +304,12 @@ class Widget{
 对于其他赋值相关的运算，+=和-=之类，也建议遵循这个规则。
 
 ### Item 11 在operator=中处理“自我赋值”
-
+自我赋值就是对象自己给自己赋值：
+```c++
+class Widget { ... };
+Widget w;
+...
+w = w; // assignment to self
+```
 
 ## 资源管理
