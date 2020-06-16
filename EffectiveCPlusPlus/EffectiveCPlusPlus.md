@@ -1,7 +1,7 @@
 # Effective C++ :  改善程序与设计的55个据图做法
 
 ## Accustoming Yourself to C++
-### Item 1 : 视c++为一个语言联邦
+### Item 1 视c++为一个语言联邦
 C++为一个多范式的编程语言，同时支持过程形式、面向对象形式、函数形式、泛型形式和元编程形式。为了避免误解，最好将它看成语言的联邦而不是单个语言，互相之间迁移时候，守则可能发生变化。
 
 - C ： 只用其中的C成分工作的时候，高效编程的守则和C相同，没有模板、异常和重载。。。
@@ -9,7 +9,7 @@ C++为一个多范式的编程语言，同时支持过程形式、面向对象�
 - Template c++ : 带来了元编程的范式，和TMP的相关规则和主流c++相互之间的影响很小。
 - STL：使用template的库，对容器、迭代器、算法和仿函数之间的规约有紧密的配合与协调。
 
-### Item 2 : 以编译器替换预处理器
+### Item 2 以编译器替换预处理器
 ```c
 #define ASPECT_RATIO 1.653
 ```
@@ -59,7 +59,7 @@ inline void callWithMax(const T&a, const T&b){
 - 对于单纯的常量，最好用const和enum替换#define
 - 对于函数的宏，最好用inline函数替换#define
 
-### Item 3 : Use const whenever possiable
+### Item 3 Use const whenever possiable
 const允许语义约束，指定变量不可更改，编译器会强制试试这项约束，只要这是事实，就应该明确要求，让编译器保证该约束不会被违反。对于顶层指针和底层指针，只要记住：如果const出现在*左边，则被指向的对象是一个常量，而右边则表示指针本身是一个常量。
 ```c++
 void f1(const Widget* pw);
@@ -143,7 +143,7 @@ public:
 ```
 实际使用的过程中，为了避免no-const operator[]递归调用自己，先将*this从原始的TextBlock& 做static_cast成为const TextBlock&，然后从const operator[]的返回值中移除const。但是，反过来做是不建议的，因为使用const_cast去掉了const的性质之后，操作十分不安全。
 
-### Item 4: 确定对象使用前已经被初始化
+### Item 4 确定对象使用前已经被初始化
 c++初始化问题：
 ```c++
 int x;  //大多数平台确定了x被初始化
@@ -302,6 +302,8 @@ class Widget{
 };
 ```
 对于其他赋值相关的运算，+=和-=之类，也建议遵循这个规则。
-//todo: 这部分剩下的item
+
+### Item 11 在operator=中处理“自我赋值”
+
 
 ## 资源管理
