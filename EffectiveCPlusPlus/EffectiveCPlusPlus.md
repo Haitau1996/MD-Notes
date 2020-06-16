@@ -278,7 +278,10 @@ class DBConn {
 };
 ```
 ### Item 9 不要在构造和析构函数中调用virtual函数
-**Java /C#在这方面和c++不同** derived的构造函数调用之前，base的构造函数一定会更早调用。
+**Java /C#在这方面和c++不同** derived的构造函数调用之前，base的构造函数一定会更早调用。这个时候，我们在derived class构造函数中调用virtual的函数，先构造base class期间virtual函数不会到derived class的那层，<font color=red>这时候构造期间的virtual函数就不是virtual函数（没有多态）</font>。就是在base class构造期间，对象的类型是base class 而不是derived class。<br>
+同样的道理，derived class进入base析构函数中就成了一个base对象，C++的任何部分，virtual 函数、dynamic_cast等等也将它视为是一个base class。<br>
+避免此类问题的做法是:**确定构造函数和析构函数都没有调用virtual函数，并且它们调用的函数也服从这个约束。**<br>
+此外还有其他方案：在base class中的log函数改成non-virtual，然后要求derived class传递必要的信息给base class的构造函数，之后构造函数就可以安全的调用non-virtual版本的log函数同时在不同的derived class中Log不同。
 
 ### Item 10 令operator=返回一个reference to *this
 赋值的时候，人们常常将这个写成一个连锁形式：
