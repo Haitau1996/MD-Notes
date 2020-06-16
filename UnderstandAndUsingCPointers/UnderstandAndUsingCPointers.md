@@ -521,8 +521,95 @@ if(name != NULL){
 ```
 此外，我们可以<font color=red>使用static analysis tools.</font>
 
-### String 的安全问题
+#### String 的安全问题
 现在一般直到，使用strcpy和strcat可能导致buffer overflow,传入size_t的参数可能缓解这个问题，现在可以使用strcpy_s和strcat_s，它们遇到overflow时候会返回error.同样，scanf_s 和 wscanf_s 函数也可以解决buffer overflow的问题。
 
-### Pointer 算术运算和结构体
-<font color=red> 指针算术运算严格只运用于array中，</font> 
+#### Pointer 算术运算和结构体
+<font color=red> 指针算术运算严格只运用于array中，Structure的field可能没有allocate在一块连续的内存区域，因此不应该使用指针算术。</font>如以下例子中：<br>
+```c
+typedef struct _Persion{
+    char name[10];
+    int age;
+} Persion;
+Persion chenht;
+char* pc = chenht.name;
+int *pi = &(chenht.age);
+printf("%d",(char *)(pi)-pc);//这种类型转换可能不安全
+```
+从结果上看，name 和 age之间有两个闲置的byte没有使用。
+
+#### Function pointer的问题
+一个可能的错误是，使用function pointer去得到一个数值，然后用这个数值用于boolen的判断，如果忘记了括号，那么function pointer的值一直不为0，被认定为true.<br>
+同时，fptr的签名和指向函数的签名不一致的时候，也会出现未定义的行为。<br>
+```c
+int (*ftpr)(int,int);
+int tripAdd(int n1, int n2, int n3){
+    return n1+n2+n3;
+}
+ftpr = tripAdd;//error:在c++中会报错，需要用reinterpret_cast<>()做显式类型转换
+ftpr(2,3);
+```
+### memory deallocation Issues
+#### Double free
+```c
+char *name = (char*)malloc(...);
+char *newName = name;
+...
+free(name);
+...
+free(newName);
+```
+解决的一个办法是，如果将一个指针free之后,将该指针的值设为nullptr.<br>
+#### Clearing Sensitive Data
+```c
+char *name = (char *)malloc(...);
+...
+memset(name,0,sizeof(name));
+free(name);
+```
+因为释放内存之后，操作系统不一定会zero out 内存上的值，其他程序还有可能访问到该程序的数据。
+#### Using static analysis tools
+如GCC的-Wall选项可以帮助捕捉更多的问题，具体需要参考其他的资料。
+
+## Odds and Ends
+### Casting Pointers
+我们可以使用字节转换来干很多事情：
+- accessing a special purpose address
+- Assigning an address to represent a port
+- Determining a machine's endianness(字节顺序)
+
+```c
+int num = 8;
+int *pi = (int*)num;
+```
+这种做法非常危险，因为指向的地址不一定由该程序管理，更长见的做法是将pointer cast 成 int，做完相对的运算之后再cast回去，这种做法也不推荐，更好的实践是使用一个**union**，可以存一个int或者int *.
+```c
+pi = &num;
+printf("before casting: %p\n",pi);
+int tmp = (int)pi;
+pi = (int*)tmp;
+printf("casting back: %p \n",pi);
+```
+#### accessing a special purpose address
+在嵌入式系统的媒体访问中，经常要用到这个方式。例如，在有的low-level OS 核心中，video RAM为`0XB8000`,显示的第一行第一列的字母就存在该地址。
+```c
+#define VIDEO_BASE 0X8000
+int *vedio = (int*)VEDIO_BASE;
+*vedio = 'A'
+```
+但是如果需要访问location zero的地址，有时候编译将它视为`NULL`,对于low-level kernel程序，经常要方位地址0，这种时候有以下做法：
+
+- set pointer to zero(有时候不管用)
+- assign a zero to int, 然后 cast 到 int*
+- 使用一个Union
+- 使用`memset`函数去assign a zero to a pointer`memset((void*)&ptr,0,sizeof(ptr))`
+
+#### Accessing a Port
+Port即是软件概念也是硬件概念，一般而言，软件access一个port是OS的一部分，下面是一个使用port的实例：
+```
+#define PORT 0XB0000000
+unsigned int volatile *const port = (unsigned int*) port;
+```
+其中，volatile关键词意思是<font color=red> the variable can be changed outside of the program.</font>
+
+#### Accessing Memory using DMA

@@ -29,3 +29,16 @@ Connect 具备的性质<br>
 * union时候需要遍历整个array.
 
 #### Quick Union
+具体的数据结构：
+- 使用一个size为n的array
+- interpretation: id[i] 为 i 的parent, root of i is id[id[...]]
+
+使用的方法：
+- find：只要检测是否为同一个root
+- union: 只要p和q之间merge即可
+
+缺点： tree可能会变得非常长，则对大规模的问题无法使用。提升的方法：
+- weighting : 把small 的 tree放在下面，因此没有item距离root比较远。
+- Path Compression: 加上weighting, 将时间减到`O(n+lg*M)`
+
+### Analysis of Algorithms
