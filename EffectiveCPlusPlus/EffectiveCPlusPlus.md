@@ -278,7 +278,7 @@ class DBConn {
 };
 ```
 ### Item 9 不要在构造和析构函数中调用virtual函数
-**Java /C#在这方面和c++不同**
+**Java /C#在这方面和c++不同** derived的构造函数调用之前，base的构造函数一定会更早调用。
 
 ### Item 10 令operator=返回一个reference to *this
 赋值的时候，人们常常将这个写成一个连锁形式：
