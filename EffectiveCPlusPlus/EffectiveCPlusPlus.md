@@ -304,12 +304,27 @@ class Widget{
 对于其他赋值相关的运算，+=和-=之类，也建议遵循这个规则。
 
 ### Item 11 在operator=中处理“自我赋值”
-自我赋值就是对象自己给自己赋值：
+自我赋值就是对象自己给自己赋值,大多数时候自我赋值并不是那么明显：
 ```c++
 class Widget { ... };
 Widget w;
 ...
 w = w; // assignment to self
+a[i] = a[j] //潜在自我复制，i可能等于j
+*px = *py ; // px,py可能指向同一对象
 ```
+在尝试自行管理资源的时候，可能会“在停止使用资源之前意外释放了它”，
+//todo: 加入这段代码
+在上面的代码里，这个delete不但销毁了当前对象的bitmap，传入rhs的bitmap也被销毁了。传统的解决办法：<font color=red>在operator=最前面加一个证同测试。</font><br>
+这个新版本依旧存在异常方面的麻烦，在new Bitmap时候出现异常的话，对象会持有一个指向被删除Bitmap的指针。下面的做法会在new Bitmap之后再删除原来的Bitmap，出现异常后，原来Bitmap没有丢失：<br>
+//todo:插入代码
+另一个方案是copy and swap技术：
+
+### Item 12 复制对象的时候别忘了它的每一个部分
+
+当我们自己声明copying函数，实现的代码几乎必然出错编译器并不会告诉你。一个典型的例子是，给一个class写好copying函数之后，随着需求的变化**加入了新的data member**，但是copying 函数没有随之变化。<br>
+更极端的情况是，随着该类被继承，我们在继承类的copying函数中更加难以发现base class的data member没有被拷贝的情况。此外，我们必须小心地复制base class成分，而这些成分往往是private的，无法直接访问，因此我们要**让derived class的copying函数调用相应的base class copying 函数**。
+//todo: add code here
+copy构造函数和copy assignment operator有相近的代码，但是**不应该让两者相互调用**,更理想的方式是写一个private的init函数，然后在两个copying函数中都调用它。
 
 ## 资源管理
