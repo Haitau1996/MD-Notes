@@ -155,7 +155,7 @@ Point p;// 数据成员x,y没有被初始化
 ```
 一般而言，C part of c++初始化可能导致运行期成本，不保证发生初始化，non-C parts of c++，规则就相反。内置类型在使用之前将它初始化，对于内置类型之外的类型，初始化<font color=red>由构造函数负责，确保构造函数将对象的每一个成员都初始化。</font>构造函数比较好的写法是member initialization list替换赋值动作.
 // todo: 重新看这部分内容 29-33
-
+***
 ## 构造、析构和赋值操作
 ### Item 5 了解c++默认编写并且调用了哪些函数
 如果自己没有声明，那么编译器就会为它声明下面几个函数：
@@ -326,6 +326,33 @@ a[i] = a[j] //潜在自我复制，i可能等于j
 更极端的情况是，随着该类被继承，我们在继承类的copying函数中更加难以发现base class的data member没有被拷贝的情况。此外，我们必须小心地复制base class成分，而这些成分往往是private的，无法直接访问，因此我们要**让derived class的copying函数调用相应的base class copying 函数**。
 //todo: add code here
 copy构造函数和copy assignment operator有相近的代码，但是**不应该让两者相互调用**,更理想的方式是写一个private的init函数，然后在两个copying函数中都调用它。
+***
 
 ## 资源管理
 C++中最常用的资源就是动态内存分配，除此之外，其他常见资源包括文件描述器、互斥锁、数据库连接以及网络sockets。**无论什么资源，重要的是，当你不再使用它，必须将它归还给操作系统**。<br>
+
+### Item 13 以对象管理资源
+```c++
+Investment* createInvestment(); //使用工厂函数动态生成Investment对象
+void f(){
+    Investment *pInv = createInvestment(); // call factory function
+    ...                 // use pInv
+    delete pInv;        // release object
+}
+```
+这时候，在很多情况下可能没有办法删除pInv指向的对象，比如'...'中有return语句（类似情况在for loop等中由于continue\goto\break 没有释放资源），或者'...'中的语句抛出了异常。为此，需要将资源放入对象中，该对象的析构函数就会释放资源。<font color=red>标准程序库提供auto_ptr（智能指针），析构函数自动对其所指的对象调用delete:</font>
+```C++
+void f(){
+    std::auto_ptr<Investment> pInv(createInvestment()); // call factory function
+    ... // use pInv as before
+}       // automatically delete pInv via auto_ptr’s dtor
+```
+* 获得资源后立即放入管理对象内(Resource Acquisition Is Initialization,RAII)
+* 管理对象应用析构函数确保资源释放
+
+此外需要注意的是，智能指针被销毁会删除所指之物，不要让多个智能指针指向同一对象。通过copy构造函数和copy assignment operator复制他们后，自己会变成null。<br>
+替代方案是"引用计数型指针"，会追踪多少对象指向某个资源，并且在无人指向他们时候自动删除（类似于垃圾回收），但是无法打破环引用（如两个互相指但是不被使用的对象，处于“被使用状态”）。<br>
+auto_ptr 和 shared_ptr 析构函数用的是delete而不是delete[],**不要对动态分配得到的array**使用。<br>
+
+### Item 14 在资源管理类中小心copying行为
+前面描述的auto_ptr 和 shared_ptr 只适用于heap-based资源，这时候**需要建立自己的资源管理类**。
