@@ -1,6 +1,7 @@
 # Effective C++ :  改善程序与设计的55个据图做法
 
 ## Accustoming Yourself to C++
+
 ### Item 1 视c++为一个语言联邦
 C++为一个多范式的编程语言，同时支持过程形式、面向对象形式、函数形式、泛型形式和元编程形式。为了避免误解，最好将它看成语言的联邦而不是单个语言，互相之间迁移时候，守则可能发生变化。
 
@@ -157,6 +158,7 @@ Point p;// 数据成员x,y没有被初始化
 // todo: 重新看这部分内容 29-33
 ***
 ## 构造、析构和赋值操作
+
 ### Item 5 了解c++默认编写并且调用了哪些函数
 如果自己没有声明，那么编译器就会为它声明下面几个函数：
 - 默认构造函数
@@ -355,4 +357,42 @@ void f(){
 auto_ptr 和 shared_ptr 析构函数用的是delete而不是delete[],**不要对动态分配得到的array**使用。<br>
 
 ### Item 14 在资源管理类中小心copying行为
-前面描述的auto_ptr 和 shared_ptr 只适用于heap-based资源，这时候**需要建立自己的资源管理类**。
+
+前面描述的auto_ptr 和 shared_ptr 只适用于heap-based资源，这时候**需要建立自己的资源管理类**。这时候需要注意一些事项,以C API中处理Mutex的互斥对象为例
+```C++
+//  apis from c programming language
+void lock(Mutex *pm);   // lock mutex pointed to by pm
+void unlock(Mutex *pm); // unlock the mutex
+//  RAII   规则下管理资源
+class Lock {
+    public:
+        explicit Lock(Mutex *pm): mutexPtr(pm)
+            { lock(mutexPtr); } // acquire resource
+        ~Lock() { unlock(mutexPtr); } // release resource
+    private:
+        Mutex *mutexPtr;
+};
+```
+但是一个RAII对象被复制的时候，我们需要一些手段来处理它：
+
+- **禁止复制**, 对于这些不能合理拥有“同步化基础器物”副本的对象，private 继承 Uncopyable类，直接禁止复制。
+- **底层资源“引用计数”** 如果对上面的lock想要使用reference counting，那么就可以将`Mutex*`改为`shared_ptr<Mutex>`,默认的操作是删除Mutex*, 但是我们希望的是锁定而非删除，而shared_ptr允许指定删除器
+```c++
+class Lock {
+    public:
+        explicit Lock(Mutex *pm) // init shared_ptr with the Mutex
+        : mutexPtr(pm, unlock)   // to point to and the unlock func
+        {                        // as the deleter†
+        lock(mutexPtr.get());    // see Item15 for info on “get”
+        }
+    private:
+    std::tr1::shared_ptr<Mutex> mutexPtr; // use shared_ptr instead of raw pointer
+};
+```
+- **复制底部资源** 深度复制 //todo:这部分再加强理解 
+- **转移底部资源的拥有权** 希望只有一个RAII对象指向未加工的资源，这时候资源的拥有权会从<u>被复制物</u>转向<u>目标物</u>。
+
+### Item 15 在资源管理类中提供对原始资源的访问
+// todo: 这部分回去再实现
+
+### Item 16 成对使用new和delete时采取相同的形式
