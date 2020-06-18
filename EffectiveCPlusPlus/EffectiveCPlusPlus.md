@@ -405,7 +405,12 @@ class Lock {
 
 new的时候，两件事情发生：内存被分配出来，然后对这片内存做一个或者多个的构造函数。同样的，delete的时候，先对此内存做一个或者多个析构函数，再释放内存。最大的问题在于：**即将删除的内存究竟有多少个对象**，数组内存通常还包括数组大小的记录，因此我们需要清楚删除的是一个对象还是一个数组。<br>
 规则十分简单，调用new时候使用[ ]，那么在delete的时候也使用[ ],反之亦然。但是如果经常使用typedef，new的时候[ ]被typedef掩盖了，那么就要十分注意。**最好尽量不要对数组形式做typedef动作**。
-//todo : add code here
+```C++
+typedef std::string AddressLines[4]; // a person’s address has 4 lines, each of which is a string
+std::string *pal = new AddressLines;
+delete pal;    // undefined!
+delete [] pal; // fine
+```
 
 ### Item 17 以独立语句将newed对象置入智能指针
 
@@ -413,3 +418,18 @@ new的时候，两件事情发生：内存被分配出来，然后对这片内�
 ***
 
 ## 设计与声明
+
+### Item 18 让接口容易被正确使用
+
+想要开发满足这种要求的接口，首先需要考虑客户可能做出什么样的错误。例如，一般实现一个用于表现日期的class，一般的构造函数可能会犯两个错误：
+
+- 客户可能以错误的次序传递参数
+- 客户可能传递无效的天数或者月份
+
+类型系统是主要防范“undesirable code from compiling”的主要盟友，我们可以导入外覆类型(wrapper types)来区别天，月和年份，然后再在date的构造函数中使用这些类型。、
+```c++
+Date d(30, 3, 1995);                   // error! wrong types
+Date d(Day(30), Month(3), Year(1995)); // error! wrong types
+Date d(Month(3), Day(30), Year(1995)); // okay, types are correct
+```
+一旦类型被定位，那么我们可以限制其取值，一个方法是用enum来表现月份，但是其类型不够安全
