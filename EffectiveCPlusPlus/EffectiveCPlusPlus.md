@@ -70,7 +70,7 @@ void f2(Widget const* pw);
 对于迭代器，也有类似的做法，如果希望迭代器指向的数据不可变动，可以声明为const_iterator,如果希望迭代器本身不可变，声明为const。当然，const威力最大的场景在于函数声明中：
 ```c++
 class Rational{...};
-const Rational operator*(const Rational& lhs,const Rational& rhs);
+const &Rational operator*(const Rational& lhs,const Rational& rhs);
 ```
 如果不声明为const，那么客户就可以这样写：
 ```
