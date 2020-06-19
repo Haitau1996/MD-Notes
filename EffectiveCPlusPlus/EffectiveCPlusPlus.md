@@ -478,3 +478,5 @@ std::shared_ptr<Investment> createInvestment();// return a smart pointer
 - **What standard functions should be disallowed?**
 - **How general is your new type?** 也许是一个types家族，需要一个新的class template.
 - **确实需要新的type？** 
+
+### Item 20 用pass by reference to const 替换 By value
