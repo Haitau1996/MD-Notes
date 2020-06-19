@@ -321,6 +321,18 @@ a[i] = a[j] //潜在自我复制，i可能等于j
 这个新版本依旧存在异常方面的麻烦，在new Bitmap时候出现异常的话，对象会持有一个指向被删除Bitmap的指针。下面的做法会在new Bitmap之后再删除原来的Bitmap，出现异常后，原来Bitmap没有丢失：<br>
 //todo:插入代码
 另一个方案是copy and swap技术：
+```C++
+class Widget {
+    ...
+    void swap(Widget& rhs); // exchange *this’s and rhs’s data;
+    ...                     // see Item29 for details
+};
+Widget& Widget::operator=(const Widget& rhs){
+    Widget temp(rhs); // make a copy of rhs’s data
+    swap(temp); // swap *this’s data with the copy’s
+    return *this;
+}
+```
 
 ### Item 12 复制对象的时候别忘了它的每一个部分
 
@@ -432,4 +444,37 @@ Date d(30, 3, 1995);                   // error! wrong types
 Date d(Day(30), Month(3), Year(1995)); // error! wrong types
 Date d(Month(3), Day(30), Year(1995)); // okay, types are correct
 ```
-一旦类型被定位，那么我们可以限制其取值，一个方法是用enum来表现月份，但是其类型不够安全
+一旦类型被定位，那么我们可以限制其取值，一个方法是用enum来表现月份，但是其类型不够安全.现在的一个做法是用函数替换对象，表现某个特定月份。
+```C++
+class Month {
+public:
+    static Month Jan() { return Month(1); } // functions returning all valid
+    static Month Feb() { return Month(2); } // Month values; see below forwhy these are functions, not objects
+    ... 
+    static Month Dec() { return Month(12); } 
+    ... // other member functions
+private:
+    explicit Month(int m); // prevent creation of new Month values
+    ... // month-specific data
+};
+Date d(Month::Mar(), Day(30), Year(1995));
+```
+另一个常见的做法是，限制类型内什么可以做什么不能做，常见的限制是加上const.还有一种常见的问题，就是需要客户自行使用智能指针指向想要的资源，而客户常常会做两件事情：没有删除指针，不止一次删除同一指针。好的接口设计者应该先发制人，直接返回一个智能指针。<br>
+```C++
+std::shared_ptr<Investment> createInvestment();// return a smart pointer
+```
+// todo: 重新学习shared_ptr删除器
+
+### Item 19 设计class犹如设计type
+定义一个新的class也就定义一个新的type，class的设计者，手上有重载函数和操作符、控制内存分配和归还、定义对象的初始化和终结等全部权力,设计之前考虑如下问题：
+
+- **新的type应该怎样创建和销毁**？自己的构造析构函数以及内存分配、释放函数。
+- **初始化和赋值有什么差别**
+- **如果pass by value会怎样**
+- **什么是新type的合法值** 必须维护约束条件，在成员函数（特别是构造函数）进行错误检查
+- **新的type配合继承图系** 受父类的限制,virtual & non-virtual etc.
+- **新的type需要怎样转换** T1转为T2，在class T1中写类型转换函数(operator T2) 或者在T2中写一个可被单一实参调用的构造函数
+- **什么样的operator和member function合理**
+- **What standard functions should be disallowed?**
+- **How general is your new type?** 也许是一个types家族，需要一个新的class template.
+- **确实需要新的type？** 
