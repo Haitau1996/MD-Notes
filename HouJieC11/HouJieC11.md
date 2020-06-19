@@ -23,4 +23,4 @@ print(7.5,"hello",bitset<16>(377),43);
 ```
 ...为所谓的parameter pack,可以是模板参数包,函数参数包<font color=red> sizeof...(args) 可以得到参数的个数 </font>.
 ![variadic template](figure/v2-1.png)<br>
-函数可以有多个候选,优先调用特化的版本,没有的时候才调用泛化的版本.
+函数可以有多个候选,优先调用特化的版本,没有的时候才调用泛化的版本.//todo: vedio 2:26min
