@@ -480,3 +480,5 @@ std::shared_ptr<Investment> createInvestment();// return a smart pointer
 - **确实需要新的type？** 
 
 ### Item 20 用pass by reference to const 替换 By value
+
+在default的情况下c++以by value的方式传递对象到函数，而这些对象的副本由<font color=red>对象的拷贝构造函数产出，使得pass-by-value成为昂贵的操作</font>.
