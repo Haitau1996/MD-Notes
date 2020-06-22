@@ -481,4 +481,15 @@ std::shared_ptr<Investment> createInvestment();// return a smart pointer
 
 ### Item 20 用pass by reference to const 替换 By value
 
-在default的情况下c++以by value的方式传递对象到函数，而这些对象的副本由<font color=red>对象的拷贝构造函数产出，使得pass-by-value成为昂贵的操作</font>.
+在default的情况下c++以by value的方式传递对象到函数，而这些对象的副本由<font color=red>对象的拷贝构造函数产出，使得pass-by-value成为昂贵的操作</font>.<br>
+//todo:add code here
+例如书中的案例，by value的方式传递一次student对象会调用一次student copy构造函数、一次person copy 构造函数，四次string的copy 构造函数。<br>
+pass by reference-to-const:
+```C++
+bool validateStudent(const Student& s);
+```
+同时可以避免slicing问题: derived class 对象 by value 方式传递并且被视为base class 对象, base class的构造函数被调用,derived class的特性化性质完全被切割掉.<br>
+一般而言,可以合理假设pass-by-value不昂贵的唯一对象是**内置类型和STL的迭代器和函数对象**.
+
+### Item 21 必须返回对象时,不要返回reference
+
