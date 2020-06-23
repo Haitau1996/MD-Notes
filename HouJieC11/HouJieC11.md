@@ -50,5 +50,26 @@ auto l = [](int x) ->bool{
 };
 ```
 
-**一致初始化** 在过去,设
-//todo: vedio 4 4min
+**一致初始化** 在过去,初始化一个对象怎么写,让新手十分困惑,它可能发生在小括号\大括号\assignment operator中,在新的标准中,任何初始化都可以用**one common syntax**:在变量后面直接放大括号.<br>
+![common init](figure/v4-1.png)<br>
+
+- 大多时候`array<T,n>`中的元素一个一个拿出来给 ctor.
+- 若ctor函数参数就是`initializer_list`,黄色的部分就整包发过去,调用者需要注意这点
+
+## Initializer Lists
+
+```C++
+int i;    // i has undefined value
+int j{};  // j is initialized by 0
+int* p{}; // p us initialized by nullptr
+```
+这种初始化**不允许窄化**:<br>
+![narrowing](figure/v5-1.png)<br>
+`std::initialized_list<>` 是 C++ 的 class template, 参数可变模板比这个更方便的是, 这个需要任意个数同样的类型.<br>
+![init list](figure/v6-1.png)<br>
+`initialized_list<>`背后是一个`array`, array 在c++ 11 中接口类似于其他的容器, initializer_list指向这个array但是 **without containing them**, copy的话只是一个浅拷贝. 它的存在相当大程度影响了标准库的实现, 如 vector用这个方式实现会简化很多,实现的min/max等算法也可以接受多个参数(旧版本依然存在,只接受两个参数).<br>
+![init stl](figure/v6-2.png)<br>
+
+## explicit for ctor taking more than one argument
+
+在2.0之前,// todo: 2min in vedio 7 
