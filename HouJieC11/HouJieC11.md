@@ -73,3 +73,13 @@ int* p{}; // p us initialized by nullptr
 ## explicit for ctor taking more than one argument
 
 在2.0之前,// todo: 2min in vedio 7 
+
+## range-based for statement
+
+```C++
+for(decl : coll){
+    statement
+}
+```
+将coll中的对象一个一个拿出来赋值给左边, 然后做statement中的动作, 相当于用迭代器全部走一遍.
+
