@@ -81,5 +81,23 @@ for(decl : coll){
     statement
 }
 ```
-将coll中的对象一个一个拿出来赋值给左边, 然后做statement中的动作, 相当于用迭代器全部走一遍.
+将coll中的对象一个一个拿出来赋值给左边, 然后做statement中的动作, 相当于用迭代器全部走一遍. **no explicit type conversions are possible in such decalation** :
+```C++
+class C {
+    public:
+        explicit C(const std::string&s);
+    ...
+};
+std::vector<std::string> vs;
+for(const C& elem :vs){// ERROR: no conversion form string to C
+    //do something
+}
+```
 
+## =default, =delete
+
+- 强制加上 =default,重新获得并且使用default 构造函数
+- 加上 =delete, 表示不要这个该构造函数
+
+一般用于**Big-3**(其实有4个+右值引用)函数中,
+//todo: 10min in vedio 9
