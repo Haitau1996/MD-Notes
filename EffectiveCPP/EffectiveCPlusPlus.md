@@ -493,3 +493,4 @@ bool validateStudent(const Student& s);
 
 ### Item 21 必须返回对象时,不要返回reference
 
+在上一条款影响下,会犯一个致命错误:**传递一些references指向其实并不存在的对象**.
