@@ -63,3 +63,6 @@ Connect 具备的性质<br>
 * sort the N numbers ($N^2$ with insertion sort)
 * for each pair of numbers a[i] and a[j] **binary search** for -(a[i] + a[j]) ($N^2 \log N$)
 
+**内存使用的定量分析:**
+![memory](figure/3-5.png)<br>
+//todo :vedio 4.1
