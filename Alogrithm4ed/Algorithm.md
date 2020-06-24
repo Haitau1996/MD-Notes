@@ -1,6 +1,7 @@
 # Algotrithms
 
 ## Part I
+
 ### cource Overview 
 
 What is this cource?
@@ -42,3 +43,23 @@ Connect 具备的性质<br>
 - Path Compression: 加上weighting, 将时间减到`O(n+lg*M)`
 
 ### Analysis of Algorithms
+
+![status](figure/3-1.png)<br>
+一般而言,有四个角度去理解程序,作为学生,我们必须全部了解他们.为何去分析算法:
+
+* 预测performance
+* 比较算法s
+* 对程序运行提供一些保证
+
+**cost of basic opeartion**  :<br>
+![costs operation](figure/3-2.png)<br>
+很多时候可以把离散的求和近似成连续的积分,去评估一个算法的复杂度:<br>
+![descrete](figure/3-3.png)<br>
+**常见算法的复杂度** :<br>
+![growth](figure/3-4.png)<br>
+
+**3-Sum 的 $N^2 \log N$ 解法**
+
+* sort the N numbers ($N^2$ with insertion sort)
+* for each pair of numbers a[i] and a[j] **binary search** for -(a[i] + a[j]) ($N^2 \log N$)
+
