@@ -99,5 +99,11 @@ for(const C& elem :vs){// ERROR: no conversion form string to C
 - 强制加上 =default,重新获得并且使用default 构造函数
 - 加上 =delete, 表示不要这个该构造函数
 
-一般用于**Big-3**(其实有4个+右值引用)函数中,
-//todo: 10min in vedio 9
+一般用于**Big-3**(其实有4个+右值引用)函数中,default什么时候可以使用什么时候会出错见下图:
+![default](figure/v9-2.png)<br>
+如果是非Big-3,**编译器不会自动生成,然后令他为default会报错**,但是其他member function, 不需要的话不声明即可,**声明后令他为delete也不会报错** .如果不自己声明的话,C++有默认的Big-3 函数并且它们是public 并且inline的.<br>
+什么类需要自己写Big-3? 一般而言, 只要 data member有指针, 那样都需要自己写Big-3. 如:
+
+- complex<T> , 默认的拷贝data member就可以了
+- string包含一个指针, 指针有浅拷贝和深拷贝, 默认的浅拷贝是不够的
+
