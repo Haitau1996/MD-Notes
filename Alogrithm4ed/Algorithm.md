@@ -65,4 +65,4 @@ Connect 具备的性质<br>
 
 **内存使用的定量分析:**
 ![memory](figure/3-5.png)<br>
-//todo :vedio 4.1
+//todo :vedio 4.1 
