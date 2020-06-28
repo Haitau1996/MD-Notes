@@ -544,3 +544,8 @@ if (operator==(operator*(a, b), operator*(c, d)))//等价形式
 
 ### Item 24 若所有参数都需要类型转换, 请为此采用non-member 函数
 
+class支持隐式类型转换是非常糟糕的主义, 一个常见的例外是建立 **数值类型** 时候.
+
+//todo: item 24 
+
+### Item 25 考虑写出一个不抛异常的swap函数
