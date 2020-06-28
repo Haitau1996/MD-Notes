@@ -105,5 +105,19 @@ for(const C& elem :vs){// ERROR: no conversion form string to C
 什么类需要自己写Big-3? 一般而言, 只要 data member有指针, 那样都需要自己写Big-3. 如:
 
 - complex<T> , 默认的拷贝data member就可以了
-- string包含一个指针, 指针有浅拷贝和深拷贝, 默认的浅拷贝是不够的
+- string包含一个指针, 指针有浅拷贝和深拷贝(指针指向内存中的字符串也要拷贝过去), 默认的浅拷贝是不够的
 
+### No-Copy and Private-Copy
+
+No-Copy 跟拷贝有关的都写成`=delete`, NoDtor 使用delete需要后果自负.  还有一种做法,把拷贝构造和拷贝赋值放到private中, 不允许一般的code去 copy, 但是可以对friends 和 members 拷贝. 在boost::noncopyable中就是用类似的方法实现的, 继承它的话就有它的性质, 只有friends 和 member可以拷贝.
+
+## Alias Template
+```C++
+template <typename T>
+using Vec = std::vector<T, MyAlloc<T>>; // 这个vector 使用我自己写的allocator
+Vec<int> coll;
+// is equivalent to
+std::vector<int, MyAlloc<T>> coll;
+```
+用typedef无法实现,因为这样无法接受一个int作为参数, 类似的结果用macro无法实现. **做了化名之后无法做特化和偏特化** .
+// todo: 10 min at video 10
