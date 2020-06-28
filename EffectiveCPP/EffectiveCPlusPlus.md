@@ -533,3 +533,14 @@ if (operator==(operator*(a, b), operator*(c, d)))//等价形式
 在不同的场景中, 其中一种可能更加高效, 这时候封装的优点就出来了, **可以替换不同的实现方式** ,客户只要重新编译即可在不同场景中使用.此外,protected成员变量的封装性也没有高过public成员变量, **某些东西的封装性与其内容改变时可能造成的代码破坏量成反比** , 所谓改变, 可能是从class中将它移除. 从封装的角度看, 其实只有两种访问权限: private(提供封装所谓)和其他.
 
 ### Item 23 宁以 non-member / non-friend 替换 member 函数
+
+**member函数clearEverything带来的封装性比non-member版本低**, 同时non-member函数可允许对WebBrowser相关技能有较大的包裹弹性,在许多方面non-member比较好.<br>
+封装的原因在于: **使我们能够改变事物而影响有限客户**. 考虑对象内的数据, 越少的代码可以访问数据, 越多的数据可以被封装. 作为一个粗糙的测量, 越多函数可以访问某块数据, 数据的封装性就越低.因此, 较大封装性的是non-member non-friend函数, 另外需要注意两点:
+
+- friend 函数对class private 成员访问权力和member函数相同,从封装的角度区别不大
+- 成为class的non-menber, 也可以是另一个class的member, 如 我们可以让clearBrowser成为某个工具类(unility class)的一个static member函数, 只要不是Browser的一部分.
+
+在C++中的一个常见做法是将clearBrowser成为一个non-member函数并且和WebBrowser处在同一个namespace中, 它和class不同, 可以跨越多个源代码去实现而classes 只能在一个文件中实现. 如一个WebBrowser的类别可能有大量的便利函数,有的与打印有关,有的与书签有关,大多客户只对某些部分有兴趣, 因此相关的部分放在同一个头文件中, 而这种切割机制不适用于class成员函数,他们必须整体定义.<br>
+
+### Item 24 若所有参数都需要类型转换, 请为此采用non-member 函数
+
