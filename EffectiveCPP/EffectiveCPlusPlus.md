@@ -493,4 +493,34 @@ bool validateStudent(const Student& s);
 
 ### Item 21 必须返回对象时,不要返回reference
 
-在上一条款影响下,会犯一个致命错误:**传递一些references指向其实并不存在的对象**.
+在上一条款影响下,会犯一个致命错误:**传递一些references指向其实并不存在的对象**. 如我们设计了一个Rational的有理数类,并且如下调用:
+```C++
+Rational a(1, 2); // a = 1/2
+Rational b(3, 5); // b = 3/5
+Rational c = a * b; // c should be 3/10
+```
+
+在c中希望原来就有一个value为3/10的对象是不合理的, 如果operator *要返回一个reference 指向该对象, 那么必须要自己创建一个Rational对象并且赋值为3/10,而**创建一个local对象并且返回它的reference是一个未定义的行为**.<br>
+那么考虑一个Heap-Based operator*:
+```C++
+const Rational& operator*(const Rational& lhs,const Rational& rhs){ // warning! more bad code!
+Rational *result = new Rational(lhs.n * rhs.n, lhs.d * rhs.d);
+return *result;
+}
+```
+Heap-Based 又出现了一个新的问题: **谁该为new的对象实施delete**?<br>
+这时候可能会想起operator* return 一个reference 指向被定义在函数内部的static Rational对象, 这会立刻造成对于**多线程安全性的疑问**, 此外还有更深的瑕疵:
+```C++
+bool operator==(const Rational& lhs,const Rational& rhs); // an operator==for Rationals
+Rational a, b, c, d;
+...
+if ((a * b) == (c * d)) {
+//do whatever’s appropriate when the products are equal;
+}
+if (operator==(operator*(a, b), operator*(c, d)))//等价形式
+```
+==被要求将"operation* 中的static Rational对象值"拿来和"operation* 中的static Rational对象值"比较, 那么恒为true.<br>
+这种情况下,operator* 返回值得构造和析构成本相对不是一个大的代价时,这种代价是可以接受的.
+
+### Item 22 将成员变量声明为private
+//todo : item 22
