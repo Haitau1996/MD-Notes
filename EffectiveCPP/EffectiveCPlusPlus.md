@@ -549,3 +549,44 @@ class支持隐式类型转换是非常糟糕的主义, 一个常见的例外是�
 //todo: item 24 
 
 ### Item 25 考虑写出一个不抛异常的swap函数
+//todo: Item 25
+
+## Implementations
+
+### Item 26 尽可能延后变量定义式的出现时间
+
+在很多情况下,define一个有构造析构函数的变量, 程序到达时候必须承受沟造成本,离开作用域时候有析构成本.很多时候我们可能定义一个没有使用的变量,如:
+```C++
+std::string encryptPassword(const std::string& password)
+{
+using namespace std;
+string encrypted;
+if (password.length() < MinimumPasswordLength) {
+throw logic_error("Password is too short");
+}
+... // do whatever is necessary to place an encrypted version of password in encrypted
+return encrypted;
+}
+```
+在这种情况下, 如果抛出异常,那么string就没有被使用,但是依旧 **付出构造析构成本**, 所以应该延后`encrypted`的定义式. 此外通过default构造函数构造对象然后赋值的效率低于直接在构造时候指定初值,一个更好的做法是跳过无意义的default构造过程:
+```C++
+std::string encryptPassword(const std::string& password)
+{
+... // import std and check length
+string encrypted(password); // define and initialize via copy constructor
+encrypt(encrypted);
+return encrypted;
+}
+```
+因此我们所谓的延后,是指的延后到非得使用该变量前的一刻为止, 甚至是直到能够给它初值实参为止.在loop中怎么办,有两个方式定义对象:<br>
+![loop case](figure/26.1.png)<br>
+上面两种做法的成本如下:
+
+- A: 1个构造+1个析构函数+n个赋值操作
+- B: n个构造+n个析构函数
+
+如果赋值成本低于一组构造函数+析构函数,尤其是N很大的时候,A大体而言比较高效,否则B比较好. A中名称w作用域比B大,有时候可能有理解性和易维护性的问题. 除了这两种情况, 都应该使用B.
+
+### Item 27 尽量少做casting
+
+C++设计目标之一是保证"类型错误"绝不可能发生, 不幸的是转型破坏了类型系统, 可能导致任何种类的麻烦, 传统的C/Java/C# 中的转型比较必要而且无法避免,相对C++也没那么危险, 但是C++的类型转换要十分慎重.<br>
