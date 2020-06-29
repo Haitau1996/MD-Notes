@@ -258,8 +258,7 @@ class DBConn { // class to manage DBConnection
 class DBConn {
     public:
         ...
-        void close() // new function for
-        { // client use
+        void close(){ // new function for client use 
             db.close();// 这个地方可能导致异常
             closed = true;
         }
