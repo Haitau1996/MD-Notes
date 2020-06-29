@@ -123,7 +123,11 @@ std::vector<int, MyAlloc<T>> coll;
 ![move](figure/v10-1.png)<br>
 希望使用`test_moveable(Container cntr, T elem)`测试可不可搬移(C++2.0 新语法), 希望取出容器(是一个模板)的类型并且容器做insert动作, typename+小括号为临时对象,list要加尖括号才是全名(有省略), 传入的为一个object,新的解法就是把迭代器取出来放到萃取机(traits),取出来作为Valtype:<br>
 ![traits](figure/v10-2.png)<br> 
-假设容器没有迭代器,迭代器没有traits的情况呢(标准库不会出现这个问题),
+假设容器没有迭代器,迭代器没有traits的情况呢(标准库不会出现这个问题).
 
 ## template template parameter
-//todo: v11.2
+//todo: v11.6 to lamda
+
+## Lambdas 
+
+C++ 11 引入了lambdas, 允许定义一个inline functionality, 用于当做是parameter or local对象, 它改变了我们对c++标准库的使用方式.
