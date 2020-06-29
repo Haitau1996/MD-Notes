@@ -7,15 +7,15 @@ C++为一个多范式的编程语言，同时支持过程形式、面向对象�
 
 - C ： 只用其中的C成分工作的时候，高效编程的守则和C相同，没有模板、异常和重载。。。
 - Object-Oriented C++ : 面向对象设计的时候，有class(构造、析构)、封装、继承、多态和虚函数（动态绑定）。。。
-- Template c++ : 带来了元编程的范式，和TMP的相关规则和主流c++相互之间的影响很小。
+- Template C++ : 带来了元编程的范式，和TMP的相关规则和主流c++相互之间的影响很小。
 - STL：使用template的库，对容器、迭代器、算法和仿函数之间的规约有紧密的配合与协调。
 
 ### Item 2 以编译器替换预处理器
-```c++
+```C++
 #define ASPECT_RATIO 1.653
 ```
 在编译前将所有ASPECT_RATIO都替换成了1.653，编译错误的提示信息也是1.653，十分迷惑。
-```c++
+```C++
 const double AspectRatio = 1.653;
 ```
 常量的定义有两点值得注意的：
@@ -24,7 +24,7 @@ const double AspectRatio = 1.653;
 - class专属的常量，为了将作用域限制在class内部，让它作为member data，同时为了常量只有一个实体，让它成为一个静态成员
 
 旧的编译器不支持static成员在其声明时候获得初值，则可以将初值放在定义式中
-```c++
+```C++
 // in the header file
 class ConstEstimate{
     private:
@@ -35,7 +35,7 @@ class ConstEstimate{
 const double ConstEstimate::FudgeFactor = 1.35;
 ```
 还有一种情况，就是在class编译期间需要一个常量，但是编译器不允许static整型完成in class初值，使用**enum hack**的补偿做法：
-```c++
+```C++
 class GamePlayer{
     private:
         enum{NumTurns = 5};
@@ -46,12 +46,12 @@ class GamePlayer{
 ```
 对这种trick，我们需要了解，该行为比较像`#define`而不是const，给const取地址是合法的，但是给enum和define取通常都是不合法的。<br>
 预处理会带来一些问题，如
-```c++
+```C++
 #define CALL_WITH_MAX(a,b) f(((a)>(b)) ? (a) :(b))
 CALL_WITH_MAX(++a,b);// a会被累加2次
 ```
 这种时候可以写出template的inline函数：
-```c++
+```C++
 template<typename T>
 inline void callWithMax(const T&a, const T&b){
     f(a>b ? a :b);
@@ -62,13 +62,13 @@ inline void callWithMax(const T&a, const T&b){
 
 ### Item 3 Use const whenever possiable
 const允许语义约束，指定变量不可更改，编译器会强制试试这项约束，只要这是事实，就应该明确要求，让编译器保证该约束不会被违反。对于顶层指针和底层指针，只要记住：如果const出现在*左边，则被指向的对象是一个常量，而右边则表示指针本身是一个常量。
-```c++
+```C++
 void f1(const Widget* pw);
 void f2(Widget const* pw);
 //两者意思相同，都是指向一个Widget类型常量的指针
 ```
 对于迭代器，也有类似的做法，如果希望迭代器指向的数据不可变动，可以声明为const_iterator,如果希望迭代器本身不可变，声明为const。当然，const威力最大的场景在于函数声明中：
-```c++
+```C++
 class Rational{...};
 const &Rational operator*(const Rational& lhs,const Rational& rhs);
 ```
@@ -80,7 +80,7 @@ Rational a,b,c;
 ```
 #### Const menber function
 将成员函数声明为const的一个很大的作用是，使得该函数可以操作const对象。pass by reference-to-const的一个前提就是可以用const修饰成员函数，<font color=red>否则一般的函数操作const对象，编译器无法得知它是否会改变对象的值，因此报错。</font>
-```c++
+```C++
 class TextBlock {
 public:
     ...
@@ -98,7 +98,7 @@ private:
 - 逻辑const:const成员函数可以修改对象的某些bits，但是只有在客户端侦测不出时候才可以如此（写程序遵循的守则）
 
 C++中有个与const相关的wiggle room叫做mutable, 它将释放掉non-static成员变量的bitwise constness,
-```c++
+```C++
 class CTextBlock {
 public:
     ...
@@ -119,7 +119,7 @@ std::size_t CTextBlock::length() const
 ```
 #### const 和 non-const成员函数中避免重复
 如果member function不单返回一个reference指向字符，而且做了很多操作，那么重载函数就变得非常复杂并且没有必要，我们真正要做的是实现一次，然后通过常量性转除去实现：
-```c++
+```C++
 class TextBlock {
 public:
     ...
@@ -145,8 +145,8 @@ public:
 实际使用的过程中，为了避免no-const operator[]递归调用自己，先将*this从原始的TextBlock& 做static_cast成为const TextBlock&，然后从const operator[]的返回值中移除const。但是，反过来做是不建议的，因为使用const_cast去掉了const的性质之后，操作十分不安全。
 
 ### Item 4 确定对象使用前已经被初始化
-c++初始化问题：
-```c++
+C++初始化问题：
+```C++
 int x;  //大多数平台确定了x被初始化
 class Point{
     int x,y; 
@@ -154,8 +154,9 @@ class Point{
 ...
 Point p;// 数据成员x,y没有被初始化
 ```
-一般而言，C part of c++初始化可能导致运行期成本，不保证发生初始化，non-C parts of c++，规则就相反。内置类型在使用之前将它初始化，对于内置类型之外的类型，初始化<font color=red>由构造函数负责，确保构造函数将对象的每一个成员都初始化。</font>构造函数比较好的写法是member initialization list替换赋值动作.
-// todo: 重新看这部分内容 29-33
+一般而言，C part of C++初始化可能导致运行期成本，不保证发生初始化，non-C parts of C++，规则就相反。内置类型在使用之前将它初始化，对于内置类型之外的类型，初始化<font color=red>由构造函数负责，确保构造函数将对象的每一个成员都初始化。</font>构造函数比较好的写法是member initialization list替换赋值动作.<br>
+目前我们奉行的规则是: **确保每一个构造函数豆浆对象的每一个成员初始化** , 这需要我们不要混淆赋值和初始化.<br>
+
 ***
 ## 构造、析构和赋值操作
 
@@ -165,7 +166,7 @@ Point p;// 数据成员x,y没有被初始化
 - copy 构造函数
 - copy assignment 操作符
 - 析构函数
-```c++
+```C++
 Empty e1;       // default constructor;
                 // destructor
 Empty e2(e1); // copy constructor
@@ -179,7 +180,7 @@ e2 = e1;      // copy assignment operator
 ### Item 6 如果不想用编译器自动生成的函数，就应该明确拒绝
 
 有的使用场景中，不允许拷贝赋值和拷贝assignment operator，我们不主动拒绝的话，编译器会声明我们不想要的函数。这种时候一个常见的做法是将copy constructor和copy assignment operator声明为private，这样的话member function和friend function还可以调用他们，如果足够聪明，只声明不调用的话不慎调用会得到一个linkage error.
-```c++
+```C++
 class HomeForSale{
     public:
         ...
@@ -192,7 +193,7 @@ class HomeForSale{
 
 ### Item 7 为多态基类声明virtual析构函数
 在很多时候，我们使用指针得到一个derived class对象，而那个对象却经过一个base class的指针被删除，带来的问题是诡异的“局部销毁”，而derived class的析构函数没有被调用。解决该问题的方法十分简单，<font color=red>给base class一个virtual析构函数</font>.
-```c++
+```C++
 class TimeKeeper{
     public:
         TimeKeeper();//默认构造函数
@@ -206,7 +207,7 @@ delete ptk;
 这并不意味着virtual函数很好，对于不作为base class的情况，virtual析构函数会带来一系列的问题，没有virtual析构函数的情况下，一个自己定义的Point2D对象可以作为一个64-bit的量传给c/fortran,对于virtual函数，对象必须携带某些信息，用于决定哪个virtual函数会被调用，这种事由virtual table pointer(vptr) 的机制实现。因此，一般而言，只有带class内至少有一个virtual函数的的时候，才为它声明virtual析构函数。<br>
 同样的，对于不带virtual析构函数的class，包括所有的STL容器（vector,list,set,unordered_map)和std::string，不要从他们那里继承。<br>
 class带一个pure virtual析构函数，pure virtual函数导致抽象class，不能被实例化。如果希望得到类似的class又没有其他的纯虚函数，可以给class声明一个纯虚的析构函数：
-```c++
+```C++
 class AMOV{
     public:
         virtual ~AMOV()=0;  // pure virtual destructor
@@ -216,7 +217,7 @@ AMOV::~AMOV(){ }  // 必须为这个pure virtual析构函数提供一份定义
 当然，这些性质的讨论都是适用于<font color=red>polymorohic base class</font>, 但是并非所有的base class设计都是为了多态用途，他们不需要virtual析构函数。
 
 ### Item 8 别让异常逃离析构函数
-```c++
+```C++
 class Widget {
     public:
         ...
@@ -228,7 +229,7 @@ void doSomething(){
 }                           // v is automatically destroyed here
 ```
 只要析构函数突出异常，即使并非使用容器或者vector，程序也可能过早结束或者出现不明确的行为。如果析构函数必须执行某个动作，而该动作可能在失败时抛出异常，这种情况该怎么办？<br>
-```c++
+```C++
 class DBConnection {
     public:
         ...
@@ -254,7 +255,7 @@ class DBConn { // class to manage DBConnection
 - 吞下调用close()发生的异常
 
 但是这两种做法都没有吸引力，更好的做法是重新设计DBConn的接口，如提供一个close()，赋予客户操作”因该操作而发生的异常“，并且追踪管理的connect是否关闭，否的话由connect的析构函数将它关闭。
-```c++
+```C++
 class DBConn {
     public:
         ...
@@ -286,13 +287,13 @@ class DBConn {
 
 ### Item 10 令operator=返回一个reference to *this
 赋值的时候，人们常常将这个写成一个连锁形式：
-```c++
+```C++
 int x,y,z;
 x = y = z = 15;
 //赋值时候的右结合，转义为x = (y = (z=15))
 ```
 为了实现这种行为，赋值操作符必须返回一个reference指向操作符左侧实参：
-```c++
+```C++
 class Widget{
     public:
         Widget& operator = (const Widget& rhs){
@@ -306,7 +307,7 @@ class Widget{
 
 ### Item 11 在operator=中处理“自我赋值”
 自我赋值就是对象自己给自己赋值,大多数时候自我赋值并不是那么明显：
-```c++
+```C++
 class Widget { ... };
 Widget w;
 ...
@@ -345,7 +346,7 @@ copy构造函数和copy assignment operator有相近的代码，但是**不应�
 C++中最常用的资源就是动态内存分配，除此之外，其他常见资源包括文件描述器、互斥锁、数据库连接以及网络sockets。**无论什么资源，重要的是，当你不再使用它，必须将它归还给操作系统**。<br>
 
 ### Item 13 以对象管理资源
-```c++
+```C++
 Investment* createInvestment(); //使用工厂函数动态生成Investment对象
 void f(){
     Investment *pInv = createInvestment(); // call factory function
@@ -388,7 +389,7 @@ class Lock {
 
 - **禁止复制**, 对于这些不能合理拥有“同步化基础器物”副本的对象，private 继承 Uncopyable类，直接禁止复制。
 - **底层资源“引用计数”** 如果对上面的lock想要使用reference counting，那么就可以将`Mutex*`改为`shared_ptr<Mutex>`,默认的操作是删除Mutex*, 但是我们希望的是锁定而非删除，而shared_ptr允许指定删除器
-```c++
+```C++
 class Lock {
     public:
         explicit Lock(Mutex *pm) // init shared_ptr with the Mutex
@@ -438,7 +439,7 @@ delete [] pal; // fine
 - 客户可能传递无效的天数或者月份
 
 类型系统是主要防范“undesirable code from compiling”的主要盟友，我们可以导入外覆类型(wrapper types)来区别天，月和年份，然后再在date的构造函数中使用这些类型。、
-```c++
+```C++
 Date d(30, 3, 1995);                   // error! wrong types
 Date d(Day(30), Month(3), Year(1995)); // error! wrong types
 Date d(Month(3), Day(30), Year(1995)); // okay, types are correct
@@ -593,3 +594,16 @@ C++设计目标之一是保证"类型错误"绝不可能发生, 不幸的是转�
 - dynamic_cast\<T> ( expression ) 执行安全的向下转型, 用于决定某对象是否归属于继承体系的某个类型(运行成本重大), 无法由旧式转换替代
 - reinterpret_cast\<T> ( expression ) 低级转型,结果可能取决于编译器,不可移植, 如 将point to int转为 int, 在低级代码外很少见
 - static_cast\<T> ( expression ) 强迫隐式转换, 如 non-const 转为 const, int 转为 double, pointer to base class 转为 pointer to derived class. 但是无法移除常量性.
+
+新语法好用的两个方面:
+* 容易在代码中辨识出来
+* 转型动作的目标 **窄化**, 如将constness去掉只能用`const_cast`
+
+// todo: explicit
+```C++
+class Base { ... };
+class Derived: public Base { ... };
+Derived d;
+Base *pb = &d; // implicitly convert Derived* ⇒ Base*
+```
+在这种情况下, 使用base的指针和derived的指针, 他们的值不一定相等,这时候有个偏移量(offset) 放置于derived* 指针上, 用去取得正确的base* 指针数值: **单一对象可能拥有一个以上的地址**, 在C/Java/C#中都不可能发生这个事情, 将对象地址转型为char*指针然后做算术运算, 几乎都会导致无定义行为. 
