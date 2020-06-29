@@ -156,7 +156,15 @@ Point p;// 数据成员x,y没有被初始化
 ```
 一般而言，C part of C++初始化可能导致运行期成本，不保证发生初始化，non-C parts of C++，规则就相反。内置类型在使用之前将它初始化，对于内置类型之外的类型，初始化<font color=red>由构造函数负责，确保构造函数将对象的每一个成员都初始化。</font>构造函数比较好的写法是member initialization list替换赋值动作.<br>
 目前我们奉行的规则是: **确保每一个构造函数豆浆对象的每一个成员初始化** , 这需要我们不要混淆赋值和初始化.<br>
-
+```C++
+ABEntry::ABEntry(const std::string& name, const std::string& address,const std::list<PhoneNumber>& phones)
+: theName(name),
+theAddress(address), // these are now all initializations
+thePhones(phones),
+numTimesConsulted(0)
+{} // the ctor body is now empty
+```
+//todo: 29~33 page
 ***
 ## 构造、析构和赋值操作
 
