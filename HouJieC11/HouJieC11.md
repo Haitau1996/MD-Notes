@@ -119,5 +119,11 @@ Vec<int> coll;
 // is equivalent to
 std::vector<int, MyAlloc<T>> coll;
 ```
-用typedef无法实现,因为这样无法接受一个int作为参数, 类似的结果用macro无法实现. **做了化名之后无法做特化和偏特化** .
-// todo: 10 min at video 10
+用typedef无法实现,因为这样无法接受一个int作为参数, 类似的结果用macro无法实现. **做了化名之后无法做特化和偏特化** . <br>
+![move](figure/v10-1.png)<br>
+希望使用`test_moveable(Container cntr, T elem)`测试可不可搬移(C++2.0 新语法), 希望取出容器(是一个模板)的类型并且容器做insert动作, typename+小括号为临时对象,list要加尖括号才是全名(有省略), 传入的为一个object,新的解法就是把迭代器取出来放到萃取机(traits),取出来作为Valtype:<br>
+![traits](figure/v10-2.png)<br> 
+假设容器没有迭代器,迭代器没有traits的情况呢(标准库不会出现这个问题),
+
+## template template parameter
+//todo: v11.2
