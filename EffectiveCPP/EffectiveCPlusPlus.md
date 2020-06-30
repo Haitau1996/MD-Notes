@@ -619,7 +619,7 @@ Base *pb = &d; // implicitly convert Derived* ⇒ Base*
 ```C++
 class Window { // base class
 public:
-virtual void onResize() { ... } // base onResize impl
+    virtual void onResize() { ... } // base onResize impl
 ...
 };
 class SpecialWindow: public Window { // derived class
