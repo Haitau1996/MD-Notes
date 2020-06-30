@@ -614,4 +614,24 @@ class Derived: public Base { ... };
 Derived d;
 Base *pb = &d; // implicitly convert Derived* ⇒ Base*
 ```
-在这种情况下, 使用base的指针和derived的指针, 他们的值不一定相等,这时候有个偏移量(offset) 放置于derived* 指针上, 用去取得正确的base* 指针数值: **单一对象可能拥有一个以上的地址**, 在C/Java/C#中都不可能发生这个事情, 将对象地址转型为char*指针然后做算术运算, 几乎都会导致无定义行为. 
+在这种情况下, 使用base的指针和derived的指针, 他们的值不一定相等,这时候有个偏移量(offset) 放置于derived* 指针上, 用去取得正确的base* 指针数值: **单一对象可能拥有一个以上的地址**, 在C/Java/C#中都不可能发生这个事情, 将对象地址转型为char*指针然后做算术运算, 几乎都会导致无定义行为. <br>
+转型还有一个问题，就是我们调用基类的函数时，
+```C++
+class Window { // base class
+public:
+virtual void onResize() { ... } // base onResize impl
+...
+};
+class SpecialWindow: public Window { // derived class
+public:
+    virtual void onResize() { // derived onResize impl;
+    static_cast<Window>(*this).onResize(); // cast *this to Window,then call its onResize;
+                                           // this doesn’t work!
+    ... // do SpecialWindow-specific stuff
+} 
+...
+};
+```
+// todo: page 121- page 123
+
+### Item 28 避免返回handles指向对象内部成分
