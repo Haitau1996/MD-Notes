@@ -606,7 +606,7 @@ int *vedio = (int*)VEDIO_BASE;
 
 #### Accessing a Port
 Port即是软件概念也是硬件概念，一般而言，软件access一个port是OS的一部分，下面是一个使用port的实例：
-```
+```C
 #define PORT 0XB0000000
 unsigned int volatile *const port = (unsigned int*) port;
 ```
