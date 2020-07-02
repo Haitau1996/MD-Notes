@@ -632,6 +632,18 @@ public:
 ...
 };
 ```
-// todo: page 121- page 123
-
+这个地方的转型是有很大问题的，我们想让SpecialWindow在运行onResize() 前先运行Window的onResize，实际上调用的并不是当前对象的函数，而是<font color=red>转型动作所建立的一个" *this对象之base成分"的暂时副本上的onResize()</font>,该对象调用成员函数时候会有隐含参数 *this指针，可以在当前对象身上执行SpecialWindow的专属动作， 使得当前对象进入一个伤残状态。<br>
+实际中使用请这么写：
+```C++
+class SpecialWindow: public Window {
+public:
+virtual void onResize() {
+Window::onResize(); // call Window::onResize on *this(隐藏的*this传入，用它调用Base的onResiize)
+...  
+}
+...
+};
+```
+Dynamic_cast 有非常高的成本，尤其是在深度继承和多重继承的时候，用dynamic_cast的场景是，认定为一个derived class对象身上执行derived的操作函数，而手上只有一个 **Point to Base class** 的指针或者引用,一般有两种方式处理这种问题：
+//TODO: since page 121
 ### Item 28 避免返回handles指向对象内部成分
