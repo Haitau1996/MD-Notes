@@ -1,4 +1,4 @@
-      # Effective C++ :  改善程序与设计的55个据图做法
+# Effective C++ :  改善程序与设计的55个做法
 
 ## Accustoming Yourself to C++
 
