@@ -1,4 +1,4 @@
-# Effective C++ :  改善程序与设计的55个据图做法
+      # Effective C++ :  改善程序与设计的55个据图做法
 
 ## Accustoming Yourself to C++
 
@@ -645,5 +645,55 @@ Window::onResize(); // call Window::onResize on *this(隐藏的*this传入，用
 };
 ```
 Dynamic_cast 有非常高的成本，尤其是在深度继承和多重继承的时候，用dynamic_cast的场景是，认定为一个derived class对象身上执行derived的操作函数，而手上只有一个 **Point to Base class** 的指针或者引用,一般有两种方式处理这种问题：
-//TODO: since page 121
+
+1. 使用容器并且在其中储存直接指向derived classes对象的指针(一般用智能指针)，如假设Window/SpecialWindow只有后者才支持blink效果,前者做法中有危险的dynamic_cast，后者直接用指向derived class的smart pointer容器，有个问题就是只能指向一种derived class，如果有多个derived class，就需要使用多个容器：
+    ```C++
+    class Window { ... };
+    class SpecialWindow: public Window {
+    public:
+        void blink();
+    ...
+    };
+    // see Item 13 for info on tr1::shared_ptr
+    typedef std::vector<std::tr1::shared_ptr<Window> > VPW; 
+    VPW winPtrs;
+    ...
+    for (VPW::iterator iter = winPtrs.begin(); // undesirable code:
+    iter != winPtrs.end(); // uses dynamic_cast
+    ++iter) {
+    if (SpecialWindow *psw = dynamic_cast<SpecialWindow*>(iter->get()))
+    psw->blink();
+    }
+    //我们希望的做法是这样的，不用dynamic_cast
+    typedef std::vector<std::tr1::shared_ptr<SpecialWindow> > VPSW;
+    VPSW winPtrs;
+    ...
+    for (VPSW::iterator iter = winPtrs.begin(); // better code: uses
+    iter != winPtrs.end(); // no dynamic_cast
+    ++iter)
+    (*iter)->blink();
+    ```
+2. 通过base class提供接口，在base class中内置virtual函数做想要派生类做的事情，具体实现如下：
+    ```C++
+    class Window {
+    public:
+    virtual void blink() {} // default impl is no-op;
+    ... // see Item34 for why a default impl may be a bad idea
+    }; 
+    class SpecialWindow: public Window {
+    public:
+    virtual void blink() { ... } // in this class, blink does something
+    ... 
+    };
+    typedef std::vector<std::tr1::shared_ptr<Window> > VPW;
+    VPW winPtrs; // container holds (ptrs to) all possible Window types 
+    ... 
+    for (VPW::iterator iter = winPtrs.begin();
+        iter != winPtrs.end();
+        ++iter) 
+    (*iter)->blink(); // note lack of dynamic_cast
+    ```
+
+我们使用这么多方式，就是为了避免 **连串的dynamic_cast**, 这样产生出来的代码又长又慢，而且不好维护。 我们应该尽可能地隔离转型动作， 通常是将它隐藏在某个函数内， 函数的接口会保护调用者不受函数内部任何肮脏龌龊动作的影响。
+
 ### Item 28 避免返回handles指向对象内部成分
