@@ -745,4 +745,7 @@ public:
 即便如此, upperLeft还可能导致dangling handles的问题, 这种Handles所指向的对象不存在,如函数调用获得一个新的暂时的Rectangle对象,upperLeft作用在身上产生一个reference指向temp内部的一个部分,这就是handles比对象本身寿命更长的问题.
 
 ### Item 29 为异常安全而努力是值得的
+//todo: Item 29 
 
+### Item 30 透彻了解inlining的里里外外
+不恰当的inline造成代码膨胀会导致额外的换页行为,降低高速缓存装置的击中率,以及伴随而来的效率损失,它只是对编译器的一个申请,并不是强制命令.
