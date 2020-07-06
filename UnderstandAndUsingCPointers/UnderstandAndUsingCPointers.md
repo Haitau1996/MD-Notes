@@ -614,3 +614,5 @@ unsigned int volatile *const port = (unsigned int*) port;
 
 #### Accessing Memory using DMA
 Direct Memory Access(DMA) 是用于辅助
+
+# C Traps and Pitfalls
