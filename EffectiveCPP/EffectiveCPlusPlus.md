@@ -697,3 +697,52 @@ Dynamic_cast 有非常高的成本，尤其是在深度继承和多重继承的�
 我们使用这么多方式，就是为了避免 **连串的dynamic_cast**, 这样产生出来的代码又长又慢，而且不好维护。 我们应该尽可能地隔离转型动作， 通常是将它隐藏在某个函数内， 函数的接口会保护调用者不受函数内部任何肮脏龌龊动作的影响。
 
 ### Item 28 避免返回handles指向对象内部成分
+
+假设程序涉及一个矩形, 那么我们为了让rectangle对象尽可能小,不会把定义矩形的量放在Rectangle对象中,而是放在辅助的struct中再让Rectangle对象存一个指针指向它:
+```C++
+class Point{
+    // 在这里存点的信息
+public:
+    void setX(int newVal);
+    void setY(int newVal);
+};
+struct RectData{
+    Point ulhc;
+    Point lrhc;
+};
+class Rectangle{
+    ...
+private:
+    std::shared_ptr<RectData> pData;
+};
+```
+然后用成员函数返回左上和右下的点:
+```C++
+class Rectangle{
+public:
+    Point& upperLeft() const{return pData->ulhc};
+    Point& lowerRight() const{return pData->lrhc};
+    ...
+};
+```
+这个时候,问题就出来了, 本意是返回两个点的信息,并不需要让客户修改Rectangle, 但是实际的结果是返回一个reference指向private内部数据.用它可以更改成员:
+```C++
+rec.upperLeft().setX(100);
+```
+两个教训:
+    1. 成员变量的封装最多只等于"返回其reference"函数的访问级别, 数据封装为private,但是本质上是public的
+    2. const成员函数传出一个reference, 所指数据对象自身有关联\又被存储于对象之外,那么函数的调用者可以修改那个数据.
+如果返回的不是reference,而是指针或者迭代器(他们统统称为handles),随之而来的就是降低对象封装性的风险.<br>
+我们遭遇的两个问题可以通过将他们的返回类型加上const解决:
+```C++
+class Rectangle{
+public:
+    const Point& upperLeft() const{return pData->ulhc};
+    const Point& lowerRight() const{return pData->lrhc};
+    ...
+};
+```
+即便如此, upperLeft还可能导致dangling handles的问题, 这种Handles所指向的对象不存在,如函数调用获得一个新的暂时的Rectangle对象,upperLeft作用在身上产生一个reference指向temp内部的一个部分,这就是handles比对象本身寿命更长的问题.
+
+### Item 29 为异常安全而努力是值得的
+
