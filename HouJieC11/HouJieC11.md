@@ -126,8 +126,20 @@ std::vector<int, MyAlloc<T>> coll;
 假设容器没有迭代器,迭代器没有traits的情况呢(标准库不会出现这个问题).
 
 ## template template parameter
-//todo: v11.6 to lamda
+//TODO: v11.6 to lamda
 
 ## Lambdas 
 
 C++ 11 引入了lambdas, 允许定义一个inline functionality, 用于当做是parameter or local对象, 它改变了我们对c++标准库的使用方式.
+
+# 内存管理-从平地到万丈高楼
+## 第一讲: primitives
+我们的目标是从最基础的C++语言构建到高知名度的内存管理器,彻底了解内存管理高高低低的方方面面.<br>
+Doug Lea的作品 DL Malloc,主页 `gee.cs.oswego.edu.cn/dl/`, 推荐的书籍:
+
+1. STL源代码剖析, Chap 2
+2. Modern C++ Design, Chap 4
+3. Small Memory Software (相对抽象)
+
+![four step](figure/mem1-1.png)<br>
+// TODO: vedio 3 2 min
