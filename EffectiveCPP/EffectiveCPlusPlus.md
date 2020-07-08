@@ -758,8 +758,70 @@ f(); // this call will be inlined, because it’s a “normal” call
 pf(); // this call probably won’t be, because it’s through a function pointer
 ```
 此外，构造函数和析构函数往往是inlining的糟糕候选人，原因如下：<br>
+C++对构造对象和销毁对象做了保证， 但是具体的实现依赖于编译器的实现者，编译为空的构造函数析构函数产生的代码一定存放于某个地方，有时候就放在构造函数和析构函数内，
+```C++
+class Base {
+public:
+...
+private:
+    std::string bm1, bm2; // base members 1 and 2
+};
+class Derived: public Base {
+public:
+    Derived() {} // Derived’s ctor 真的是空的吗
+...
+private:
+    std::string dm1, dm2, dm3; // derived members 1–3
+};
+// 表面为空的函数
+Derived::Derived() {// conceptual implementation of “empty” Derived ctor
+    Base::Base(); // initialize Base part
+    try { dm1.std::string::string(); } // try to construct dm1
+    catch (...) { // if it throws,
+    Base::~Base(); // destroy base class part and
+    throw; // propagate the exception
+    }
+    try { dm2.std::string::string(); } // try to construct dm2
+    catch(...) { // if it throws,
+    dm1.std::string::~string(); // destroy dm1,
+    Base::~Base(); // destroy base class part, and
+    throw; // propagate the exception
+    }
+    try { dm3.std::string::string(); } // construct dm3
+    catch(...) { // if it throws,
+    dm2.std::string::~string(); // destroy dm2,
+    dm1.std::string::~string(); // destroy dm1,
+    Base::~Base(); // destroy base class part, and
+    throw; // propagate the exception
+    }
+}
+```
+实际上编译器可能以更复杂的方法处理异常，所以对inline的构造和析构函数一定要有非常谨慎。同时，inline函数无法和程序库的升级而升级，需要重新编译，而non-inline函数的变化客户只需要重新链接就可以。此外，大多数调试器面对inline函数也没有办法，因此 **至少将inline的范围设定在”一定成为inline“或者”十分平淡无奇“的函数上**， 或者一开始不要将任何函数声明为inline.
 
+### Item 31 将文件的编译依存关系降到最低
+C++并没有把 **将接口从实现分离** 这件事情做好， 如：
+```C++
+class Person {
+public:
+    Person(const std::string& name, const Date& birthday,const Address& addr);
+    ...
+private:
+    std::string theName; // implementation detail
+    Date theBirthDate; // implementation detail
+    Address theAddress; // implementation detail
+};
+```
+中的Date和Address两个class很可能是在各自的头文件中实现的，依赖的头文件中有任何改变，每个包含Persion的文件都要重新编译，连串的编译依赖关系在项目中可能是灾难。C++不用前置声明解决这个问题，有以下几点原因：
 
+1. string之类的东西不是class，而是一个typedef，正确的前置声明比较复杂，涉及额外的template.
+2. 编译器必须在编译期间知道对象的大小，获得信息的唯一方式就是询问class的定义式。(在java等语言中，编译器分配空间给一个指针使用，没有此问题)
+
+在C++中可以合法地用 **声明的依存性** 替代”定义的依存性“，做不到的话将它与文件内的声明式（而不是定义式）相依。
+
+***
+## 继承与面向对象设计
+
+***
 ## 杂项讨论
 这一章只有三个条款并且文字内容不多,但是它们都很重要, 这些条款帮助写出高效的C++软件.
 
