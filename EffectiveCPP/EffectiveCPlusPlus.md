@@ -748,7 +748,16 @@ public:
 //TODO: Item 29 
 
 ### Item 30 透彻了解inlining的里里外外
-不恰当的inline造成代码膨胀会导致额外的换页行为,降低高速缓存装置的击中率,以及伴随而来的效率损失,它只是对编译器的一个申请,并不是强制命令.inlining在大多数程序中都是编译时行为,某些环境可以在链接时候inlining,少量建置环境如.NET CLI的托管环境可以在运行期完成inlining. 大多数编译器拒绝将过于复杂的函数inlining, 并且对所有virtual函数的调用也都会使得inlining落空.
+不恰当的inline造成代码膨胀会导致额外的换页行为,降低高速缓存装置的击中率,以及伴随而来的效率损失,它只是对编译器的一个申请,并不是强制命令.inlining在大多数程序中都是编译时行为,某些环境可以在链接时候inlining,少量建置环境如.NET CLI的托管环境可以在运行期完成inlining. 大多数编译器拒绝将过于复杂的函数inlining, 并且对所有virtual函数的调用也都会使得inlining落空.<br>
+除此之外，还有可能编译器将某个函数inline，但是还可能生成一个outlined的主体，例如，想要通过function ptr调用函数， 不生成主体的话将无可调用：
+```C++
+inline void f() {...} // assume compilers are willing to inline calls to f
+void (*pf )() = f; // pf points to f
+...
+f(); // this call will be inlined, because it’s a “normal” call
+pf(); // this call probably won’t be, because it’s through a function pointer
+```
+此外，构造函数和析构函数往往是inlining的糟糕候选人，原因如下：<br>
 
 
 ## 杂项讨论
@@ -772,3 +781,23 @@ public:
 
 ### Item 54 熟悉包括TR1在内的标准程序库
 
+C++ 2.0 可能会提供一些有趣的语言特性和语法糖, 但是大部分新机能将以标准程序库的形式体现.
+**Before C++ 11**, 标准程序库的部分:<br>
+
+* STL, 包含容器\迭代器\算法\函数对象\函数适配器和函数对象适配器
+* iostream
+* 数值处理(复数模板和纯数数组)
+* 异常阶层体系, 包括base class exception和它的derived classes logic_error 和 runtime_error
+* C89 标准库
+
+**TR1的新组件**:
+
+* 智能指针: 包括shared_ptr(引用计数指针)和weak_ptr(非环形shared_ptr数据结构中的环形感生指针,最后一个shared_ptr销毁后,weak_ptr即使指向同一对象,对象依旧被删除)
+* tr1::function : 参考 cppman std::function的说明
+* tr1::bind : 第二代绑定工具
+
+其他提供独立机能的组件和实现更精巧的template编程技术的组件, 具体refer to //TODO: add the github reference
+
+### Item 55 : 让自己熟悉Boost
+
+refer to : C++ 11/14 高级编程 - Boost程序库探秘
