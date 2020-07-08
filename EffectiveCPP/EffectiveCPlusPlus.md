@@ -820,11 +820,43 @@ private:
 
 * 如果使用Object reference或者Object pointer可以完成任务，就不要使用Objects： 前者只需要类型的声明，而后者需要类型的定义。
 * 如果可以，尽量用class的声明式替换class定义式，声明一个函数而用到某个class的时候，不需要该class的定义，即使函数以by-value方式传递该class的参数（或者返回值）,why?因为可以将提供class定义（#include）的义务从“函数声明所在的头文件”移动到**含有函数调用的文件**，就可以将并非真正需要的类型定义与客户端之间的编译依赖性去掉。
-* **为声明式和定义式提供不同的头文件** 常常需要两个头文件，一个用于声明式、一个用于定义式
+* **为声明式和定义式提供不同的头文件** 常常需要两个头文件，一个用于声明式、一个用于定义式,而客户程序只需要#include一个声明文件而不是前置声明若干函数,如STD中的<iosfwd>包含iostream中的各个组件声明式,对应的定义就定义在若干不同的头文件中,如<sstream>,<fstream>,<streambuf>和<iostream>,这试用与templates和non-templates.
 
 
 ***
+
 ## 继承与面向对象设计
+C++中的inheritance有非常多dirty的细节问题, 如virtual函数意味着"接口必须被继承",non-virtual函数意味"接口和实现都必须被继承",我们希望在这个部分仔细区分这些意义.
+
+### 确定你的public继承塑模出is-a关系
+C++ OOP中最重要的一条规则是: **pubic inheritance意味"is-a"的关系**, 如果derived class D 用 public形式继承了base class B, 就是类型D的对象同时也是一个类型B的对象,反之不成立, 如每个学生都是人,但是不意味每个人都是学生,base更加一般化,而derived是base的一种特殊形式.<br>
+这个论点只在public继承时候才成立,有时候直觉会误导人,比如:企鹅是一种鸟,一般的鸟可以飞,但是如果直接用直觉写出c++程序,企鹅继承鸟类飞的member function,就会出现事实性的错误,这时候我们应该用双继承体系:
+```C++
+class Bird {
+    ... // no fly function is declared
+};
+class FlyingBird: public Bird {
+public:
+    virtual void fly();
+    ...
+};
+class Penguin: public Bird {
+    ... // no fly function is declared
+};
+```
+如果程序不考虑飞行,对此一无所知,那么不区分两者反而是一种比较好的设计.另一种想法是让企鹅继承fly() 这个member function, 然后抛出一个运行时错误:
+```C++
+void error(const std::string& msg); // defined elsewhere
+class Penguin: public Bird {
+public:
+    virtual void fly() { error("Attempt to make a penguin fly!"); }
+    ...
+};
+```
+这两者的差异在于前者是一个 **编译时**强制实施的限制,后者是 **运行时**才能显示出来. Item 18中提起过,**好的接口可以防止无效的代码通过编译**,因此宁愿采取前面那个做法.<br>
+此外,在别的地方,直觉也可能是错的.Square用public的方式继承Rectangle,直觉上看没有问题,但是某些在矩形上能做的事情,如"宽度可以独立于其高度被外界修改",却不能施加于正方形上.public inheritance要求, **所有能够施加于base class身上的事情,都可以施加于derived class对象身上**,发展经年的直觉在面向对象程序设计中可能会导致错误,我们必须为直觉添加新的洞察力.class之间还有两种常见的关系 **has-a** 和 **is-implemented-in-terms-of**,这两者很可能会被错误的塑造成public inheritance.
+
+### Item 33 避免遮掩继承而来的名称
 
 ***
 ## 杂项讨论
@@ -863,8 +895,8 @@ C++ 2.0 可能会提供一些有趣的语言特性和语法糖, 但是大部分�
 * tr1::function : 参考 cppman std::function的说明
 * tr1::bind : 第二代绑定工具
 
-其他提供独立机能的组件和实现更精巧的template编程技术的组件, 具体refer to //TODO: add the github reference
+其他提供独立机能的组件和实现更精巧的template编程技术的组件, 具体refer to github 项目 [modern cpp features](https://github.com/AnthonyCalandra/modern-cpp-features) 和网站[cppreference](https://en.cppreference.com/w/cpp/11).
 
 ### Item 55 : 让自己熟悉Boost
 
-refer to : C++ 11/14 高级编程 - Boost程序库探秘
+refer to : C++ 11/14 高级编程 - Boost程序库探秘.
