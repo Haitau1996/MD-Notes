@@ -858,6 +858,53 @@ public:
 
 ### Item 33 避免遮掩继承而来的名称
 
+在处理继承的名称时， 实际的操作是将derived class的scope嵌套在base class中，如果在mf4中要调用mf2()，就要具体分析调用的是哪个：<bt>
+![nested scope](figure/33-1.png)<br>
+```C++
+void Derived::mf4()
+{
+    ...
+    mf2();
+    ...
+}
+```
+编译器的做法是，先查找local作用域，看有没有mf2()的声明式，没有找到的话就向外找，看base class作用域中有没有，之后在包含base的namespace中查找，最后在global的全域中查找。<br>
+![scope](figure/33-2.png)<br>
+在这里，base class的mf1()和mf3()都被derived中的函数掩盖了，从名称查找的观点看，这两个函数没有被继承。这种规则，**无论base class和derived class的函数参数类型是否相同，无论是否virtual都适用**，这种遮掩可以通过using声明式取消,继承机制就可以正常运作：
+```C++
+class Derived: public Base {
+public:
+    using Base::mf1; // make all things in Base named mf1 and mf3
+    using Base::mf3; // visible (and public) in Derived’s scope
+    virtual void mf1();
+    void mf3();
+    void mf4();
+    ...
+};
+```
+前面说了，public继承应该继承所有的东西，这个using没有必要，一般应用于private继承之下，如果不想继承某个函数的所有版本，可以使用转交函数：
+```C++
+class Base {
+public:
+    virtual void mf1() = 0;
+    virtual void mf1(int);
+    ... // as before
+};
+class Derived: private Base {
+public:
+    virtual void mf1() // forwarding function; implicitly
+    { Base::mf1(); } // inline — see Item 30. (For info on calling a pure virtual function, see Item 34.)
+    ... 
+};
+...
+Derived d;
+int x;
+d.mf1(); // fine, calls Derived::mf1
+d.mf1(x); // error! Base::mf1() is hidden
+```
+
+### Item 34 区分接口继承和实现继承
+
 ***
 ## 杂项讨论
 这一章只有三个条款并且文字内容不多,但是它们都很重要, 这些条款帮助写出高效的C++软件.
@@ -895,7 +942,7 @@ C++ 2.0 可能会提供一些有趣的语言特性和语法糖, 但是大部分�
 * tr1::function : 参考 cppman std::function的说明
 * tr1::bind : 第二代绑定工具
 
-其他提供独立机能的组件和实现更精巧的template编程技术的组件, 具体refer to github 项目 [modern cpp features](https://github.com/AnthonyCalandra/modern-cpp-features) 和网站[cppreference](https://en.cppreference.com/w/cpp/11).
+其他提供独立机能的组件和实现更精巧的template编程技术的组件, 具体refer to github 项目 [modern cpp features](https://github.com/AnthonyCalandra/modern-cpp-features) 和网站 [cppreference](https://en.cppreference.com/w/cpp/11).
 
 ### Item 55 : 让自己熟悉Boost
 
