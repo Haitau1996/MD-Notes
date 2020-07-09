@@ -968,6 +968,13 @@ class Ellipse: public Shape { ... };
 2. 将所有的函数声明为virtual：invariant重要的时候，一定要说出来。
 
 ### Item 35 考虑虚函数之外的选择
+// TODO: 重新看这部分内容
+
+### Item 36 绝不重新定义继承而来的non-virtual函数
+**non-virtual函数是静态绑定，而virtual是动态绑定**,如果pB是一个Pointer to base class，即使pB指向一个derived class，pB调用的non-virtual函数永远是Base class所定义的版本。这背后的原因在之前is-a关系和不同种类继承之间的区别已经讨论过了，重新定义D的mf(),"每个D对象都是一个B对象"就不为真，因此在这里Item 7就是本条款的一个特殊案例。
+
+### Item 37: 绝不重新定义继承而来的缺省参数值
+本item讨论的是
 
 ***
 ## 杂项讨论
