@@ -745,7 +745,7 @@ public:
 即便如此, upperLeft还可能导致dangling handles的问题, 这种Handles所指向的对象不存在,如函数调用获得一个新的暂时的Rectangle对象,upperLeft作用在身上产生一个reference指向temp内部的一个部分,这就是handles比对象本身寿命更长的问题.
 
 ### Item 29 为异常安全而努力是值得的
-//TODO: Item 29 
+    //TODO: Item 29 
 
 ### Item 30 透彻了解inlining的里里外外
 不恰当的inline造成代码膨胀会导致额外的换页行为,降低高速缓存装置的击中率,以及伴随而来的效率损失,它只是对编译器的一个申请,并不是强制命令.inlining在大多数程序中都是编译时行为,某些环境可以在链接时候inlining,少量建置环境如.NET CLI的托管环境可以在运行期完成inlining. 大多数编译器拒绝将过于复杂的函数inlining, 并且对所有virtual函数的调用也都会使得inlining落空.<br>
@@ -904,6 +904,70 @@ d.mf1(x); // error! Base::mf1() is hidden
 ```
 
 ### Item 34 区分接口继承和实现继承
+public继承由两个部分组成：**函数接口继承和函数实现继承**，设计者在不同场合有不同的希望：
+1. 只继承接口
+2. 继承接口和实现，并且希望可以覆写
+3. 继承接口和实现，并且不允许覆写
+
+我们以shape类为例，
+```C++
+class Shape {
+public:
+    virtual void draw() const = 0;
+    virtual void error(const std::string& msg);
+    int objectID() const;
+    ...
+};
+class Rectangle: public Shape { ... };
+class Ellipse: public Shape { ... };
+```
+* **成员函数的接口总是会被继承**：对base class为真的事情对于derived class也为真，如果函数可以作用在base class上，也一定可以施行于derived class上(is-a关系)
+* **声明pure virtual就是为了derived只继承接口**：强制要求derived必须实现自己的这个函数，但是同时纯虚函数依旧可以有自己的定义。
+* **声明普通虚函数可以让derived继承接口和缺省实现**：这个做法很容易造成一个危险，就是当derived class没有明确声明的时候，就直接继承了默认的接口和实现，这个时候使用一个技巧： **切断virtual函数接口和默认实现之间的连接**,derived想用默认实现就对它做一个inline调用。
+    ```C++
+    class Airplane {
+    public:
+        virtual void fly(const Airport& destination) = 0;
+        ...
+    protected:
+        void defaultFly(const Airport& destination);
+    };
+    void Airplane::defaultFly(const Airport& destination)
+    {
+    //default code for flying an airplane to the given destination
+    }
+    class ModelA: public Airplane {
+    public:
+        virtual void fly(const Airport& destination)
+        { defaultFly(destination); }
+        ...
+    };
+    ```
+    有人反对这种做法，认为雷同的的函数名称可能会引起class命名空间的污染问题，那么可以在将fly设置为纯虚函数的同时，给出定义：
+    ```C++
+    class Airplane {
+    public:
+        virtual void fly(const Airport& destination) = 0;
+        ...
+    };
+    void Airplane::fly(const Airport& destination) //an implementation of a pure virtual function
+    { 
+        // default code for flying an airplane to the given destination
+    }
+    class ModelA: public Airplane {
+    public:
+        virtual void fly(const Airport& destination)
+        { Airplane::fly(destination); }//必须强制要求fly的实现
+        ...
+    };
+    ```
+* **声明non-virtual是要求derived继承函数接口和一份强制性的实现**： 它代表特异性是不变性凌驾于特异性之上。
+
+对此，常常有人犯两个错误：
+1. 将所有函数声明为non-virtual: 使得derived classes **没有充分的空间进行特化工作**，non-virtual析构可能带来很大的问题，此外成程序的大部分内容中虚函数的效率成本并不重要，只需要优化执行时间长的那部分。
+2. 将所有的函数声明为virtual：invariant重要的时候，一定要说出来。
+
+### Item 35 考虑虚函数之外的选择
 
 ***
 ## 杂项讨论
