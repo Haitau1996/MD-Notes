@@ -1021,6 +1021,24 @@ private:
 ```
 
 ### Item 38 通过复合塑模出has-a 或者 is-implemented-in-terms-of
+程序中某些对象相当于所塑造世界的的某些事物，如人、汽车，这些是**应用域**，其他可能是实现细节上的人工制品，如缓冲区、查找树，称为**实现域**。复合发生在前者，是has-a关系，后者常表现出is-implementation-in-terms-of的关系。<br>
+如一个set对象用list实现,不是is-a关系，public继承肯定是错的，应该使用复合：
+```C++
+template<class T> // the right way to use list for Set
+class Set {
+public:
+    bool member(const T& item) const;
+    void insert(const T& item);
+    void remove(const T& item);
+    std::size_t size() const;
+private:
+    std::list<T> rep; // representation for Set data
+};
+```
+
+### Item 39 明智而审慎地使用private继承
+
+### Item 40 明智而审慎地使用多重继承
 
 ***
 ## 杂项讨论
