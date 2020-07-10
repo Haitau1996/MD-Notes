@@ -1037,7 +1037,13 @@ private:
 ```
 
 ### Item 39 明智而审慎地使用private继承
+Private继承的两个特点：
 
+1. 编译器不会自动将derived对象转为一个base对象
+2. private base class继承的所有成员，在derived中都会变成private属性
+
+这意味着private继承是implementated-in-terms-of,是一种实现技术而不是B\D之间有观念上的关系，区别和复合之间的关系：能用复合尽量复合，当protected成员、virtual函数牵扯进来、或者空间方面的利害关系足以踢翻private继承支柱时候才用。<br>
+如我们需要Widget函数
 ### Item 40 明智而审慎地使用多重继承
 
 ***
