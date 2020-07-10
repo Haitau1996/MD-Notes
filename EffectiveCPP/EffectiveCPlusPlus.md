@@ -1043,7 +1043,15 @@ Private继承的两个特点：
 2. private base class继承的所有成员，在derived中都会变成private属性
 
 这意味着private继承是implementated-in-terms-of,是一种实现技术而不是B\D之间有观念上的关系，区别和复合之间的关系：能用复合尽量复合，当protected成员、virtual函数牵扯进来、或者空间方面的利害关系足以踢翻private继承支柱时候才用。<br>
-如我们需要Widget函数
+如我们需要Widget Class有Timer定时器，同时需要重新定义其中的onTick()虚函数， 就必须继承Timer，没有Is-a的关系，public继承不可行。
+```C++
+class Widget: private Timer {
+private:
+    virtual void onTick() const; // look at Widget usage data, etc.
+    ...
+};
+```
+这时候，onTick同样需要在private中。此外，我们可以用复合的方式取代这种做法，
 ### Item 40 明智而审慎地使用多重继承
 
 ***
