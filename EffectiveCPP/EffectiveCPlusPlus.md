@@ -1053,6 +1053,17 @@ private:
 ```
 这时候，onTick同样需要在private中。此外，我们可以用复合的方式取代这种做法，
 ### Item 40 明智而审慎地使用多重继承
+当设计框架涉及多重继承的时候,程序可能从一个以上的base class _继承相同的名称_(如函数,typedef),会导致歧义,即使是private的域将其中之一隐藏无法调用,解决歧义的做法是 _指定_ 从哪个base class 调用`mp.BorrowableItem::checkOut()`, 涉及到钻石继承后, 事情变得更加不可控:
+![diamond](figure/40.1.png)<br>
+某个base class和某个derived之间有多条相通的路线,base class的内部成员是否需要经由每一条路径被复制? 
+- 默认的做法是都执行复制,对象内有多份成员变量
+- 不想要的话,应该把带有这个数据的class成为一个virtual base class
+![virtual base](figure/40.2.png)<br>
+
+从正确行为上看, public 继承应该总是virtual,但是实际上 **virtual继承有性能上的代价**:
+- 非必要不使用virtual base
+- 如果必须使用,尽量不要往里面放置数据,以避免class身上初始化和赋值上带来诡异的事情
+
 
 ***
 ## 杂项讨论
