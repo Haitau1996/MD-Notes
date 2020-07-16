@@ -1063,7 +1063,7 @@ private:
 ```C++
 class B {
 public:
-    virtual void f() const;
+    virtual void f() const;// const也是函数签名的一部分
 };
 class D: public B {
 public:
