@@ -1062,7 +1062,9 @@ private:
 
 从正确行为上看, public 继承应该总是virtual,但是实际上 **virtual继承有性能上的代价**:
 - 非必要不使用virtual base
-- 如果必须使用,尽量不要往里面放置数据,以避免class身上初始化和赋值上带来诡异的事情
+- 如果必须使用,尽量不要往里面放置数据,以避免class身上初始化和赋值上带来诡异的事情,这个做法类似于java中的interface, 在java的interface中是不允许含有任何数据的.
+
+
 
 ## 模板与泛型编程
 C++ 的template 机制本身自己是一部完整的图灵机:可以被用来计算任何可计算的值, 即便如此, 有一组核心的观念支撑基于template的元编程(template metaprogramming).
