@@ -173,7 +173,33 @@ ABEntry::ABEntry()
     numTimesConsulted(0) // but explicitly initialize numTimesConsulted to zero
 {} // 
 ```
-有些情况下,面对的成员变量是`const`或者 _reference_, **他们就一定要初值,并且不能被赋值**,必须在成员初值列中赋值.<br>
+有些情况下,面对的成员变量是`const`或者 _reference_, **他们就一定要初值,并且不能被赋值**,必须在成员初值列中赋值,此外要注意成员初值列中条列各个成员,最好按照以其声次序排列.<br>
+不同编译单元内non-local static对象的初始化顺序:
+* static对象, 寿命是沟造出来到程序结束为止, 包括global对象,定义在namespace作用域之内的对象,以及各种作用域中声明为static的对象.
+* 编译单元, 就是产出单一目标文件的哪些源代码, 基本就是一个源代码文件加入其所含入头文件
+
+**c++对于定义在不同的编译单元中的non-local static对象初始化次序并没有明确的定义**, 使用一个小的设计去消除定义次序的问题, 可以将non-local static对象搬到自己的专属函数内, 函数返回一个reference指向该对象, 用户调用这个函数,而不是直接涉及这些对象.
+```C++
+    class FileSystem { ... }; // as before
+    FileSystem& tfs() // this replaces the tfs object; it could be
+    { // static in the FileSystem class
+    static FileSystem fs; // define and initialize a local static object
+    return fs; // return a reference to it
+    }
+    class Directory { ... }; // as before
+    Directory::Directory( params ) // as before, except references to tfs are
+    { // now to tfs()
+    ...
+    std::size_t disks = tfs().numDisks();
+    ...
+    }
+    Directory& tempDir() // this replaces the tempDir object; it
+    { // could be static in the Directory class
+    static Directory td( params ); // define/initialize local static object
+    return td; // return reference to it
+    }
+```
+这些函数一般只有两行, 是很好的inline函数例子, 但是需要注意的是, 含有static对象使得他们在多线程系统中有不确定性,处理的做法是: **在程序的单线程启动阶段手工调用所有的reference-returning函数, 这样可以消除与初始化有关的竞速形式**.
 
 ***
 ## 构造、析构和赋值操作
@@ -500,7 +526,26 @@ std::shared_ptr<Investment> createInvestment();// return a smart pointer
 ### Item 20 用pass by reference to const 替换 By value
 
 在default的情况下c++以by value的方式传递对象到函数，而这些对象的副本由<font color=red>对象的拷贝构造函数产出，使得pass-by-value成为昂贵的操作</font>.<br>
-//todo:add code here
+```C++
+    class Person {
+    public:
+    Person(); // parameters omitted for simplicity
+        virtual ~Person(); // see Item 7 for why this is virtual
+        ...
+    private:
+        std::string name;
+        std::string address;
+    };
+    class Student: public Person {
+    public:
+        Student(); // parameters again omitted
+        virtual ~Student();
+        ...
+    private:
+        std::string schoolName;
+        std::string schoolAddress;
+    };
+```
 例如书中的案例，by value的方式传递一次student对象会调用一次student copy构造函数、一次person copy 构造函数，四次string的copy 构造函数。<br>
 pass by reference-to-const:
 ```C++
