@@ -692,11 +692,11 @@ public:
 ```C++
 class SpecialWindow: public Window {
 public:
-virtual void onResize() {
-Window::onResize(); // call Window::onResize on *this(隐藏的*this传入，用它调用Base的onResiize)
-...  
-}
-...
+    virtual void onResize() {
+    Window::onResize(); // call Window::onResize on *this(隐藏的*this传入，用它调用Base的onResiize)
+    ...  
+    }
+    ...
 };
 ```
 Dynamic_cast 有非常高的成本，尤其是在深度继承和多重继承的时候，用dynamic_cast的场景是，认定为一个derived class对象身上执行derived的操作函数，而手上只有一个 **Point to Base class** 的指针或者引用,一般有两种方式处理这种问题：
