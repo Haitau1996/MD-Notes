@@ -317,3 +317,20 @@ int_map<std::String> intStrMap;
 
 ### 函数式编程
 functional programming是一种编程范式, 基于$\lambda$演算理论,**把计算过程视为数学函数的组合运算**.
+:star: //TODO: 1.7~1.9 
+
+### 其他特性
+* __cplusplus宏
+* 超长整型(long long),至少64位
+* 原始字符串,`R"(somt string here)"`, 例如`string s = R"(this is a "\string\")"`
+* 自定义字面值, 允许用户为字面值添加后缀, 从而简化代码
+    ```C++
+    long operator"" _kb(unsigned long long v){
+        return v * 1024;
+    }
+    auto x = 2_kb;
+    // 一般形式为
+    return_type operator"" _suffix(argument);
+    ```
+
+## Chap 2: Intro to 模板元编程
