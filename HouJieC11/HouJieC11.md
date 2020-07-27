@@ -72,7 +72,7 @@ int* p{}; // p us initialized by nullptr
 
 ## explicit for ctor taking more than one argument
 
-在2.0之前,// todo: 2min in vedio 7 
+在2.0之前,:/ // TODO: 2min in vedio 7 
 
 ## range-based for statement
 
@@ -192,4 +192,128 @@ void case5()
 - auto允许使用"`const/volatile/&/*`"修饰, 得到新的类型
 - auto&& 总是推断出引用类型
 
-**decltype** 
+**decltype**: `auto`能实现 __赋值__ 语句中的类型推导, 但是在实际使用中,这是很少的场景,在任意时候都能得到表达式类型要使用`decltype`, 其形式像是函数调用:
+```C++
+    decltype(expression)
+    // 如在下面的场景中
+    decltype(std::less<int>()) functor; // declear a functor
+    decltype(0.0f) func(decltype(0L) x){// in function parameter and return type
+        return x*x;
+    }
+    typedef decltype(func)* func_ptr;
+```
+用法和`auto`一样简单,但是需要注意以下细节:
+- decltype(e) 获得表达式值的类型
+- decltype((e)) 获得表达式计算结果的**引用类型**
+
+since c++ 14, 出现了`decltype(auto)`, 用法简单不再介绍.
+
+### 面向过程编程
+
+**nullptr**:可以隐式转换成其他任何指针类型,但是不能转化成非指针类型, 此外它是**强类型的**,并不能转为`int`或者`void*`,而是专门的'nullptr_t'.<br>
+**列表初始化**: 统一使用`{ }`初始化变量,语法将括号内生成一个`std::initializer_list`对象,具有类似于标准容器的接口.<br>
+**range-based for loop**: 使用auto 推导值类型的时候为了避免出现值拷贝的开销可以使用`auto&`, 只是语法糖,相当于使用iterator实现的.<br>
+**新式的函数声明**: 将返回值后置, 使用`auto` 和 `decltype`的类型推导能力,基本形式是`auto func(...) -> type{...}`, 因为在泛型编程的时候, 函数的返回值类型可能需要实际的参数来决定, 因此必须将返回值类型声明后置,
+```C++
+template<typename T, typename U>
+auto calc(T t, U u) -> decltype(t + u){
+//typename std::common_type<T,U>::type calc(T t, U u)
+    return t+u;
+}
+```
+
+### OO 编程
+**default/delete**:显示地生成/禁用编译器可能自己生成的函数,如类的构造/析构函数,使用的方法如下:
+```C++
+class default_demo{
+public:
+    default_demo() = default;
+    ~default_demo() = default;
+
+    default_demo(const default_demo&) = default;
+    default_demo& operator=(const default_demo&) = default;
+
+    default_demo(default_demo&&) = default;
+    default_demo& operator=(default_demo&&) = default;
+public:
+    default_demo(int x) {}
+};
+class delete_demo{
+public:
+    delete_demo() = default;
+    ~delete_demo() = default;
+
+    delete_demo(const delete_demo&) = delete;
+    delete_demo& operator=(const delete_demo&) = delete;
+};
+```
+
+**override**, 在C++中, 如果一个member function是virtual的, 那么它的所有派生出来的子类中所有的同名函数也会是虚函数,无需`virtual`修饰, 因此在阅读时候可能会有一点困难,无法区别哪些函数是继承自父类,哪些函数是自己写测,同时可能使用一个同名但是签名不同的函数,为了解决这个问题, 2.0中引入了一个新的关键字, **显式标记虚函数的重载**:
+```C++
+struct abstract : public interface{
+    virtual ~abstract() = default;
+
+    void f() override final {}
+    void g() override {}
+};
+
+struct last final : public abstract{
+    virtual ~last() = default;
+
+    //void f() override {}
+    void g() override {}
+};
+```
+
+**final** 用于控制类的继承和虚函数:
+- 在类名后使用final, 显示禁止类被继承, **无法继续派生**
+- 虚函数名后使用final, **显示禁止该函数在子类里面被重载**
+
+**成员初始化**, C++ 2.0 标准放松了成员变量初始化的要求, 允许类在声明时使用赋值或者花括号的方式直接初始化,而无需在构造函数中特别指定.<br>
+**委托沟造**: 过去的程序中,为了避免代码重复, 往往会使用特殊的初始化函数供构造函数调用, 在2.0中引入了委托构造函数,可以**将对象的构造过程"委托"给其他构造函数来使用**:
+```C++
+class demo
+{
+private:
+    int x,y;
+
+public:
+    demo() : demo(0, 0) {}
+    demo(int a) : demo(a, 0) {}
+    demo(int a, int b){
+        x=a;y=b;        //相当于过去private的初始化函数init(a, b);
+    }
+};
+```
+
+### 泛型编程
+
+**类型别名** 2.0引入了`using alias = type` 形式的类型别名, 超越了原来`typedef`的范围, 可以结合template作为模板类声明"偏特化"的别名:
+```C++
+template<typename T>
+using int_map = std::map<int, T>;
+int_map<std::String> intStrMap;
+```
+**编译期常量** 在C++中用关键词`const`限定的量只是一个运行期不可修改的常量, 在泛型编程中可能需要编译期不可修改的常量,c++新增 __constexpr__, 相当于编译期的常量, 可以让编译器更好地优化代码,C++11中constexpr函数用法比较严格, 只允许一个return, 但是在14中有一些放宽.<br>
+
+**静态断言** 可以在编译期加入诊断信息, 提前检查可能发生的错误,使用的基本形式如下,一般需要配合type_traits库使用, 检查各种编译期的条件.
+```C++
+    static_assert(condition, message);
+    //如判是多少位的int
+    static_assert(sizeof(int)==4,"int must be 32bit");
+```
+**可变参数模板** 基本使用的方式如下(用`...`声明不确定的参数):
+* 模板函数 `template<typename ... T> void some_fun{};`
+* 模板类 `template<typename ... T> class some_class{};`
+
+声明了可变模板参数之后, 还需要解包之后才能使用:
+```C++
+    template<typename ... Args>
+    int print( const char *format, const Args& ... args){
+        return printf(format, args...);
+        //return printf(format, std::forward<Args>(args)...);
+    }
+```
+
+### 函数式编程
+functional programming是一种编程范式, 基于$\lambda$演算理论,**把计算过程视为数学函数的组合运算**.
