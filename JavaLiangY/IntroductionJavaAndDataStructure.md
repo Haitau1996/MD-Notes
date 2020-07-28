@@ -19,4 +19,10 @@
 
 ## Chap 2: 基本程序设计
 
-每一个Java程序都应该有一个main方法, 作为程序运行的入口, 变量名应该使用描述性文字,而不是x和y这种名字. 
+* 每一个Java程序都应该有一个main方法, 作为程序运行的入口, 变量名应该使用描述性文字,而不是x和y这种名字. 
+* java的基本数据类型: **byte**, short, int, long, float 和 double
+
+## Chap 3: 选择
+
+### boolean 数据类型
+保存布尔值的变量称为boolen variable, 只能是true和flase, **并且无法和int类型相互转换**.
