@@ -9,7 +9,7 @@
 
 全文检索工具 : wingrep,source insight
 
-## Variadic Templates
+## Variadic Templates-intro
 
 可变参数函数的实例,帮助做recursive,n个写成 1 + 其他
 ```C++
@@ -399,3 +399,10 @@ functional programming是一种编程范式, 基于$\lambda$演算理论,**把�
     ```
 
 ## Chap 2: Intro to 模板元编程
+
+
+***
+# Mastering C++ STL
+author **Vittorio Romeo** <br>
+
+## Move Semantics
