@@ -181,7 +181,21 @@ lam();
 ![lambda](figure/v14-1.png)<br>
 三个opt都是可选的, 只要有其中一个,就要有小括号.[]是用by value/reference 的形式取用想要见的外部变量,**mutable才可以改变它**,[]中的加=接受其他的objects by value,其行为是一个匿名的functor:<br>
 ![lambda](figure/v14-2.png)<br>
+`std::set<Persion,decltype(cmp)> coll(cmp);`set 需要一个比大小函数的type, 我们就将这个工作转给编译器, 如果auto和template没办法拿到lambda的type(无法使用)时候,如**pass a lambda to hash function or ordering or sorting criterion**,使用decltype,同时set也需要一个lambda对象传给构造函数, 否则它将调用一个默认的构造函数,但是**lambda没有构造函数,也没有赋值操作**, 作为一个排序准则的东西, 写成一个functor更直观一些,下面一个就是使用lambda(inline)替代functor(不是一个inline).<br>
+```C++
+    std::vector<int> vi{33,3,67,170,7,64};
+    int x = 30;
+    int y = 70;
+    vi.erase(std::remove_if(vi.begin(),
+                            vi.end(),
+                            [x,y](int n){return x<n && n< y;}),
+             vi.end());
+    for(auto i:vi) std::cout << i << " ";
+```
 
+## Variadic Templates
+
+:/ //TODO: vedio 15
 
 ***
 # 内存管理-从平地到万丈高楼
