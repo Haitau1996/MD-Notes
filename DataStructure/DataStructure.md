@@ -147,4 +147,16 @@
 * **二叉树的列表和静态链表表示**
 
 ## 二叉搜索树(BST)
-/:/ //TODO:vedio 40
+
+查找算法: 使用的实际上是尾递归, 因此可以将函数改为迭代的形式
+```C++
+Position IterFind(ElementType match, BinTree BST){
+    while(BST){
+        if(match > BST->data) BST = BST->right;
+        else if(match < BST->data) BST = BST->left;
+        else return BST;
+    }
+    return NULL;
+}
+```
+:/ //TODO:vedio 40

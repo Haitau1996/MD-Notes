@@ -71,8 +71,19 @@ int* p{}; // p us initialized by nullptr
 ![init stl](figure/v6-2.png)<br>
 
 ## explicit for ctor taking more than one argument
-
-在2.0之前,:/ // TODO: 2min in vedio 7 
+ 
+`explicit` 关键字, 在2.0之前,用在一个实参的构造函数之前,用于拒绝暗中进行的类型转换:
+```C++
+class Complex{
+    ...
+} ;
+Complex c1(12,5);
+Complex c2 = c1 + 5; // 5会被默认构造函数变成5+0i
+//如果在Complex构造函数加入关键词explicit,上面的自动类型转换就无法进行
+    explicit Complex(int re, int im=0):real(re),imag(im){}
+//  operand types are 'Complex' and int
+```
+2.0之后不再有单一实参的限制,可以给多实参的构造函数禁止做转换.
 
 ## range-based for statement
 
@@ -126,11 +137,51 @@ std::vector<int, MyAlloc<T>> coll;
 假设容器没有迭代器,迭代器没有traits的情况呢(标准库不会出现这个问题).
 
 ## template template parameter
-//TODO: v11.6 to lamda
+//TODO:
+
+## decltype
+使用这个新的关键字, 可以让编译器找出表达式的type,这更像是我们对于gcc中非标准的`typeof`的需求, 在c++中有`typeid`, 但不好用, decltype的用法如下:
+1. 用于声明return type, 允许后置返回类型,和lambdas声明return type很像
+    ```C++
+    template<typename Ty1, typename Ty2>
+    auto add(Ty1 x, Ty2 y)-> decltype(x+y);
+    ```
+2. 运用于metaprogramming
+    ```C++
+    typedef typename decltype(obj)::iterator iType;// 有::就要加typename,不然容易不被识别
+    decltype(obj) anotherObj(obj);
+    ```
+3. 用于pass the type of a lambda
+    ```C++
+    auto cmp =[](const Person& p1, const Person &p2){...};
+    ...
+    std::set<Persion,decltype(cmp)> coll(cmp);
+    ```
+
+```C++
+map<string, float> coll;
+decltype(coll)::value_type elem; // 容器中有value_type,因此可以从对象中找到它的value类型
+```
 
 ## Lambdas 
 
-C++ 11 引入了lambdas, 允许定义一个inline functionality, 用于当做是parameter or local对象, 它改变了我们对c++标准库的使用方式.
+C++ 11 引入了lambdas, 允许定义一个inline functionality, 用于当做是parameter or local对象, 它改变了我们对c++标准库的使用方式.<br>
+它是一种可以定义在statements 或者expressions中间的functionality定义,当做一个Inline function使用. 
+```C++
+[]{
+    //function body
+}();  // 加小括号直接调用,或者可以将它pass给一个object然后get called
+auto lam = []{
+    std::cout <<　"hello lambda" <<std::endl;　
+};
+...
+lam();
+```
+
+![lambda](figure/v14-1.png)<br>
+三个opt都是可选的, 只要有其中一个,就要有小括号.[]是用by value/reference 的形式取用想要见的外部变量,**mutable才可以改变它**,[]中的加=接受其他的objects by value,其行为是一个匿名的functor:<br>
+![lambda](figure/v14-2.png)<br>
+
 
 ***
 # 内存管理-从平地到万丈高楼
