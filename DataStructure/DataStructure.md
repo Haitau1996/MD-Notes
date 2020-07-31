@@ -1,5 +1,4 @@
-# The Note is based on Sartaj Sahni's Book Mark Weiss's Book and Cheng Jie's Book on Data Structure
-
+# 数据结构 浙江大学 陈越
 ## Introduction
 **什么是数据结构** [数据结构](https://simple.wikipedia.org/wiki/Data_structure)是计算机中存储、组织数据的方式，通常情况下精心选择的数据结构可以带来最优效率的算法，一般是抽象数据类型(ADS, Abstruct Data Type)
 * 数据对象在计算机中的组织方式
@@ -219,3 +218,30 @@
 如何判别?  **在T中按顺序搜索需要查找序列的某个树, 如果经过的节点在前面均被访问过,则一致,遇到未访问过的节点,则不一致**.
 
 ## 堆
+### Intro
+优先队列: 特殊的队列, 取出元素是按照优先权的大小, 而不是元素进入队列的先后顺序.<br>
+1. 数组实现:
+    - 插入: 总是插入尾部 $\sim \Theta(1)$
+    - 删除: 
+        * 查找最大(或者最小)的关键字$\sim \Theta(n)$
+        * 删除相关需要移动的元素$\sim O(n)$
+
+2. 链表实现:
+    * 插入和查找是相同的 ,删除元素需要的时间$\sim O(1)$
+
+3. 有序的数组:
+    * 插入:
+        * 寻找合适的位置 $\sim O(n) \text{ or} \sim O (\log_2 n)$
+        * 移动元素并插入 $\sim O(n)$
+    * 删除操作: 删除最后一个元素 $\sim \Theta(1)$
+
+4. 有序链表
+    * 插入无法用binary search, 找合适的位置 $\sim O(n)$, 插入元素 $\sim \Theta(1)$
+
+__考虑树的实现__:<br>
+二叉搜索树:sob: 一直删除的都是最右的节点,可能导致树的严重不平衡, 采用二叉树结构, 应该更加关注**删除** 操作:<br>
+* 最大/小值在根节点(有序性)
+* 完全二叉树(结构性)
+
+### 堆的插入
+// TODO: vedio 52
