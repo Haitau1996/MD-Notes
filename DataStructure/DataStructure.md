@@ -148,15 +148,52 @@
 
 ## 二叉搜索树(BST)
 
+### BST 的查找
+查找问题有 "静态查找" 与 "动态查找",针对动态查找, **二叉查找树**是一个比较好的存储结构.<br>
+:star: 左子树所有节点都比根节点的值小
+:star: 右子树所有节点都比根节点值大
+:star: 左右节点都是BST(递归定义)
+
 查找算法: 使用的实际上是尾递归, 因此可以将函数改为迭代的形式
 ```C++
-Position IterFind(ElementType match, BinTree BST){
-    while(BST){
-        if(match > BST->data) BST = BST->right;
-        else if(match < BST->data) BST = BST->left;
-        else return BST;
+    Position IterFind(ElementType match, BinTree BST){
+        while(BST){
+            if(match > BST->data) BST = BST->right;
+            else if(match < BST->data) BST = BST->left;
+            else return BST;
+        }
+        return NULL;//查找失败
     }
-    return NULL;
-}
 ```
-:/ //TODO:vedio 40
+### BST 的插入
+
+```C++
+    BinTree Insert(Elemtype X, BinTree BST){
+        if(BST == nullptr){
+            BST = (struct Node*)malloc(sizeof(struct Node));
+            BST->data = X;
+            BST->left = nullptr;
+            BST->right = nullptr;
+        }
+        else if(X < BST->data) BST->left = Insert(X,BST->left);
+        else if(X > BST->data) BST->right = Insert(X,BST->right);
+        return BST;
+    }
+```
+
+### BST 的删除
+
+:stars: 一个叶节点: 直接删除
+:stars: 只有一个左/又 child,父节点指向要删除节点的child
+:cry: 有左右两个child,用右子树最小节点的值or左子树最大的值替代( **他们都为前两种情况之一** )
+![BST remove](figure/ZJU4.1.png)<br>
+
+### 平衡二叉树 - Intro
+不同的节点插入顺序会导致**平均查找长度(ASL)**的不同, 用平衡因子(BF)= $H_l - H_r$, 平衡二叉树(AVL树):
+* 空树或者
+* 任一节点左右子树高度差绝对值不超过1, $|BF(T)\leq 1|$
+
+平衡二叉树高度h, 构成最小的节点树,  $n_h = n_{h-1} + n_{h-2} + 1$, 两边加一,大概就和斐波那契数列差一位, 但是增长都是指数增长.
+
+### 平衡二叉树的调整
+//TODO: vedio 44
