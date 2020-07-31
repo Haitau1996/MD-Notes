@@ -36,4 +36,29 @@ reinterpret_cast最常见的用途是 **转换函数指针类型,函数指针的
 
 ### Item 3 绝对不要以多态的方式处理数组
 
-C++允许以base class的pointer和reference来操作"derived class object 说形成的数组" 。
+C++允许以base class的pointer和reference来操作"derived class object 所形成的数组"。如果有继承至BST的BalancedBST, 用BST的指针去便利BalancedBST, 就会出问题:
+```C++
+class BST { ... };
+class BalancedBST: public BST { ... };
+void printBSTArray(ostream& s,
+const BST array[],
+int numElements){
+    for (int i = 0; i < numElements; ++i) {
+    s << array[i]; // this assumes an
+    }              // operator<< is defined
+}                  // for BST objects
+BalancedBST bBSTArray[10];
+...
+printBSTArray(cout, bBSTArray, 10);
+```
+bBSTArray[i]实际是一个指针运算表达式的缩写, 代表*(bBSTArray+i),相距$i \times sizeof(\text{数组中的对象})$, 编译器将它视为$i \times sizeof(BST)$, 但是derived class 通常比base class 对象大, 这样就会出现问题.<br>
+此外, 如用base 指针删除derived class object组成的数组, 编译器看到`delete[] array`的句子, 通常理解为:
+```C++
+for (int i = the number of elements in the array - 1;i >= 0;--i){
+    array[i].BST::~BST(); // call array[i]’s destructor
+} 
+```
+而**通过base pointer删除一个derived classes object构成的数组, 其结果是未定义的** .
+
+### Item 4 非必要不提供default constructor
+
