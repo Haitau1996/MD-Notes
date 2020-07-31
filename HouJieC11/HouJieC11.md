@@ -228,7 +228,7 @@ GNU C++
 # 内存管理-从平地到万丈高楼
 ## 第一讲: primitives
 我们的目标是从最基础的C++语言构建到高知名度的内存管理器,彻底了解内存管理高高低低的方方面面.<br>
-Doug Lea的作品 DL Malloc,主页 `gee.cs.oswego.edu.cn/dl/`, 推荐的书籍:
+Doug Lea的作品 DL Malloc,[主页](http://gee.cs.oswego.edu/dl/), 推荐的书籍:
 
 1. STL源代码剖析, Chap 2
 2. Modern C++ Design, Chap 4
@@ -427,9 +427,3 @@ functional programming是一种编程范式, 基于$\lambda$演算理论,**把�
 
 ## Chap 2: Intro to 模板元编程
 
-
-***
-# Mastering C++ STL
-author **Vittorio Romeo** <br>
-
-## Move Semantics
