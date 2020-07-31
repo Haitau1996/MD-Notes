@@ -195,9 +195,36 @@ lam();
 
 ## Variadic Templates
 
-:/ //TODO: vedio 15
+* 用参数个数**逐个递减**,实现递归函数的调用.
+* 参数类型也可以有变化, 类型也相对应减少
 
-***
+在模板编程中, 编译器调用的是更特化的函数, 因此使用variadic template,可以写一个泛化的函数, 实际调用中它永远不会被调用, 但是可以编译通过, 没有二义性.<br>
+//todo: add variadic_temp.cpp
+
+例2:用variadic template 重写printf<br>
+![example](figure/v16-1.png)<br>
+例3 :使用initializer_list实现多个输入的最大值<br>
+![example](figure/v17-1.png)<br>
+例4: 使用variadic template 实现maximum
+//todo: add variadic_max.cpp
+
+//TODO:vedio 19
+
+## 标准库的新特性-Intro
+visual c++
+...\include 子目录
+...\include\cliext
+
+GNU C++
+4.9.2\include
+4.9.2\include\C++
+4.9.2\include\C++\bits //stl开投的文件
+4.9.2\include\C++\ext  //extention
+
+## Rvalue and move 语义
+//TODO: vedio 23
+
+*** 
 # 内存管理-从平地到万丈高楼
 ## 第一讲: primitives
 我们的目标是从最基础的C++语言构建到高知名度的内存管理器,彻底了解内存管理高高低低的方方面面.<br>
