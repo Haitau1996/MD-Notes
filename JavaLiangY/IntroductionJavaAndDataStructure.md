@@ -26,3 +26,31 @@
 
 ### boolean 数据类型
 保存布尔值的变量称为boolen variable, 只能是true和flase, **并且无法和int类型相互转换**.
+
+### if 分支结构常见问题
+* 在if行出现分号, 相当于一个空语句, 后面的语句块无论如何都会运行
+* 悬空的else出现错位: 同一个块中, else总是和它最近的If子句匹配
+* 浮点值的相等测试
+
+常见的陷阱:
+* 简化bool变量赋值
+* 避免相同情形下的重复代码
+
+条件操作`boolen-expression ? expression1: expression2;`
+java产生随机数的方法`(int)(Math.random()*10)` .逻辑操作符和c++中的情形一直, 也是有!/&&/||/^用于产生复合布尔表达式.
+
+### switch 语句
+```Java
+switch(status){
+    case 0 : // do something
+            break;
+    case 1 : // de something
+            break;
+    default: // do something
+}
+```
+
+* status必须计算出一个char, byte,short, int 或者String 类型, 必须用括号括住
+* value必须是和status相同的类型, 而且是**常量表达式**
+
+## Chap 4: 数学函数\字符和字符串
