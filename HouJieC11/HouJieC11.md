@@ -334,3 +334,22 @@ functional programming是一种编程范式, 基于$\lambda$演算理论,**把�
     ```
 
 ## Chap 2: Intro to 模板元编程
+
+### 常用语言元素
+
+:smile: enum \ static用于定义编译期的整数变量
+:smile: typedef \ using 最重要的元编程关键字， 用于定义数据
+:smile: template,模板元编程的起点，主要用于定义元函数
+:cry: “::”, 用于解析类型作用域获取计算结果
+
+### 元数据
+
+C++编译器在编译期可以操作的数据， 不可变，不能就地修改，常见的为整型和c++的类型，它不是普通的运行时变量， 而是如int\double\class(非模板类) 这样的抽象数据类型。since C++ 11/14， 常用using和typedef关键字和 using关键字声明元数据：
+```C++
+    using meta_data1 = int;
+    using meta_data2 = std::vector<float>;
+```
+
+### 元函数
+
+模板元编程中用于操作元数据的“构件”， 可以在编译期被调用。
