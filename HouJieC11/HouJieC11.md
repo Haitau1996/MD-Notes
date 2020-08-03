@@ -137,7 +137,7 @@ std::vector<int, MyAlloc<T>> coll;
 假设容器没有迭代器,迭代器没有traits的情况呢(标准库不会出现这个问题).
 
 ## template template parameter
-
+//todo 
 
 ## decltype
 使用这个新的关键字, 可以让编译器找出表达式的type,这更像是我们对于gcc中非标准的`typeof`的需求, 在c++中有`typeid`, 但不好用, decltype的用法如下:
@@ -222,7 +222,26 @@ GNU C++
 4.9.2\include\C++\ext  //extention
 
 ## Rvalue and move 语义
-//TODO: vedio 23
+Rvalue reference是一种新的reference type, 是为了解决**不必要的copying**,当赋值的右手边是一个rvalue, 左手边的接受段可以偷右手边的资源而不是执行一个单独的allocation.
+
+* Lvalue: 可以出现于operator=左侧者
+* Rvalue: 只能出现在operator右侧者(最常见的就是临时对象)
+
+```C++
+string s1("hello");
+string s2("world");
+s1+s2= s2;//居然可以通过编译
+string() = "world"; // 居然可以对temp 对象赋值
+//这两个做法对于int 不可以, 但是对于string 和complex都可以做
+```
+Rvalue reference
+```C++
+int foo(){return 5;}
+int x = foo(); // OK
+int *p = &foo();//error: 对rvalue取其reference, before c++0x没有所谓的Rvalue reference
+foo() = 7; // error
+```
+
 
 *** 
 # 内存管理-从平地到万丈高楼
