@@ -9,7 +9,7 @@
 
 全文检索工具 : wingrep,source insight
 
-## Variadic Templates
+## Variadic Templates-intro
 
 可变参数函数的实例,帮助做recursive,n个写成 1 + 其他
 ```C++
@@ -71,8 +71,19 @@ int* p{}; // p us initialized by nullptr
 ![init stl](figure/v6-2.png)<br>
 
 ## explicit for ctor taking more than one argument
-
-在2.0之前,:/ // TODO: 2min in vedio 7 
+ 
+`explicit` 关键字, 在2.0之前,用在一个实参的构造函数之前,用于拒绝暗中进行的类型转换:
+```C++
+class Complex{
+    ...
+} ;
+Complex c1(12,5);
+Complex c2 = c1 + 5; // 5会被默认构造函数变成5+0i
+//如果在Complex构造函数加入关键词explicit,上面的自动类型转换就无法进行
+    explicit Complex(int re, int im=0):real(re),imag(im){}
+//  operand types are 'Complex' and int
+```
+2.0之后不再有单一实参的限制,可以给多实参的构造函数禁止做转换.
 
 ## range-based for statement
 
@@ -126,17 +137,129 @@ std::vector<int, MyAlloc<T>> coll;
 假设容器没有迭代器,迭代器没有traits的情况呢(标准库不会出现这个问题).
 
 ## template template parameter
-//TODO: v11.6 to lamda
+//todo 
+
+## decltype
+使用这个新的关键字, 可以让编译器找出表达式的type,这更像是我们对于gcc中非标准的`typeof`的需求, 在c++中有`typeid`, 但不好用, decltype的用法如下:
+1. 用于声明return type, 允许后置返回类型,和lambdas声明return type很像
+    ```C++
+    template<typename Ty1, typename Ty2>
+    auto add(Ty1 x, Ty2 y)-> decltype(x+y);
+    ```
+2. 运用于metaprogramming
+    ```C++
+    typedef typename decltype(obj)::iterator iType;// 有::就要加typename,不然容易不被识别
+    decltype(obj) anotherObj(obj);
+    ```
+3. 用于pass the type of a lambda
+    ```C++
+    auto cmp =[](const Person& p1, const Person &p2){...};
+    ...
+    std::set<Persion,decltype(cmp)> coll(cmp);
+    ```
+
+```C++
+map<string, float> coll;
+decltype(coll)::value_type elem; // 容器中有value_type,因此可以从对象中找到它的value类型
+```
 
 ## Lambdas 
 
-C++ 11 引入了lambdas, 允许定义一个inline functionality, 用于当做是parameter or local对象, 它改变了我们对c++标准库的使用方式.
+C++ 11 引入了lambdas, 允许定义一个inline functionality, 用于当做是parameter or local对象, 它改变了我们对c++标准库的使用方式.<br>
+它是一种可以定义在statements 或者expressions中间的functionality定义,当做一个Inline function使用. 
+```C++
+[]{
+    //function body
+}();  // 加小括号直接调用,或者可以将它pass给一个object然后get called
+auto lam = []{
+    std::cout <<　"hello lambda" <<std::endl;　
+};
+...
+lam();
+```
 
-***
+![lambda](figure/v14-1.png)<br>
+三个opt都是可选的, 只要有其中一个,就要有小括号.[]是用by value/reference 的形式取用想要见的外部变量,**mutable才可以改变它**,[]中的加=接受其他的objects by value,其行为是一个匿名的functor:<br>
+![lambda](figure/v14-2.png)<br>
+`std::set<Persion,decltype(cmp)> coll(cmp);`set 需要一个比大小函数的type, 我们就将这个工作转给编译器, 如果auto和template没办法拿到lambda的type(无法使用)时候,如**pass a lambda to hash function or ordering or sorting criterion**,使用decltype,同时set也需要一个lambda对象传给构造函数, 否则它将调用一个默认的构造函数,但是**lambda没有构造函数,也没有赋值操作**, 作为一个排序准则的东西, 写成一个functor更直观一些,下面一个就是使用lambda(inline)替代functor(不是一个inline).<br>
+```C++
+    std::vector<int> vi{33,3,67,170,7,64};
+    int x = 30;
+    int y = 70;
+    vi.erase(std::remove_if(vi.begin(),
+                            vi.end(),
+                            [x,y](int n){return x<n && n< y;}),
+             vi.end());
+    for(auto i:vi) std::cout << i << " ";
+```
+
+## Variadic Templates
+
+* 用参数个数**逐个递减**,实现递归函数的调用.
+* 参数类型也可以有变化, 类型也相对应减少
+
+在模板编程中, 编译器调用的是更特化的函数, 因此使用variadic template,可以写一个泛化的函数, 实际调用中它永远不会被调用, 但是可以编译通过, 没有二义性.<br>
+//todo: add variadic_temp.cpp
+
+例2:用variadic template 重写printf<br>
+![example](figure/v16-1.png)<br>
+例3 :使用initializer_list实现多个输入的最大值<br>
+![example](figure/v17-1.png)<br>
+例4: 使用variadic template 实现maximum
+//todo: add variadic_max.cpp
+
+//TODO:vedio 19
+
+## 标准库的新特性-Intro
+visual c++
+...\include 子目录
+...\include\cliext
+
+GNU C++
+4.9.2\include
+4.9.2\include\C++
+4.9.2\include\C++\bits //stl开投的文件
+4.9.2\include\C++\ext  //extention
+
+## Rvalue and move 语义
+Rvalue reference是一种新的reference type, 是为了解决**不必要的copying**,当赋值的右手边是一个rvalue, 左手边的接受段可以偷右手边的资源而不是执行一个单独的allocation.
+
+* Lvalue: 可以出现于operator=左侧者
+* Rvalue: 只能出现在operator右侧者(最常见的就是临时对象)
+
+
+```C++
+string s1("hello");
+string s2("world");
+s1+s2= s2;//居然可以通过编译
+string() = "world"; // 居然可以对temp 对象赋值
+//这两个做法对于int 不可以, 但是对于string 和complex都可以做
+```
+Rvalue reference
+```C++
+int foo(){return 5;}
+int x = foo(); // OK
+int *p = &foo();//error: 对rvalue取其reference, before c++0x没有所谓的Rvalue reference
+foo() = 7; // error
+```
+vector的insert 有两个版本, 
+```C++
+insert(...,&x); //会调用x的拷贝构造
+insert(...,&&x);//会调用x的拷贝构造,因该要有move的构造函数版本
+```
+![move example](figure/V23-1.png)<br>
+move之后, 原来的指针就应该被打断, 否则就是代码有问题.如果Insert 是一个左值, 而且将来不会再用到之后, 可以使用`std::move(v)`就相当于拿到了Rvalue reference.
+
+## Perfect forwarding
+![insert two version](figure/V24-1.png)<br>
+C++ 2.0之后有新的move aware的 insert 版本, 但是在做搬移的时候, 还是有需要注意, 如果没有特殊的设计, 那么转交的动作是不完美的.<br>
+// TODO: vedio 24.5
+
+*** 
 # 内存管理-从平地到万丈高楼
 ## 第一讲: primitives
 我们的目标是从最基础的C++语言构建到高知名度的内存管理器,彻底了解内存管理高高低低的方方面面.<br>
-Doug Lea的作品 DL Malloc,主页 `gee.cs.oswego.edu.cn/dl/`, 推荐的书籍:
+Doug Lea的作品 DL Malloc,[主页](http://gee.cs.oswego.edu/dl/), 推荐的书籍:
 
 1. STL源代码剖析, Chap 2
 2. Modern C++ Design, Chap 4

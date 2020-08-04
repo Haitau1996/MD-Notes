@@ -12,11 +12,11 @@ C++为一个多范式的编程语言，同时支持过程形式、面向对象�
 
 ### Item 2 以编译器替换预处理器
 ```C++
-#define ASPECT_RATIO 1.653
+    #define ASPECT_RATIO 1.653
 ```
 在编译前将所有ASPECT_RATIO都替换成了1.653，编译错误的提示信息也是1.653，十分迷惑。
 ```C++
-const double AspectRatio = 1.653;
+    const double AspectRatio = 1.653;
 ```
 常量的定义有两点值得注意的：
 
@@ -1125,6 +1125,40 @@ private:
 C++ 的template 机制本身自己是一部完整的图灵机:可以被用来计算任何可计算的值, 即便如此, 有一组核心的观念支撑基于template的元编程(template metaprogramming).
 
 ### Item 41 了解隐式接口和编译器多态
+
+
+## 定制new和delete
+
+多线程环境下的内存管理, 受到单线程系统不曾遇到过的挑战, heap 是一个可被改动的全局资源, 在多线程系统充斥着疯狂访问这类资源的**race condition** ,如果没有适当的同步控制,一旦使用无锁算法或者精心防止并发访问时,  调用内存的例程很容易导致heap的数据结构内容损坏.此外, STL中使用的内存**是由容器所拥有的分配器对象(allocator objects)管理**, 而不是直接由new和delete管理 .
+
+
+### Item 49 了解new-handler的行为
+
+operator new 无法满足内存分配需求的时候, 会抛出异常(以前是返回一个null指针), 在抛出异常之前, 会调用一个客户指定的错误处理函数(new-handler),为了指定这个函数, 用户必须调用<new>中的set_new_handler,`set_new_handler` 实际上参数和返回值都是一个函数指针.
+```C++
+namespace std {
+typedef void (*new_handler)();
+    new_handler set_new_handler(new_handler p) throw();
+}
+// 具体的例子如下
+void outOfMem(){
+    std::cerr << "Unable to satisfy request for memory\n";
+    std::abort();
+}
+int main(){
+    std::set_new_handler(outOfMem);
+    int *pBigDataArray = new int[100000000L];
+    ...
+}
+```
+设计良好的new-handler 函数特点:
+* **让更多内存可被使用**,如在程序运行开始就分配一大块内存, new-handler调用时候释放给程序使用
+* 安装另外一个new-handler, 无法取得更多内存的时候好调用更有能力的new-handler替换自己
+* 卸除handler, 将null指针传给set_new_handler
+* 抛出bad_alloc异常, 不被operator new捕捉, 从而能传到内存索引处
+* 不返回
+
+
 
 ***
 ## 杂项讨论
