@@ -227,6 +227,7 @@ Rvalue reference是一种新的reference type, 是为了解决**不必要的copy
 * Lvalue: 可以出现于operator=左侧者
 * Rvalue: 只能出现在operator右侧者(最常见的就是临时对象)
 
+
 ```C++
 string s1("hello");
 string s2("world");
@@ -241,7 +242,18 @@ int x = foo(); // OK
 int *p = &foo();//error: 对rvalue取其reference, before c++0x没有所谓的Rvalue reference
 foo() = 7; // error
 ```
+vector的insert 有两个版本, 
+```C++
+insert(...,&x); //会调用x的拷贝构造
+insert(...,&&x);//会调用x的拷贝构造,因该要有move的构造函数版本
+```
+![move example](figure/V23-1.png)<br>
+move之后, 原来的指针就应该被打断, 否则就是代码有问题.如果Insert 是一个左值, 而且将来不会再用到之后, 可以使用`std::move(v)`就相当于拿到了Rvalue reference.
 
+## Perfect forwarding
+![insert two version](figure/V24-1.png)<br>
+C++ 2.0之后有新的move aware的 insert 版本, 但是在做搬移的时候, 还是有需要注意, 如果没有特殊的设计, 那么转交的动作是不完美的.<br>
+// TODO: vedio 24.5
 
 *** 
 # 内存管理-从平地到万丈高楼
