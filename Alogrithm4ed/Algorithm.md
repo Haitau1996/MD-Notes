@@ -97,3 +97,4 @@ Connect 具备的性质<br>
 这个时候我们需要Maintain两个pointer,分别对应first和Last Node.
 
 #### 泛型
+//TODO: vedio 4-4
