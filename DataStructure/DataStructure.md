@@ -435,5 +435,70 @@ void Insertion_sort(ElementType A[], size_t N){
 ### 堆排序
 
 **选择排序**: 每次找到最小元,将它位置赋值给MinPosition, 然后 `A[i]`和 `A[MinPosition]`互换,无论如何,$T = \Theta (N^2)$, 问题就在于如何找到最小元<br>
-堆排序就是选择排序的一个改进,
-//TODO: vedio 110
+堆排序就是选择排序的一个改进,一个非常傻的算法:
+```C++
+void heap_sort(ElementType A[], int N){
+    BuildHeap(A);                   //  O(N)
+    for (i = 0; i<N ; ++i){
+        TempA[I] = DeletaMin(A);    // 每次循环O(log N)
+    }
+    for(i = 0; i< N; ++i)           // O(N)
+        A[i] = TempA[i];
+}
+```
+问题:
+* 需要额外的N空间
+* 复制也是需要时间的
+
+下面是一个改进的算法:
+```C++
+void Heap_Sort(ElementType A[], int N){
+    for(i = N/2; i>=0; i--) 
+        PercDown(A,i,N);
+    for(i = N-1; i>0; i--){
+        Swap(&A[0],&A[i]);      // delete max
+        PercDown(A,0,i);
+    }    
+}
+```
+* 定理: 堆排序处理N个不同元素的随机排列平均次数是$2N\log N - O(N \log \log N)$
+* 堆排序给出最佳的平均复杂度(略小于$N\log N$), 但是实际效果不如Sedgewick 增量序列的希尔排序
+
+### MergeSort 
+核心思想是**给两个有序的子序列排序**, 这样需要一个Help function:<br>
+![Merge Helper](figure/ZJU9.2.png)<br>
+
+#### 递归实现
+
+典型的 devide and conquer 算法设计<br>
+![MergeSort D&C](figure/ZJU9.3.png)<br>
+* 没有好坏的说法, 都是$O(N \log N)$ 
+* 算法是稳定的
+* 然后用Merge_Sort 统一接口, 只做一次malloc,然后每个merge在数组的不同部分去做
+
+#### 非递归实现
+空间复杂度最低要求依然是$O(N)$,可以在A和Atemp之间来回倒腾数据:<br>
+![Merge Sort Space](figure/ZJU9.4.png)<br>
+一趟归并的实现如下图:<br>
+![One Merge](figure/ZJU9.5.png)<br>
+注意每次都是做两个Merge pass,这样完成时候 , A 就是已经merge sort 好的版本, 可以直接将TempA free
+![Merge Sort loop](figure/ZJU9.6.png)<br>
+
+* 在外排序时候是一个非常好用的工具
+
+### 快速排序
+
+在大量随机的数据时候使用性能非常出色, 但是有非常多dirty的细节如果没有注意就无法得到良好的性能,其伪代码描述如下:<br>
+![quick sort idea](figure/ZJU10.1.png)<br>
+* [如何选择主元]()
+* [如何将数据分成两个部分]()
+
+#### 如何选主元
+* 如果选则第一个元素, 那么对于一个已经有序的数组, 需要$O(N^2)$的时间复杂度
+* 如果随机选择pivot, `rand()` 函数并不便宜
+* 取头/中/尾三个数字的中位数
+
+![select pivot](figure/ZJU10.2.png)<br>
+
+#### 子集划分
+//todo:vedio 116
