@@ -362,7 +362,63 @@ void DFS(Vertex V){ // 树先序遍历的推广
 图不连通, 每次遍历只能做一个联通分量, 因此自能对G的每个点V, 如果没访问过, 则再次调用BFS/DFS.
 
 ### 小白专场: 如何建立图
-//TODO: vedio 74
+#### 邻接矩阵
+简单的做法用接邻矩阵`WeightType G[MaxVertexNum][MaxVertexNum]`, 然后再有两个 int 类型的变量声明当前的节点数和边数即可.<br>
+更好的做法是将它封装在一个结构体里面:
+```C++
+typedef struct Gnode *PtrGnode;
+struct Gnode{
+    int NumVertex;
+    int NumEdges;
+    WeightType G[MaxVertexNum][MaxVertexNum];
+    DataType Data[MaxVertexNum]; // 存顶点中的数据,在某些图中可能有用
+};
+typedef PtrGnode MatrixGraph; // pass by pointer 比 value更高效
+```
+- [x] 初始化一个由VertexNum 个顶点但是没有边
+- [x] 像图中插入一条边
+    ```C++
+    typedef struct ENode *PtrEdge;
+    struct ENode{
+        Vertex V1, V2;
+        WeightType Weight;
+    };
+    typedef PtrEdge Edge;
+    void insertEdge(MatrixGraph Graph, Edge E){
+        Graph->G[E->V1][E->V2] = E->Weight;
+        // 对于无向图, 需要插入两条边
+        Graph->G[E->V2][E->V1] = E->Weight;
+    }
+    ```
+#### 邻接表
+```C++
+// 定义图
+typedef struct Gnode *PtrGnode;
+struct Gnode{
+    int NumVertex;
+    int NumEdges;
+    AdjList G;
+};
+typedef PtrGnode ListGraph;
+// 定义节点
+typedef struct Vnode{
+    PtrToAdjVNode FirstEdge;
+    DataType Data;  
+} AdjList[MaxVertexNum];
+// 定义边
+typedef struct AdjVNode *PtrAdjVNode;
+struct AdjVNode{
+    Vertex AdjV;  // 邻接点下标
+    WeightType Weight; // 权重
+    PtrAdjVNode Next; 
+}
+```
+
+- [x] 初始化一个由顶点但是没有边(for each Node, `Graph->G[V].FirstEdge= nullptr`)
+- [x] 插入一条边
+// todo: chap 7 讲解题目全部放弃
+## 图的算法
+### 最小生成树问题
 
 
 ## 排序
@@ -501,4 +557,52 @@ void Heap_Sort(ElementType A[], int N){
 ![select pivot](figure/ZJU10.2.png)<br>
 
 #### 子集划分
-//todo:vedio 116
+
+* 定义一个左边的标兵i和右边的标兵j
+* 左边标兵元素比pivot小, 则i++
+* 否则发生一个警告, 转向右边的标兵
+* 右边的标兵比Pivot大的话, j--,
+* 否则左右都发出警告,交换两者的值
+* 直到两个标兵相遇, 那个地方就是Pivot应该待的地方(A[i]和主元交换)
+![quict sort identify](figure/ZJU10.3.png)<br>
+
+主元被选定之后,<font color=red>就会钉在正确的位置</font>,这就是它对插入排序的一个很大改进.<br>
+
+如果元素刚好和Pivot相等怎么办?
+* 停下来交换?  全部相等的时候, 主元基本是在中间, $N \log N$
+* 不理他,继续移动指针?  在这种情况下最坏的得到 $N^2$ 的复杂度
+
+问题:
+* 使用递归, 有大量入栈出栈调用的操作十分消耗资源
+* 对于小规模数据, 可能不如插入排序块
+
+解决方案:
+* 当数据规模充分小的时候,停止递归,直接调用简单排序(如插入排序), 程序中设定一个阈值
+![quick sort impl](figure/ZJU10.4.png)<br>
+
+### 表排序
+对于移动元素的开销比较大的时候, 是一个比较恐怖的事情, 在这种场景下我们想要做的事情是不移动数据本身而是移动它的指针(**间接排序**).<br>
+* 定义一个指针数组作为表(table)
+![table sort idea](figure/ZJU10.5.png)<br>
+
+#### 物理排序
+* N个数字的排列由若干个独立的环组成(以下三个环相互独立)
+![loop](figure/ZJU10.6.png)<br>
+
+复杂度分析:
+* 最好的情况,初始就是有序
+* 最坏的情况: 每个环包含2元素, 有N/2个环, 需要 3N/2 次元素移动
+    $T = O( mN )$,m为每个元素A的复制时间,可能比较大
+
+### 基数排序
+#### 桶排序
+![bucket sort](figure/ZJU10.7.png)<br>
+变量的数量多,但是取值是有限的,时间复杂度为$T(M+N)$, 如果M非常小, 可以忽略不计,那么就是线性的时间复杂度.<br>
+#### 改进
+用"次位优先"的办法, 在这里, 十进制那么它的基数就是10.$T = O(P(N+B))$,P为最高位,B为基数
+![base sort](figure/ZJU10.8.png)<br>
+#### 多关键字的排序
+每一个关键字理解为整数的某一位, 也可以使用主位优先的排序.
+
+### 不同算法的比较
+![sort comparason](figure/ZJU10.9.png)
