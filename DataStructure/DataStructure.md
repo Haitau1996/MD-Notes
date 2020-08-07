@@ -607,7 +607,7 @@ void Heap_Sort(ElementType A[], int N){
 ### 不同算法的比较
 ![sort comparason](figure/ZJU10.9.png)
 
-## Hase Table
+## Hash Table
 ### Intro
 如何快速搜索到需要的关键词, 如果关键词不方便比较怎么办?
 * 有序安排对象: 全序(二分)/ 半序(如BST)
