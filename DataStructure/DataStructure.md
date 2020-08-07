@@ -606,3 +606,17 @@ void Heap_Sort(ElementType A[], int N){
 
 ### 不同算法的比较
 ![sort comparason](figure/ZJU10.9.png)
+
+## Hase Table
+### Intro
+如何快速搜索到需要的关键词, 如果关键词不方便比较怎么办?
+* 有序安排对象: 全序(二分)/ 半序(如BST)
+* 直接算出对象的位置: hash
+
+散列查找法的两个基本工作:
+1. 计算位置: 沟造合适的散列函数确定关键词存储位置
+2. 解决冲突: 应用策略解决多个关键词位置相同的问题
+
+具体实现的是一个符号表,"名字(name) - 属性(attribute)" 对的集合.
+
+//TODO:vedio 126
