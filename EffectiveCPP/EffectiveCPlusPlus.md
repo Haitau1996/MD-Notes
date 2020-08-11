@@ -73,7 +73,7 @@ class Rational{...};
 const &Rational operator*(const Rational& lhs,const Rational& rhs);
 ```
 如果不声明为const，那么客户就可以这样写：
-```
+```C++
 Rational a,b,c;
 ...
 (a*b) = c; // 用c给a*b的结果赋值，加了const之后返回一个const Rational那么就会找出这个错误
@@ -183,20 +183,20 @@ ABEntry::ABEntry()
     class FileSystem { ... }; // as before
     FileSystem& tfs() // this replaces the tfs object; it could be
     { // static in the FileSystem class
-    static FileSystem fs; // define and initialize a local static object
-    return fs; // return a reference to it
+        static FileSystem fs; // define and initialize a local static object
+        return fs; // return a reference to it
     }
     class Directory { ... }; // as before
     Directory::Directory( params ) // as before, except references to tfs are
     { // now to tfs()
-    ...
-    std::size_t disks = tfs().numDisks();
-    ...
+        ...
+        std::size_t disks = tfs().numDisks();
+        ...
     }
     Directory& tempDir() // this replaces the tempDir object; it
     { // could be static in the Directory class
-    static Directory td( params ); // define/initialize local static object
-    return td; // return reference to it
+        static Directory td( params ); // define/initialize local static object
+        return td; // return reference to it
     }
 ```
 这些函数一般只有两行, 是很好的inline函数例子, 但是需要注意的是, 含有static对象使得他们在多线程系统中有不确定性,处理的做法是: **在程序的单线程启动阶段手工调用所有的reference-returning函数, 这样可以消除与初始化有关的竞速形式**.
@@ -450,12 +450,12 @@ class Lock {
 
 ### Item 15 在资源管理类中提供对原始资源的访问
 
-在很多情况下，我们需要将RAII对象转换为其所内含的对象，那么就有两种方式，显式和隐式转换：
+正常情况下, 我们需要很多的在很多情况下，我们需要将RAII对象转换为其所内含的对象，那么就有两种方式，显式和隐式转换：
 
 - 显式转换：shared_ptr和auto_ptr提供一个get()成员函数，允许返回指针内部的原始指针(的复件)；
 - 隐式转换：shared_ptr和auto_ptr重载了指针取值操作符，operator -> 和 operator *,允许隐式转换为底层的指针。
 
-//todo 
+//TODO
 
 ### Item 16 成对使用new和delete时采取相同的形式
 
@@ -1202,3 +1202,5 @@ C++ 2.0 可能会提供一些有趣的语言特性和语法糖, 但是大部分�
 ### Item 55 : 让自己熟悉Boost
 
 refer to : C++ 11/14 高级编程 - Boost程序库探秘.
+
+# C++拾遗 : 之前看书被遗漏的东西
