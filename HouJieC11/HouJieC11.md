@@ -137,7 +137,7 @@ std::vector<int, MyAlloc<T>> coll;
 假设容器没有迭代器,迭代器没有traits的情况呢(标准库不会出现这个问题).
 
 ## template template parameter
-//todo 
+//TODO: 
 
 ## decltype
 使用这个新的关键字, 可以让编译器找出表达式的type,这更像是我们对于gcc中非标准的`typeof`的需求, 在c++中有`typeid`, 但不好用, decltype的用法如下:
@@ -208,7 +208,7 @@ lam();
 例4: 使用variadic template 实现maximum
 //todo: add variadic_max.cpp
 
-//TODO:vedio 19
+//TODO: video 19 
 
 ## 标准库的新特性-Intro
 visual c++
