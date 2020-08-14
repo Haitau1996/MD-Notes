@@ -25,3 +25,4 @@ author: **Randal Bryant & David Hallaron**
     * They need to get data in and out (I/O System)
     * 电脑使用网络相互通信
 
+## Lecture 2 Bit,Byte and Integers
