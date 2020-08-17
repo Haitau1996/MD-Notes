@@ -460,9 +460,9 @@ functional programming是一种编程范式, 基于$\lambda$演算理论,**把�
 
 ### 常用语言元素
 
-:smile: enum \ static用于定义编译期的整数变量
-:smile: typedef \ using 最重要的元编程关键字， 用于定义数据
-:smile: template,模板元编程的起点，主要用于定义元函数
+:smile: enum \ static用于定义编译期的整数变量<br>
+:smile: typedef \ using 最重要的元编程关键字， 用于定义数据<br>
+:smile: template,模板元编程的起点，主要用于定义元函数<br>
 :cry: “::”, 用于解析类型作用域获取计算结果
 
 ### 元数据
