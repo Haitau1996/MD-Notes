@@ -669,4 +669,22 @@ void Heap_Sort(ElementType A[], int N){
 将相应位置上冲突的所有关键词存储在同一个单链表中.
 
 ### 散列表的性能分析
-//TODO: video 134
+- [x] ASL,用来衡量散列表的查找效率: 成功,不成功
+- [x] 关键词的比较次数, 主要取决于产生冲突的多少
+    1. 散列函数是狗均匀
+    2. 如何处理冲突
+    3. 散列表的装填因子$\alpha$
+
+因此, 我们需要考虑不同冲突处理方法和装填因子对效率的影响.<br>
+![linear search](figure/ZJU11.5.png)
+![double hash](figure/ZJU11.6.png)
+![double hash](figure/ZJU11.7.png)
+
+散列查找的特点:
+- [x] 和问题规模没有关系,都是$O(1)$
+- [x] 适合字符串的管理
+- [x] 以比较小的$\alpha$为前提, 是一种以空间换时间的做法
+- [x] 存储对于关键字是随机的, 不便于顺序查找关键字, 同时不适合与范围查找或者最大最小值查找 
+p//TODO: video 136~144
+## 串的模式匹配
+![string definition](figure/ZJU12.1.png)
