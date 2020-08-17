@@ -216,11 +216,12 @@ visual c++
 ...\include\cliext
 
 GNU C++
+```C++
 4.9.2\include
 4.9.2\include\C++
 4.9.2\include\C++\bits //stl开投的文件
 4.9.2\include\C++\ext  //extention
-
+```
 ## Rvalue and move 语义
 Rvalue reference是一种新的reference type, 是为了解决**不必要的copying**,当赋值的右手边是一个rvalue, 左手边的接受段可以偷右手边的资源而不是执行一个单独的allocation.
 
@@ -252,8 +253,31 @@ move之后, 原来的指针就应该被打断, 否则就是代码有问题.如�
 
 ## Perfect forwarding
 ![insert two version](figure/V24-1.png)<br>
-C++ 2.0之后有新的move aware的 insert 版本, 但是在做搬移的时候, 还是有需要注意, 如果没有特殊的设计, 那么转交的动作是不完美的.<br>
-// TODO: vedio 24.5
+C++ 2.0之后有新的move aware的 insert 版本, 但是在做搬移的时候, 还是有需要注意, 如果没有特殊的设计, 那么转交的动作是不完美的,标准库使用forward实现完美的转交<br>
+![forwarding](figure/V24-2.png)<br>
+那么不完美的转交是怎样的?<br>
+![unperfect forwarding](figure/V24-3.png)<br>
+在[...\4.9.2\include\c++\bits\move.h]() 中, 用forward这个模板函数实现了完美的转发.<br>
+**最终的目的是设计一个可以被偷的类型,增加效率, 其中用到了`std::move()`和`std::forward()`**.
+
+## 一个move-aware的class
+### 实现
+如一个String(带指针),传统的拷贝构造(深拷贝)之外要有move构造函数(浅拷贝):
+```C++
+MyString(MyString &&str) noexcept // move的版本
+: _data(str._data),_len(str._len){ // 将原来的指针_data和长度都偷过来
+    str._len = 0;
+    str._data = nullptr; //非常重要,需要打断原来的指针,否则声明消失析构函数调用起来,数据就被delete,
+    //同时析构函数要判断它不为nullptr才delete
+}
+virtual ~MyString(){
+    if(_data){  // 配合move的版本, 需要不是null才删除
+        delete _data; 
+    }
+}
+```
+### 测试
+// TODO:video 25
 
 *** 
 # 内存管理-从平地到万丈高楼
@@ -475,4 +499,51 @@ C++编译器在编译期可以操作的数据， 不可变，不能就地修改�
 
 ### 元函数
 
-模板元编程中用于操作元数据的“构件”， 可以在编译期被调用。
+模板元编程中用于操作元数据的“构件”， 可以在编译期被调用, **编写元函数就像是一个普通的运行时函数, 但在形式上确实一个模板类**.
+
+* 函数参数列表由圆括号"()"变成了模板列表声明的尖括号"< >"
+* 函数的形参变成了模板参数,并且要使用 `typename`修饰
+* 元函数本质上是一个类,用";"结束
+* 不能使用运行时关键字, 所以不能用return计算返回值,而是在其中用`typedef`/`using`定义一个名为type或者value值作为返回
+```C++
+templata<int N, int M>
+struct meta_fun{
+    static const int value = N + M; // 编译期计算整数之和,since c++11
+};
+cout << meta_fun<10,10>::value << endl;
+```
+这个实际上是编译期常量, 以下过程发生在运行时, 所以代码不成立:
+```C++
+int i =10, j = 10;
+meta_fun<i,j>::value; // ERROR: 元函数无法处理运行时的普通数据
+```
+### 元函数的转发
+相当于运行时的函数转发调用,在模板类元编程中使用public继承实现, 模板参数传递给父类完成函数的"调用",子类自动获得父类`::type`定义, 就完成了元函数的返回.
+```C++
+template<typename T1, typename T2>
+struct select1st{
+    typedef T1 type;
+};
+
+template<typename T1, typename T2>
+struct forward : select1st<T2, T1>//相当于完成了select2nd的功能
+{};
+```
+### 易用工具宏
+分别把template \ typename \ struct 和typedef 进行了重命名, 使得他们与普通的泛型代码区别开来.
+```C++
+#define mp_arglist      template
+#define mp_arg          typename
+#define mp_function     struct
+#define mp_data         typedef
+#define mp_return(T)        mp_data T type
+//#define mp_return(T)  using type=T
+#define mp_exec(Func)   Func::type
+#define mp_eval(Func)   Func::value
+```
+### summary
+元编程是一种超越普通程序的程序, 可以由C++编译器在编译期执行, 提高程序的运行效率,更大的用途是类型推导, 实现普通程序无法实现的功能.
+* 元数据是元编程的操作对象, 可以是整数(含boolean)或任意c++类型.
+* 元函数是元编程的核心, 表现为c++的模板类,可以内部定义`::type`or `::value`返回计算结果.
+
+## Chap 3 : 类型特征萃取
