@@ -26,3 +26,8 @@ author: **Randal Bryant & David Hallaron**
     * 电脑使用网络相互通信
 
 ## Lecture 2 Bit,Byte and Integers
+在C语言中的各种数据大小:<br>
+![size in c](figure/Mooc1.4.png)<br>
+布尔代数的运算规则:<br>
+![bool algebra](figure/Mooc1.5.png)<br>
+需要注意的是这个C的 **bit operator和表达式的逻辑运算是不同的**, 注意区分.
