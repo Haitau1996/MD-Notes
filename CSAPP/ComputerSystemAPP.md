@@ -2,8 +2,9 @@
 author: **Randal Bryant & David Hallaron**
 
 ### Chap 1 A Tour to Computer System
-
-
+In a sense, the goal of this book is to help you understand what happens and why when you run hello on your system.
+#### Information Is Bits + Contexts
+The source program is a sequence of bits, each with a value of 0 or 1, organized in 8-bit chunks called bytes. Each byte represents some text character in the program.
 ***
 # CMU 15-213 2015 fall CSAPP
 ## Lecture 1 : cource overview
