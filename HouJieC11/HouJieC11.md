@@ -3,9 +3,9 @@
 ## 演进 环境 与资源
 
 重要的帮助网页:
-- cplusplus.com
-- cppreference.com
-- gcc.gnu.org
+- [cplusplus.com](https://cplusplus.com)
+- [cppreference.com](https://cppreference.com)
+- [gcc.gnu.org](https://gcc.gnu.org)
 
 全文检索工具 : wingrep,source insight
 
@@ -277,7 +277,7 @@ virtual ~MyString(){
 }
 ```
 ### 测试
-// TODO:video 25
+// TODO:video 26
 
 *** 
 # 内存管理-从平地到万丈高楼
