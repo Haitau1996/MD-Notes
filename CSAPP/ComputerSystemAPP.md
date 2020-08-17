@@ -3,6 +3,7 @@ author: **Randal Bryant & David Hallaron**
 
 ### Chap 1 A Tour to Computer System
 
+
 ***
 # CMU 15-213 2015 fall CSAPP
 ## Lecture 1 : cource overview
@@ -31,3 +32,5 @@ author: **Randal Bryant & David Hallaron**
 布尔代数的运算规则:<br>
 ![bool algebra](figure/Mooc1.5.png)<br>
 需要注意的是这个C的 **bit operator和表达式的逻辑运算是不同的**, 注意区分.
+shift Operations:<br>
+![shift](figure/Mooc2.1.png)<br>
