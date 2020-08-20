@@ -9,3 +9,6 @@
 
 ### Smalltalk MVC 中的设计模式
 In Smalltalk-80, the Model/View/Controller(MVC) triad of classes is used to build user interfaces. 模型是应用对象, 视图是将它们在屏幕上的表示, 控制器定义了用户界面对输入的响应方式.
+
+
+# 大话设计模式

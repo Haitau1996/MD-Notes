@@ -688,3 +688,7 @@ void Heap_Sort(ElementType A[], int N){
 p//TODO: video 136~144
 ## 串的模式匹配
 ![string definition](figure/ZJU12.1.png)
+
+***
+# Data Structures and Algorithm Aanlysis in C 
+author: **Mark Allen Weiss**
