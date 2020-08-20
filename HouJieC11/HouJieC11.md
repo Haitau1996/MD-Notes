@@ -547,3 +547,6 @@ struct forward : select1st<T2, T1>//相当于完成了select2nd的功能
 * 元函数是元编程的核心, 表现为c++的模板类,可以内部定义`::type`or `::value`返回计算结果.
 
 ## Chap 3 : 类型特征萃取
+在这里我们讨论模板元编程工具type_traits,它以库的形式实现了类型的特性萃取功能, 是**泛型编程和模板元编程所必须的基础设施**.
+### Intro
+type_traits 库提供的一组特征(traits)类, <font color=red> 可以在编译器确定类型时候具有某种特征</font>, 例如是否是原生数组, 是否是整数,是否重载了operator<等,这些东西都是compile-time检查, 不会有任何运行时效率损失.type_traits库中的元函数有两大类,
