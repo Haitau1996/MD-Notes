@@ -1124,7 +1124,8 @@ private:
 ## 模板与泛型编程
 C++ 的template 机制本身自己是一部完整的图灵机:可以被用来计算任何可计算的值, 即便如此, 有一组核心的观念支撑基于template的元编程(template metaprogramming).
 
-### Item 41 了解隐式接口和编译器多态
+### Item 41 了解隐式接口和编译期多态
+
 
 
 ## 定制new和delete
