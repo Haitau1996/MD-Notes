@@ -35,3 +35,9 @@ The source program is a sequence of bits, each with a value of 0 or 1, organized
 需要注意的是这个C的 **bit operator和表达式的逻辑运算是不同的**, 注意区分.
 shift Operations:<br>
 ![shift](figure/Mooc2.1.png)<br>
+
+# 程序员的自我修养 -- 链接\装载与库
+## Chap1: Intro
+这本书的目的是讲清楚从最基本的编译\静态链接到操作系统如何装载程序\动态链接以及运行库和标准库的实现, 甚至操作系统的机制.
+### 万变不离其宗
+对于系统程序开发者而言, 三个部件几乎就是计算机的核心: **中央处理器, 内存和IO控制芯片** .
