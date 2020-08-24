@@ -1207,12 +1207,12 @@ refer to : C++ 11/14 高级编程 - Boost程序库探秘.
 # C++拾遗 : 之前看书被遗漏的东西
 * C++ Primer中的iterator运算, 两个迭代器做差之后就是它们的距离(例如用于二分查找),结果是`difference_type`这个带符号类型.
 * 理解复杂的数组声明:允许定义数组的指针以及数组的引用,**最好的办法是从数组的名字开始按照由内向外的顺序阅读**
-```C++
-int *ptrs[10]; // 包含整形指针的array
-int (*Parray)[10]; //指向一个包含十个整型数字数组的指针
-int (&arrRef)[10] = arr; // arrRef引用一个含有10个int的数组
-int *(&array)[10] = ptrs; //array是一个数组的引用, 该数组包含10个pointer
-```
+    ```C++
+    int *ptrs[10]; // 包含整形指针的array
+    int (*Parray)[10]; //指向一个包含十个整型数字数组的指针
+    int (&arrRef)[10] = arr; // arrRef引用一个含有10个int的数组
+    int *(&array)[10] = ptrs; //array是一个数组的引用, 该数组包含10个pointer
+    ```
 
 * vector和string一样, 数组的下标是否在合理范围内是由程序员检查的
 * since c++11, 出现了`begin`和`end`两个non-menber函数, 可以作用在array等上,得到首元素和**尾元素下一个位置**的指针, 两个指针运算的结果是一种`ptrdiff_t`的带符号标准库类型(数组使用时下标可以为负, 但是string和vector都不允许)
@@ -1237,7 +1237,7 @@ int *(&array)[10] = ptrs; //array是一个数组的引用, 该数组包含10个p
         ```C++
         void print(const char* cp){
             if(cp){
-                while(*cp!='\0')
+                while(*cp!='\0')// 也可写成 while(*cp)
                     std::cout << *cp++;
             }
         }
