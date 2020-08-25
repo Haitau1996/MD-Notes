@@ -1271,3 +1271,10 @@ refer to : C++ 11/14 高级编程 - Boost程序库探秘.
 * assert 和 NDEBUG配合, 定义了后者, assert什么也不做
 
 ## 动态内存与智能指针
+* C++中使用一对运算符`new` / `delete`做动态内存管理, 在正确的时间释放内存十分困难, 新的标准库提供了两种智能指针
+    1. `shared_ptr` 允许多个指针指向同一个对象
+    2. `unique_ptr` 独占所指向的对象<br>
+    同时定义有一个`weak_ptr`的弱引用,指向shared_ptr所管理的对象.
+    ```C++
+    shared_ptr<std::string> p1; // A shared_ptr to std::string
+    ```
