@@ -1244,4 +1244,27 @@ refer to : C++ 11/14 高级编程 - Boost程序库探秘.
         ```
     2. 使用标准库规范(beg和end)界定开始点和结束点
     3. 显式传入一个指定数组大小的形参
-//todo: c++ primer page 200
+* 函数重载时,顶层const 不影响传入函数的对象, 但是底层的const可以(在指针和引用中):
+    ```C++
+    Record lookup(Phone);
+    Record lookup(const Phone); // 重复声明
+    Record lookup(Account&);
+    Record lookup(const Account&); // 新函数, 作用于常量引用
+    Record lookup(Account*);
+    Record lookup(const Account*); // 新函数,作用于指向const的指针
+    ```
+    1. 编译器找到一个与实参最佳匹配的函数,生成调用函数的代码
+    2. 找不到一个版本与实参匹配, 发出无匹配的错误信息
+    3. 多于一个函数可以匹配,但都不是最佳选择,出现**二义调用**
+    4. 在不同的作用域中**无法重载函数名**
+* 多次声明同一个函数也是合法的, 但是**给定的作用域中一个形参只能被赋予一次默认实参**
+* `constexpr`,相当于一个编译期的const, 但是功能更强, 令所修饰的表达式或者函数具有编译期的常量性
+    * constexpr函数(被隐式指定为内联)要求返回值和形参类型都是字面值类型,c++11 只允许一条return 语句, 但是14中有所放宽
+    ```C++
+    constexpr int new_sz(){return 42;}
+    constexpr size_t scale(size_t cnt){return new_sz() * cnt;} //允许返回值并非一个常量
+    int arr[scale(2)]; // 正确, 参数是一个常量表达式
+    int i = 2;
+    int arr[scale(i)]; // error: scale(i) 不是一个常量表达式
+    ```
+* assert 和 NDEBUG配合, 定义了后者, assert什么也不做
