@@ -1293,3 +1293,4 @@ refer to : C++ 11/14 高级编程 - Boost程序库探秘.
     ```C++
     shared_ptr<std::string> p1; // A shared_ptr to std::string
     ```
+    传统的指针操作智能指针都支持, 同时,提供了成员函数`get()`返回保存的原始指针, 成员`p.swap(q)`和非成员版本`swap(p,q)`的交换方法,对于share_ptr<T> `sp`,还提供成员函数`sp.unique()`和`sp.use_count()`.
