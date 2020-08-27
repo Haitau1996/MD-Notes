@@ -1,6 +1,4 @@
 # Fluent Python 
 ***
-
-# Python Algorithms
-#do some string
-## Chap 2: 基础知识
+## Part I : Prologue
+### Chap 1 The Python Data Model
