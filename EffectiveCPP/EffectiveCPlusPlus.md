@@ -1269,6 +1269,21 @@ refer to : C++ 11/14 高级编程 - Boost程序库探秘.
     int arr[scale(i)]; // error: scale(i) 不是一个常量表达式
     ```
 * assert 和 NDEBUG配合, 定义了后者, assert什么也不做
+* 函数指针形参: 形参可以是指向函数的指针, 形参是函数类型, 实际上依旧当做指针使用:
+    ```C++
+    void useBigger(const std::string &s1, const std::string &s2, 
+                   bool pf(const std::string &, const std::string&));
+    //等价的声明:
+    void useBigger(const std::string &s1, const std::string &s2, 
+                   bool (*pf)(const std::string &, const std::string&));
+    //同时, 也可以用尾置声明返回指向函数的指针
+    auto f1(int) -> int (*)(int*, int);
+    ```
+## 面向对象编程
+* const成员函数: 不能改变调用该函数的对象的内容<font color=red> 常量对象,以及常量对象的指针或引用都只能调用常量成员函数.</font> 而调用该函数的对象隐式地当做一个整体(`this`指针)传入成员函数.
+* 类没有声明默认构造函数时, 编译器会自动生成默认构造函数,类包含内置类型或者复合类型时(有成员变量),**只有这些成员全被赋予类内初始值,才适用默认构造函数**.
+* 编译器能够帮我们完成Big 3, 但是**当类需要分配对象之外的资源(如含有指针)时, 合成的版本常常是错误的**
+
 
 ## 动态内存与智能指针
 * C++中使用一对运算符`new` / `delete`做动态内存管理, 在正确的时间释放内存十分困难, 新的标准库提供了两种智能指针
