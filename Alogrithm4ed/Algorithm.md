@@ -97,4 +97,17 @@ Connect 具备的性质<br>
 这个时候我们需要Maintain两个pointer,分别对应first和Last Node.
 
 #### 泛型
-//TODO: vedio 4-4
+在实际的应用场景中, 我们通常需要装有不同对象类型的容器, 如有了StackOfStrings, 还想要StackOfURLs, StackOfInts,过去的做法, 使用面向对象的多态:
+- [x] 需要在客户端的casting
+- [x] 如果出现mismatch, 出现的是run-time error
+
+新的解决方案就是**java generics**,可以避免client端的casting,同时在compile-time发现type dismatch errors.<br>
+注: java 不允许Generic的array, 只能是用casting将Object的转为Item[ ]:<br>
+```Java
+S = (Item[]) new Object[capacity];
+```
+
+#### 迭代器
+![Iterator](figure/4-4.png)<br>
+
+### Sorting
