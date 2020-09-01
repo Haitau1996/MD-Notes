@@ -60,3 +60,21 @@ $\bf{(M \times N \times (W+T)) + (F\times N \times(1-W)) + B}$<br>
 ![circuit](figure/10.1.png)
 
 ## 门
+电子工程师可以用布尔代数的工具去设计开关电路,如果你简化了一个描述网络的布尔表达式,就意味着简化了相应的网络.理论上,只需要四个开关来定义心中的猫咪即可,因为 __每个开关都是一个二进制数,__ 需要一个开关表示猫的性别,一个开关表示是否绝育, 两个开关表示猫的颜色(黑/白/褐和其他颜色).<br>
+继电器像开关一样,可以串联或者并联在电路中执行简单的逻辑任务,这种继电器的组合被称为逻辑门(logic gate),输入不一定是和开关相连,输出也不一定是和灯泡相连, 我们关心的是输入端和输出端的电压,四种逻辑门和两个器件构成了我们的全部工具:
+1. 与门:两个继电器都被触发的时候灯泡才会亮,<br>
+![and gate](figure/11.1.png)
+2. 或门: 其中的一端是弯的,像字母'O'一样:<br>
+![or gate](figure/11.2.png)
+3. 反向器不是逻辑门,但是用途依旧非常广泛:<br>
+![inverter](figure/11.3.png)
+4. 或非门 : 输出的结果与或门刚好相反:<br>
+![NOR](figure/11.4.png) ![NOR](figure/11.5.png)
+5. 与非门 : 输出的结果和与门刚好相反<br>
+![NAND](figure/11.6.png) ![NAND](figure/11.7.png)
+6. 此外还有一种被称为缓冲器<br>
+![buffer](figure/11.8.png)
+
+此外, 常用的还有简化布尔表达式常用的 **摩根定律** :<br>
+$ \overline A \times \overline B = \overline{A+B}$ <br>
+$ \overline A + \overline B = \overline{A \times B}$ <br>
