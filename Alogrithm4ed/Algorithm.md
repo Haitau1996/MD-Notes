@@ -1,4 +1,4 @@
-# Algotrithms
+# [Algotrithms(OCW)](https://cuvids.io/app/course/2/) 
 
 ## Part I
 
@@ -111,4 +111,55 @@ S = (Item[]) new Object[capacity];
 ![Iterator](figure/4-4.png)<br>
 
 ### Sorting
-用define的key将数据排成一个有序的,data可能是 _Double_, _String_ 或者 _java.io.File_
+用define的key将数据排成一个有序的,data可能是 _Double_, _String_ 或者 _java.io.File_ , 具体的做法是实现 _Callbacks_, 在不同的语言中具体的实现可能不同:
+* C: function pointers
+* C++ : class-type functions
+* Java : interfaces<br>
+![implementation](figure/5-1.png)
+```Java
+Public class Date implements Comparable<Data>{ //尖括号说明只允许和Data对比
+    private final int month, day, year;
+    Public Data(int m, int d, int y){
+        month = m;
+        day = d;
+        year = y;
+    }
+    // 实现 compareTo method
+    public int compareTo(Data that){
+        if(this.year < that.year) return -1;
+        if(this.year > that.year) return +1;
+        if(this.month < that.month) return -1;
+        if(this.month > that.month) return +1;
+        if(this.day < that.day) return -1;
+        if(this.day > that.day) return +1;
+        return 0;
+    }
+}
+```
+
+### Selection Sort
+选择排序的算法描述:
+* 在第i次迭代中, 找到剩余部分最小元素的下标 _min_
+* Swap _a[i]_ 和 _a[min]_
+```Java
+    ...
+    private static void exch(Comparable[] a; int i,int j){
+        Comparable swap = a[i];
+        a[i] = a[j];
+        a[j] = swap;
+    }
+    public static void selection_sort(Comparable[] a){
+        int N = a.length;
+        for(int i =0 ; i < N; i++){
+            int min  = i;
+            for(int j = i+1; j< N; j++){
+                if(less(a[j],a[min]))
+                    min = j;
+            }
+            exch(a,i,min);
+        }
+    }
+    ...
+```
+
+# [Algorithms 4ed (book)](https://algs4.cs.princeton.edu/home/)
