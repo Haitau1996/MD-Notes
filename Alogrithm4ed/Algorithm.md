@@ -111,3 +111,4 @@ S = (Item[]) new Object[capacity];
 ![Iterator](figure/4-4.png)<br>
 
 ### Sorting
+用define的key将数据排成一个有序的,data可能是 _Double_, _String_ 或者 _java.io.File_
