@@ -53,6 +53,9 @@ switch(status){
 * status必须计算出一个char, byte,short, int 或者String 类型, 必须用括号括住
 * value必须是和status相同的类型, 而且是**常量表达式**
 
+### 逻辑操作符
+`&&` 和 `||` 都有短路计算的特点, 和C++中一致.
+
 ## Chap 4: 数学函数\字符和字符串
 
 ### 常见的数学函数
@@ -64,3 +67,18 @@ Java在Math类中提供了很多实用的方法,用来计算常用的数学函�
 ### 字符数据操作
 1. Java的字符数据类型用于表示单个字符,如 `char letter = 'A'`;
 2. Java支持Unicode(如 `char letter= '\u6B22'`) 和ASCII的字符编码
+3. 对于特殊的字符, 需要有转义序列
+4. char数据类型可以转换为任何一种数值类型,反之亦然
+    ```java
+    char ch = (char)0xAB0041; // 只保留了最后符合utf-8的那些位,显示为A
+    char ch2 = (char)65.25; // float cast 成了 int 然后cast成char 'A'
+    ```
+    0 ~ FFFF中的任何一个十六进制正整数都可以隐式转为字符型数据, 而不在此范围内的任何其他数值都 __必须显示转为`char`__
+5. java 的character类提供了很多方法用于字符测试
+
+### String类型
+String和System以及Scanner类一样,都是java库中一个预定义的类, 它是一个 _reference type_ ,同样的String对象有很多简单的方法, 如 length(), chatAt(index),concat(s1)等,他们都是 **实例方法**, 和Math类中的方法不同, Math类中的方法都是静态方法.调用方法分别为 `s1.length()`和 `Math.pow(2,2.5)`.<br>
+* 从某个名为inp的Scanner读取String的方法有两种, `inp.next()`读取以空白结束的字符串,`inp.nextLine()`可以读取一整行.<br>
+* 两个String对象s1,s2都是reference type,用 ==只能判断他们是否是指向同一个对象, 而字符串的比较需要使用String的方法, 如`s1.equals(s2)`,`s1.compareTo(s2)`.<br>
+* `s1.substring(beginIndex,endIndex)`可以得到一个子串.<br>
+* 使用 `Integer.paraseInt(s1)` 可以实现string向 int 的转换,同样的可以有 _Double.paraseDouble(s1)_,而数值类型转为String就只需要一个连接符, `String s = value + ""`
