@@ -24,7 +24,9 @@ program) `.o`
 #### Processors Read and Interpret Instructions Stored in Memory
 ##### Hardware Organization of a System
 ![orgination](figure/Book1.2.png)<br>
-
+__Bus__ 总线是用于不同组件沟通的electrical conduits, 一般用于传输fixed-size chunk of bytes(words,一般是4个字节(32位)或者8个(64位)).<br>
+__Main memory__ 临时存储系统, 一般是由一系列动态随机存储器构成,逻辑上它是Linear array of bytes, 每个都有自己的地址.<br>
+__Processor__ 
 
 ***
 # CMU 15-213 2015 fall CSAPP

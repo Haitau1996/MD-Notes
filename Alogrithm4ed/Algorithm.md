@@ -152,7 +152,7 @@ Public class Date implements Comparable<Data>{ //尖括号说明只允许和Data
         int N = a.length;
         for(int i =0 ; i < N; i++){
             int min  = i;
-            for(int j = i+1; j< N; j++){
+            for(int j = i+1; j< N; j++){ 
                 if(less(a[j],a[min]))
                     min = j;
             }
@@ -161,5 +161,12 @@ Public class Date implements Comparable<Data>{ //尖括号说明只允许和Data
     }
     ...
 ```
+
+### Insertion Sort
+前面部分是有序的, 每次迭代中将后面的第一个元素(下标为i)插入前面有序的部分:<br>
+![insertion sort](figure/5-2.png)<br>
+这种算法需要 ~ $\frac{1}{4} N^2$ 次比较和交换on average,在最坏的情况下是$\frac{1}{2}$<br>
+
+### Shell Sort
 
 # [Algorithms 4ed (book)](https://algs4.cs.princeton.edu/home/)
