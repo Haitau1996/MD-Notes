@@ -78,3 +78,17 @@ $\bf{(M \times N \times (W+T)) + (F\times N \times(1-W)) + B}$<br>
 此外, 常用的还有简化布尔表达式常用的 **摩根定律** :<br>
 $ \overline A \times \overline B = \overline{A+B}$ <br>
 $ \overline A + \overline B = \overline{A \times B}$ <br>
+
+## 二进制加法器
+加法计算是计算机要做唯一的事情, 可以做出加法器, 就会有办法实现减法乘法和除法,而在底层, 加法的实现就类似于一系列开关的操作.<br>
+我们没的加法器中, __加法和进位是分别进行的__:
+1. 加和的输出, 是一个或门和一个与非门作为与门的输入实现的
+![add](figure/12.1.png) 
+![add](figure/12.2.png)
+2. 进位的输出只需要一个与门就可一实现,这就得到了一个半加器:<br>
+![add](figure/12.3.png) ![add](figure/12.4.png)
+3. 由于进位的存在, 我们需要加三个数, 就相当于将两个半加器连在一起得到一个全加器:<br>
+![add](figure/12.5.png)
+4. 8个全加器全部连起来, 就是一个Byte的加法器,而更多byte的加法器只需要按照这样的需求就可以实现:<br>
+![add](figure/12.6.png)
+
