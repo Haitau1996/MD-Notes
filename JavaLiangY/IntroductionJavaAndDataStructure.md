@@ -1,7 +1,7 @@
 # Java语言程序设计与数据结构
 **author: 梁勇**
 ***
-## Chap 1 计算机、程序和java概述
+## Chap 1: 计算机、程序和java概述
 计算机包含软件和硬件两个部分，硬件的组件通过一个总线(bus)子系统连接。<br>
 ![bus](figure/1.1.png)<br>
 编程语言:机器语言\汇编语言和高级语言.
@@ -82,3 +82,58 @@ String和System以及Scanner类一样,都是java库中一个预定义的类, 它
 * 两个String对象s1,s2都是reference type,用 ==只能判断他们是否是指向同一个对象, 而字符串的比较需要使用String的方法, 如`s1.equals(s2)`,`s1.compareTo(s2)`.<br>
 * `s1.substring(beginIndex,endIndex)`可以得到一个子串.<br>
 * 使用 `Integer.paraseInt(s1)` 可以实现string向 int 的转换,同样的可以有 _Double.paraseDouble(s1)_,而数值类型转为String就只需要一个连接符, `String s = value + ""`
+
+## Chap 5: 循环
+我们经常使用一个循环变量count来执行对循环贷额计数, 但是我们需要注意两个问题:
+1. 要保证循环的继续条件最终可以变成false
+2. 程序员经常犯的错误就是循环多执行一次或者少执行一次(off-by-one error)
+
+一次增加一个步骤的渐进编码是一个很好的习惯, 在我们不知道如何编写循环的时候, __可以编写只执行一次的代码, 然后再规划如何重复执行这些代码__, 从这里我们得到了循环设计的策略:
+* stage 1: 确定需要重复的语句
+* stage 2: 将这个语句写在一个循环中
+    ```java
+    while(true){
+        // chunk of codes
+    }
+    ```
+* stage 3: 为循环的条件编码, 并为控制循环添加合适的语句
+    ```java
+    while(循环继续条件){
+        // chunk of codes
+        用于控制循环的语句
+    }
+    // example: 用户确认或者标记控制循环
+    Scanner input = new Scanner(System.in);
+    char continueLoop = 'Y';
+    while(continueLoop == 'Y'){
+        // execute the loop once
+        ...
+        System.out.print("Enter Y to continue or N to quit:");
+        continueLoop = input.nextLine().charAt(0);
+    }
+    ```
+警告 : 不要使用浮点值相等来进行循环控制, 因为他们都是近似值,如 2.0 可能在实际存储是2.000...3.<br>
+`do{...}while( );` 这种循环和while loop的唯一区别在于前者可以保证至少循环一次, 而 for loop 具有编写循环的简明语法, 和 C++ 一样, 如果循环控制变量只在循环内使用, 那么在初始操作中声明它是一个比较好的编程习惯:<br>
+```java
+for(初始操作 ; 循环继续条件; 每次迭代之后的操作){
+    // 循环体
+}
+```
+上面的初始操作和迭代后的操作都可以有多个使用逗号隔开的语句, 但是这不是好的编程习惯, 那会使得程序的可读性变差.<br>
+三种loop在表达上是等价的,可以根据习惯在语境中选择自己觉得最直观/舒服的一种循环语句, __各种循环语句中多写一个分号是错误的,往往会造成严重的问题__:
+```java
+for(int i = 0; i < 10; i++);
+{
+    System.out.println("i is " + i);
+    // 实际上这句话只打印一次 
+}
+int i = 0;
+while(i < 10); //这里进入一个死循环
+{
+    System.out.println("i is " + i);
+    i++;
+}
+```
+但是在do-while loop中是需要"_;_"的, 一个循环可以嵌套在另一个循环之中, 而嵌套循环往往可能需要很长的运行时间.和C++一样, 在循环中也可以使用`continue`跳过当前这轮迭代,或者使用`break`跳过整个循环语句.<br>
+
+## Chap 6 : 方法
