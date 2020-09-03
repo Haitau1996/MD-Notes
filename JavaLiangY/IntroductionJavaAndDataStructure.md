@@ -156,3 +156,55 @@ while(i < 10); //这里进入一个死循环
 和C++一样, 我们也可以重载方法, 实现使用同一个名字来定义不同的方法, __只要他们的参数列表是不同的__, <font color = red> 不能基于不同的修饰符或者返回值类型重载方法 . </font> <br>
 变量的作用域指的是变量 __可以在程序中被引用的范围__,可以在一个方法的不同块中声明同名的局部变量, 但是不能在嵌套块或者通一个块中两次声明同一个局部变量(在C++中嵌套块内声明的同名变量会将外部的同名变量隐藏起来).<br>
 软件开发的关键在于应用抽象的概念, 而抽象有多种层次, 方法抽象(method abstraction)是通过将方法的使用和它的实现分离实现的,这就被称为信息隐藏(information hiding) 或者 封装, 在编写一个大型程序的时候,可以使用分治的策略, 逐步求精,将大问题分解成子问题. <br>
+
+## Chap 7 : 一维数组
+单个的数组变量可以引用一个大的数据的集合,Java中提供了一个被称为array的数据结构,用来存储一个 __元素个数固定且类型相同的有序集合__, 数组一旦被创建, 那么它的大小就是固定的. <br>
+```Java
+// 声明数组
+elementType[] arrayRefVar;
+elementType arrayRefVar[]; // 为了方便从C转过来的程序员, 也允许这种写法, 但是不推荐
+double[] myList; 
+// 创建数组
+arrayRefVar = new elementType[arraySize];
+```
+创建数组做了两个事情:
+1. 使用 new语句创建了一个具有某种size 和 类型的array
+2. 将该array的引用交给了 `arrayRefVal`
+
+上面这些声明和赋值的语句也可以放在一起:
+``` Java
+elementType[] arrayRefVar = new elementType[arraySize];
+// 例如
+double[] arrayDoubRef = new double[100];
+```
+创建之后, 就可以使用Index访问数组中的某个元素 : `arrayRefVar[1] = 6.0;`, 值得注意的是, 数组变量看起来是存储了一个数组的数据, 实际上存储的是指向数组的引用.数组创建之后可以得到它的大小(`arrayRefVar.length`), 同时如果不赋值的话它的元素会有默认值(数值型的为 _0_, char的为 `\u0000`,boolen为 _false_)<br>
+数组初始化有简写方式,这时候它们不能用new, 同时声明和初始化要放在同一个语句中:
+```java
+elementType[] arrayRefVar = {avlue0, value1, value2, ... , valuek};
+double[] myList = {1.9, 2.0 , 4.0 };
+// 错误的例子
+double[] myList;
+myList = {1.9, 2.0 , 4.0 };
+```
+Java 支持一个 foreach循环(类似于C++中的range-based for loop):
+```java
+for(double ele: myList){
+    System.out.println(ele);
+}
+```
+使用下标遍历的时候下标不能超过 arrayRefVar.length -1 , 否则会抛出一个运行时错误. __复制数组的时候需要将每个元素复制到另一个数组(深拷贝)__ : <br>
+![copy](figure/7.1.png)
+```Java
+int[] sourceArray = {2, 3, 1, 5, 10};
+int[] targetArray = new int[sourceArray.length];
+for (int i = 0; i < sourceArray.length; i++) {
+    targetArray[i] = sourceArray[i];
+}
+// 或者使用java.lang.System中的arraycopy方法
+System.arraycopy(sourceArray, 0, targetArray, 0, sourceArray.length);
+```
+将一个数组作为参数传给方法时, **数组的引用将传给方法**, 这与基本类型的数据传给方法有一些不同:
+* 对于基本数据类型参数, 传递的是实参的值, 在方法中修改不会影响方法外的数据
+* 对于引用类型的数据, 传递的是对于数据的引用(hander),在方法内改变数组的值, 这种改变在方法外面也可以看到
+
+这是因为数组在Java语言中是对象,Jvm将对象存储在一个被称为堆的内存区域.同样的, 在方法返回一个数组时,返回的是数组的引用.
