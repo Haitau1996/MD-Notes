@@ -254,3 +254,47 @@ Arrays类 : 在 `java.util.Arrays` 中包含了一些用于数组的常见方法
 
 main方法从命令行读取输入参数的方式和C/C++ 基本一致.
 
+## Chap 8: 多维数组
+在Java中可以用二维数组表示表或者矩阵中的数据:
+```Java
+double[][] distances = {
+{0, 983, 787, 714, 1375, 967, 1087},
+{983, 0, 214, 1102, 1763, 1723, 1842},
+{787, 214, 0, 888, 1549, 1548, 1627},
+{714, 1102, 888, 0, 661, 781, 810},
+{1375, 1763, 1549, 661, 0, 1426, 1187},
+{967, 1723, 1548, 781, 1426, 0, 239},
+{1087, 1842, 1627, 810, 1187, 239, 0},
+};
+```
+二维数组的声明方式如下:
+```Java
+elementType[][] arrayRefVar;
+elementType arrayRefVar[][]; // Allowed, but not preferred
+// 如一个int 矩阵
+int[][] matrix;
+matrix = new int[5][5];// 给这个矩阵分配一定的空间
+```
+和C++一样, 二维数组实际上是一个每个元素都是一维数组的数组, 也可以用 `length`方法获取数组的长度,同时,多维数组每行的长度可以不同(不规则数组, ragged array):
+```Java
+int[][] triangleArray = {
+{1, 2, 3, 4, 5},
+{2, 3, 4, 5},
+{3, 4, 5},
+{4, 5},
+{5}
+};
+```
+将二维数组传递给方法的时候,数组的引用 传递给了方法:
+```Java
+public static int sum(int[][] m) {
+    int total = 0;
+    for (int row = 0; row < m.length; row++) {
+        for (int column = 0; column < m[row].length; column++) {
+            total += m[row][column];
+        }
+    }
+    return total;
+ }
+```
+__多维数组__ : 同样的, 三维数组可以看成是一个每个元素都是二维数组的数组.
