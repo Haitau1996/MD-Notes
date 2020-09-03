@@ -207,4 +207,50 @@ System.arraycopy(sourceArray, 0, targetArray, 0, sourceArray.length);
 * 对于基本数据类型参数, 传递的是实参的值, 在方法中修改不会影响方法外的数据
 * 对于引用类型的数据, 传递的是对于数据的引用(hander),在方法内改变数组的值, 这种改变在方法外面也可以看到
 
-这是因为数组在Java语言中是对象,Jvm将对象存储在一个被称为堆的内存区域.同样的, 在方法返回一个数组时,返回的是数组的引用.
+这是因为数组在Java语言中是对象,Jvm将对象存储在一个被称为堆的内存区域.同样的, 在方法返回一个数组时,返回的是数组的引用.<br>
+__可变长参数列表__ : 具有同样类型的数目可变的参数可以传递给方法, 并作为数组对待:
+```Java
+// 形式如 : typeName... parameterName
+1 public class VarArgsDemo {
+2 public static void main(String[] args) {
+3 printMax(34, 3, 3, 2, 56.5);
+4 printMax(new double[]{1, 2, 3});
+5 }
+6
+7 public static void printMax(double... numbers) {
+8 if (numbers.length == 0) {
+9 System.out.println("No argument passed");
+10 return;
+11 }
+12
+13 double result = numbers[0];
+14
+15 for (int i = 1; i < numbers.length; i++)
+16 if (numbers[i] > result)
+17 result = numbers[i];
+18
+19 System.out.println("The max value is " + result);
+20 }
+21 }
+```
+
+Arrays类 : 在 `java.util.Arrays` 中包含了一些用于数组的常见方法, 如排序和查找:
+1. You can use the `sort` or `parallelSort` method to sort a whole array or a partial array.
+    ```Java
+    double[] numbers = {6.0, 4.4, 1.9, 2.9, 3.4, 3.5};
+    java.util.Arrays.sort(numbers); // Sort the whole array
+    java.util.Arrays.parallelSort(numbers); // Sort the whole array
+    char[] chars = {'a', 'A', '4', 'F', 'D', 'P'};
+    java.util.Arrays.sort(chars, 1, 3); // Sort part of the array
+    java.util.Arrays.parallelSort(chars, 1, 3); // Sort part of the array
+    ```
+2. You can use the `binarySearch` method to search for a key in an array.
+    ```Java
+    int[] list = {2, 4, 7, 10, 11, 45, 50, 59, 60, 66, 69, 70, 79};
+    System.out.println("1. Index is " +
+                        java.util.Arrays.binarySearch(list, 11));
+    ```
+3. You can use the `equals` method to check whether two arrays are strictly equal. Two arrays
+
+main方法从命令行读取输入参数的方式和C/C++ 基本一致.
+
