@@ -320,3 +320,21 @@ __Object-oriented programming enables you to develop large-scale software and GU
 Java API中包含了丰富的类的集合,如 Data, Random,Point2D, 用于简化Java程序的开发.<br>
 #### 静态类 常量和方法
 静态变量被类中的所有对象所共享, __静态方法不能访问类中的实例成员(i.e., instance data fields and method)__, 典型的例子就是Math类中的很多方法都是静态的.<br>
+在UML图中,静态方法和属性都是使用下划线标记,类中的常量是该类中所有对象共享, 因此因该声明为 _final static_:
+```Java
+final static double PI = 3.14159265358979323846;
+```
+而实例方法和实例属性是属于实例的, 必须在实例创建之后才能使用.<br>
+
+#### 可见性修饰符
+包可以用来组织类, 使用时应该放在第一个非注释非空的行:<br>
+_package packageName_<br>
+`private` 修饰的方法和数据域只能在自己的类中被访问,只用于修饰类的成员, 如果一个类没有被定义成为共有类, 只能在同一个包中被访问.
+为了防止对数据的直接修改, 应该使用private修饰符将数据域声明为私有( _数据封装_).
+
+#### 向方法传递对象
+给方法传递一个对象, 是将对象的引用传递给方法,在语义上最好的描述是按共享传参( _pass-by-sharing_), 数组除了存储基本类型, 也也可存储对象,这实际上就是引用变量的数组.<br>
+![array object](figure/9.3.png)<br>
+使用new操作符创建对象数组后, 其中的每个元素默认值都是引用变量 _null_.
+<br>可以定义不可变类来产生不可变对象, 不可变对象的内容不能被改变. 这意味着, 它的所有数据都是私有的, 而且没有对任何一个数据域提供 _public_ 的设置方法. 
+<br>
