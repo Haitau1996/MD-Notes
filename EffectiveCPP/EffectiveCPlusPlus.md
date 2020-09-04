@@ -1129,9 +1129,9 @@ C++ 的template 机制本身自己是一部完整的图灵机:可以被用来计
 ```C++
 void doProcessing(Widget& w) {
 if (w.size() > 10 && w != someNastyWidget) {
-     Widget temp(w); 
-     temp.normalize(); 
-     temp.swap(w); 
+        Widget temp(w); 
+        temp.normalize(); 
+        temp.swap(w); 
      }
 }
 ```
