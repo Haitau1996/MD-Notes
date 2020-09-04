@@ -1125,8 +1125,32 @@ private:
 C++ 的template 机制本身自己是一部完整的图灵机:可以被用来计算任何可计算的值, 即便如此, 有一组核心的观念支撑基于template的元编程(template metaprogramming).
 
 ### Item 41 了解隐式接口和编译期多态
-面向对象的程序涉及总是以显式接口和运行时多态解决问题,
+面向对象的程序涉及总是以 __显式接口__ 和　__运行时多态__ 解决问题,如在多态使用一个 _Widget_ 时,
+```C++
+void doProcessing(Widget& w) {
+if (w.size() > 10 && w != someNastyWidget) {
+     Widget temp(w); 
+     temp.normalize(); 
+     temp.swap(w); 
+     }
+}
+```
+* W被声明为Widget, W必须支持Widget的接口,我们可以在源文件(如Widget.h)中找到该接口(显式接口)
+* 某些函数是虚函数, W对哪些函数调用表现出来的特性就是运行时多态
 
+在泛型编程的世界中, 反倒是 **隐式接口** 和 **编译期多态**.
+```C++
+template<typename T>
+void doProcessing(T& w) {
+    if (w.size() > 10 && w != someNastyWidget) { 
+        T temp(w); 
+        temp.normalize();
+        temp.swap(w); 
+    }
+}
+```
+* 对于这一组代码, 想要通过编译, 那么T必须支持一组隐式接口,它是基于有效表达式组成
+* 所有关于w的函数调用, 可能造成template具现化,这些instantiated的过程发生在编译期间
 
 ## 定制new和delete
 
