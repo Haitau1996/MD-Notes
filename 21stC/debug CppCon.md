@@ -20,6 +20,8 @@ Two main classes of debugging tools today:
 * GDB 现在有了python的支持
     ![GDB python](figure/cppcon2018.2.png)
 * `.gdbinit` 是配置文件的地方, 尽量保持简洁
+* 设置断点和观察点:
+    ![watch](figure/cppcon2018.3.png)
 
 ## CppCon 19 modern debugging tools
 ### Types of tools and some examples
@@ -30,4 +32,3 @@ Two main classes of debugging tools today:
 
 ![gdb](figure/CppCon-debug1.png)<br>
 Signals and ptrace
-
