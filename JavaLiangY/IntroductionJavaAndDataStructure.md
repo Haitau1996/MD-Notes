@@ -353,5 +353,42 @@ public class F {
 ```
 关键词this引用对象自身, 可以在构造方法内部调用同一个类的其他构造方法(类似于C++中的委托沟造函数).可以用 `this.x` 这样的方式引用上面被隐藏的实例数据域.
 
-## Chap 9 : 面向对象思考
+## Chap 10 : 面向对象思考
 类的抽象指的是将类的实现和类的使用分离开, 实现的细节被封装并且对用户隐藏. 类抽象就是将类的实现和使用分离, 类的创建者描述类的功能, 让使用者明白如何使用类. 从类外可以访问的Public构造方法, 普通方法和数据域的集合以及对这些成员预期行为的描述, 被称为类的合约( class's contract).<br>
+传统的面向过程式编程是动作驱动, __数据和动作是分离的__,面向对象的范式重点在于, 对象动作和数据一起定义在对象中.前者的重点在于设计方法, 而后者的软件设计重点在于 __对象以及对象上的操作__, 这在某种程度是一种反映真实世界的方式组织软件.
+
+### 类的关系
+为了设计类, 需要探究类之间的关系, 通常有 关联\聚合\组合与继承. 
+#### 关联
+关联是一种常见的二元关系, 描述两个类之间的活动, 关联中涉及的每个类可以给定一个多样性( _multiplicity_),这种多样性可以是一个数字或者区间:<br>
+![association](figure/10.1.png)<br>
+![association code](figure/10.2.png)<br>
+
+#### 聚集和组合
+聚集是关联的一种特殊形式, 代表了两个类之间的从属关系, 它对 _has-a_ 的关系进行建模. 组合暗示了 __独占性__ 的拥有, 在下图中暗示可能有多个学生的地址是相同的, 但是学生却拥有各自的名字. <br>
+![composition](figure/10.3.png)<br>
+![composition code](figure/10.4.png)<br>
+
+### 将基本数据类型的值作为对象处理
+基本数据的值不是对象, 但是可以用Java API中的包装类来包装称为一个对象(e.g., wrapping an int into an _Integer_ object, wrapping a double into a _Double_ object, and wrapping a char into a _Character_ object), 这些类中包含了方法将 __对象转为基本值类型__, 包装类没有无参构造方法, __所有包装类的实例都是不可变的__.<br>
+<font color=red>根据上下文环境, 基本数据值类型可以使用包装类自动转换成一个对象,反之也可以</font>:<br>
+![convert](figure/10.5.png)<br>
+要进行非常大的数的计算或者非常高精度的浮点值计算, 可以使用 _BigInteger_ and _BigDecimal_ classes in the _java.math_ package. <br>
+
+### 字符串类
+__String 类对象是不可变的, 字符串一旦创建, 内容不能再改变__<br>
+```java
+String s = "Java";
+s = "HTML";
+```
+![String](figure/10.6.png)<br>
+JAVA 虚拟机为了节约内存, 对具有相同字符序列的字符串字面值会使用同一个实例, 这被称为 驻留的(interned)字符串<br>
+![string](figure/10.7.png)<br>
+除了这些常见的特性, Java还提供了下列字符串相关的方法:
+1. 替换和拆分字符串
+2. 使用模式匹配\替换和拆分
+3. 字符串转换成为char array ( `s.toCharArray()`)
+4. 字符和数值转换称为字符串
+5. 格式化字符串
+
+`StringBuilder` 和 `StringBuffer` 类似于String类, 区别在于后者是不可变的. 
