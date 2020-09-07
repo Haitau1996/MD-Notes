@@ -515,6 +515,6 @@ for (elementType element: arrayList) {
 **Java 提供了一些方法, 用于从数组创建列表, 对列表排序, 找到列表中的最大/小 元素, 以及打乱列表**.<br>
 protected 修饰符, 他们修饰的成员的可见性见下表,需要注意的是子类可以重写父类的protected方法, 并且将其改为 _public_, 但是这不改变父类方法的可见性:<br>
 ![proctected](figure/11.5.png)<br>
-可以使用 _final_ 来防止数据的修改, 一个被final修饰的类和方法都不能被继承, 被final修饰的数据域是一个常数.The modifiers _public, protected, private, static, abstract_ and _final_ are used
-on classes and class members (data and methods), except that the _final_ modifier can also be used on **local variables** in a method. A final local variable is a constant inside a method.
+可以使用 _final_ 来防止数据的修改, 一个被final修饰的类和方法都不能被继承, 被final修饰的数据域是一个常数.The modifiers _public, protected, private, static, abstract_ and _final_ are used on classes and class members (data and methods), except that the _final_ modifier can also be used on **local variables** in a method. A final local variable is a constant inside a method.
 
+## 
