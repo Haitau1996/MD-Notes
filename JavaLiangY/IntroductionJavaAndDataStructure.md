@@ -456,3 +456,60 @@ Object o = new GeometricObject();
 System.out.println(o.toString());
 ```
 实际上o调用哪个方法由它的实际类型决定, 这个过程被称为 **动态绑定**.匹配方法的签名和绑定方法的实现是两个不同的问题,引用变量的声明决定了编译时匹配哪个方法, 就是说, 编译时, 编译器根据参数类型\参数个数和参数顺序寻找匹配的方法, 一个方法可能在沿着继承链的多个类中实现.<br>
+一个对象的引用可以转化为另一个对象的引用, 这称为对象转换:
+```Java
+m(new Student());
+//相当于
+Object o = new Student(); // 这个语句是合法的, 它被称为隐式转换
+m(o);
+Student b = o; // ERROR
+Student b = (Student) o; // OK, 如果o不是Student的实例, 就会抛出 ClassCastException的异常
+```
+不能将o赋值给b, 因为Student对象总是Object对象, 但是Object对象不一定是Student, 因此需要显式告诉编译器.可以使用 _instanceof_ 关键词得到对象是不是某个类的实例
+```java
+void someMethod(Object myObjet) {
+... // Some lines of code 
+/** Perform casting if myObject is an instance of Circle */
+    if (myObject instanceof Circle) {
+    System.out.println("The circle diameter is " +
+                        ((Circle)myObject).getDiameter()); 
+    ...
+    }
+}
+```
+
+#### Object类的equals 方法
+对象类中有一个equals的方法, 其函数签名为 `public boolean equals(Object o)`, 默认的实现为:
+```java
+public boolean equals(Object obj) {
+    return this == obj;
+}
+```
+可以重写这个方法, 如在String等中重写用于对比两个引用所引用的对象是否相同, 而比较符号 `==` 的意思是判断两个基本类型是否相等, 或者两个引用类似是否指向同一个对象.<br>
+
+### ArrayList 类
+ArrayList对象 **可以存储一个对象列表**, 它是一个泛型类, 可以指定一个具体的类型替代泛型类型 E, 如:
+```Java
+ArrayList<String> cities = new ArrayList<String>();
+// Since JDK 7, type inference is introduced
+ArrayList <AConcreteType> list = new ArrayList<AConcreteType>();
+// can be simplified as
+ArrayList<AConcreteType> list = new ArrayList< >();
+```
+对于数组的实现和 `ArrayList`的实现, 他们的区别可以用下表表示:
+![arraylist](figure/11.4.png)<br>
+值得注意的是, ArrayList 无法用于存储基本类型, 但是可以存储对他们的引用:
+```Java
+ArrayList<int> listOfIntegers = new ArrayList<>(); //ERROR
+ArrayList<Integer> listOfIntegers = new ArrayList<>(); // OK
+```
+* _ArrayList_ 大小是灵活的, 无需提前知道它的大小, 而创建一个数组的时候, 我们必须指定大小
+* _ArrayList_ 包含很多有用的方法, 如果使用数组, 必自己实现这些方法
+
+我们同时可以使用foreach 来遍历其中的元素:
+```Java
+for (elementType element: arrayList) {
+    // Process the element
+}
+```
+**Java 提供了一些方法, 用于从数组创建列表, 对列表排序, 找到列表中的最大/小 元素, 以及打乱列表**.
