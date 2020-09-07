@@ -616,4 +616,4 @@ try (java.io.PrintWriter output = new java.io.PrintWriter(file); ) {
 Scanner input = new Scanner(System.in);
 Scanner input = new Scanner(new File(filename));
 ```
-同样的, Invoking the constructor `new Scanner(File)` may throw an I/O exception, so the main method declares `throws Exception` .
+同样的, Invoking the constructor `new Scanner(File)` may throw an I/O exception, so the main method declares `throws Exception`.
