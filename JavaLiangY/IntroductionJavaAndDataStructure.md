@@ -1,5 +1,5 @@
 # Java语言程序设计与数据结构
-**author: 梁勇**
+[Y. Daniel Liang](https://yongdanielliang.github.io)
 ***
 ## Chap 1: 计算机、程序和java概述
 计算机包含软件和硬件两个部分，硬件的组件通过一个总线(bus)子系统连接。<br>
