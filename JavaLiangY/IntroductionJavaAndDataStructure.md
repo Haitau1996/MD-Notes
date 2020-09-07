@@ -560,4 +560,60 @@ public class QuotientWithException {
 **异常是对象, 而对象都由类来定义, 异常的根类是 `java.lang.Throwable`**:<br>
 ![Throwable](figure/12.1.png)<br>
 这些异常可以分为三种类型: 系统错误(system error), 异常(exception) 和运行时异常(runtime exception).<br>
-runtime exception ,error以及他们的子类都被称为免检异常, 反映出程序涉及上不可恢复的逻辑错误, 所有其他异常都被称为必检异常(checked exception),编译器会强制程序员检查并且通过try-catch处理他们.
+runtime exception ,error以及他们的子类都被称为免检异常, 反映出程序涉及上不可恢复的逻辑错误, 所有其他异常都被称为必检异常(checked exception),编译器会强制程序员检查并且通过try-catch处理他们.<br>
+异常处理器是通过从当前的方法开始, 沿着方法调用链, 按照异常的反向传播方向找到的.Java的异常处理模型基于三种操作: 声明一个异常, 抛出一个异常和捕获一个异常:<br>
+![handle exception](figure/12.2.png)<br>
+1. 每个方法都必须声明它能抛出的必检异常的类型, 方法也可能抛出多个异常,具体的形式如下:
+    ```Java
+    public void myMethod() throws Exception1, Exception2, ..., ExceptionN;
+    ```
+    值得注意的是, 如果父类方法中没有声明异常, 那么就不能在子类中重写时声明异常.
+2. 检测到错误的程序可以创建一个合适异常类型的实例并且抛出它, 这称为 _throwing an exception_, 根据偏好, 可以用下面两种方式:
+    ```Java
+    IllegalArgumentException ex = new IllegalArgumentException("Wrong Argument");
+    throw ex;
+    //or
+    throw new IllegalArgumentException("Wrong Argument");
+    ```
+3. 当抛出一个异常时, Java跳过剩余的语句, 然后处理这个异常代码, 从当前的方法开始, 沿着方法调用链, 按照异常的反向传播方向找到这个处理器.
+    ```Java
+    try {
+    statements; // Statements that may throw exceptions
+    }
+    catch (Exception1 exVar1) { handler for exception1; }
+    catch (Exception2 exVar2) { handler for exception2; }
+    ...
+    catch (ExceptionN exVarN) { handler for exceptionN; }
+    ```
+    ![avator](figure/12.3.png)<br>
+java 强制程序员处理必检异常, 如果p1调用方法p2,而后者可能会抛出一个必检异常(ie. IOException),那么必须用下面的方式之一编写代码:<br>
+![avator](figure/12.4.png)<br>
+异常对象中包含关于异常的有价值的信息, 可以调用 _java.lang.Throwable_ 的成员方法得到, 如 `getMessage()`, `printStackTrace()`. 万一出现了异常, 执行仍然会继续, 而如果异常处理器没有捕捉到这个异常, 程序就会突然中断.<br>
+**如果异常处理器无法处理一个异常, 或者只是简单地希望它的调用者注意到该异常, java 允许该异常处理器重新抛出异常**, 与另一个异常一起抛出的一个异常, 构成了链式异常.<br>
+
+一般来说, 一个项目的多个类都会发生的共同异常应该设计为一个异常类, 通过继承 _java.lang.Exception_ 来定义一个自定义的异常类.原则上也可以继承 _RuntimeException_, 但是它是一个免检异常, 为了能让编译器在程序中强制捕捉这些异常, 最好不要这么做.
+
+### File 类
+File类提供一种抽象, 这种抽象是指以不依赖机器的的方式来处理很多依赖机器的文件和路径名的复杂性. 斜杠(/)是Java的目录分隔符, 语句 `new File("image/yes.png")` 在 unix/Windows或者其他任何系统上都能正常工作. <br>
+使用 _Scanner_ 类从文件中读取数据, 使用 _PrintWriter_ 类向文本文件写入数据. 
+#### 使用 _PrintWriter_ 写数据
+```Java
+PrintWriter output = new PrintWriter(filename);
+```
+之后, 就可以调用 print/ println 和 printf 方法写入数据. _PrintWriter_ 构造方法会抛出一个 I/O 异常, Java __强制要求编写代码来处理这类异常__ . 此外常常忘记关闭文件, JDK-7 提供 **_try-with-resources_ 语法来自动关闭文件**:
+```Java
+try (declare and create resources) { 
+    //Use the resource to process the file; 
+}
+// 例如:
+try (java.io.PrintWriter output = new java.io.PrintWriter(file); ) {
+    output.print("John T Smith "); 
+    // do some print stuff
+}
+```
+#### 使用 _Scanner_ 读取数据
+```Java
+Scanner input = new Scanner(System.in);
+Scanner input = new Scanner(new File(filename));
+```
+同样的, Invoking the constructor `new Scanner(File)` may throw an I/O exception, so the main method declares `throws Exception` .
