@@ -60,7 +60,7 @@ p = array;
 int func(int *a);
 int func(int a[]); // 编译器解读成上面的形式
 int func(int a[10]); // 元素个数会被编译器无视
-int func(int *a, size_t nums); // 习惯把大小同时传入
+int func(int *a, size_t nums); // good practice,把大小同时传入
 ```
 
 ## Chap 2 C 是怎样使用内存的
