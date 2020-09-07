@@ -517,4 +517,47 @@ protected 修饰符, 他们修饰的成员的可见性见下表,需要注意的�
 ![proctected](figure/11.5.png)<br>
 可以使用 _final_ 来防止数据的修改, 一个被final修饰的类和方法都不能被继承, 被final修饰的数据域是一个常数.The modifiers _public, protected, private, static, abstract_ and _final_ are used on classes and class members (data and methods), except that the _final_ modifier can also be used on **local variables** in a method. A final local variable is a constant inside a method.
 
-## 
+## Chap 12: 异常处理和文本IO
+异常是运行时错误, 异常处理使得程序可以处理运行时错误, 并且继续通常的执行. __一般而言, JVM监测出一个不可能执行的操作, 就会出现运行时错误(runtime error)__, 如果异常没有被处理, 那么程序就会非正常终止.<br>
+异常是从方法抛出的, 方法的调用者可以捕获以及处理该异常.如我们使用一个method处理除法的问题, 在没有异常处理之前, 我们可能是直接退出:
+```Java
+public static int quotient(int number1, int number2) { 
+    if (number2 == 0) { 
+        System.out.println("Divisor cannot be zero"); 
+        System.exit(1); 
+    }
+    return number1 / number2; 
+}
+```
+但是, 我们 **不应该让方法来终止程序, 应该由调用者决定是否终止程序**, 可以让方法抛出一个异常:
+```Java
+public class QuotientWithException { 
+    public static int quotient(int number1, int number2) { 
+        if (number2 == 0) 
+            throw new ArithmeticException("Divisor cannot be zero"); 
+        return number1 / number2; 
+    }
+    public static void main(String[] args) { 
+        Scanner input = new Scanner(System.in); 
+        // Prompt the user to enter two integers
+        System.out.print("Enter two integers: "); 
+        int number1 = input.nextInt();
+        int number2 = input.nextInt(); 
+        try {        
+            int result = quotient(number1, number2); 
+            System.out.println(number1 + " / " + number2 + " is "         + result); 
+        }
+       catch (ArithmeticException ex) { // 如果出现异常ArithmeticException
+            System.out.println("Exception: an integer " +
+           "cannot be divided by zero ");
+        }
+        System.out.println("Execution continues ..."); 
+    }
+}
+```
+在上面的语句中, 出现异常之后, 构造方法 _ArithmeticException(str)_ 被调用构建一个异常对象, str是描述异常的消息. 从调用段看, 调用方法的语句包含一个 _try_ block(在正常的时候执行) 和一个 _catch_ block (用于处理异常). <br>
+一个异常可能是通过try中的 _throw_ 语句直接抛出, 或者调用一个可能抛出异常的方法, 异常处理的优点在于, 它能使方法抛出一个异常为调用者, 并由 __调用者处理该异常__, 库方法可以检出错误, 但是一般只有调用者才知道出现异常时候应该做什么, 本质上就是将 __检测错误从处理错误中分离出来__.<br>
+**异常是对象, 而对象都由类来定义, 异常的根类是 `java.lang.Throwable`**:<br>
+![Throwable](figure/12.1.png)<br>
+这些异常可以分为三种类型: 系统错误(system error), 异常(exception) 和运行时异常(runtime exception).<br>
+runtime exception ,error以及他们的子类都被称为免检异常, 反映出程序涉及上不可恢复的逻辑错误, 所有其他异常都被称为必检异常(checked exception),编译器会强制程序员检查并且通过try-catch处理他们.
