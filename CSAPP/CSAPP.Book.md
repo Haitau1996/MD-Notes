@@ -1,5 +1,5 @@
 # [COMPUTER SYSTEM: A Programmer's Perspective](http://www.csapp.cs.cmu.edu/)
-author: **Randal Bryant & David Hallaron**
+<font size=5> author: **Randal Bryant & David Hallaron** </font>
 
 ### Chap 1 A Tour to Computer System
 In a sense, the goal of this book is to help you understand what happens and why when you run hello on your system.
