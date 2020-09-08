@@ -617,3 +617,5 @@ Scanner input = new Scanner(System.in);
 Scanner input = new Scanner(new File(filename));
 ```
 同样的, Invoking the constructor `new Scanner(File)` may throw an I/O exception, so the main method declares `throws Exception`.
+## Chap 13: 抽象类和接口
+父类中顶hi了相关子类中的共同行为, 接口可以用于定义类的共同行为(**包括非相关的类**). __抽象类不可以用于创建对象__, 抽象类可以包含抽象方法, 这些方法将在具体的子类中实现.抽象方法在方法头中使用 _abstract_ 修饰符表示, 
