@@ -618,4 +618,27 @@ Scanner input = new Scanner(new File(filename));
 ```
 同样的, Invoking the constructor `new Scanner(File)` may throw an I/O exception, so the main method declares `throws Exception`.
 ## Chap 13: 抽象类和接口
-父类中顶hi了相关子类中的共同行为, 接口可以用于定义类的共同行为(**包括非相关的类**). __抽象类不可以用于创建对象__, 抽象类可以包含抽象方法, 这些方法将在具体的子类中实现.抽象方法在方法头中使用 _abstract_ 修饰符表示, 
+父类中顶hi了相关子类中的共同行为, 接口可以用于定义类的共同行为(**包括非相关的类**). __抽象类不可以用于创建对象__, 抽象类可以包含抽象方法, 这些方法将在具体的子类中实现.抽象方法在方法头中使用 _abstract_ 修饰符表示,抽象类的构造方法被定义为 _proctected_, 它只能被子类使用, 一个包含抽象方法的类必须声明为抽象类.<br>
+抽象类的定义和使用中值得注意的几点:
+* 抽象方法 __不能包含在非抽象类中__, 也就是说, 继承自抽象类的非抽象子类, __一定要override实现所有的抽象方法__
+* 抽象类不能用 _new_ 来实现初始化, 但是可以定义抽象类的构造方法,并且在子类中调用这种方法, 此外抽象类可以用于声明数据类型
+* 包含抽象方法的类必须是抽象的, 但是即使父类是具体的, 子类也可以是抽象的, 如 Object类是具体的, 它的子类 如 GeometricObject 可以是抽象的.
+
+Case Study: Number 抽象类<br>
+![number](figure/13.1.png)<br>
+将它设置类数值类的父亲, 就是可以定义方法来实现数值类的共同操作.
+
+### 接口
+接口是一种与类相似的结构, 用于为对象定义共同的操作.为了区分接口和类, Java使用下面的语法来定义接口:
+```java
+modifier interface InterfaceName {
+    /** Constant declarations */
+    /** Abstract method signatures */
+}
+// 例如
+public interface Edible {
+    /** Describe how to eat */
+    public abstract String howToEat(); 
+}
+```
+
