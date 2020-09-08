@@ -641,4 +641,12 @@ public interface Edible {
     public abstract String howToEat(); 
 }
 ```
+使用接口看起来有点像是使用抽象类, 例如可以使用接口作为引用变量的数据类型或者类型转换的结果, 不能使用new操作符创建接口的实例, 类需要实现接口的时候, 使用关键字 _implements_, 类和接口之间的关系被称为接口继承. <br>
+1. 接口中所有数据域都是 _public static final_, 所有的方法都是 _public abstract_ , 因此在实践中可以省略. 
+2. Java 8 引入关键字 _default_ 的默认接口方法, 实现该接口的类可以简单地使用方法的默认实现, 或者使用一个新的实现来重写该方法.
 
+<font size=4> _Comparable_ 接口 </font> : 该接口定义了compareTo方法, 用于比较对象.如果对象是Comparable接口的实例的话, 就可以使用 `java.util.Arrays.sort(Object[])` 之类的方法进行比较和排序.<br>
+<font size=4> _Cloneable_ 接口</font>: 该接口指定了一个对象能否被克隆, 这个接口是空的, 一个方法体为空的接口被称为标记接口.
+
+### 接口与抽象类
+一个类可以实现多个接口, 但是它只能继承自一个父类.
