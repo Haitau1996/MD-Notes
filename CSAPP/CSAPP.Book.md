@@ -1,5 +1,5 @@
 # [COMPUTER SYSTEM: A Programmer's Perspective](http://www.csapp.cs.cmu.edu/)
-<font size=5> author: **Randal Bryant & David Hallaron** </font>
+<font size=5> **Randal Bryant & David Hallaron** </font>
 
 ### Chap 1 A Tour to Computer System
 In a sense, the goal of this book is to help you understand what happens and why when you run hello on your system.
@@ -27,5 +27,3 @@ program) `.o`
 __Bus__ 总线是用于不同组件沟通的electrical conduits, 一般用于传输fixed-size chunk of bytes(words,一般是4个字节(32位)或者8个(64位)).<br>
 __Main memory__ 临时存储系统, 一般是由一系列动态随机存储器构成,逻辑上它是Linear array of bytes, 每个都有自己的地址.<br>
 __Processor__ 
-
-***
