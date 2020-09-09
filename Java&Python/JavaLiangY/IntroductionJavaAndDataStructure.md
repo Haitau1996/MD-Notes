@@ -649,4 +649,5 @@ public interface Edible {
 <font size=4> _Cloneable_ 接口</font>: 该接口指定了一个对象能否被克隆, 这个接口是空的, 一个方法体为空的接口被称为标记接口.
 
 ### 接口与抽象类
-一个类可以实现多个接口, 但是它只能继承自一个父类.
+一个类可以实现多个接口, 但是它只能继承自一个父类.从变量和方法去看两者之间的区别<br>
+![interface vs abstract](figure/13.2.png)<br>
