@@ -688,10 +688,3 @@ void Heap_Sort(ElementType A[], int N){
 p//TODO: video 136~144
 ## 串的模式匹配
 ![string definition](figure/ZJU12.1.png)
-
-***
-# Data Structures and Algorithm Aanlysis in C ++
-author: **Mark Allen Weiss** , 在这本书中不但介绍了常见的算法和数据结构的实现, 同时还有相应的STL容器和算法的用法<br> 
-## Chap 3 : 表 栈和队列
-### STL中的vector和list
-STL 中实现了很好的线性表`list`(双向链表)和`vector`,
