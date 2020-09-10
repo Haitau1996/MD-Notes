@@ -46,5 +46,4 @@ endo<br>
 
 # 附加功能
 
-**windows pot player设置**
-cat ~/.ssh/id_rsa.pub | ssh chenht@cluster02.swip.ac.cn "cat >> ~/.ssh/authorized_keys"
+cat ~/.ssh/id_rsa.pub | ssh user@hostname:port "cat >> ~/.ssh/authorized_keys"
