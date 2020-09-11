@@ -54,3 +54,14 @@ for(unsigned i = n-1; i >= 0; --i){//error: i是unsigned的话, 无论如何做�
 __sign extension__: 对于一个w-bit的signed integer X,要转成(w+k)-bit的integer with the same value, 所需要做的就是 __make k copies of sign bit__, 前面的多个位之间可以相互抵消, 得到的结果是一样的:<br>
 ![sign extention](figure/Mooc2.6.png)<br>
 __sign truncating__ : 对于unsigned, 有点类似于mod operation, 对于大的负数,也可以从mod上理解. 对于small的数字, 就会得到期望的相等结果.
+
+## Lecture 3 : Bits, Bytes and Integers (Part 2)
+
+补码表示是我们最常见的编码表示, 在讨论补码的加法之前, 我们先讨论 Unsigned 的 加法 <br>
+### Unsigned and Two's Complement Addition
+首先考虑的是最高位如果存在的话就直接丢弃, 相当于是 $s = UAdd_w( u, v) = u + v\ mod \ 2^w $, 下图是一个很好的可视化理解: <br>
+![overflow](figure/Mooc3.1.png)<br>
+TAdd 和 UAdd 有相同的 Bit-level 行为, 因此才会称为大多数系统中的首选方案, Overflow的case, 如一个4 bit的数据(从-8 到 7), -6 + (-3) 的结果是 7 (negetative overflow, 正常应该是 -9), 7+5 的结果是 -4 (positive overflow, 本来应该是12, 刚好是 -4 的 Unsigned 表达), 它可以用下面的图来表示:<br>
+![overflow](figure/Mooc3.2.png)<br>
+
+### 乘法表示
