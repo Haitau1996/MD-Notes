@@ -65,3 +65,11 @@ TAdd 和 UAdd 有相同的 Bit-level 行为, 因此才会称为大多数系统�
 ![overflow](figure/Mooc3.2.png)<br>
 
 ### 乘法表示
+如果我们使用两个 w bit 的数据做乘法, 通常是需要 两倍(2w bit)的空间才能将结果容纳下来,不然会有各种溢出的问题. 对于 Unsigned的乘法, 结果就相当于 $UMult_w (u,v) = u \cdot v \ mod  \ 2^w $ <br>
+对于补码的乘法表示, 就更加复杂了, 在有的时候依旧可以得到想要的结果: 如 -3(相当于13的表示)乘以-2(相当于14的UnSigned 表示), 结果是 (13*14) mod 16, 是6 ,符合预期. <br>
+
+#### power-of-2 Multiply with Shift
+* Operation u << k gives $u * 2^k $
+* Both Signed and unsigned
+
+在过去, 可能计算机可以在一个clock cycle做shift操作, 但是要 12~13 个 clock cycle 去做一个乘法,现在可能要快一些, 但是依旧没有移位快. <br>
