@@ -665,3 +665,7 @@ java **只允许为类的继承做单一继承**, 但是允许 <font color=red> 
 
 // TODO: 跳过 JavaFX的东西
 
+## Chap 17 : 二进制IO
+**二进制IO不涉及编码和解码,因此比文本IO更加高效**,下图是 _InputStream_ 和 _OutputStream_ 类的所有方法:<br>
+![2 io](figure/17.1.png)<br>
+几乎所有的的 I/O 类中的方法都会抛出异常 _java.io.IOException_. 
