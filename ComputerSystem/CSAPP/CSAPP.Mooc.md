@@ -93,3 +93,13 @@ TAdd 和 UAdd 有相同的 Bit-level 行为, 因此才会称为大多数系统�
 ![Bytes Org](figure/Mooc3.5.png)<br>
 对于String的表示, 两者都是相同的:<br>
 ![String](figure/Mooc3.6.png)<br>
+
+## Lecture 04: Floating point
+### Fractional Binary Numbers
+![frac binary](figure/Mooc4.1.png)<br>
+* Divide by 2 by shifting right(unsigned)  
+* Multiply by 2 by shifting left
+* Can only exactly represent numbers of the form $x/2^k$(Other rational numbers have repeating bit representations,类似于10进制中的循环小数)
+
+标准的浮点数表示如下:<br>
+![frac rep](figure/Mooc4.2.png)<br>
