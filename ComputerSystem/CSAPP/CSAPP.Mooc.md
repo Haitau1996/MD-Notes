@@ -72,4 +72,24 @@ TAdd 和 UAdd 有相同的 Bit-level 行为, 因此才会称为大多数系统�
 * Operation u << k gives $u * 2^k $
 * Both Signed and unsigned
 
-在过去, 可能计算机可以在一个clock cycle做shift操作, 但是要 12~13 个 clock cycle 去做一个乘法,现在可能要快一些, 但是依旧没有移位快. <br>
+在过去, 可能计算机可以在一个clock cycle做shift操作, 但是要 12~13 个 clock cycle 去做一个乘法,除法可能要30个clock cycle.现在可能要快一些, 但是依旧没有移位快. <br>
+同样的, 除法要做左移, 使用Unsigned 的话是逻辑左移, 使用补码未定义, 大概率是算术左移.<br>
+
+#### 为什么要用 _Unsigned_
+- [x] 除非理解了implications, 否则不要用(容易犯错, 非常麻烦):
+    ![inf loop](figure/Mooc3.3.png)<br>
+    这个时候或者直接将所有UINT直接显式转换成为一个signed数字使用,我们可以使用unsigned来做count,如
+    ```C
+    size_t i;
+    for(i = cnt -2; i < cnt; i--) //即使 cnt = UMAX 依旧可以正确运行
+        a[i] += a[i+1];
+    ```
+- [x] 做 Modular Arithmetic 时候必须用到
+- [x] 使用Bits表示集合的时候一定会用到
+
+### 在内存中的表示(Pointers, Strings)
+![Bytes Org](figure/Mooc3.4.png)<br>
+现在很难看到前面那种组织方式了, 具体的表达方式如下,对于int和Pointer都是相反的:<br>
+![Bytes Org](figure/Mooc3.5.png)<br>
+对于String的表示, 两者都是相同的:<br>
+![String](figure/Mooc3.6.png)<br>
