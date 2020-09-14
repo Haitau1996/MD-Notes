@@ -26,4 +26,16 @@ program) `.o`
 ![orgination](figure/Book1.2.png)<br>
 __Bus__ 总线是用于不同组件沟通的electrical conduits, 一般用于传输fixed-size chunk of bytes(words,一般是4个字节(32位)或者8个(64位)).<br>
 __Main memory__ 临时存储系统, 一般是由一系列动态随机存储器构成,逻辑上它是Linear array of bytes, 每个都有自己的地址.<br>
-__Processor__ 
+__Processor__ A processor appears to operate according to a very simple instruction execution model, deﬁned by its _instruction set architecture_, 比如下面四种操作: **Load Store Operate** and **Jump**.
+
+#### Caches Matter
+A major goal for system designers is __to make these copy operations run as fast as possible__.To deal with the processor–memory gap, system designers include smaller, faster storage devices called cache memories.One of the most important lessons in this book is that application programmers who are aware of cache memories can exploit them to improve the performance of their programs by an order of magnitude. 一般而言, 每个设备中的存储组织成了一个存储层次结构,__The main idea of a memory hierarchy is that storage at one level serves as a cache for storage at the next lower level__:<br>
+![memory hierarchy](figure/Book1.3.png)<br>
+
+#### 操作系统管理硬件
+![OS](figure/Book1.4.png)<br>
+操作系统有两个作用:
+1. to protect the hardware from misuse by runaway applications
+2. to provide applications with simple and uniform mechanisms for manipulating complicated and often wildly different low-level hardware devices. 
+##### 进程
+一个进程是操作系统给运行程序的的抽象, 多个进程可以同时在系统中运行, 进程似乎是独占处理器\主存和IO设备.
