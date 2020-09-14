@@ -62,3 +62,4 @@ for (int i = the number of elements in the array - 1;i >= 0;--i){
 
 ### Item 4 非必要不提供default constructor
 
+**必须要有某些外来信息才能生成对象的 classes, 则不必要拥有默认的构造函数**.
