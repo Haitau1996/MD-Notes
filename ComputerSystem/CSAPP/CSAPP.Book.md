@@ -1,7 +1,7 @@
 # [COMPUTER SYSTEM: A Programmer's Perspective](http://www.csapp.cs.cmu.edu/)
 <font size=5> **Randal Bryant & David Hallaron** </font>
 
-### Chap 1 A Tour to Computer System
+### Chap 1: A Tour to Computer System
 In a sense, the goal of this book is to help you understand what happens and why when you run hello on your system.
 #### Information Is Bits + Contexts
 The source program is a sequence of bits, each with a value of 0 or 1, organized in 8-bit chunks called bytes. Each byte represents some text character in the program. __系统中的所有信息(disk file, programs stored in memory, data transferd across a network)都是用 a bunch of bits 表示的__, 在不同的context中, 一串的bytes可能表示string,double, int 或者 机器指令.
@@ -79,3 +79,11 @@ $S_{\inf} = \frac{1}{1 - \alpha}$
 机器级程序将内存视为一个非常大的字节数组，称为虚拟内存(virtual memory),实际的实现是将动态随机访问存储器(DRAM) 、闪存、磁盘存储器、特殊硬件和操作系统软件结合起来，为
 程序提供一个看上去统一的 byte array。__C 编译器维护着指针的类型信息，但是它生成的实际机器级程序并不包含关于数据类型的信息__。
 ##### 十六进制表示法
+在 C 语言中，以 Ox 或 ox 开头的数字常量被认为是十六进制的值.
+##### Word 大小
+每台计算机都有一个字长 (word size), 指明指针数据的标称大小 (nominal size).32 位字长限制虚拟地址空间为 4 千兆字节(4GB),扩展到 64 位字长使得虚拟地址空间为 16EB, 大约是$1.84 \times 10^{19}$字节,一般他们使用47位的地址空间。 <br>
+大多数 64 位机器也可以运行为 32 位机器编译的程序，这是一种向后兼容。计算机和编译器支持多种不同方式编码的数字格式，如不同长度的整数和浮点数。为了避免由于依赖＂典型"大小和不同编译器设置带来的奇怪行为，ISO C99 引入了一类数据类型，其数据大小是固定的，不随编译器和机器设置而变化,这是程序员准确控制数据表示的最佳途径。__可移植性的一个方面就是使程序对不同数据类型的确切大小不敏感__,许多程序的编写都假设为32 位程序的字节分配,随着 64 位机器的日益普及，在将这些程序移植到新机器上时，许多隐藏的对字长的依赖性就会显现出来，成为错误。
+##### 寻址和字节顺序
+In virtually all machines, 多字节对象都被存储为连续的字节序列，对象的地址为所使用字节中最小的地址。某些机器选择在内存中按照从最低 有效字节到最高有效字节的顺序存储对象，而另一些机器则按照从最高有效字节到最低有效字节的顺序存储:<br>
+![figure](figure/Book2.1.png)<br>
+there is no technological reason to choose one byte ordering convention over the other, for most application programmers, the byte orderings used by their machines are totally invisible.
