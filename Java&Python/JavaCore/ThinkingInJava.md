@@ -28,4 +28,54 @@ author [Bruce Eckel](https://www.bruceeckel.com)
 可以使用一个导出类对象来完全替代一个基类对象, 通常称之为 _替代原则_, 这是继承的一种理想方式. 还有一种替代并不完美, 因为基类没有新添加的方法, 这种情况可以描述为 _is-like-a_ 关系, 这就拓展了接口.
 ### 伴随着多态的可互换对象
 在有的层次结构中, 方法操作都是基于泛化的对象, 这时通过导出新的子类乐意轻松拓展设计的能力, 极大改善了我们的设计, 同时也降低了软件的维护代价.<br>
-在这个目的引导下, 面向对象的程序设计语言使用了 **后绑定** 的概念, 被调用的代码直到运行时才能确定. C++使用 virtual关键字来明确声明动态绑定, 而 在Java中, **动态绑定是默认行为**, 对于一个Circle/Squre...继承Shape的体系, `shap.draw()`的意思不是使用if-else去检查实际可行的代码, 而是说 **shap是一个Shape对象, 我知道你可以 _draw_ 你自己, 那么去做吧, 只要注意细节的正确性**.
+在这个目的引导下, 面向对象的程序设计语言使用了 **后绑定** 的概念, 被调用的代码直到运行时才能确定. C++使用 virtual关键字来明确声明动态绑定, 而 在Java中, **动态绑定是默认行为**, 对于一个Circle/Squre...继承Shape的体系, `shap.draw()`的意思不是使用if-else去检查实际可行的代码, 而是说 **shap是一个Shape对象, 我知道你可以 _draw_ 你自己, 那么去做吧, 只要注意细节的正确性**.<br>
+Java 是一个单根继承结构, 所有的类最终都继承自 **Object**.<br>
+用容器装Object对象,然后取出来使用的时候会有向上和向下转型, 该转型带来非常繁重的运行时开销, 因此Java引入的参数化类型(泛型). <br>
+```Java
+ArrayList<Shape> shapes = new ArrayList<Shape>();
+```
+在Java中完全采用了动态内存分配的方式, 同时提供了垃圾回收机制, 它可以自动发现对象何时不再被使用, 继而销毁它. 
+
+## Chap 2 : Everything Is an Object
+Although it is based on C++, Java is more of a __“pure” object-oriented language__.<br>
+### 用引用操作对象
+我们在Java中的操作标识符(对象名)实际上是对对象的一个"引用"(reference, 在语法上更接近C++的引用而不是指针),因此我们可以用new将它和一个新的对象发生关联:
+```java
+String s = new String("asdf");
+```
+使用何种存储:
+* 寄存器: Java中无法感受到它存在的迹象, 但是 C/C++中可以建议寄存器的分配方式
+* 栈: 某些Java对象存在这(如对象的引用),但是对象本身不在这
+* 堆: 通用的内存池, 用于存放所有的Java对象
+* 常量区: 常常直接存放在程序代码内部, 这样不会被改变
+* 非RAM存储: 两个例子,流对象和持久化对象. 
+
+基本类型: 小的,简单的类型放在堆中不是很好处理:<br>
+![figure](figure/Think2.1.png)<br>
+基本类型都有相应的包装器类(wrapper),用于从堆中创建相应的非基本对象. 此外还有两个用于高精度计算的类 _BigInteger_ and _BigDecimal_ 没有对应的基本类型. 对于数组, Java确保数组会被初始化, 而且不会做越界访问.<br>
+
+### 永远不用销毁对象
+在C/C++/Java中, 作用域由花括号的位置决定, 但是Java对象不具备和基本类型一样的生命周期
+```Java
+{
+int x = 12; 
+    {
+        int x = 96; // Illegal in Java
+    }
+}
+{
+    String s = new String("a string"); 
+} // S的作用域消失, 但是new的对象依旧占据内存空间
+```
+Java has a **garbage collector**, which looks at all the objects that were created with new and figures out which ones are **not being referenced anymore**.<br>
+
+### 自定义的类
+一旦定义了一个类, 就可以在其中设置两种类型的元素: 字段(fields,也被称为数据成员) 和 方法(有时被称为成员函数).如果类的数据成员是基本数据类型,即使不做初始化Java也确保它能获得一个默认值. 但是只在数据成员中这样,在局部变量定义中无此说明.<br>
+Java方法的基本形式,包括名称/参数/返回值和方法体:<br>
+```Java
+ReturnType methodName( /* Argument list */ ) {
+    /* Method body */ 
+}
+```
+Java的机制意味着所有文件都能够自动存活于他们自己的名字空间内, 使用 _import_ 来明确告诉编译器想要的类包是什么.<br>
+声明一个事物是static, 就意味着这个域或者方法不会与包含它的那个类的任何对象实例关联在一起.
