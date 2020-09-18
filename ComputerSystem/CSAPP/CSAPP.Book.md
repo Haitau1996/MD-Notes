@@ -86,4 +86,7 @@ $S_{\inf} = \frac{1}{1 - \alpha}$
 ##### 寻址和字节顺序
 In virtually all machines, 多字节对象都被存储为连续的字节序列，对象的地址为所使用字节中最小的地址。某些机器选择在内存中按照从最低 有效字节到最高有效字节的顺序存储对象，而另一些机器则按照从最高有效字节到最低有效字节的顺序存储:<br>
 ![figure](figure/Book2.1.png)<br>
-there is no technological reason to choose one byte ordering convention over the other, for most application programmers, the byte orderings used by their machines are totally invisible.
+there is no technological reason to choose one byte ordering convention over the other, for most application programmers, the byte orderings used by their machines are totally invisible.有以下例外:
+1. 不同类型的机器之间通过网络传送二进制数据时
+2. 当阅读表示整数数据的字节序列时字节顺序也很重要
+3. 当编写规避正常的类型系统的程序时
