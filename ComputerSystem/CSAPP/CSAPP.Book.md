@@ -90,3 +90,5 @@ there is no technological reason to choose one byte ordering convention over the
 1. 不同类型的机器之间通过网络传送二进制数据时
 2. 当阅读表示整数数据的字节序列时字节顺序也很重要
 3. 当编写规避正常的类型系统的程序时
+
+实际上, 可执行文件也是一系列的二进制代码序列, 只是一般而言 Binary code is seldom portable across different combinations of machine and operating system.<br>
