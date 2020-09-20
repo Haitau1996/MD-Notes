@@ -80,4 +80,38 @@ f(name);
 此外,函数也会 **_decay_ 成 pointer, 这个时候的类型推导和array类似**:没有&时候传入函数名则推导成为函数指针,否则是函数的引用(其实两者在实际使用过程中的差别很小).
 
 ### Item2: 理解 _auto_ 的类型推导
-除了一个意外情况, `auto` 的推导和前面的Template机制是一样的.
+除了一个意外情况, `auto` 的推导和前面的Template机制是一样的.按照前面的三种分类,依旧得到下面的结果:
+```C++
+auto x = 27;          // case 3 (x is neither ptr nor reference) 
+const auto cx = x;    // case 3 (cx isn't either) 
+const auto& rx = x;   // case 1 (rx is a non-universal ref.)
+
+auto&& uref1 = x;     // x is int and lvalue, 
+                      // so uref1's type is int& 
+auto&& uref2 = cx;    // cx is const int and lvalue, 
+                      // so uref2's type is const int& 
+auto&& uref3 = 27;    // 27 is int and rvalue, 
+                      // so uref3's type is int&&
+```
+下面我们开始讨论那个唯一的例外情况, 在C++11中引入了一致初始化(uniform initialization),下面4个结果在auto类型推导中结果不是完全相同:
+```C++
+auto	x1 = 27;    // type is int, value is 27
+auto	x2(27);
+auto	x3 = { 27 };// type is std::initializer_list<int>,value is { 27 }
+auto	x4{ 27 };
+```
+如果是使用这样的一个一致初始化做类型推导, 那么结果就是`std::initial izer_list`, 如果大括号中的type不同, 无法做类型推导, 代码就会出错:
+```C++
+auto x5 = { 1, 2, 3.0 };	// error! can't deduce T for 
+                            // std::initializer_list<T>
+```
+处理这种花括号中的初始化器就是Template机制和auto推导的唯一区别:_auto_ assumes that a braced initializer represents a `std::initializer_list`, but template type deduction doesn’t.
+```C++
+auto x = { 11, 23, 9 };	//	x's type is
+	                      //	std::initializer_list<int>
+template<typename T>	//	template with parameter
+void f(T param);	//	declaration equivalent to
+	                //	x's declaration
+f({ 11, 23, 9 });	//	error! can't deduce type for T
+```
+since c++14, auto 可以 indicate函数的返回值可以类型推导, 同时在 _lambda_ 表达式中用作参数声明, 这两个情况用的是 **template type deduction**, 不是 auto type deduction. 这时候不接受`std::initializer_list`作为参数.
