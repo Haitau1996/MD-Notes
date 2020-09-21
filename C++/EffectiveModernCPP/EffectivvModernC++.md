@@ -114,4 +114,57 @@ void f(T param);	//	declaration equivalent to
 	                //	x's declaration
 f({ 11, 23, 9 });	//	error! can't deduce type for T
 ```
-since c++14, auto 可以 indicate函数的返回值可以类型推导, 同时在 _lambda_ 表达式中用作参数声明, 这两个情况用的是 **template type deduction**, 不是 auto type deduction. 这时候不接受`std::initializer_list`作为参数.
+since c++14, auto 可以 indicate函数的返回值可以类型推导, 同时在 _lambda_ 表达式中用作参数声明, 这两个情况用的是 **template type deduction**, 不是 auto type deduction. 这时候不接受 `std::initializer_list`作为参数.
+
+### Item 3: 理解 _decltype_
+_decltype_ 告诉你name或者表达式的type,它的结果非常直观:
+```C++
+const int i = 0;           // decltype(i) is const int 
+if (v[0] == 0) …           // decltype(v[0]) is int&
+```
+在C++11中, decltype的主要用途是声明返回值和参数类型有关的函数模板,如我们用`operator []` 得到容器的返回值类型, 一般而言返回的是 `T&`, 但是 `std::vector<bool>` 返回的不是 `bool&`, 而是一个新的 `bool`对象, 就可以使用下面的做法:
+```C++
+template<typename Container, typename Index> 
+auto authAndAccess(Container& c, Index i) -> decltype(c[i]) 
+{
+    authenticateUser(); 
+    return c[i]; 
+}
+```
+C++11 permits return types for single-statement lambdas to be deduced, and C++14 extends this to both all lambdas and all functions, including those with multiple statements. 意味着编译器可以从函数的实现来推导函数的返回值, 前面的 `->decltype(c[i])` 就可以省略.<br>
+```C++
+template<typename Container, typename Index>    // C++14; 
+auto authAndAccess(Container& c, Index i) {
+    authenticateUser();
+    return c[i];  
+}
+std::deque<int> d; 
+…
+authAndAccess(d, 5) = 10; // ERROR
+```
+此外, 还有一个细节就是 `d[5]` 返回的是一个 `int&`, 但是auto的类型推导会剥去reference,所以两个都是`rvalue`, 是无法这样赋值的, 故编译器会报错.为了避免用auto这种推导, since c++14, 我们可以使用 `decltype(auto)`:
+```C++
+template<typename Container, typename Index>  
+decltype(auto)  authAndAccess(Container& c, Index i)   
+{   // C++14, works, still require refinement 
+    authenticateUser(); 
+    return c[i]; 
+}
+```
+此外, `decltype(auto)` 可以用于声明变量, 此外上面的实现看起来非常好, 但是还有一个问题,容器是通过 `lvalue-reference-to-non-const`, 这意味着可以修改这个容器的内容, 所以 Rvalue 没办法和这种`lvalue-reference`绑定, 除非是`lvalue-reference-to-const`.当然我们可以用一个函数重载,写出两个函数来实现, 但是更简单的一个方式是写出同时可供`lvalue`和`rvalue`使用的版本:
+```C++
+template<typename Container, typename Index> 
+decltype(auto) authAndAccess(Container&& c,Index i);  
+{//final C++14 version 
+    authenticateUser();
+    return std::forward<Container>(c)[i];
+}
+template<typename Container, typename Index>
+auto authAndAccess(Container&& c, Index i)
+-> decltype(std::forward<Container>(c)[i])
+{//final C++11 version
+    authenticateUser(); 
+    return std::forward<Container>(c)[i]; 
+}
+```
+对于`decltype`去求name的类型, 直觉得到的结果就是对的, 但是对于表达式, `decltype` 一般会确保得到的结果是一个`lvalue reference`: Putting parentheses around a name can change the type that decltype reports for it!<br>
