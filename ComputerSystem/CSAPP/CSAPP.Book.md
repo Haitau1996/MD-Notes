@@ -147,3 +147,16 @@ uy = ty; /* Cast to unsigned */
 截断一个无符号的数, 相当于对 $2^k$ 取模: 一个Bit vector $\hat{x},[x_{w−1}, x_{w−2}, ..., x_0]$ 截断称为k Bits, $\hat{x^{'}} = [x_{k−1}, x_{k−2}, ..., x_0]$, 得到的结果 $x^{'} = x \ \text{mod}\ 2^k$.<br>
 而补码的做法是, 将他们转成 unsigned, **做完取模运算之后再转成补码表示** : $x^{'} = U2T_k(x \ \text{mod} 2^k)$.(x为该补码转为Unsigned的值).<br>
 从中可以发现, signed和Unsigned之间的相互转换, 特别是在同时包含两者的表达式中, signed会隐式转换成 Unsigned , 会带来严重的非直观的问题, 因此在日常使用中我们需要特别注意这个问题, 一般不使用 unsigned的数字, 除了在某些特定的情况,如使用word来表示collection(没有 numeric interpretation的场景), 使用 unsigned会非常方便.<br>
+
+#### Integer Arithmetic
+理解计算机运算的细微之处能够帮助程序员编写更可靠的代码.
+##### Unsigned Addition
+两个可以分别用w-bit表示的结果之和, 原则上需要 (w+1)-bit来表示, 除了支持无限精度运算的语言,一般的编程语言只支持固定精度的运算，因此像“加法”和＂乘法”这样的运算**不同于它们在整数上的相应运算**。<br>
+在固定精度的情况下, 计算相当于是将整数 $(x+y)$ 在w-bit的条件下截断得到的结果, 结合前面关于截断的介绍, 就是相当于结果 mod $2^w$. 于是, 无符号数的加法如下:<br>
+$$
+x + _w^u y = \{ \begin{matrix} x+y,& x+y < 2^w & \text{Normal case} \\ x+y-2^w,& x+y\geq 2^w & \text{Overflow}\end{matrix}
+$$
+![overflow](figure/Book2.6.png)<br>
+当执行 C 程序时，**不会将溢出作为错误而发信号**。我们可以从结果判断溢出是否发生, 如果两个unsigned之和小于其中任何一个数, 那就说明发生了溢出.<br>
+模数加法和算术意义的加法结果不同,但是它依旧形成一个阿贝尔群(可交换).<br>
+##### signed Addition(这里讨论补码)
