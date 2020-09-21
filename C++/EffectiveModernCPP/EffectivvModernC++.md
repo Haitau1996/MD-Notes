@@ -41,7 +41,7 @@ const int cx = x;        // as before
 const int& rx = x;       // as before
 f(x);                    // x is lvalue, so T is int&, 
                          // param's type is also int&
-f(cx);                   // cx is lvalue, so T is const int&,                       
+f(cx);                   // cx is lvalue, so T is const int&                       
                          // param's type is also 
 const int& f(rx);        // rx is lvalue, so T is const int&, 
                          // param's type is also 
@@ -248,3 +248,4 @@ for (const std::pair<std::string, int>& p : m)
 但是, `std::unordered_map` 的key部分应该是 **_const_**,所以在hash table中其实是 `std::pair
 <const std::string, int>.` 结果就是编译器产生一个类型p临时对象然后将m中的每个对象拷贝给那个对象, 然后将p的引用和那个临时对象绑定.特别是将对象取地址的时候, 使用auto取得的地址是对的, 而用上面那种声明取得地址是临时变量的地址.auto并不完美, 前面item 1提到 initializing expressions相关的问题,但是因为auto的类型可以传播, 而且并没有过分减少程序的可读性.
 
+### Item 6: 如果使用auto推导出不想要的type,使用显示的类型声明
