@@ -249,3 +249,42 @@ for (const std::pair<std::string, int>& p : m)
 <const std::string, int>.` 结果就是编译器产生一个类型p临时对象然后将m中的每个对象拷贝给那个对象, 然后将p的引用和那个临时对象绑定.特别是将对象取地址的时候, 使用auto取得的地址是对的, 而用上面那种声明取得地址是临时变量的地址.auto并不完美, 前面item 1提到 initializing expressions相关的问题,但是因为auto的类型可以传播, 而且并没有过分减少程序的可读性.
 
 ### Item 6: 如果使用auto推导出不想要的type,使用显示的类型声明
+有的时候, auto的类型推导得到的结果是 _zags_ 而我们想要的是 _zag_, 这时候就需要手动写指定我们想要的类型.
+```C++
+std::vector<bool> features(const Widget& w);
+Widget w; 
+auto highPriority = features(w)[5];  // is w high priority? no, explained as followed
+processWidget(w, highPriority);      // undefined behavior!
+```
+除了bool之外, opetator[] 返回的都是 T&, 但是 **C++不允许reference to bits**, 这个auto返回的是一个`std::vector<bool>::reference`,它的行为像是 `bool&`,此外, 它可以隐式转换成bool, 所以下面的做法是没有问题的:
+```C++
+bool highPriority = features(w)[5];  // declare highPriority's type explicitly
+```
+前面 _auto_ 的错误用法的结果取决于`std::vector<bool>::reference` 是怎样实现的, 如果是包含指向保存引用位的机器word的指针，以及该位在该word中的偏移量,那么auto的 highPriority 包含一个 pointer to a word in temp, 同时有对 bit 5的偏移量. 在那句话结束后, temp就被销毁, 然后 highPriority 包含的指针就相当于是一个 dangling pointer.<br>
+实际上, 这是一个 _Proxy_ 的例子, 有的 proxy非常直观(`std::shared_ptr`), 但是有的proxy更像是invisible, 一般来说, **"invisible"的proxy不太适合用auto做类型推导**,因此我们要**避免**下面形式的auto语句:<br>
+<font color=#000fff size=4>auto someVar = expression of "invisible" proxy class type;</font><br>
+怎样确定一个返回值是否是proxy, 一般而言文档中会有很好的说明, 就算是没有的话, 也很难从源代码中把这种性质藏起来, 我们可以根据这来判断, 如:<br>
+
+```C++
+namespace std {	// from C++ Standards
+    template <class Allocator> 
+    class vector<bool, Allocator> { 
+        public:	
+            … 
+            class reference {…};	
+            reference operator[](size_type n);	
+            … 
+    };
+}	
+```
+这样的话就可以发现, 一般的operator[] 都是返回的一个`T&`, 而这是返回一个类内定义的reference,显然就能看出是一个 _Proxy_.如果依旧想要使用auto, 那么可能用 _the explicitly typed initializer idiom_:<br>
+```C++
+auto highPriority = static_cast<bool>(features(w)[5]);
+```
+同样的, 在别的时候也可以使用这个特性:
+```C++
+double calcEpsilon();            // return tolerance value
+// 如果float精度已经够了,就可以这么做
+float ep = calcEpsilon();        // impliclitly convert double → float
+auto ep = static_cast<float>(calcEpsilon());
+```
