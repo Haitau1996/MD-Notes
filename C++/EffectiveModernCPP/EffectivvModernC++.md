@@ -201,3 +201,4 @@ template<typename T> void f(const T& param) {
 ```
 这样的话在clang/gcc/Microsoft的编译器产生一致的并且human-friendly representation.
 ***
+## Chap 2: auto
