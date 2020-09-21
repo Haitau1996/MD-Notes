@@ -103,3 +103,47 @@ there is no technological reason to choose one byte ordering convention over the
 2. 算术右移在左端补 k 个最高位的有效值, 得到的结果是 $[x_{w-1}, …, x_{w-1},x_{w-1},x_{w-2},..., x_k]$
 
 对于C语言来说, 没有定义对于有符号数使用哪种右移(可能有可移植问题), 而对于无符号数来说必须是逻辑右移动, 而在Java语言中分别使用 `>>` 和 `>>>` 代表算术右移和逻辑右移.
+
+#### 整数表示
+对于C语言来说, 根据字节分配，不同的大小所能表示的值的范围是不同的, C 语言标准定义了每种数据类型必须能够表示的最小的取值范围, 而对于signed的类型, 只要求正数和负数的取值范围是对称的, 实际上负数要多一个值.
+
+##### Unsigned 编码
+对于向量 $\hat{x} =  [x_{w−1}, x_{w−2}, . . . , x{0}]:$ <br>
+    $B2U_w(\hat{x}) \doteq \sum_{i=0}^{w-1} x_i 2^i$<br>
+可以轻易的观察到, 这是一个 **双向单射**.
+
+##### 补码
+对于向量 $\hat{x} =  [x_{w−1}, x_{w−2}, . . . , x{0}]:$ <br>
+    $B2T_w(\hat{x}) \doteq -x_{w-1} 2^{w-1} + \sum_{i=0}^{w-2} x_i 2^i$<br>
+同样的, 这也是一个 **双向单射**: For a number x, such that $TMin_w ≤ x ≤ TMax_w$, $T2B_w(x)$ is the (unique) w-bit pattern that encodes x.<br>
+值得注意的是,C语言**没有强制要求 _signed_ number用2's 补码表示**,但是几乎所有的平台都是这么做的.同时, 我们可以使用C library `<limits.h>` 查看所支持的最大最小值, 避免出现因为默认这种补码带来的问题.<br>
+对于Java语言而言, 它对数据格式的要求更为具体:two’s-complement representation with the exact ranges shown for the 64-bit case.<br>
+
+##### signed 和 Unsigned 之间的转换
+C语言允许在各种不同的数字数据类型之间做强制类型转换, 对于signed 和 Unsigned之间转换, 对千大多数 C 语言的实现来说，对这个问题的回答都是从bit-level 来看的，而不是数的角度: 转换过程中数值的大小可能会发生变化, **但是 bit pattern 是不变的**.<br>
+在这个思想的指导下, 我们很快可以得到两者的转换规律,如从signed到 Unsigned的公式:<br>
+$$
+T2U_w(x) = \{ \begin{matrix} x+2^w ,& x<0 \\ x,& x>0 \end{matrix}
+$$
+![T2U](figure/Book2.4.png)<br>
+同样的, 我们可以得到Unsigned到signed的结果:
+$$
+U2T_w(x) = \{ \begin{matrix} u, & u\leq TMax_w \\ u - 2^w , & u > Tmax_u \end{matrix}
+$$
+![T2U](figure/Book2.5.png)<br>
+
+##### C 语言中的有符号数与无符号数
+大多数数字都默认为是有符号的, 要创建一个无符号常量，必须加上后缀字符 'U' 或者 'u'.值得注意的是, 在相互赋值的时候, signed和Unsigned会发生隐式类型转换:
+```C
+int tx, ty; 
+unsigned ux, uy;
+tx = ux; /* Cast to signed */ 
+uy = ty; /* Cast to unsigned */
+```
+这个过程同时也发生在printf的时候, 比如用 %u的格式打印-1得到的结果就是Umax.当执行一个运算时，**如果它的一个运算数是有符号的而另一个是无符号的，那么 C语言会隐式地将有符号参数强制类型转换为无符号数，并假设这两个数都是非负的，来执行这个运算**.
+
+##### 拓展和截断一个数字
+无符号的数只需要用零拓展, 有符号的数字的拓展只要将前面拓展的位都**用最高位(_sign bit_)填占就可以**.<br>
+截断一个无符号的数, 相当于对 $2^k$ 取模: 一个Bit vector $\hat{x},[x_{w−1}, x_{w−2}, ..., x_0]$ 截断称为k Bits, $\hat{x^{'}} = [x_{k−1}, x_{k−2}, ..., x_0]$, 得到的结果 $x^{'} = x \ \text{mod}\ 2^k$.<br>
+而补码的做法是, 将他们转成 unsigned, **做完取模运算之后再转成补码表示** : $x^{'} = U2T_k(x \ \text{mod} 2^k)$.(x为该补码转为Unsigned的值).<br>
+从中可以发现, signed和Unsigned之间的相互转换, 特别是在同时包含两者的表达式中, signed会隐式转换成 Unsigned , 会带来严重的非直观的问题, 因此在日常使用中我们需要特别注意这个问题, 一般不使用 unsigned的数字, 除了在某些特定的情况,如使用word来表示collection(没有 numeric interpretation的场景), 使用 unsigned会非常方便.<br>
