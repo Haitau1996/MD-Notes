@@ -168,3 +168,36 @@ auto authAndAccess(Container&& c, Index i)
 }
 ```
 对于`decltype`去求name的类型, 直觉得到的结果就是对的, 但是对于表达式, `decltype` 一般会确保得到的结果是一个`lvalue reference`: Putting parentheses around a name can change the type that decltype reports for it!<br>
+
+### Item 4: 知道怎样查看推导的类型
+在三个阶段得到推导类型的信息: 编辑代码的时候, 编译代码的时候, 运行代码的时候.<br>
+在编辑代码的时候, IDE(如Clion)可以显示出代码的类型, 但是当涉及更多复杂类型的时候, 来自编译器的提示可能就不那么有用了.<br>
+在编译期, 可以用导致编译错误的方式去诊断type的类型,如:
+```C++
+const int theAnswer = 42;
+auto x = theAnswer;
+auto y = &theAnswer;
+template<typename T>	//	declaration only for TD;
+class TD;	//	TD == "Type Displayer"
+TD<decltype(x)> xType;	// elicit errors containing
+TD<decltype(y)> yType;	// x's and y's types
+```
+这个时候,可能编译器就会提示出错误的类型, 并且帮助推导得到相应的类型信息:<br>error: 'xType' uses undefined class 'TD<int>' <br>
+error: 'yType' uses undefined class 'TD<const int *>' <br>
+#### 运行时输出
+`typeid` 和 `std::type_info::name` 可以产生类型的 C-style string (i.e., a const char*) representation.但是这种结果不一定很直观, 如在 clang/gcc 中就会说 x,y的类型分别是: “i” 和 “PKi”(pointer to konst(const) i). 问题是, `std::type_info::name`的结果并不可靠, 它得到的类型和将结果用 _by-value_ 的方式传入一个模板函数是相同的, 会将 reference-ness/ constness 忽略. 如果需要更精确的结果, 我们可能要使用 Boost TypeIndex库(`Boost.TypeIndex`):
+```C++
+#include <boost/type_index.hpp>
+template<typename T> void f(const T& param) { 
+    using std::cout; 
+    using boost::typeindex::type_id_with_cvr;	
+    //with cvr意思是保留 const, volatile, or reference 标识
+// show	T
+    cout <<	"T =	"<<	type_id_with_cvr<T>().pretty_name()<<	'\n';
+// show	param's type
+    cout <<	"param ="<<	type_id_with_cvr<decltype(param)>().pretty_name()<<	'\n';
+    … 
+}	
+```
+这样的话在clang/gcc/Microsoft的编译器产生一致的并且human-friendly representation.
+***
