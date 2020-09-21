@@ -288,3 +288,17 @@ double calcEpsilon();            // return tolerance value
 float ep = calcEpsilon();        // impliclitly convert double → float
 auto ep = static_cast<float>(calcEpsilon());
 ```
+## Chap 3: Moving to Modern C++
+C++ 11/14中引入了很多新的东西, `auto`,智能指针, move语义, lambda 表达式, 并发, 接下来深入理解这里面的东西.<br>
+### Item 7: 创建对象的时候分清楚 `( )` 和 `{ }`
+C++中实际上有三种创建并初始化对象的方式, 使用 parenthess, 等号 或者 brace:
+```C++
+int x(0); 
+int y = 0; 
+int z{ 0 }; 
+// 在很多时候, 等号和braces可以一起合作使用
+int z = { 0 };        // initializer uses "=" and braces,
+                      // C++ 把这种和直接使用braces相同处理
+```
+对于 built-in 类型(如int), 这几种只有理论上的区别, 但是对于 _user-define-type_, 他们实际上调用的是不同的构造函数:
+
