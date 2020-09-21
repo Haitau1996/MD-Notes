@@ -92,3 +92,14 @@ there is no technological reason to choose one byte ordering convention over the
 3. 当编写规避正常的类型系统的程序时
 
 实际上, 可执行文件也是一系列的二进制代码序列, 只是一般而言 Binary code is seldom portable across different combinations of machine and operating system.<br>
+##### Intro to Boolen Algebra
+![boolean](figure/Book2.2.png)<br>
+最简单的布尔代数就是在双元素集合{0,1}上的operation.然后香农提出将这个布尔代数和数字逻辑结合起来, 将布尔代数的东西推广到两个bit vector $[a_{w−1}, a_{w−2}, ..., a_0]$ 和 $[b_{w−1}, b_{w−2},..., b_0]$ 之间:<br>
+![boolean](figure/Book2.3.png)<br>
+<font size=4> Bit-level operation in C </font>
+在C语言中,需要注意区分bit-level的操作符,` &, |, ^, ~` ,和逻辑运算符 `&&, ||, !` , 一般而言, 只有当值限制成{0,1}的时候两者才有可比性, 并且逻辑运算符有短路求值的特点.<br>
+<font size=4> 移位运算 </font> 在C中提供了移位运算,对于左移运算, 就是丢弃最高的k位, 然后在右端补k个0. 而右移动作则有两种,逻辑右移和算术右移.<br>
+1. 逻辑右移在左端补 k 个 0, 得到的结果是$[0, …, 0,x_{w-1},x_{w-2},..., x_k]$
+2. 算术右移在左端补 k 个最高位的有效值, 得到的结果是 $[x_{w-1}, …, x_{w-1},x_{w-1},x_{w-2},..., x_k]$
+
+对于C语言来说, 没有定义对于有符号数使用哪种右移(可能有可移植问题), 而对于无符号数来说必须是逻辑右移动, 而在Java语言中分别使用 `>>` 和 `>>>` 代表算术右移和逻辑右移.
