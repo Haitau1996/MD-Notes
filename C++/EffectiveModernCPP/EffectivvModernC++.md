@@ -185,7 +185,7 @@ TD<decltype(y)> yType;	// x's and y's types
 这个时候,可能编译器就会提示出错误的类型, 并且帮助推导得到相应的类型信息:<br>error: 'xType' uses undefined class 'TD<int>' <br>
 error: 'yType' uses undefined class 'TD<const int *>' <br>
 #### 运行时输出
-`typeid` 和 `std::type_info::name` 可以产生类型的 C-style string (i.e., a const char*) representation.但是这种结果不一定很直观, 如在 clang/gcc 中就会说 x,y的类型分别是: “i” 和 “PKi”(pointer to konst(const) i). 问题是, `std::type_info::name`的结果并不可靠, 它得到的类型和将结果用 _by-value_ 的方式传入一个模板函数是相同的, 会将 reference-ness/ constness 忽略. 如果需要更精确的结果, 我们可能要使用 Boost TypeIndex库(`Boost.TypeIndex`):
+`typeid` 和 `std::type_info::name` 可以产生类型的 C-style string (i.e., a const char*) representation.但是这种结果不一定很直观, 如在 clang/gcc 中就会说 x,y的类型分别是: “i” 和 “PKi”(pointer to konst(const) i). 另外, `std::type_info::name`的结果并不可靠, 它得到的类型和将结果用 _by-value_ 的方式传入一个模板函数是相同的, 会将 reference-ness/ constness 忽略. 如果需要更精确的结果, 我们可能要使用 Boost TypeIndex库(`Boost.TypeIndex`):
 ```C++
 #include <boost/type_index.hpp>
 template<typename T> void f(const T& param) { 
@@ -202,3 +202,49 @@ template<typename T> void f(const T& param) {
 这样的话在clang/gcc/Microsoft的编译器产生一致的并且human-friendly representation.
 ***
 ## Chap 2: auto
+### Item 5 : 使用 _auto_ 优于显式类型声明
+auto类型推导的一个好处是强制使用初始化, 如:
+```C++
+auto x2; //error, 要求初始化
+auto x3 = 0; // 正确
+```
+此外, 只有编译器知道的类型(如 lambda 表达式类型),也可以使用auto推导:
+```C++
+auto derefUPLess =	// comparison func.
+    [](const std::unique_ptr<Widget>& pl,	// for Widgets
+       const std::unique_ptr<Widget>& p2)	// pointed to by
+    { return *p1 < *p2; };	// std::unique_ptrs
+//since c++ 14, lambda 表达式的参数也可以使用类型推导
+auto derefLess =	// C++14 comparison
+    [](const auto& pl,	// function for
+    const auto& p2)	    // values pointed
+    { return *p1 < *p2; };	// to by anything  pointer-like
+```
+在C++中, `std::function` Objects 可以 refer to 任何 可调用的对象,i.e., 任何可以像函数一样使用的对象,正如我们使用函数指针的时候需要知道参数的类型, 上面的东西我们可以用`std::function`的template parameter写出, 
+```C++
+std::function<bool(const std::unique_ptr<Widget>&, 
+                   const std::unique_ptr<Widget>&)>
+    derefUPLess = [](const std::unique_ptr<Widget>& pl,
+                     const std::unique_ptr<Widget>& p2)
+                  { return *p1 < *p2; };
+```
+即便如此, 使用 `std::function`还是和auto不太一样, 使用auto的结果和封装的东西类型一样, 需要的内存也是一样的,但是使用 `std::function` 得到的closure是一个 `std::function`模板的实例,该实例对于任何的函数签名都有固定的size,这个size可能不够存放整个closure,_std::function_ 可能从堆中要内存存放这个closure, 因此会使用更多的内存: **the std::func tion approach is generally bigger and slower than the auto approach**, 并且可能爆出 _out-of-memory_ 异常.<br>
+此外, auto也会避免 "type shortcut" 问题:
+```C++
+std::vector<int> v; 
+…
+unsigned sz = v.size();
+```
+实际上 `v.size()` 返回的是一个 `std::vector<int>::size_type`, 在32位系统中它的size和Unsigned相同, 但是在64-bit 的系统中, Unsigned 依旧是32 bits, while `std::vec tor<int>::size_type` is 64 bits.此外, 从下面的例子中也可以看出auto使用起来更加精确:<br>
+```C++
+std::unordered_map<std::string, int> m; 
+...
+for (const std::pair<std::string, int>& p : m)
+ { 
+     …	
+     // do something with p
+ }
+```
+但是, `std::unordered_map` 的key部分应该是 **_const_**,所以在hash table中其实是 `std::pair
+<const std::string, int>.` 结果就是编译器产生一个类型p临时对象然后将m中的每个对象拷贝给那个对象, 然后将p的引用和那个临时对象绑定.特别是将对象取地址的时候, 使用auto取得的地址是对的, 而用上面那种声明取得地址是临时变量的地址.auto并不完美, 前面item 1提到 initializing expressions相关的问题,但是因为auto的类型可以传播, 而且并没有过分减少程序的可读性.
+
