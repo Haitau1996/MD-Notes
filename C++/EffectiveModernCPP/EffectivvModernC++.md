@@ -408,6 +408,16 @@ auto lockAndCall(FuncType func,MuxType& mutex,PtrType ptr)
     MuxGuard g(mutex);
     return func(ptr);
 }
-auto result3 = lockAndCall(f3, f3m, nullptr);    // fine, 但是传入0或者NULL的时候编译都无法通过
+auto result3 = lockAndCall(f3, f3m, nullptr);    // fine, 但是传入0或者NULL的时候
+                                                 //编译都无法通过
 ```
 因为 `std::nullptr_t` 可以被隐式转换成为各种指针类型, 因此使用裸指针和智能指针都可以,因此上面的过程提高了代码的复用性.
+
+### Item9: Prefer alias declarations to typedefs
+在涉及函数指针的时候, 我们发现alias声明比 _typedef_ 更加方便理解:
+```C++
+typedef void (*FP)(int, const std::string&);	// typedef
+// same meaning as above	
+using FP = void (*)(int, const std::string&);	// alias declaration
+```
+而alias更好的情况在涉及template的时候,它 **可以被 templatized, 但是 `typedef` 不能**,因此可以轻易写出C++98要typedefs nested inside templatized structs才可以实现的东西.
