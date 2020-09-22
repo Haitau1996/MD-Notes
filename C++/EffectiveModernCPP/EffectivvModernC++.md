@@ -301,4 +301,85 @@ int z = { 0 };        // initializer uses "=" and braces,
                       // C++ 把这种和直接使用braces相同处理
 ```
 对于 built-in 类型(如int), 这几种只有理论上的区别, 但是对于 _user-define-type_, 他们实际上调用的是不同的构造函数:
+```C++
+Widget w1;	// call default constructor
+Widget w2 = w1;	// not an assignment; calls copy ctor
+w1 = w2;	// an assignment; calls copy operator=
+```
+之前的初始化依旧不够好, C++11 introduce _uniform initialization_: 
+1. 可以更好的对容器指定每个元素做初始化
+    ```C++
+    std::vector<int> v{ 1, 3, 5 }; // v's initial content is 1, 3, 5
+    ```
+2. 可以用于类内非静态元素的初始化(和`=`类似, 但是不允许小括号这么做)
+    ```C++
+    class Widget { 
+        …		
+    private:		
+        int x{ 0 };	//	fine, x's default value is 0
+        int y = 0;	//	also fine
+        int z(0);	//	error!
+    };
+3. 对于uncopyable的对象, 可以使用 小括号和一致初始化, 但是不能用`=`
+    ```C++
+    std::atomic<int> ai1{ 0 };	// fine
+    std::atomic<int> ai2(0);	// fine
+    std::atomic<int> ai3 = 0;	// error!
+    ```
 
+同时, 一致初始化可以防止built-in types隐式narrowing conversions, 而等号不能做此保证.<br>
+过去的C++是要求 _vexing parse_:anything that can be parsed as a declaration must be interpreted as one. 而在调用默认构造函数的时候最可能出现这个问题,现在这个问题被一致初始化解决:
+```C++
+Widget w2();	// most vexing parse! declares a function named w2 that returns a Widget!
+```
+但是这个东西并不是完美的, 括号表达式实际上是一个 `std::initializer_list`,然后构造函数对它做了重载, 如果没有做`std::initializer_list`版本的构造函数, 它将和括号调用同样的构造函数, 但是重载之后行为就有所不同:
+```C++
+class Widget	{			
+public:				
+    Widget(int	i,	bool b);	//	as before
+    Widget(int	i,	double d);	//	as before
+    Widget(std::initializer_list<long double> il); // added
+};
+Widget w1(10, true);	// uses parens and, as before,  calls first ctor
+Widget w2{10, true};	// uses braces, but now calls  std::initializer_list ctor 
+                        // (10 and true convert to long double)
+Widget w3(10, 5.0);	    // uses parens and, as before, // calls second ctor
+Widget w4{10, 5.0};	    // uses braces, but now calls // std::initializer_list ctor 
+                        // (10 and 5.0 convert to long double)
+```
+这种情况下, copy / move 构造器也可能被 `std::initializer_list` 劫持, 如果Widget有operator float(), 那么下面就会出现一个诡异的行为:
+```C++
+class Widget	{			
+public:				
+    ...                     //as before
+    operator float() const; // convert  to float(允许类型转换)
+};
+Widget w6{w4};	//	uses braces, calls
+                //	std::initializer_list ctor
+                //	(w4 converts to float, and float
+                //	converts to long double)
+Widget w8{std::move(w4)};   // use braces, calls
+                            //	std::initializer_list ctor
+                            //	(for	same reason as w6)
+```
+这时候如果**窄化类型转换之后可以匹配 `std::initializer_list`,就会报错**(如int /float　可以转成bool), 但是没有办法转换之后匹配的话, 就会吧控制权交回到其他的构造函数中. 值得注意的是,**you use an empty set of braces to construct an object that supports default construction and also supports `std::initializer_list` construction**.
+```C++
+Widget w1;	// calls default ctor
+Widget w2{};	// also calls default ctor
+Widget w3();	// most vexing parse! declares a function!
+Widget w4({});	// calls std::initializer_list ctor with empty list
+Widget w5{{}};	// 和上面一样
+```
+在使用标准库的时候, 小括号和大括号**可能有不同的意思**:
+```C++
+std::vector<int> v1(10, 20);	// use non-std::initializer_list
+                                // ctor: create 10-element
+                                // std::vector， all elements have
+                                // value of 20
+std::vector<int> v2{10, 20};	// use std::initializer_list ctor:
+                                // create 2-element std::vector，
+                                // element values are 10 and 20
+```
+因为这个问题, 一般的程序员默认一种分界符, 然后在只能使用另一种的时候少量用另一个. 而在 STL 的函数`std::make_unique`和 `std::make_shared` 则内部使用小括号并且在文档中详细说明这个 _interface_.
+
+### Item 8: Prefer nullptr to 0 and NULL
