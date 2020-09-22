@@ -421,3 +421,24 @@ typedef void (*FP)(int, const std::string&);	// typedef
 using FP = void (*)(int, const std::string&);	// alias declaration
 ```
 而alias更好的情况在涉及template的时候,它 **可以被 templatized, 但是 `typedef` 不能**,因此可以轻易写出C++98要typedefs nested inside templatized structs才可以实现的东西.
+```C++
+template<typename T>                           // MyAllocList<T>  is synonym for
+using MyAllocList = std::list<T, MyAlloc<T>>;  // std::list<T,MyAlloc<T>>
+MyAllocList<Widget> lw;                 // client code
+// 如果使用typedef , 那么就要用struct hack
+template<typename T>  
+struct MyAllocList {
+    typedef std::list<T, MyAlloc<T>> type;
+};
+MyAllocList<Widget>::type lw;            // client code
+```
+如果想要在template 中用一个装有 type specified的链表, 就要在前面的基础上再加 `typename`:
+```C++
+template<typename T> 
+class Widget {//Widget<T> contains
+private:	  //a MyAllocList<T> as a data member
+    typename MyAllocList<T>::type list;
+    // 
+    … 
+};	
+```
