@@ -341,7 +341,7 @@ public:
     Widget(std::initializer_list<long double> il); // added
 };
 Widget w1(10, true);	// uses parens and, as before,  calls first ctor
-Widget w2{10, true};	// uses braces, but now calls  std::initializer_list ctor 
+Widget w2{10, true};	// uses braces, but now calls std::initializer_list ctor 
                         // (10 and true convert to long double)
 Widget w3(10, 5.0);	    // uses parens and, as before, // calls second ctor
 Widget w4{10, 5.0};	    // uses braces, but now calls // std::initializer_list ctor 
@@ -383,3 +383,31 @@ std::vector<int> v2{10, 20};	// use std::initializer_list ctor:
 因为这个问题, 一般的程序员默认一种分界符, 然后在只能使用另一种的时候少量用另一个. 而在 STL 的函数`std::make_unique`和 `std::make_shared` 则内部使用小括号并且在文档中详细说明这个 _interface_.
 
 ### Item 8: Prefer nullptr to 0 and NULL
+在C++98中,如果一个函数三种方式重载:
+```C++
+void f(int); 
+void f(bool); 
+void f(void*);	// three overloads of f
+f(0)；   // calls f(int) not f(void*)
+f(NULL); // might not compile, but typically calls  f(int). Never calls f(void*)
+```
+如果NULL是用`0L`定义的, 那么从 long 到 int/bool/void的转换都被认为是equally good. `nullptr`的好处是它没有integral的类型, 它的类型实际上是`std::nullptr_t`,并且 **可以隐式转换成所有的raw pointer**类型.<br>
+此外, 他还有一个好处是, 在搭配 _auto_ 使用的时候可以方便阅读, 没有二义性. 而当使用template的时候, 它的好处就更明显了.在之前可能需要各种代码的duplication,现在可以用模板来做:
+```C++
+int    f1(std::shared_ptr<Widget> spw);  // call these only when 
+double f2(std::unique_ptr<Widget> upw);  // the appropriate 
+bool   f3(Widget* pw);                   // mutex is locked
+std::mutex f1m, f2m, f3m;         // mutexes for f1, f2, and f3 
+template<typename FuncType, 
+         typename MuxType,
+         typename PtrType>
+auto lockAndCall(FuncType func,MuxType& mutex,PtrType ptr) 
+                -> decltype(func(ptr)) 
+{
+    using MuxGuard = std::lock_guard<std::mutex>; 
+    MuxGuard g(mutex);
+    return func(ptr);
+}
+auto result3 = lockAndCall(f3, f3m, nullptr);    // fine, 但是传入0或者NULL的时候编译都无法通过
+```
+因为 `std::nullptr_t` 可以被隐式转换成为各种指针类型, 因此使用裸指针和智能指针都可以,因此上面的过程提高了代码的复用性.
