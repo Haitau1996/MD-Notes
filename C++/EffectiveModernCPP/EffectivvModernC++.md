@@ -432,13 +432,25 @@ struct MyAllocList {
 };
 MyAllocList<Widget>::type lw;            // client code
 ```
-如果想要在template 中用一个装有 type specified的链表, 就要在前面的基础上再加 `typename`:
+如果遇到想要在template 中用一个装有 type specified by template的list的时候, 就要在前面的基础上再加 `typename`:
 ```C++
 template<typename T> 
 class Widget {//Widget<T> contains
 private:	  //a MyAllocList<T> as a data member
     typename MyAllocList<T>::type list;
-    // 
     … 
-};	
+};
 ```
+因为 `MyAllocList<T>::type` 指向的类型depend on template type parameter (T), 它本身也是一个dependant tyoe, **dependent types must be preceded by `typename`.**<br>
+但是如果我们使用alias实现的话, 就比这个要轻松许多:
+```C++
+template<typename T>
+using MyAllocList = std::list<T, MyAlloc<T>>;  // as before
+
+template<typename T> class Widget { 
+private:
+    MyAllocList<T> list;                         // no "typename",
+    …                                            // no "::type"
+};
+```
+这看上去和使用typedef一样是依赖于 template parameter T, 但是编译器处理alias的时候知道  `MyAllocList` 是 alias template: `MyAllocList<T>` 一定是在 name a type, 是 non-dependent type.<br>
