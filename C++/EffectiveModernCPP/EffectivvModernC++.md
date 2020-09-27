@@ -453,4 +453,4 @@ private:
     …                                            // no "::type"
 };
 ```
-这看上去和使用typedef一样是依赖于 template parameter T, 但是编译器处理alias的时候知道  `MyAllocList` 是 alias template: `MyAllocList<T>` 一定是在 name a type, 是 non-dependent type.<br>
+这看上去和使用typedef一样是依赖于 template parameter T, 但是编译器处理alias的时候知道  `MyAllocList` 是 alias template: `MyAllocList<T>` 一定是在 name a type, 是 non-dependent type.在某些例子中, `MyAllocList<T>::type list` 可能是类的一个数据成员, 所以编译器要求加上`typename` 的前缀.<br>
