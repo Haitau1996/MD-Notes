@@ -62,4 +62,28 @@ for (int i = the number of elements in the array - 1;i >= 0;--i){
 
 ### Item 4 非必要不提供default constructor
 
-**必须要有某些外来信息才能生成对象的 classes, 则不必要拥有默认的构造函数**.
+默认构造函数(i.e, 一个可以无参数调用的构造器)使用时有下面的要求: **必须要有某些外来信息才能生成对象的 classes, 则不必要拥有默认的构造函数**.<br>
+```C++
+class EquipmentPiece { 
+public: 
+    EquipmentPiece(int IDNumber);
+    ...
+};
+```
+这意味着, 如果类缺乏default constructor, 使用这个class的时候会有一些限制:
+1. 在产生数组的时候,没有默认构造函数就会出问题:
+    ```C++
+    Equipmentpiece bestPieces[10]；	// error! No way to call  EquipmentPiece ctors
+    Equipmentpiece *bestPieces = new EquipmentPiece[10]；	// error! same problem
+    ```
+    可以有一些方法解决这个问题:
+    * 使用Non-heap数组, 提供构造参数生成相应的数组
+    * 使用指针数组而非对象数组:
+        ```C++
+        typedef Equipmentpiece* PEP；	// a PEP is a pointer to // an EquipmentPiece
+        PEP bestPieces[10]；	// fine, no ctors called
+        PEP *bestPieces = new PEP[10]；	// also fine
+        for (int i = 0； i < 10； ++i)
+            bestPieces[i] = new EquipmentPiece( ID_Number);
+        ```
+    
