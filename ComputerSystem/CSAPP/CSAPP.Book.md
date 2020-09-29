@@ -160,3 +160,36 @@ $$
 当执行 C 程序时，**不会将溢出作为错误而发信号**。我们可以从结果判断溢出是否发生, 如果两个unsigned之和小于其中任何一个数, 那就说明发生了溢出.<br>
 模数加法和算术意义的加法结果不同,但是它依旧形成一个阿贝尔群(可交换).<br>
 ##### signed Addition(这里讨论补码)
+对于补码的加法, 情况更加复杂,但是可以认为是:
+$$
+x +_w^t y =\{ \begin{matrix} & x + y - 2^w & 正溢出\\
+                             & x + y       & 正常\\
+                             & x + y + 2^w & 负溢出 \end{matrix}
+$$
+从Bit-level 看, signed 运算结果和 unsigned 是一样的, 于是我们可以从Bit level 去理解这个事情:<br>
+$$
+\begin{aligned}
+x+_{w}^{\mathrm{t}} y &=U 2 T_{w}\left(T 2 U_{w}(x)+_{w}^{\mathrm{u}} T 2 U_{w}(y)\right) \\
+&=U 2 T_{w}\left[\left(x_{w-1} 2^{w}+x+y_{w-1}^{2 w}+y\right) \bmod 2^{w}\right] \\
+&=U 2 T_{w}\left[(x+y) \bmod 2^{w}\right]
+\end{aligned}
+$$
+![overflow](figure/Book2.7.png)<br>
+而对于做相反数这个问题, 除了 $TMin_w$ 的相反数是它本身, 其他数字的相反数都和数学上是相同的. (例如对于4bit的补码 1000 + 1000 = 0/ 1111 + 0001 =0, 他们都互为相反数).
+
+##### Unsigned multiplication
+对于两个 w - bit 数字的乘法, 我们需要 2w - bit 才能存下他们的结果, 而在w-bit的限制下, Unsigned的乘法可以理解为, 两个数字在数学上的乘法之后对 $2^w$ 取模 :
+$$
+x *^u_w y = (x \cdot y) \bmod 2^w 
+$$
+同样的, 在 Bit-level , 乘法的操作对于signed和 Unsigned 也是一样的, 于是我们得到了补码的乘法:
+$$
+x *^t_w y = U2T_w(x\cdot y) \bmod 2^w
+$$
+
+##### 乘以常数
+Shifting—required only 1 clock cycle. Even on the Intel Core i7 Haswell we use as our reference machine, integermultiply requires 3 clock cycles: **编译器使用了一项重要的优化，试着用移位和加法运算的组合来代替乘以常数因子的乘法**.<br>
+与2 的幕相乘的无符号乘法:C表达式补码表示的数值数值x和Unsigned k, `x<<k` 的结果产生数值: $x * ^u_w 2^k$, 但是值得注意的是, 无论是补码运算还是无符号运算, 这个结果必然可能会发生溢出($\bmod 2^w$).**由千整数乘法比移位和加法的代价要大得多，许多C 语言编译器试图以移位、加法和减法的组合来消除很多整数乘以常数的情况**: 如 _x * 14_, $14 = 2^4 - 2$, 于是上面的乘法可以写成 $(x << 4) - (x << 1)$, 这就只需要两个移位操作和一个减法.<br>
+
+##### 除以2的若干次幂
+在大多数机器上, ，整数除法要比整数乘法更慢(需要30个或者更多的时钟周期), 除以2的幕也可以用移位运算(右移)来实现, **整数除法总是向0的方向做舍入.
