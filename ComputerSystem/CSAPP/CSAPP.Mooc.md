@@ -131,3 +131,44 @@ Rounding(浮点数舍入称为整数) 有很多种做法:
 ![FP mul](figure/Mooc4.7.png)<br>
 
 需要注意的是, 在 signed 和 Unsigned 之间做cast, 它的bit representation, 但是 **int 和 float/double 之间的cast 是会改变bit representation的**.
+
+## Lecture 5: Machine-­‐Level Programming I: Basics
+在本课程中不讨论Microarchitecture(architecture 的实现), 在Assembly/Machine code的角度,计算机是下面的结构:<br>
+![Computer](figure/Mooc5.1.png)<br>
+编译生成汇编代码的方法:<br>
+`gcc -Og -S someSourceFile.c` (-S 选项生成汇编代码, -Og是启用用于debug的优化选项, 生成方便阅读的代码)<br>
+Assembly 中的单个Operation只能做一个事情, 比如:
+* Perform arithmetic function on register or memory data  
+* Transfer data between memory and register
+    * Load data from memory into register  
+    * Store register data into memory  
+* Transfer control  
+
+对于已有的二进制代码, 我们也可以用Disassembler:<br>
+    `objdump –d someObjectCode`<br>
+或者在GDB中使用(sumstore为可执行文件sum原码中的某个函数):<br>
+```
+gdb sum 
+disassemble sumstore
+```
+**Disassembler examines bytes and reconstructs assembly source** .
+#### Regisiter
+在过去IA32中只有8个寄存器, %e**, 在最早的使用中, 某些寄存器常用于特定的功能, 因此影响到了他们的名字,但是现在而言, 除了特定的 `%esp` 作为stack pointer(IA32/x86-64)和 `%ebp` 作为base pointer(IA32),其他都可以通用,具体指代的内容如下:<br>
+![figure](figure/Mooc5.2.png)<br>
+
+#### 寄存器上的操作
+##### Moving Data
+`movq Source, Dest`<br>
+面对的操作数有三种: 
+1. Immediate: Constant integer data  
+    * Example: `$0x400`, `$-533` 
+2. Register: One of 16 integer registers(在IA 32上可能是8个)
+    * Example: `%rax`, `%r13`
+3. Memory: 8 consecutive bytes of memory at address given by register  
+    * simplest example: `(%rax)` (有点像C中取寄存器指向的那个地方的内容) 
+
+![](figure/Mooc5.3.png)<br>
+此外, move也可以有displacement, 具体的做法就是
+* Register $R$ speciﬁes start of memory region 
+* Constant displacement $D$ speciﬁes offset  
+`movq 8(%rbp),%rdx`
