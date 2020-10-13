@@ -172,3 +172,8 @@ disassemble sumstore
 * Register $R$ speciﬁes start of memory region 
 * Constant displacement $D$ speciﬁes offset  
 `movq 8(%rbp),%rdx`
+之后, 可以用这样的形式来实现一个array:<br>
+![](figure/Mooc5.4.png)<br>
+
+#### Arithmetic  &  logical  operations 
+![](figure/Mooc5.5.png)<br>
