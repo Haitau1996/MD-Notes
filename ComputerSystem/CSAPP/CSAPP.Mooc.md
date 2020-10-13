@@ -177,3 +177,9 @@ disassemble sumstore
 
 #### Arithmetic  &  logical  operations 
 ![](figure/Mooc5.5.png)<br>
+
+## Lecture 6: Machine-­‐Level  Programming  II:  Control  
+寄存器这个东西既不是内存的一部分也不是缓存的一部分.<br>
+### Condition codes
+* `%rsp` Current stack top 
+* `%rip` Instruction pointer
