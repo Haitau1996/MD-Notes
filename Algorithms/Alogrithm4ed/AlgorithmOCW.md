@@ -137,7 +137,7 @@ Public class Date implements Comparable<Data>{ //尖括号说明只允许和Data
 }
 ```
 
-### Selection Sort
+#### Selection Sort
 选择排序的算法描述:
 * 在第i次迭代中, 找到剩余部分最小元素的下标 _min_
 * Swap _a[i]_ 和 _a[min]_
@@ -162,10 +162,29 @@ Public class Date implements Comparable<Data>{ //尖括号说明只允许和Data
     ...
 ```
 
-### Insertion Sort
+#### Insertion Sort
 前面部分是有序的, 每次迭代中将后面的第一个元素(下标为i)插入前面有序的部分:<br>
 ![insertion sort](figure/5-2.png)<br>
 这种算法需要 ~ $\frac{1}{4} N^2$ 次比较和交换on average,在最坏的情况下是$\frac{1}{2}$<br>
 
-### Shell Sort
+#### Shell Sort
+每次都move多个位置, 这样的话一次可能就不止改变一个逆序对:
+* 间隔非常大的时候, 是处理一个小的subarray
+* 间隔不大的时候, 实际上array基本已经有排好序了
 
+间隔的序列
+* Powers of two: 这个效率非常差, 因为奇数和偶数的之间的交换只有在最后一个1-sort的时候才会发生
+* Powers if two minus one : 可能可以工作
+* $3x+1$: 简单实现, 效果还行
+* merging of $(9\times 4^i) - (9 \times 2^i) + 1$ 和 $4^i - (3 \times 2^i)+1$
+![shell sort](figure/5-3.png)
+
+### Merge Sort
+#### Intro
+* 将array分成两半
+* 递归地将每个half排序
+* 将两个halves合并
+
+在Java中可以增加很多断言, 可以帮助检测程序的逻辑错误, 同时更有利于文档的编写. <br>
+Merge sort最多使用 $N \log N$ 次 compare 和 $6 N \log N$次array acesses 去给size为N的array排序.<br>
+此外, 还有一个问题是Merge sort对于小的subarray来说效率并不高,可以 **在~ 7个item左右的时候换成insertion sort.
