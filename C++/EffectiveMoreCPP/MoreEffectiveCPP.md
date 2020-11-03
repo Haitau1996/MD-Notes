@@ -107,3 +107,54 @@ public:
 3. 最后 一点考虑和虚基类有关, 如果虚基类缺乏默认构造函数, 与之合作十分困难, 因为**虚基类的构造函数的参数必须由想要产生的对象的派生层次最深的class提供, 缺乏默认构造器的虚基类, 要求所有派生的类都必须了解其意义, 并且提供虚基类构造器的参数**.
 
 如果类构造函数可以确保对象的所有fields都会被正确地初始化, 添加无意义的默认构造函数的效率/复杂性成本可以免除, 如果无法保证, 最好避免让 _default constructor_ 出现.
+
+## 操作符
+### Item 5 : 对定制的"类型转换函数"保持警觉
+对于user define type, 我们可以选择是否提供某些函数, 供编译器拿来实现隐式类型转换.两种函数允许编译器执行这样的转换, **单参数构造器和隐式类型转换操作符.**<br>
+1. 单参数构造器:
+    ```C++
+    class Name { 
+        public: 
+        Name(const std::string& s); // 将一个 string 转成了name类型
+    };
+    ```
+2. 隐式类型转换操作符, 是一个拥有奇怪名称的成员函数: operator 之后加上一个类型名称:
+    ```C++
+    class Rational {
+    public: 
+        ...
+        operator double() const；	// converts Rational to double
+    }；
+    Rational r(1,2); // r的值为 1/2
+    double d = 0.5 * r; // r隐式转换成为double, 然后做乘法
+    ```
+
+而提供这种函数的问题在于, 它将在你从未打算也从未预期的情况下被调用,得到的结果可能是不正确不直观的程序行为并且难以调试. 如我们在打印 r 的时候, 如果忘记给 _Rational_ 写一个 _operator <<_ , r将隐式转换成一个double并且被打印出来: **隐式类型转换的出现可能导致错误(非预期)的函数被调用**. 解决的办法也很简单, <font color=red>使用一个对等的函数取代类型转换操作符</font>. <br>
+而通过单参数构造器完成的隐式类型转换, 则比较难以消除. 下面就是一个错误使用的例子:
+```C++
+template<typename T> 
+class Array { 
+public: 
+    Array(int lowBound, int highBound)； 
+    Array(int size);  // 可能被使用成单参数构造器
+    T& operator[](int index); 
+    ... 
+};
+bool operator==( const Array<int>& Ihs, const Array<int>& rhs)；
+Array<int> a(10) ;
+Array<int> b(10) ;
+for (int i = 0；i < 10； ++i) { 
+    if (a == b[i]) { // oops! "a" should be "a[i]"
+        // do something when a[i] and b[i] are equal
+    } else { 
+        // do somethingwhen they're not；
+    }
+}
+```
+这个错误带来的结果是, 写错代码后, 原来的 `==` 无法调用, 但是只要调用 _Array(int size)_ 这个构造器,那么每次就是 a和一个大小为b[i]的临时对象做比较. <br>
+简单的解决办法是, **使用关键词 _explicit_**, 只要将构造函数声明为 _explicit_, 就无法因为隐式类型转换的需要而调用他们, 不过**显式类型转换依旧是允许的**.<br>
+一条判断隐式类型转换是否合法的规则是, **没有任何一个转换程序可以内含一个以上的"用户定制转换行为(包含上面两种转换)"**, 可以利用这种规则, 将你希望的对象构造行为合法化, 将不希望的隐式构造非法化.<br>
+考虑之前的Array Template, 我们可以产生一个新的class, ArraySize, 单参数的构造器接收一个ArraySize对象, 而非一个 int. <br>
+`Array<int> a(10)` : 10 可以隐式类型转换成为一个临时的ArraySize对象, 该对象正是 Array<int> 构造函数需要的, 可以做. <br>
+`a == b[i]` : 编译器不能考虑将int转为一个临时性的ArraySize对象, 然后根据这个临时对象产生Array<int> 对象, **那将调用两个用户定制的转换行为**.<br> 
+这种做法其实是proxy技术的一个特殊实例.
