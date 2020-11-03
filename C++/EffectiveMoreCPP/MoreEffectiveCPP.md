@@ -212,3 +212,59 @@ if (operator&&(expression1, expression2)) ...
 这些操作符则可以重载:<br>
 ![figure](figure/7.2.png)<br>
 即便如此, 如果没有好的理由要去重载某个操作符, 那就不要这样做.
+
+### Item 8: 了解不同意义的new和delete
+new opetator是语言内建的, 不能改变其意义只能做相同的事情,无论如何都无法改变其行为 它的动作分成两个方面:
+1. 分配足够多的内存,用来放置某种类型的对象
+2. 调用一个构造器, 为刚分配的内存中的那个对象设定初值
+
+我们可以改变的是其中的1, 可以重写或者重载那个函数,函数名为 operator new, 通常的声明是`void * operator new(size_t size)`, 此外我们可以重载这个`operator new`, 加上额外的参数, 但是**第一参数的类型必须总是 size_t**.<br>
+operator new 也可以直接调用, 像malloc一样, 唯一的任务就是分配内存. `string *ps = new string("memory management")` 实际上反映的是以下的行为:
+```C++
+void *memory = operator new(sizeof(string));
+call string::string("memory management") on memory;
+string *ps = static_cast<string*>(memory); 
+```
+
+#### Placement new
+偶尔会有一些分配好的内存, 我们需要在上面构建对象, 有个特殊版本的 operator new, 称为placement new,允许我们这么做. 
+```C++
+class Widget {
+public:
+    Widget(int widgetSize)；
+    ...
+};
+Widget * constructWidgetInBuffer(void *buffer,
+                                 int widgetSize){
+    return new (buffer) Widget(widgetSize)；
+}
+void * operator new(size_t, void *location){
+    return location；
+}
+```
+在这个构建Widget的过程中, 对象必须置于特定的地址, 或者特殊函数分配出来的内存上. 于是我们写出几种new 的区别:
+* 希望对象产生于堆中, 使用 new operator, 分配内存并且为该对象调用一个构造器
+* 只是打算分配内存, 调用operator new, 没有构造函数被调用
+* 打算在heap对象产生时候自己决定内存分配方式, 使用 new operator并且调用自己写的operator new.
+* 打算在已经分配内存(拥有指针)上构造对象, 使用placement new
+
+#### 删除与内存释放
+内存释放是由函数opearator delete执行,通常的声明类似于 `void operator delete(void *memoryToBeDeallocated)`, 于是 `delete ps` 会造成编译器产生类似于下面的代码:
+```C++
+ps->~string(); // 调用析构函数
+operator delete(ps); // 释放对象所占用的内存
+```
+于是打算处理原始的未设置初值的内存, 应该避免使用 new operator和 delete operator, 改调用operator new 获得内存 和 operator delete归还系统.(相当于在C++中调用`malloc`和`free`).
+
+#### Arrays
+1. 如果面对尚未支持 `new[]` 的编译器, 定制数组内存管理行为往往不是一个理想的决定
+2. 数组版本与单一对象版的区别是, 他所调用的构造器的数量, array new必须针对数组中的每一个对象调用一个构造器
+    ```C++
+    string *ps = new string[10]; // 调用operator new[] 分配可以放下十个string的内存
+                                 // 然后对每个element 调用构造器
+    delete [] ps;                // 对每个string 调用析构函数
+                                 // 然后再调用opereator delete[] 删除array的内存
+    ```
+
+我们也可以重载 operator new[] 不过两者的重载有着相同的限制.<br>
+总的来说, **_new / delete operator_ 的任务已经被语言规范限制死了, 但是我们可以修改它完成任务的方式**.
