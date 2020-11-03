@@ -13,7 +13,7 @@ Pointer和reference的接口看起来差别巨大,(pointer使用*和-> operator,
     void printDouble(const double *pd){
     if (pd) { // check for null pointer
         cout << *pd;
-    }
+        }
     }
     ```
 2. Pointer可以被重新赋值指向另一个对象,但是reference总是指向它最初获得的那个对象.
@@ -190,3 +190,25 @@ const UPInt UPInt::operator++(int){
 后置操作符并未调动其参数, 参数的唯一目的是为了区别前置和后置形式.<br>
 两者都是会改变 _UPInt_ 的值, 所以不能声明为const成员函数, 而将后置形式的函数的返回值声明为const UPInt, 那么这个动作 `i++++` 就是非法的(返回的一个oldValue无法再被修改), 这是因为, 内置的int就不允许后置的两个 `++`, 因为第二个 `operator++` 所改变的对象是第一个 `++` 操作符所返回的对象,而不是原对象. 因此设计为const, 返回的对象是一个const对象, 不能调用 `operator++` 这种 non-const的成员函数.<br>
 单从效率的角度, 用户也更应该喜欢前置式的increment, 除非需要后置increment的行为. 如何保证两者的行为一致, 具体的做法是: **后置的操作应该以其前置的兄弟为基础, 这样的话我们只需要维护前置式的版本**, 后置的版本会自动调整为一致的行为.
+
+### Item 7: 千万不要重载 &&, || 和 , 操作符
+C++对布尔表达式采用骤死式评估方式, 但是C++允许用户为自定义的类型定制 `&&` 和 `||` 操作符, 这样的话函数调用语义将取代骤死式语义, 从根本层面改变规则. <br>
+如果重载 operator&&, 那么下面的式子将会被理解为后面两者之一:
+```C++
+if (expressionl && expression?) ... 
+// when && is a member function
+if (expression1.operator&&(expression2)) ... 
+// when && is a global function
+if (operator&&(expression1, expression2)) ... 
+```
+函数调用和骤死式语义有两个重要的区别:
+* 函数调用动作被执行, 所有参数的值都必须评估完成
+* C++语言的规范并未明确规定调用函数动作中各个参数的评估顺序, 而骤死式总是从左往右评估
+
+同样的, 如果表达式内含 `,`, 那么逗号左侧将会先被评估(evaluating), 然后是右侧, 而整个包含逗号的表达式求值的结果取得是逗号右边的值.<br>
+**把操作符写成一个non-menber function, 绝对无法保证左侧表达式一定比右侧更先被evaluating**, 这样的话非成员函数的做法就不可行. 唯一剩下的可能是写成一个成员函数,但是依旧不能保证能像之前逗号的那种行为.<br>
+这是不能被重载的操作符:<br>
+![figure](figure/7.1.png)<br>
+这些操作符则可以重载:<br>
+![figure](figure/7.2.png)<br>
+即便如此, 如果没有好的理由要去重载某个操作符, 那就不要这样做.
