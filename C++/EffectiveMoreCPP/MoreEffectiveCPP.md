@@ -158,3 +158,35 @@ for (int i = 0；i < 10； ++i) {
 `Array<int> a(10)` : 10 可以隐式类型转换成为一个临时的ArraySize对象, 该对象正是 Array<int> 构造函数需要的, 可以做. <br>
 `a == b[i]` : 编译器不能考虑将int转为一个临时性的ArraySize对象, 然后根据这个临时对象产生Array<int> 对象, **那将调用两个用户定制的转换行为**.<br> 
 这种做法其实是proxy技术的一个特殊实例.
+
+### Item 6: 区别 increment/decrement 操作符的前置和后置形式
+
+前置和后置操作符increment/decrement, 都没有参数, 这个语言学的漏洞只好让后置式有一个int作为参数.
+```C++
+class UPInt {	//	"unlimited precision int"
+public：		
+    UPInt& operator++()；	//	prefix ++
+    const UPInt operator++(int)；	//	postfix ++
+    UPInt& operator--()；	//	prefix --
+    const UPInt operator--(int);	//	postfix --
+    UPInt& operator+=(int);	//	a += operator for UPInts and ints
+    ... 
+};
+```
+前置的意思是 increment and fetch(累加然后取出),后置的意义是 fetch and increment(取出之后再累加). 
+```C++
+// prefix form： increment and fetch 
+UPInt& UPInt::operator++() { 
+    *this += 1；	//	increment
+    return *this;	//	fetch
+}
+// postfix form： fetch and increment
+const UPInt UPInt::operator++(int){
+    const UPInt oldValue = *this； //	fetch
+    ++(*this)；	        // increment
+    return oldValue；	// return what was fetched
+}
+```
+后置操作符并未调动其参数, 参数的唯一目的是为了区别前置和后置形式.<br>
+两者都是会改变 _UPInt_ 的值, 所以不能声明为const成员函数, 而将后置形式的函数的返回值声明为const UPInt, 那么这个动作 `i++++` 就是非法的(返回的一个oldValue无法再被修改), 这是因为, 内置的int就不允许后置的两个 `++`, 因为第二个 `operator++` 所改变的对象是第一个 `++` 操作符所返回的对象,而不是原对象. 因此设计为const, 返回的对象是一个const对象, 不能调用 `operator++` 这种 non-const的成员函数.<br>
+单从效率的角度, 用户也更应该喜欢前置式的increment, 除非需要后置increment的行为. 如何保证两者的行为一致, 具体的做法是: **后置的操作应该以其前置的兄弟为基础, 这样的话我们只需要维护前置式的版本**, 后置的版本会自动调整为一致的行为.
