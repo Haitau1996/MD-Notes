@@ -179,7 +179,39 @@ disassemble sumstore
 ![](figure/Mooc5.5.png)<br>
 
 ## Lecture 6: Machine-­‐Level  Programming  II:  Control  
-寄存器这个东西既不是内存的一部分也不是缓存的一部分.<br>
+寄存器这个东西既不是内存的一部分也不是缓存的一部分,如果是用C语言编程,程序员感受不到它的存在.<br>
 ### Condition codes
 * `%rsp` Current stack top 
 * `%rip` Instruction pointer
+
+Single bit regisiters:
+* CF: Carry Flag(for unsigned)
+* ZF: Zero Flag
+* SF: sign Flag(for signed)
+* OF: Overflow Flag(for signed)
+
+例如
+1. 在arithmetic operations中 `add Src, Dest` => `t = a + b`:<br>
+    ![condition code](figure/Mooc6.1.png)<br>
+2. 在compare指令 `cmpq Src2, Src1`, 像是在计算 `Src1 - Src2` 但是不存储结果:<br>
+    ![condition code](figure/Mooc6.2.png)<br>
+3. 在test指令中, `testq Src1, Src2` 就像是在计算 `Src1 & Src2` 但是不存储结果:<br>
+    ![condition code](figure/Mooc6.3.png)<br>
+4. Set 指令就是根据前一行指令的 Condition code, 设置目标的low order byte是 0或者1, **不改变寄存器剩下的7个bytes:<br>
+    ![condition code](figure/Mooc6.4.png)<br>
+
+### Jumping
+实际上有两种类型的Jump, 一种是无条件的Jump, 直接跳到某个位置, 一种是有条件的 Jump, 根据condition code决定要不要Jump.<br>
+![condition code](figure/Mooc6.5.png)<br>
+一般这个算术指令接受两个参数, 是将结果复写在后面那个参数上.生成的汇编代码有一点像是使用 `goto` 去实现的, 如 C的代码 `val = test ? Then_expr : Else_expr;`, 它的goto version 就有点像是:
+```C
+ntest = !Test;
+if(ntest) goto Else;
+val = Then_expr;
+goto Done;
+Else:
+    val = Else_expr;
+Done:
+    ...
+```
+TODO: 33:05
