@@ -278,11 +278,11 @@ C++增加了异常特性之后, 深远而根本地改变了很多事情, 原始�
 ![class heri](figure/9.1.png)<br>
 ```C++
 void processAdoptions(istream& dataSource) {
-    while (dataSource){                 //while there’s data
-        ALA *pa = readALA(dataSource) ; //get next animal
-        pa->processAdoption();          //process adoption
-        delete pa;                      //delete object that
-    }                                   //readALA returned
+    while (dataSource){                 // while there’s data
+        ALA *pa = readALA(dataSource) ; // get next animal
+        pa->processAdoption();          // process adoption
+        delete pa;                      // delete object that readALA returned
+    }                                   
 }
 ```
 这里需要注意的是, 我们在每次得带的最后, 需要删除 _pa_, 否则很快就会出现资源泄漏的问题. 如果 `pa->processAdoption()` 这行抛出异常, 而函数`processAdoptions`无法捕捉它, 那么这个异常就会传播到函数的调用端, `pa->processAdoption()` **之后的语句都会被跳过, 无法执行** . 要避免这个也十分简单, 在那句上加入 `try{...} catch(...){delete pa; throw;}`, 这个简单的处理让我们**被迫重复撰写可被正常路线和异常路线共享的清理代码**, 这里指的是 delete这个动作. <br>
@@ -297,3 +297,28 @@ void processAdoptions(istream& dataSource) {
 }
 ```
 只要坚持这个原则, 将资源封装在对象中, 通常便可以在 exceptions 出现的时候避免资源泄漏, 但是如果异常是在你正在取得资源的过程中抛出的, 需要其他的特殊设计.<br>
+
+### Item 10 : 在constructor内阻止资源泄露
+```C++
+BookEntry::BookEntry(const string& name, 
+                     const string& address, 
+                     const string& imageFileName, 
+                     const string& audioClipFileName)
+: theName(name), theAddress(address), 
+  theImage(0), theAudioClip(0) {
+    if (imageFileName != "") { theImage = new Image(imageFileName); }
+    if (audioClipFileName != "") { theAudioClip = new AudioClip(audioClipFileName); }
+}
+BookEntry::~BookEntry() {
+    delete theImage; 
+    delete theAudioClip; 
+}
+```
+这样一个通讯簿系统, 看起来是安全的,如果 _imageFileName_ 是空的, 那么被初始化为null指针的在被删除时候, C++ 可以保证删除 null 指针是安全的.<br>
+但是, 如果执行BookEntry的构造函数的时候有异常被抛出:
+```C++
+if (audioClipFileName != "") { 
+    theAudioClip = new AudioClip(audioClipFileName); 
+}
+```
+可能是new operator 在发生 operator new的时候无法分配足够的内存, 可能是 `AudioClip` 构造器本身抛出一个 exception, 最终异常都会传播到到 BookEntry 对象的那一端没这时候谁来删除 theImage 已经指向的那个对象? 控制权已经转移到了 `BookEntry` 上, 但是其析构函数绝对不会调用, **因为C++只会析构已经完成的对象, 构造函数执行完毕之后才能算是完成的构造.**<br>
