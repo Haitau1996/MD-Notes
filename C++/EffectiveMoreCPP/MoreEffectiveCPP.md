@@ -268,3 +268,32 @@ operator delete(ps); // 释放对象所占用的内存
 
 我们也可以重载 operator new[] 不过两者的重载有着相同的限制.<br>
 总的来说, **_new / delete operator_ 的任务已经被语言规范限制死了, 但是我们可以修改它完成任务的方式**.
+
+## 异常
+C++增加了异常特性之后, 深远而根本地改变了很多事情, 原始指针如今成了一种高风险的事情,我们必须更加小心, 防止程序在执行时候突然中止. 而程序之所以在异常出现的时候仍然有良好的行为, 不是因为碰巧如此, 而他们加入的异常的考虑. <br>
+使用返回错误码的方式发出异常信号, **无法保证此函数的调用者会检查那个变量或者那个错误码**,  于是程序可能会一直运行下去, 远离错误发生地点. 如果是以抛出exception的方式发出异常信号, 如果异常未被捕捉, 程序便会立刻终止.<br>
+
+### Item 9: 利用destructors避免资源泄漏
+使用指针可能会有很大的问题, 如果我们在下图所示的类结构中, 一次次处理不同的类的实例:<br>
+![class heri](figure/9.1.png)<br>
+```C++
+void processAdoptions(istream& dataSource) {
+    while (dataSource){                 //while there’s data
+        ALA *pa = readALA(dataSource) ; //get next animal
+        pa->processAdoption();          //process adoption
+        delete pa;                      //delete object that
+    }                                   //readALA returned
+}
+```
+这里需要注意的是, 我们在每次得带的最后, 需要删除 _pa_, 否则很快就会出现资源泄漏的问题. 如果 `pa->processAdoption()` 这行抛出异常, 而函数`processAdoptions`无法捕捉它, 那么这个异常就会传播到函数的调用端, `pa->processAdoption()` **之后的语句都会被跳过, 无法执行** . 要避免这个也十分简单, 在那句上加入 `try{...} catch(...){delete pa; throw;}`, 这个简单的处理让我们**被迫重复撰写可被正常路线和异常路线共享的清理代码**, 这里指的是 delete这个动作. <br>
+解决的办法很简单, 只要将 "一定得执行的清理代码" **转移到 _processAdoptions()_ 函数的某个局部对象的析构函数中就可以, 用一种行为类似于指针的对象(但是动作更多)取代pa, 这种对象被我们称为智能指针**.<br>
+智能指针背后的实现十分复杂, 但是背后的观念十分清楚: <font color=red> 用智能指针取代原始指针, 就不用担心heap objects 没有被阐述, 即使是在异常被抛出的情况下</font>.
+```C++
+void processAdoptions(istream& dataSource) {
+    while (dataSource) { 
+        auto_ptr<ALA> pa(readALA(dataSource)); 
+        pa->processAdoption(); 
+    }
+}
+```
+只要坚持这个原则, 将资源封装在对象中, 通常便可以在 exceptions 出现的时候避免资源泄漏, 但是如果异常是在你正在取得资源的过程中抛出的, 需要其他的特殊设计.<br>
