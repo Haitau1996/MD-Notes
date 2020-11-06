@@ -73,16 +73,16 @@ public:
 这意味着, 如果类缺乏default constructor, 使用这个class的时候会有一些限制:
 1. 在产生数组的时候,没有默认构造函数就会出问题:
     ```C++
-    Equipmentpiece bestPieces[10]；	// error! No way to call  EquipmentPiece ctors
-    Equipmentpiece *bestPieces = new EquipmentPiece[10]；	// error! same problem
+    Equipmentpiece bestPieces[10]； // error! No way to call  EquipmentPiece ctors
+    Equipmentpiece *bestPieces = new EquipmentPiece[10]； // error! same problem
     ```
     可以有一些方法解决这个问题:
     * 使用Non-heap数组, 提供构造参数生成相应的数组
     * 使用指针数组而非对象数组:
         ```C++
-        typedef Equipmentpiece* PEP；	// a PEP is a pointer to // an EquipmentPiece
-        PEP bestPieces[10]；	// fine, no ctors called
-        PEP *bestPieces = new PEP[10]；	// also fine
+        typedef Equipmentpiece* PEP； // a PEP is a pointer to // an EquipmentPiece
+        PEP bestPieces[10]； // fine, no ctors called
+        PEP *bestPieces = new PEP[10]； // also fine
         for (int i = 0； i < 10； ++i)
             bestPieces[i] = new EquipmentPiece( ID_Number);
         ```
@@ -97,7 +97,7 @@ public:
         ...
     private： 
         T *data； 
-    };		
+    };  
     template<class T> 
     Array<T>::Array(int size) { 
         data = new T[size]；//calls T::T() for each element of the array
@@ -123,7 +123,7 @@ public:
     class Rational {
     public: 
         ...
-        operator double() const；	// converts Rational to double
+        operator double() const； // converts Rational to double
     }；
     Rational r(1,2); // r的值为 1/2
     double d = 0.5 * r; // r隐式转换成为double, 然后做乘法
@@ -163,13 +163,13 @@ for (int i = 0；i < 10； ++i) {
 
 前置和后置操作符increment/decrement, 都没有参数, 这个语言学的漏洞只好让后置式有一个int作为参数.
 ```C++
-class UPInt {	//	"unlimited precision int"
-public：		
-    UPInt& operator++()；	//	prefix ++
-    const UPInt operator++(int)；	//	postfix ++
-    UPInt& operator--()；	//	prefix --
-    const UPInt operator--(int);	//	postfix --
-    UPInt& operator+=(int);	//	a += operator for UPInts and ints
+class UPInt { // "unlimited precision int"
+public：  
+    UPInt& operator++()； // prefix ++
+    const UPInt operator++(int)； // postfix ++
+    UPInt& operator--()； // prefix --
+    const UPInt operator--(int); // postfix --
+    UPInt& operator+=(int); // a += operator for UPInts and ints
     ... 
 };
 ```
@@ -177,14 +177,14 @@ public：
 ```C++
 // prefix form： increment and fetch 
 UPInt& UPInt::operator++() { 
-    *this += 1；	//	increment
-    return *this;	//	fetch
+    *this += 1； // increment
+    return *this; // fetch
 }
 // postfix form： fetch and increment
 const UPInt UPInt::operator++(int){
-    const UPInt oldValue = *this； //	fetch
-    ++(*this)；	        // increment
-    return oldValue；	// return what was fetched
+    const UPInt oldValue = *this； // fetch
+    ++(*this)；         // increment
+    return oldValue； // return what was fetched
 }
 ```
 后置操作符并未调动其参数, 参数的唯一目的是为了区别前置和后置形式.<br>
@@ -322,3 +322,55 @@ if (audioClipFileName != "") {
 }
 ```
 可能是new operator 在发生 operator new的时候无法分配足够的内存, 可能是 `AudioClip` 构造器本身抛出一个 exception, 最终异常都会传播到到 BookEntry 对象的那一端没这时候谁来删除 theImage 已经指向的那个对象? 控制权已经转移到了 `BookEntry` 上, 但是其析构函数绝对不会调用, **因为C++只会析构已经完成的对象, 构造函数执行完毕之后才能算是完成的构造.**<br>
+```C++
+void testBookEntryClass(){
+    BookEntry *pb = 0；
+    try {
+        pb = new BookEntry( "Addison-Wesley Publishing Company", "One Jacob Way, Reading, MA 01867");
+        ...
+    }
+    catch (...){ // catch all exceptions
+        delete pb; // delete pb when an exception is thrown
+        throw; // propagate exception to caller
+    }
+    delete pb; // delete pb normally
+}
+```
+上面用 try-catch的方法, 看似是在异常发生的时候可以删除pb, 但是实际上 Image Object依旧是泄漏了, assignmentd的动作其实也不会施加于 pb 身上, 使用 smart pointer `auto_ptr<BookEntry>` 取代原来的裸指针也不会让情况有所好转. <br>
+要用让未完全构造好的对象调用析构函数, 必须在对象内部哪些数据身上附带某种指令, 指示构造器进行到什么程度, 如此繁重的工作**会降低构造器的速度, 使得每一个C++对象变得庞大**, C++为了效率不这么做, 那么我们就必须自己设计 constructor, 使得在异常发生的情况下依旧能够自我清理, 通常 **只需要将所有可能的异常捕捉起来, 执行某种清理工作, 然后重新抛出异常使得异常可以传播出去即可.**<br>
+```C++
+BookEntry::BookEntry (  const string& name,
+                        const string& address,
+                        const string& imageFileName,
+                        const string& audioClipFileName)
+:theName(name), theAddress(address),
+ theImage(0), theAudioClip(0){
+    try { // this try block is new
+        if (imageFileName != "") {
+            theImage = new Image(imageFileName);
+        }
+        if (audioClipFileName != "") {
+            theAudioClip = new AudioClip(audioClipFileName);
+        }
+    }
+    catch (...) {        // catch any exception
+        delete theImage;     // perform necessary
+        delete theAudioClip; // cleanup actions
+        throw;           // propagate the exception
+    }
+}
+```
+可以看到, 如果 BookEntry的构造函数本体开始执行的时候, 四个对象已经完全构造好了, 所以 BookEntry对象被销毁, data member 的销毁无需我们介入. 此外可以看到处理异常时候的代码和析构函数中的代码可能有所重合, 那么我们可以将他们写成一个 private的成员函数, 然后在构造和析构的过程中调用它.<br>
+现在剩下一个最后的问题, theImage 和 theAudioClip 变成一个常量指针(只能在成员初始化列表中初始化), 带来的问题就是 <font color=red> 在初始化过程中发生异常, _theImage_ 所指对象不会被销毁, 我们也无法再构造函数本体中加入try/catch 语句解决问题, 他们是语句而初始化列表只接受表达式 </font>. <br>
+* 一种**解决的具体做法就是将 Try/catch 语句放在一个Private的成员函数中, 然后初始化列表中调用该函数**.带来的问题就是将构造函数完成的动作分布到多个函数中, 造成维护上的困难.
+* 另一种做法就是将 theImage 和 theAudioClip 所指的对象视为资源, 使用局部的对象(智能指针)
+    ```C++
+    class BookEntry {
+    public:
+    ... // as above
+    private：
+    ...
+        const auto_ptr<Image> theImage;         // these are now
+        const auto_ptr<AudioClip> theAudioClip; // auto_ptr objects 
+    };
+    ```
