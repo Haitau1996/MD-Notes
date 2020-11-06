@@ -214,4 +214,51 @@ Else:
 Done:
     ...
 ```
-TODO: 33:05
+
+### Using Conditional Move
+计算机就通过预测去加速, 因此对于前面的Jump来说, 对 pipeline中的 instruction flow 做分支带来的代价是比较大的, 因此condition Move的效果是支持类似的指令: `if(Test) Dest <- Src`.<br>
+```C++
+val = Test ? Then_expr
+           : Else_expr;
+// GOTO version
+result = Then_expr;
+val = Else_expr;
+nt = !Test;
+if(nt) result = val;
+return result;
+```
+![condition move](figure/Mooc6.6.png)<br>
+
+**一般而言, conditional Move 用于两只值都要计算, 但是计算相对简单的情形, 如果计算可能有非常高的代价/ 出现难以接受的后果后者side effect, 则不建议使用** . <br>
+
+### Loop
+#### Do-While 循环例子
+```C
+long pcount_do (unsigned long x) { 
+    long result = 0; 
+    do { 
+        result += x & 0x1; 
+        x >>= 1;
+    } while (x); 
+    return result; 
+}
+// goto version
+long pcount_goto (unsigned long x) { 
+    long result = 0;
+loop:
+    result += x & 0x1; 
+    x >>= 1; 
+    if(x) goto loop; 
+    return result; 
+}
+// assembly code
+    movl    $0, %eax  #  result = 0 
+.L2:   # loop: 
+    movq    %rdi, %rdx 
+    andl    $1, %edx  #  t = x & 0x1 
+    addq    %rdx, %rax #  result += t 
+    shrq    %rdi  #  x >>= 1 
+    jne     .L2  #  if (x) goto loop 
+    rep; ret
+```
+#### General Do-while translation
