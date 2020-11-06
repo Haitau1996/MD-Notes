@@ -374,3 +374,8 @@ BookEntry::BookEntry (  const string& name,
         const auto_ptr<AudioClip> theAudioClip; // auto_ptr objects 
     };
     ```
+
+### Item 11: 禁止异常( _exceptions_)流出析构函数(_destructprs_)之外
+两种情况下析构函数会被调用,我们无法在析构函数内区分这些状态:
+* 对象正常情况下被销毁(离开自己的生命周期或者被明确地销毁)
+* 对象被 exceptions的处理机制(传播过程中的 stack-unwinding,栈展开机制) 销毁
