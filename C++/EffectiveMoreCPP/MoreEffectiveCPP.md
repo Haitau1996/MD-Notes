@@ -379,3 +379,31 @@ BookEntry::BookEntry (  const string& name,
 两种情况下析构函数会被调用,我们无法在析构函数内区分这些状态:
 * 对象正常情况下被销毁(离开自己的生命周期或者被明确地销毁)
 * 对象被 exceptions的处理机制(传播过程中的 stack-unwinding,栈展开机制) 销毁
+
+如果**控制权基于exception的因素离开析构函数, 而此时正有一个exception处以作用状态, C++便会调用 terminate 函数, 将程序结束, 甚至不等局部对象被销毁**. <br>
+```C++
+class Session {
+public:
+    Session();
+    ~Session();
+    ...
+private:
+    static void logCreation(Session *objAddr);
+    static void logDestruction(Session *objAddr);
+};
+Session::~Session(){
+    logDestruction(this); // 这里可能抛出异常
+}
+```
+在log函数中抛出一个异常, 这个异常并没有被对象的析构函数捕获, 所以会传到析构函数的调用端, 万一异构函数本身也是因为某个异常被调用的, terminate函数便会被自动调用. <br>
+阻止异常传出构造器之外的唯一办法, 是使用 try-catch 语句, 如果在catch语句中依然有代码, 其中依然可能导致异常的产生:
+```C++
+Session::~Session(){
+    try {
+        logDestruction(this);
+    }
+    catch (...) {}
+}
+```
+这样取代的办法就是, 如果logDestruction函数抛出一个异常, 我们便把忘记记录析构这个任务.<br>
+如果exception从析构函数中抛出, 而且没有在当地捕捉, 那么析构函数便是执行不全, 没有完成析构函数应该做完的所有事情,可能造成资源泄漏, 因此我们应该 **全力阻止exception传出析构函数外**. 
