@@ -407,3 +407,28 @@ Session::~Session(){
 ```
 这样取代的办法就是, 如果logDestruction函数抛出一个异常, 我们便把忘记记录析构这个任务.<br>
 如果exception从析构函数中抛出, 而且没有在当地捕捉, 那么析构函数便是执行不全, 没有完成析构函数应该做完的所有事情,可能造成资源泄漏, 因此我们应该 **全力阻止exception传出析构函数外**. 
+
+### Item 12 : 了解抛出一个异常 与 传递一个参数 或者调用一个虚函数之间的差异
+
+函数参数声明的语法与catch 子句声明的语法相同(可以 by-value, by-ref, by-pointer),但是 **从抛出端传递一个exception到catch语句 和 从函数调用端传递一个自变量到函数参数** 两者之间有重大的不同点.<br>
+当我们调用一个函数, 除非函数失败以至于无法返回, 控制权最终还是会回到调用端, 但是当我们抛出一个exception, 控制权不会再回到抛出端. 
+```C++
+istream operator>>(istream& s, Widget& w);
+void passAndThrowWidget(){
+    Widget localWidget;
+    cin >> localWidget; // pass localWidget to operator>>
+    throw localWidget; // throw localWidget as an exception
+}
+```
+`operator>>` 的reference w绑定到 localWidget 上, **而无论是by-value 还是 reference 传递异常, 都会发生 localWidget 对象的复制, 而交到catch手上的正是那个副本**. 即使是抛出的异常没有被瓦解的风险, 如一个静态变量, 抛出 exception还是会产生一个副本, 复制的过程是由异常对象的 cony constructor执行的, 相应于对象的"静态类型" 而不是 "动态类型":
+```C++
+class Widget { ... };
+class SpecialWidget: public Widget { ... };
+void passAndThrowWidget(){
+    SpecialWidget localSpecialWidget;
+    ...
+    Widget& rw = localSpecialWidget; // rw refers to a SpecialWidget
+    throw rw; // this throws an exception of type  Widget
+}
+```
+这和其他所有的 C++复制对象情况一致, 复制动作永远是以对象的静态类型为本. 
