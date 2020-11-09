@@ -4,7 +4,7 @@
 
 ## 语言基础
 ### C++
-* 梦开始的地方, 无意中看完这本叫 [学习和使用C指针](C++/UnderstandAndUsingCPointers/UnderstandAndUsingCPointers.md) 的书,  开始了学习的历程
+*  无意中看完这本叫 [学习和使用C指针](C++/UnderstandAndUsingCPointers/UnderstandAndUsingCPointers.md) 的书,  开始了学习的历程
 * [Effective C++](C++/EffectiveCPP/EffectiveCPlusPlus.md)
 * 听过一段时间 [侯捷老师讲解的 C++11](C++/HouJieC11/HouJieC11.md)
 
