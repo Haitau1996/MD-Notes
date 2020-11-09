@@ -431,4 +431,24 @@ void passAndThrowWidget(){
     throw rw; // this throws an exception of type  Widget
 }
 ```
-这和其他所有的 C++复制对象情况一致, 复制动作永远是以对象的静态类型为本. 
+这和其他所有的 C++复制对象情况一致, **复制动作永远是以对象的静态类型为本**.因此下面的两个catch语句看起来相同， 但是依旧是有区别的：
+```C++
+catch (Widget& w) {
+    ...     // handle the exception
+    throw； // rethrow the exception so it
+}           // continues to propagate
+catch (Widget& w) {
+    ...       // handle the exception
+    throw w； // propagate a copy of the
+}             // caught exception
+```
+一般而言， 我们只有使用`throw;`才能重新抛出当前的exception, 同时也比较有效率. 如果最初的异常类型是 _SpecialWidget_, 第二个语句块抛出一个新的异常, 类型是 _Widget_, 因为那是`w`的静态类型. 下面三种catch语句, 都可以捕捉 _passAndThrowWidget_ 抛出的 _Widget exception_, 于是抛出异常和传参之间的另一个区别, 一个被抛出的对象(必定为临时对象) 可以简单用 by-reference捕捉, 但是 **函数调用过程中将一个临时变量传递一个 `non-const reference` 参数是不允许的, 但是对 exception是合法的**.<br>
+抛出exceptions和函数传递参数相比, 会多构造一个 "被抛出物" 的副本, 如果是 `by-value` 的方式传递异常, 还要将临时对象再拷贝到 `w` 上.<br>
+throw exception `by-pointer` 有一个很大的问题, 是传出一个局部对象的指针, 在异常的的时候离开局部对象的 scope, 对象被销毁, 因此 catch 子句会获得一个指向"已被销毁的对象"的指针, 这是义务性复制规则设计下要避免的情况.<br>
+#### exception 与 catch 子句相匹配
+这个过程中只有两种类型转换是可以允许的, 不同于函数传参中可以发生各种类型转换:
+1. **继承构架中的类转换**: 一个针对 base class exception 而编写的 catch子句, 是可以处理类型为 derived class 的 exceptions. 
+    ![exception inheritance](figure/12.1.png)<br>
+2. **有型指针转为无型指针**: 一个针对 `const void*` 设计的catch语句可以捕捉任何指针类型的 exception.
+
+此外, catch语句总是依出现的顺序做匹配尝试, try语句中同时有针对 base class 和 derived class 设计的catch语句时候, derived class exception依旧可能被 针对 base class 设计的catch 子句处理掉,就是**相当于采用first fit的策略. 而我们调用虚函数的时候, 采用的是 best fit 的策略**,因此我们绝对不要将base 的 catch放在derived之前.
