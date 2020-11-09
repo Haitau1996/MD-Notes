@@ -452,3 +452,9 @@ throw exception `by-pointer` 有一个很大的问题, 是传出一个局部对�
 2. **有型指针转为无型指针**: 一个针对 `const void*` 设计的catch语句可以捕捉任何指针类型的 exception.
 
 此外, catch语句总是依出现的顺序做匹配尝试, try语句中同时有针对 base class 和 derived class 设计的catch语句时候, derived class exception依旧可能被 针对 base class 设计的catch 子句处理掉,就是**相当于采用first fit的策略. 而我们调用虚函数的时候, 采用的是 best fit 的策略**,因此我们绝对不要将base 的 catch放在derived之前.
+
+### Item 13: 用by-reference 的方式捕捉异常
+首先我们考虑 by-pointer的方式, 如果是在栈上的对象, 异常对象再控制器离开了那个抛出指针的函数之后就被销毁了, 如果是使用 heap-base object, catch语句将面临一个更大的问题: 是否应该删除他们获得的指针.<br>
+四个标准的exceptions: `bad_alloc`, `bad_cast`, `bad_typeid` 和`bad_exception` 统统都是对象, 不是对象指针, 我们要用 `by-value` 或者 `by-reference` 的方式捕捉他们.<br>
+`by-value` 的方式捕捉异常, 他们要复制两次, 而且也会引起对象切割的问题, 如果在derived class exception中重新定义了虚函数, 对象切割的行为几乎不可能和我们的想要的一致.<br>
+by-reference是一个很好的折衷, 不会发生slicing的问题, 也不会发生对象删除的问题, 异常对象也只会被复制一次, 唯一需要我们做的就是在catch中加入一个`&`.<br>
