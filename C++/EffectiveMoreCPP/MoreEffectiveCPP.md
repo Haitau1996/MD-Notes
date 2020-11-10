@@ -458,3 +458,63 @@ throw exception `by-pointer` 有一个很大的问题, 是传出一个局部对�
 四个标准的exceptions: `bad_alloc`, `bad_cast`, `bad_typeid` 和`bad_exception` 统统都是对象, 不是对象指针, 我们要用 `by-value` 或者 `by-reference` 的方式捕捉他们.<br>
 `by-value` 的方式捕捉异常, 他们要复制两次, 而且也会引起对象切割的问题, 如果在derived class exception中重新定义了虚函数, 对象切割的行为几乎不可能和我们的想要的一致.<br>
 by-reference是一个很好的折衷, 不会发生slicing的问题, 也不会发生对象删除的问题, 异常对象也只会被复制一次, 唯一需要我们做的就是在catch中加入一个`&`.<br>
+
+### Item 14: 明智地使用 exception specification
+
+expection specification 明确地指出一个函数可能抛出怎样的异常, 让代码更容易理解,编译器在编译的时候也能检测到和specification不一致的行为.<br>
+unexpected 的默认行为是 terminate, terminate的默认行为是调用 abort, 局部变量便不会获得销毁的机会, 而编译器只会对 exception specifications 做局部性检验, 没检验的事情也很简单: **调用某个函数, 而该函数可能违反吊用端函数本身的exception specification**,带有exception specification的新代码和不带的旧代码整合的话这种弹性十分必要.<br>
+1. 我们需要避免将exception specification 放在需要类型参数的模板上, 下面这个模板看起来好像不会抛出任何异常:
+    ```C++
+    // a poorly designed template wrt exception specifications template<class T>
+    bool operator==(const T& lhs, const T& rhs) throw(){
+        return &lhs == &rhs;
+    }
+    ```
+    因为内部的 operator& 可能已经被某个类型重载了, 在 operator== 调用它时候就可能抛出异常.更一般的情况是, 没有任何方法可以知道一个 template的类型参数可能抛出什么exception, 因此, <font color=red> 不应该将 templates 和 exception specification 混合使用 </font>.<br>
+2. 另一个经验是, 如果 A 函数内部调用了B函数, B没有 exception specification, A函数本身也不要设定.这个十分直观的想法在允许用户注册所谓的回调函数的时候容易被遗忘:
+    ```c++
+    // 如果typedef不加throw()的话就容易出现上面的问题
+    typedef void (*CallBackPtr)(int eventXLocation, 
+                                int eventYLocation, 
+                                void *dataToPassBack) throw();
+    // 然后有一个callback的类, 内部放一个函数指针, 和一个 void *data
+    // a callback function without an exception specification 
+    void callBackFcn1(int eventXLocation, int eventYLocation, void *dataToPassBack);
+    void *callBackData;
+    ...
+    CallBack c1(callBackFcn1, callBackData); // error! callBackFcn1 might throw an exception 
+    // a callback function with an exception specification 
+    void callBackFcn2(int eventXLocation, int eventYLocation, void *dataToPassBack) throw(); 
+    CallBack c2(callBackFcn2, callBackData); // okay, callBackFcn2 has a conforming ex. spec.
+    ```
+    在函数指针传递之际也可以检验expection specification.<br>
+3. 处理系统可能抛出的异常, 最常见的谁 `bad_alloc`.如果阻止非预期的异常发生是一个不切实际的事情, 那么C++允许你以不同类型的exception取代非预期的exceptions.
+    ```C++
+    class UnexpectedException {}; // all unexpected exception objects 
+                                  // will be replaced  by objects of this type 
+    void convertUnexpected(){ // function to call if an unexpected exception is thrown
+         throw UnexpectedException(); 
+    }
+    //用convertUnexpected取代默认的unexpected函数
+    set_unexpected(convertUnexpected);
+    ```
+    只要expection specification中含有UnexpectedException, exception的传播就会继续下去.<br>
+    将非预期的异常转化为一个已知类型的另一个做法依赖以下事实: 非预期函数的替代者重新抛出当前的异常, 该异常会被标准的 `bad_exception` 取而代之. 
+    ```C++
+    void convertUnexpected() { throw; }	// function to call if 
+                                        // an unexpected exception is thrown; just rethrow 
+                                        // the current exception
+    set_unexpected(convertUnexpected)；	
+	// install convertUnexpected as the unexpected replacement
+    // 这样的设计之后, 不必担心程序会在遇到非预期的异常情况下终止
+    ```
+    exception specification还有一个问题, 当一个较高层次的调用者准备处理发生的异常时, unexpected函数却被调用, 对应这种问题的做法就是将unexpected函数用上面的技术取代它.
+    
+
+### Item 15: 了解异常处理的成本
+为了能在运行时处理exceptions, 程序必须做大量的簿记工作.即使从未使用关键词try, throw 或者 catch, 我们也必须付出某些成本.<br>
+程序是由多个独立完成的Object file构成, 其中一个不做任何和exception相关的事情, 不代表其他的也都如此. <br>
+大部分编译器允许你自行决定是否要在它们产生的代码上放置exception支持能力,如果我们决定不使用exceptions, 并且让编译器知道, 编译器可以适度完成某些性能优化.<br>
+异常处理机制的第二种成本来自try语句块, 使用的话代码膨胀 5% ~ 10%, 执行速度也大概下降这个数.<br>
+和正常的函数返回动作相比, 抛出异常而导致的函数返回, 其速度可能比正常情况下慢三个数量级.<br>
+了解到这些后, 我们的做法是将 try语句块 和exception specification使用限制在非用不可的地点, 并且在真正异常的情况下才抛出异常.
