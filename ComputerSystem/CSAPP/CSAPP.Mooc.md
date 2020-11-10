@@ -262,3 +262,42 @@ loop:
     rep; ret
 ```
 #### General Do-while translation
+##### 第一种变化
+* Jump to middle translation(其他地方一般不用这个称呼)
+* used with -Og
+```C
+while(Test)
+    Body
+// goto version
+    goto test;
+loop:
+    Body
+test: 
+    if(Test)
+        goto loop;
+done:
+```
+##### 第二种变化
+把while -> do while, used with -O1
+```C
+if(!Test)
+    goto done;
+do 
+    Body
+    while(Test);
+done:
+// goto version
+if(!Test)
+    goto done;
+loop:
+    Body
+    If(Test)
+    goto loop;
+done:
+```
+
+For Loop Form 可以和while相互转换.
+
+### Switch statement
+实际上并不是用if-else实现的, 而是用一个被称为Jump table的结构:<br>
+![Jump table](figure/Mooc6.7.png)<br>
