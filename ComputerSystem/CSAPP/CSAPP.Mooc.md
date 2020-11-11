@@ -301,3 +301,17 @@ For Loop Form 可以和while相互转换.
 ### Switch statement
 实际上并不是用if-else实现的, 而是用一个被称为Jump table的结构:<br>
 ![Jump table](figure/Mooc6.7.png)<br>
+
+## Lecture 7 : Machine-Level Programming: Procedures
+<font size=4> Mechanisms in Procedures</font>
+* Passing control  
+    * 控制流到了procdeure code 的开头
+    * 返回后又回到调用函数的point
+* 传递数据
+    * procedure 的参数匹配
+    * 返回值
+* 内存管理
+    * 在procedure执行的时候分配
+    * 返回的时候deallocate
+
+### x86-64 Stack
