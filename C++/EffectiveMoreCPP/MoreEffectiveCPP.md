@@ -528,3 +528,69 @@ C++有可能对原已存在的性能问题无能为力,一个角度与语言无�
 大部分人采用的方法是猜, 但是他们对于程序的性能特质, 都有错误的直觉, 因为程序的性能特质倾向于高度的非直觉性.<br>
 辨别之道应该是借助某个程序的分析器, 并且是可以直接测量你所在意的资源的分析器.而分析器在某次特定执行过程中的行为可能是无法重现的, 应该用尽可能多的数据来分析你的软件, 并且确保每一组数据对于所有用户(至少是重要的客户)而言都是可重制(representative)的.
 
+### Item 17: 考虑使用缓式评估
+拖延战术有个非常高贵的名称: 缓式评估,就意味着用某种方式撰写你的class, 是他们延缓运算, 知道那些运算结果刻不容缓地需要为止.<br>
+#### Reference counting
+```C++
+class String{...};
+String s1 = "hello";
+String S2 = s1;
+```
+这时候我们做一些簿记工作, 直到s1或者s2被改变的时候才为内容做一个副本, 因为在某些应用领域我们可能永远都不需要这样的副本.
+
+#### 区分读和写
+如果s已经是一个reference counting 的字符串, 那么下面两行代码:
+```C
+cout << s[3];
+s[3] = 'x';
+```
+对于s的读,代价非常低廉, 但是对于写入的操作, 可能需要先为s做出一个副本. 而问题在于, **我们无法得知 operator[]是在怎样的环境下被调用的**.如果使用lazy-evaluation加上proxy classes,我们可以延缓决定到底是读还是写, 知道能确认这个问题的答案再做动作.
+
+#### lazy-fetching
+如果使用的大型对象, 其中包含很多constituent fields, 为了保持在执行前后的一致性与连贯性, 他们必须存储在一个数据库中, 用对象识别码从中取出对象.<br>
+这时候, 如果取出对象的所有数据, 成本可能极高. 这个问题的lazy做法是, 我们产生一个 LargeObject对象的时候, 只产生该对象的外壳, 只有其中的某个字段被需要了, 才从数据库中取回相应的数据. 
+```C++
+class LargeObject { 
+public: 
+    LargeObject(ObjectID id); 
+    const string& field1() const; 
+    int field2() const; 
+    double field3() const; 
+    const string& field4() const; 
+    ...
+private: 
+    ObjectID oid; 
+    mutable string *field1Value;  
+    int *field2Value;             
+    mutable double *field3Value; 
+    mutable string *field4Value; 
+    ...
+};
+LargeObject::LargeObject(ObjectID id) : oid(id),
+                                        field1Value(0), 
+                                        field2Value(0), 
+                                        field3Value(0), ... 
+{} // 构造函数, 默认将各个指针初始化为null
+const string& LargeObject::field1() const {
+    if (field1Value == 0) { 
+        read the data for field 1 from the database and make field1Value point to it; 
+    }
+    return *field1Value; 
+}
+```
+上面这些代码的意思是, 对象负责指向某个字段的指针都是初始化为 `null`, 在通过指针访问数据前, 先检查指针是否为空, 是的话必须先从数据库读入, 然后才能操作这个数据.
+
+#### lazy expression evaluation
+这个例子来源于数值上的应用:
+```C++
+template<class T> class Matrix { ... };
+Matrix<int> m1(1000, 1000); // a 1000 by 1000 matrix 
+Matrix<int> m2(1000, 1000); // 同上
+...
+Matrix<int> m3 = m1 + m2; // add m1 and m2
+```
+正常的operator+ 采用 eager evaluation, 但是这个是大规模的计算, 成本非常高, lazy-evaluation的策略是, 先设立一个数据结构在 m3 中, 表示 m3 为前两者之和, 这种数据结构可能只是包含两个指针(指向前两个矩阵)和一个 enmu(表示加法), 然后采用拖延战术, 这是很多矩阵库采用的策略, 这背后可能需要维护一些数据结构以存储数值\相依关系,还需要重载各种操作符, 但是能节省大量的时间.
+
+#### 总结
+如果计算是必要的, 那么lazy-evaluation不会节省任何时间, 在绝对必要的情况下使程序更缓慢, 增加内存使用(除了必要计算之外还要处理为了lazy-evaluation而设计的数据结构), 只有当 **软件被要求执行某些运算,而那些计算其实可以在很大程度上避免的时候, lazy-evaluation才有用处** .<br>
+几乎所有的数据流语言已经接受这种观念成为语言的一个部分, 但是主流语言如 C++ 依旧采用 eager evaluation, 但是因为它支持封装性质, 我们可能把 lazy-evaluation加入某个class内而不必让客户知道详情.
