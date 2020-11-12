@@ -597,3 +597,23 @@ Matrix<int> m3 = m1 + m2; // add m1 and m2
 
 ### Item 18: 分期摊还预期的计算成本
 另一个该改善软件性能的办法是, **令它超前进度地做要求以外的更多工作(over-eager evaluation)**.<br>
+这背后的思想是, 如果预期程序常常会用到某个计算, 你可以通过设计一个数据结构以便高效处理需求,从而降低每次计算的平均成本.<br>
+1. 最简单的做法就是将计算好而有可能再被需要的数值保留下来(caching).
+    ```C++
+    int findCubicleNumber(const string& employeeName) {
+        typedef map<string, int> CubicleMap; 
+        static CubicleMap cubes; // 用map做local cache
+        CubicleMap::iterator it = cubes.find(employeeName); 
+        if (it == cubes.end()) { 
+            int cubicle = the result of looking up employeeName’s cubicle number in the database; 
+            cubes[employeeName] = cubicle; // add the pair (employeeName, cubicle) // to the cache
+            return cubicle; 
+        }
+        else { 
+          return (*it).second; 
+        }
+    } 
+    ```
+    这背后的思想是将比较昂贵的数据库查询动作用比较廉价的内存上map查找取代.
+
+2. Prefetching 是另一种分摊预期计算成本的办法. 
