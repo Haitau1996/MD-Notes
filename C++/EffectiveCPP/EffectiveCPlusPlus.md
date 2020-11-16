@@ -440,7 +440,7 @@ auto_ptr 和 shared_ptr 析构函数用的是delete而不是delete[],**不要对
 
 ### Item 14 在资源管理类中小心copying行为
 
-前面描述的auto_ptr 和 shared_ptr 只适用于heap-based资源，这时候**需要建立自己的资源管理类**。这时候需要注意一些事项,以C API中处理Mutex的互斥对象为例
+前面描述的 `auto_ptr` 和 `shared_ptr` 将RAII的思想用在 heap-based 资源，并非所有资源都是 heap-based, 其他有的时候**需要建立自己的资源管理类**。这时候需要注意一些事项,以C API中处理Mutex的互斥对象为例:
 ```C++
 //  apis from c programming language
 void lock(Mutex *pm);   // lock mutex pointed to by pm
@@ -449,7 +449,7 @@ void unlock(Mutex *pm); // unlock the mutex
 class Lock {
     public:
         explicit Lock(Mutex *pm): mutexPtr(pm)
-            { lock(mutexPtr); } // acquire resource
+        { lock(mutexPtr); } // acquire resource
         ~Lock() { unlock(mutexPtr); } // release resource
     private:
         Mutex *mutexPtr;
@@ -471,7 +471,7 @@ class Lock {
     std::tr1::shared_ptr<Mutex> mutexPtr; // use shared_ptr instead of raw pointer
 };
 ```
-- **复制底部资源** 深度复制 //todo:这部分再加强理解 
+- **复制底部资源** 如某些标准字符串类型是由指向 heap 内存的指针构成, 深度复制意味着对他复制的时候无论指针还是指针指向的资源都被复制 
 - **转移底部资源的拥有权** 希望只有一个RAII对象指向未加工的资源，这时候资源的拥有权会从<u>被复制物</u>转向<u>目标物</u>。
 
 ### Item 15 在资源管理类中提供对原始资源的访问
@@ -481,8 +481,46 @@ class Lock {
 - 显式转换：shared_ptr和auto_ptr提供一个get()成员函数，允许返回指针内部的原始指针(的复件)；
 - 隐式转换：shared_ptr和auto_ptr重载了指针取值操作符，operator -> 和 operator *,允许隐式转换为底层的指针。
 
-//TODO
-
+例如我们用于字体的 RAII class:
+```C++
+FontHandle getFont(); // from C API — params omitted for simplicity 
+void releaseFont(FontHandle fh); // from the same C API
+class Font{ 
+public: 
+    explicit Font(FontHandle fh) :f(fh) {}	
+    // RAII class acquire resource; 
+    // use pass-by-value, because the  C API does
+    ~Font() { releaseFont(f); }	// release resource
+    ... // handle copying (see Item 14)
+private:	
+    FontHandle f;	// the raw font resource
+}
+// 使用显示转换, 缺点是每次想要调用 API 时候都要用get
+class Font { 
+public: 
+    ...
+    FontHandle get() const { return f; } // explicit conversion function
+    ...
+};
+// 提供隐式类型转换函数
+// 具体的做法是重载 operator FontHandle
+class Font { 
+public: 
+    ...
+    operator FontHandle() const // implicit conversion function
+    { return f; }
+    ...
+};
+// 这样的话, 使用的时候就十分方便
+Font FRAII(getFont());
+int newFontSize;
+... 
+changeFontSize(FRAII, newFontSize); // 隐式类型转换
+changeFontSize(FRAII.get(), newFontSize); // 提供转换函数
+FontHandle f2 = FRAII; // 隐式类型转换, Font 类的对象直接转为 FontHandle 
+FontHandle f2 = FRAII.get();
+```
+具体在使用的时候是添加显式的转换函数还是提供隐式类型转换 **取决于 _RAII class_ 被设计执行的工作, 以及其使用情况, 一般 get 是比较受欢迎的, 但是如果隐式类型转换带来的 "自然用法" 也会引发天秤的倾斜**.
 ### Item 16 成对使用new和delete时采取相同的形式
 
 new的时候，两件事情发生：内存被分配出来，然后对这片内存做一个或者多个的构造函数。同样的，delete的时候，先对此内存做一个或者多个析构函数，再释放内存。最大的问题在于：**即将删除的内存究竟有多少个对象**，数组内存通常还包括数组大小的记录，因此我们需要清楚删除的是一个对象还是一个数组。<br>
@@ -688,7 +726,6 @@ C++设计目标之一是保证"类型错误"绝不可能发生, 不幸的是转�
 * 容易在代码中辨识出来
 * 转型动作的目标 **窄化**, 如将constness去掉只能用`const_cast`
 
-// todo: explicit
 ```C++
 class Base { ... };
 class Derived: public Base { ... };
@@ -709,8 +746,8 @@ public:
     static_cast<Window>(*this).onResize(); // cast *this to Window,then call its onResize;
                                            // this doesn’t work!
     ... // do SpecialWindow-specific stuff
-} 
-...
+    } 
+    ...
 };
 ```
 这个地方的转型是有很大问题的，我们想让SpecialWindow在运行onResize() 前先运行Window的onResize，实际上调用的并不是当前对象的函数，而是<font color=red>转型动作所建立的一个" *this对象之base成分"的暂时副本上的onResize()</font>,该对象调用成员函数时候会有隐含参数 *this指针，可以在当前对象身上执行SpecialWindow的专属动作， 使得当前对象进入一个伤残状态。<br>
@@ -1252,4 +1289,4 @@ C++ 2.0 可能会提供一些有趣的语言特性和语法糖, 但是大部分�
 
 ### Item 55 : 让自己熟悉Boost
 
-refer to : C++ 11/14 高级编程 - Boost程序库探秘.
+refer to : C++ 11/14 高级编程 - [Boost程序库探秘](../HoujieC11/HouJieC11.md).
