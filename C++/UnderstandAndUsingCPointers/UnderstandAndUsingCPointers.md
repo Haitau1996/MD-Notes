@@ -351,8 +351,8 @@ int matrix[2][5] = {{1,2,3,4,5},{6,7,8,9,10}};
 int (*pmatrix)[5] = matrix;
 ```
 有没有括号之间的区别：<br>
-`int (*pmatrix)[5]`: 一个指向array的指针 
-`int   *pmatrix[5]`: 一个由5个to int 指针构成的array
+* `int (*pmatrix)[5]`: 一个指向array的指针 
+* `int   *pmatrix[5]`: 一个由5个to int 指针构成的array
 
 ## Pointers and Strings
 // TODO: 第五章的string 暂时跳过
