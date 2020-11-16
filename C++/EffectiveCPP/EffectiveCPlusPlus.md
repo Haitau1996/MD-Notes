@@ -525,7 +525,8 @@ FontHandle f2 = FRAII.get();
 new的时候，两件事情发生：内存被分配出来，然后对这片内存做一个或者多个的构造函数。同样的，delete的时候，先对此内存做一个或者多个析构函数，再释放内存。最大的问题在于：**即将删除的内存究竟有多少个对象**，数组内存通常还包括数组大小的记录，因此我们需要清楚删除的是一个对象还是一个数组。<br>
 规则十分简单，调用new时候使用[ ]，那么在delete的时候也使用[ ],反之亦然。但是如果经常使用typedef，new的时候[ ]被typedef掩盖了，那么就要十分注意。**最好尽量不要对数组形式做typedef动作**。
 ```C++
-typedef std::string AddressLines[4]; // a person’s address has 4 lines, each of which is a string
+typedef std::string AddressLines[4]; // a person’s address has 4 lines, 
+                                     //each of which is a string
 std::string *pal = new AddressLines;
 delete pal;    // undefined!
 delete [] pal; // fine
