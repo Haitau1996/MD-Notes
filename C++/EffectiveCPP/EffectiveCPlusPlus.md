@@ -131,10 +131,9 @@ public:
     char& operator[](std::size_t position) // now just calls const op[]
     {
         return
-        const_cast<char&>( // cast away const on
-                           // op[]’s return type;
+        const_cast<char&>( // cast away const on op[]’s return type;
                 static_cast<const TextBlock&>(*this) // add const to *this’s type;
-                [position] // call const version of op[]
+                [position]                           // call const version of op[]
         );
     }
 ...
