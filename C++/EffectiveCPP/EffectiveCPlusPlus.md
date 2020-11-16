@@ -126,8 +126,6 @@ public:
     const char& operator[](std::size_t position) const // same as before
     {
         ...
-        ...
-        ...
         return text[position];
     }
     char& operator[](std::size_t position) // now just calls const op[]
@@ -359,11 +357,39 @@ w = w; // assignment to self
 a[i] = a[j] //潜在自我复制，i可能等于j
 *px = *py ; // px,py可能指向同一对象
 ```
-在尝试自行管理资源的时候，可能会“在停止使用资源之前意外释放了它”，
-//todo: 加入这段代码
+在尝试自行管理资源的时候，可能会“在停止使用资源之前意外释放了它”，如下面的代码中使用一个 class 来保存一个动态分配的位图:
+```C++
+class Bitmap { ... }; 
+class Widget { 
+    ...
+private: 
+    Bitmap *pb; // ptr to a heap-allocated object 
+};
+Widget&
+Widget::operator=(const Widget& rhs){ // unsafe impl. of operator=
+    delete pb;              // stop using current bitmap, 可能rhs就是pb, 在这里就被删除了
+    pb = new Bitmap(*rhs.pb); // start using a copy of rhs’s bitmap
+    return *this; // operator = 返回一个 reference to *this
+}
+```
 在上面的代码里，这个delete不但销毁了当前对象的bitmap，传入rhs的bitmap也被销毁了。传统的解决办法：<font color=red>在operator=最前面加一个证同测试。</font><br>
-这个新版本依旧存在异常方面的麻烦，在new Bitmap时候出现异常的话，对象会持有一个指向被删除Bitmap的指针。下面的做法会在new Bitmap之后再删除原来的Bitmap，出现异常后，原来Bitmap没有丢失：<br>
-//todo:插入代码
+```C++
+Widget& Widget::operator=(const Widget& rhs) {
+    if (this == &rhs) return *this; // identity test: if a self-assignment do nothing
+    delete pb; 
+    pb = new Bitmap(*rhs.pb); 
+    return *this; 
+}
+```
+这个新版本依旧存在异常方面的麻烦，在new Bitmap时候出现异常的话，对象会持有一个指向被删除Bitmap的指针。下面的做法会**在new Bitmap之后再删除原来的Bitmap，出现异常后，原来Bitmap没有丢失**：<br>
+```C++
+Widget& Widget::operator=(const Widget& rhs) { 
+    Bitmap *pOrig = pb; // remember original pb
+    pb = new Bitmap(*rhs.pb); // point pb to a copy of rhs’s bitmap
+    delete pOrig; // delete the original pb
+    return *this; 
+} 
+```
 另一个方案是copy and swap技术：
 ```C++
 class Widget {
