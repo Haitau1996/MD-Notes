@@ -225,7 +225,7 @@ GNU C++
 ## Rvalue and move 语义
 Rvalue reference是一种新的reference type, 是为了解决**不必要的copying**,当赋值的右手边是一个rvalue, 左手边的接受段可以偷右手边的资源而不是执行一个单独的allocation.
 
-* Lvalue: 可以出现于operator=左侧者
+* Lvalue: 可以出现于operator=左侧者(也可能出现在右边)
 * Rvalue: 只能出现在operator右侧者(最常见的就是临时对象)
 
 
