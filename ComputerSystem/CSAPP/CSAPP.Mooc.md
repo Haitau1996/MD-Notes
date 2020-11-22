@@ -278,7 +278,7 @@ test:
 done:
 ```
 ##### 第二种变化
-把while -> do while, used with -O1
+把 while -> do while, used with -O1
 ```C
 if(!Test)
     goto done;
@@ -303,6 +303,8 @@ For Loop Form 可以和while相互转换.
 ![Jump table](figure/Mooc6.7.png)<br>
 
 ## Lecture 7 : Machine-Level Programming: Procedures
+
+ABI(Application Binary Interfaces): 系统的各个组分管理资源时候的约定.<br>
 <font size=4> Mechanisms in Procedures</font>
 * Passing control  
     * 控制流到了procdeure code 的开头
@@ -315,3 +317,17 @@ For Loop Form 可以和while相互转换.
     * 返回的时候deallocate
 
 ### x86-64 Stack
+Stack 是用来管理内存的一种方式, 在函数调用过程中十分有用(Last in First out)<br>
+Stack Pointer(`%rsp`) 保存着最下面的stack 的地址(逻辑上是top element), stack 要这 grow 的时候实际上是 `%rsp` 向下移(address grows from top to Bottom)<br>
+
+#### Push 
+`pushq Src` (Src为寄存器)做的事情是:
+* 取得在 src 处的操作数
+* 把 `%rsp` 减小 8
+* 向 `%rsp` 的地址写入第一步 fetch 的 操作数
+
+#### Pop
+`popq Dest`
+* 读取 `%rsp` 指向地址上的值
+* `%rsp` 增加8
+* 将取到的值写到 Dest 上(同样 Dest 为寄存器, 不能直接从内存写到内存)
