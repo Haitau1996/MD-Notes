@@ -42,3 +42,23 @@ Java 规范中没有依赖具体实现的地方, 基本数据类型的大小以�
 * 数值类型之间的相互转换<br>
     ![](figure/Core3.1.png)<br>
     注意的是不要在 boolean 类型和任何数值类型之间做强制类型转换
+* 自定义枚举类型的使用方法如下<br>
+    ```Java
+    enum Size {Small, Medimum, Large, ExtraLarge};
+    Size s = Size.Small;
+    ```
+* 在 Java 中, 字符串是不可修改的, 只能用 `substring()` 这个方法将老字符串的部分取出来拼接, 这样 <font color=red> 编译器可以让字符串共享 </font>. C++ 重载了操作符 `==` , 但是 Java 中判断两个string 是否相等用的是 `str1.equals(str2)`.java 字符串使用 char 序列构成, 大部分常用的 Unicode 字符使用一个代码单元就可以表示, 辅助用的则是采用 一对. 
+* 有时候需要使用较短的字符串构建一个新的字符串, 采用连接的方式效率比较低, 每次都要创建一个新的 string 对象, 使用 StringBuilder 就可以, 添加的时候调用类的 .append(strTail) 方法. 
+* 控制台输入是 创建一个 `Scanner` 对象, 并且与 `System.in` 关联,  因为输入可见, 不适合从控制台读取密码, Java SE 6 引入了 `Console` 对象, 格式化输出则沿用了 C 语言库函数 `printf` 的方法
+* 文件输入与输出, 就要用 File 对象构造一个 Scanner 对象:
+    ```Java 
+    Scanner in = new Scanner(Path.of("myfile.txt"), StandardCharsets.UTF_8);
+    PrintWriter out = new PrintWriter("myfile.txt", StandardCharsets.UTF_8);
+    ```
+    如果Scanner 文件找不到的话 或者 PrintWriter 无法创建就会抛出异常 `IOException`.
+* 块作用域, 在 C++ 中可以在嵌套的块中重新定义同名变量, 内层会覆盖外层定义的变量, 使用 `::` 可以访问全局定义的该变量, 但是在 Java 中不允许怎么做. 
+* Switch 语言的标签 必须是 **整数或者枚举变量**, 不能测试字符串
+* 若 基本的整数和浮点数不符合要求, 可以使用 `BigInteger` 和 `BigDecimal` 类, 使用时不能用我们常见的运算符, 因为语言没有重载该运算 Java 程序员没有重载运算符的权力.
+* Java 习惯使用 类型与变量名分开的数组声明方法(`int[] a = new int[100]`), 同时支持 range-based for loop.
+* Java数组的拷贝, 直接使用 = 将导致两个变量引用同一个数组, 想要实现深拷贝的效果 使用 `Arrays.copyOf(src, src.length())` 静态方法
+* Java 的多维数组不能用 for each 自动处理二维数组中每个元素, 而是按行处理, 同时可以用于不规则数组
