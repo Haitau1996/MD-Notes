@@ -148,3 +148,192 @@ public void raiseSalary(double byPercent){
 C++　和 Java 的类其实还有一个重要的区别, C++ 中通常在类的外面实现成员函数, 类内部的实现自动称为 inline 函数, <font color=red>但是在Java 编程中, 所有的方法都不许在类的内部定义</font>, 是否将方法设置内联是 Java 虚拟机的任务. 
 
 #### 封装的优点
+需要设置实例域的值, 应该提供 私有的数据域, 公有的域访问器方法, 公有的域更改器方法. 这样做比直接公开数据域复杂, 但是可以有很多好处:
+1. 可以改变内部实现, 除了改变类的方法外不会影响其他代码
+2. 更改器方法可以执行错误检查, 而直接对域进行赋值不能做这个处理
+
+#### 基于类的访问权限
+如比较两个雇员是否为同一人:
+```Java
+Class Employee{
+    ...
+    boolean equals(Employee other){
+        return name.equals(other.name);
+    }
+    ...
+}
+if( peter.equals(boss)) ...
+```
+equals 方法不仅可以访问 peter 的私有域, 还能访问 boss 的私有域, 这都是合法的, <font color=blue> 因为类的方法可以访问同类的任何一个实例的私有域</font>.<br>
+
+#### 私有方法
+很多时候可以将方法设为私有, 如一个计算代码划分为多个辅助的方法, 通常这些方法不应该成为公有接口的一部分, 因为他们往往与当前的实现机制关系非常紧密, 或者需要一个特别的协议以及一个特别的调用顺序.如果数据的表达方式发生变化, 这些私有方法不再需要的时候可以删去它, 因为类外的其他方法不可能直接调用他们. 
+
+#### Final 实例域
+将实例域设为final, 构建对象时必须初始化这样的域, 构造器执行后, 其值被设定, 在后面的操作中不能对它进行修改. **一般这种用于基本数据类型 或者不可变类(如 sring)的域, 修饰可变类可能给阅读程序带来混乱.**
+
+### 静态域和静态方法
+#### 静态域
+如果将域定义为 `static`, 每个类中只有一个这样的域. 普通的域则是类的每一个对象都有一根自己的拷贝. <br>
+静态变量用的比较少, 一般是用一个静态的常量, 如 $\pi$ 在 Math 类中可能是这样表示的:
+```Java
+public class Math {
+   ...
+   public static final double PI = 3.14159265358979323846;   
+   ...
+}
+double myAera = 3 * 3 * Math.PI;
+```
+
+#### 静态方法
+可以认为静态方法是不带 this 参数的方法, 静态方法不能操作对象, 所以不能再静态方法中访问实例域, 一般是在下面两种情况下使用静态方法:
+* 一个方法不需要访问对象状态, 需要的参数都是通过显式参数的方式提供('Math.pow()')
+* 一个方法只需要访问类的静态域
+
+<font size = 4> Factory 方法</font>: 静态方法的另一种常见用途, 产生不同风格的格式对象, 如下面的代码, 使用的原因有两个: 
+
+```Java
+NumberFormat currencyFormatter = NumberFormat.getCurrencylnstance();
+NumberFormat percentFormatter = NumberFormat.getPercentInstance();
+double x = 0.1;
+System.out.println(currencyFormatter.format(x)); // prints $0.10
+System.out.println(percentFormatter.format(x)); // prints 10 %
+```
+* 无法命名构造器
+* 使用构造器的时候无法改变构造的对象类型
+
+#### Main 方法
+不需要使用对象调用静态方法, 而 main 也是静态的, 在启动程序前没有任何一个对象. 值得注意的是, 每一个类可以有一个 Main 方法, 这常常用于进行单元测试.如一个 StaticTest.java 中有两个类, Employee 和public的StaticTest, 那么就可以分别执行
+```Shell
+java Emplpyee
+java StaticTest
+```
+分别执行两个 main 方法. 
+
+### 方法参数
+
+Java 程序设计语言总是采用值调用的方式, 方法得到的是参数值得一个拷贝, 不能修改传递给它任何参数变量的内容, 方法参数工有两种类型, 基本数据类型和对象引用, 他们作用的方式如下图:
+* 基本数据类型<br>
+    ![](figure/Core4.1.png)
+* 引用类型(对象的引用 和 它的拷贝引用同一个对象)<br>
+    ![](figure/Core4.2.png)
+
+Java 中对对象采用的不是引用调用, **而是引用进行的值传递, 因此 一个方法不能实现让对象参数引用一个新的对象**.
+
+### 对象构造
+对象的构造非常重要, Java 提供了多种编写构造器的方式. 如果过个方法有相同的名字同时参数类型不同, 便产生了重载. 如果编译器找不到匹配的参数, 或者找出多个可能的匹配, 就会产生编译时错误. 
+
+#### 默认初始化
+如果在构造器中没有显式地给赋予初值, 那么被自动地赋为默认值: 数值为0, 布尔值为 false, 对象引用为 null. 但一般不建议这么做, 不明确地初始化, 会影响代码的可读性.
+
+#### 默认构造器
+指的是没有参数的构造器,  和 C++ 一样, 如果在编写一个类的时候没有编写构造器, 系统就会提供一个默认构造器, 该构造器将所有的实例域设置为默认值. 但是类中提供了至少一个构造器, 但是没有提供默认构造器时, 构造对象不提供参数就会被视为不合法. 
+
+#### 显式初始化
+可以在类的定义中, 将一个值赋给任何域, 执行构造器之前, 先执行赋值动作, 初始值不一定是常量:
+```Java
+class Employee {
+   private String name = ""; 
+   ...
+}
+```
+
+#### 调用另一个构造器
+
+关键词 this 还有另一个含义, 可以用来调用同一个类的另一个构造器, 例如:
+```Java
+public Employee(double s)
+{		
+	// calls Emiployee (String, double)	
+	this("Employee #" + nextId, s);
+	nextId++;	
+}
+```
+此外还有一种是初始化语句块, 在类的声明中可以包含多个代码块, 只要构造对象, 这些块就会被执行. 对类的静态域进行初始化的代码比较复杂, 可以采用 静态的初始化块. 
+
+```Java
+public Employee(double s)
+{		
+    ...
+    static{
+        Random generator = new Random();
+        nextId = generator.nextInt(1000);
+    }
+}
+```
+#### 对象析构与 _finalize_ 方法
+由于Java 有自动的垃圾回收器, 不需要人工回收内存, 所以 Java 不支持析构器. 某些对象使用了内存之外的资源, 当资源不需要的时候将它回收和再利用就比较重要. **可以为一个类添加 finalize() 方法, 它将在垃圾回收器清除之前调用**.
+
+### 包
+ Java 允许使用包将类组织起来, 使用包的主要原因是确保类名的唯一性. 
+
+#### 类的导入
+可以使用 import 语句导入一个特定的类或者整个包:
+```Java
+import java.util.*;
+import java.util.Data;
+// 发生命名冲突时,如 sql 和 util 都有date 类
+import java.util.*;
+import java.sql.* ;
+import java.util.Data; // 只使用 Java.util中的 Data
+// 两者都要使用的时候, 在每个类前面加入完整的包名
+java.util.Data deadline = new java.util.Date();
+java.sql.Date today = new java.sql.Date(...);
+```
+
+#### 静态导入
+import语句还可以导入静态方法和静态域, 常见的两个实际运用在于
+* 算术函数, 对math 类进行静态导入, 更自然的方式使用算术函数
+    ```Java
+    // import
+    Math.sqrt(Math.pow(x,2)+Math.pow(y,2));
+    // Static Import
+    sqrt(pow(x,2)+pow(y,2));
+    ```
+* 笨重的常量(大量名字冗长的常量, 用静态导入比较方便)
+
+#### 将类放入包中
+![](figure/Core4.3.png)<br>
+在 Employee.java 中可以这样写:
+```Java
+package com.horstmann.corejava;
+public class Employee {
+    ...
+}
+```
+编译器在编译文件的时候不检查目录结构, 但是最终 虚拟机找不到类包 可能会导致程序无法运行. <br>
+如果没有指定 private 或者 public, 这个部分的方法或者变量可以被同一个包中所有方法访问.<br>
+
+### 类路径
+为了使类可以被多个程序共享, 需要做到下面几点
+1. 把类放在同一个目录中
+2. 将Jar放在一个目录中(如 /home/user/archives)
+3. 设置类路径(class path)
+
+Javac 编译器总是能在当前的目录中查找文件, 但是 java 虚拟机仅在classpath 有 "." 才查看当前目录, 默认没有设置classpath 是没有问题的, 但是如果设置的 classpath 而 classpath 不包含 . 目录时, 程序依旧可以通过编译, 但是无法正常运行.
+``` bash
+// unix
+java -classpath /home/user/classdir:.:/home/user/archives/archive.jar MyProg
+// windows
+java -classpath c:\classdir;.;c:\archives\archive.jar MyProg
+```
+
+### 文档注释
+JDK 中包含 javadoc, 可以从源文件中生成一个 Html的文档, 它从下面的特性中抽取信息
+* 包
+* 公有的类与接口
+* 公有的和受保护的方法
+* 公有的和受保护的域
+
+类注释: 放在 import 语句后, 类定义之前<br>
+方法注释: 通用标记外还能有三种标记(@param variable description,@return description, @throws class description )<br>
+通用注释: @author name, @see tag ...
+### 类的设计技巧
+
+1. 一定要将数据设计为私有
+2. 一定要对数据进行初始化: 最好不要依赖于系统的默认值
+3. 不要在类中使用过多的基本数据类型
+4. 不是所有的域都需要独立的访问器或者域修改器
+5. 采用标准格式进行类的定义
+6. 将职责过多的类进行分解
+7. 类名和方法名要体现其职责
