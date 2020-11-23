@@ -24,6 +24,7 @@ Java 规范中没有依赖具体实现的地方, 基本数据类型的大小以�
 * 设置执行路径如在 Linux 的 shell rum command中加入 `export PATH=jdk/bin:$PATH`
 * 安装 源代码和库文件 `jdk-doc`, `wget https://horstmann.com/corejava/corejava.zip`
 * 命令行界面/ IDE 编写程序
+
 ## Chap 03 : java 基本的程序设计结构
 
 对于一个 C++ 程序员员而言, 更需要关注的是两者之间的区别.<br>
@@ -62,3 +63,88 @@ Java 规范中没有依赖具体实现的地方, 基本数据类型的大小以�
 * Java 习惯使用 类型与变量名分开的数组声明方法(`int[] a = new int[100]`), 同时支持 range-based for loop.
 * Java数组的拷贝, 直接使用 = 将导致两个变量引用同一个数组, 想要实现深拷贝的效果 使用 `Arrays.copyOf(src, src.length())` 静态方法
 * Java 的多维数组不能用 for each 自动处理二维数组中每个元素, 而是按行处理, 同时可以用于不规则数组
+
+## Chap 04: Objects and Classes
+### 概述
+#### 类
+Java 语言是完全面向对象的, 每个对象包含对用户公开的特定功能部分以及隐藏的实现部分. 过去说Algorithms + Data Structures = Programs, 而 **OOP 将数据放在第一位, 确定需要操作的数据, 然后再决定操作数据的算法**. <br>
+* **类** 是构造对象的模板或者蓝图, 由类构造对象的过程成为创建类的实例(instance)
+* **封装**: 将数据和行为组合在一个包内, 并且对对象的使用者隐藏了数据的实现方式.  数据被称为 实例域(instance field), 操纵数据的过程称为方法(method), 封装的关键在于 **绝对不能让类的方法可以直接地访问其他类的实例域**, 程序仅通过对象的方法与对象数据进行交互. 
+
+#### 对象
+对象的三个主要特性:
+* 对象的行为: 可以对对象施加哪些操作
+* 对象的状态: 施加方法时, 对象如何响应
+* 对象的标识: 如何辨别具有相同行为与状态的不同对象
+
+对象的状态必须通过方法的调用实现, 否则说明封装性出现了问题. <br>
+
+面向对象的系统没有所谓的顶部, 我们首先从设计类开始, 然后再往每个类中添加方法. 一般而言 方法对应着动词, 实例域对应着名词. 
+
+#### 类之间的关系
+
+类之间常见的关系有:
+* 依赖("use a"): 常见的是一个类的方法操纵另一个类的数据
+* 聚合("has a"): 类 A 的对象中 包含类 B 的对象
+* 继承("is a"): 表示特殊与一般的关系
+
+### 使用现有类
+#### 对象与对象变量
+想要使用对象, 首先需要构造对象并且指定其初始状态, 然后对 对象施加方法. <br>
+Java 中使用构造器(constructor) 构造对象的实例, 它是一种特殊的方法, 用于构造并且初始化对象. 一个对象变量 如 `Data deadline;` 中的deadline 并没有实际包含一个对象, 而仅仅是 初始化之后引用一个对象. 可以显式将对象变量设置为 null, 表明它目前没有引用任何对象. 这种引用和 C++ 中的引用有很大的区别, 比如 C++ 中没有空引用, 而且引用不能被赋值引用其他对象, 行为上, **Java 中的引用变量更像是 C++ 中的对象指针**. Java 中所有对象都是存储在堆中, 不用担心内存管理问题, 垃圾回收器会处理相关的事宜. <br>
+
+#### 更改器方法和访问器方法
+需要查询类的信息应该使用类的 get 方法(访问器方法), set/add 方法是对对象的状态进行修改(更改器方法), 在 C++ 中往往会给访问器方法加 const 修饰符(不改变对象的状态), 但是 **Java 并无明显的区分**. 
+
+### 使用用户自定义类
+#### 一个简单的雇员类
+文件名必须与public类的名字相匹配。在~个 源文件中，只能有一个公有类，但可以有任意数目的非公有类。
+```Java
+class ClassName
+{
+    constructor1;
+    constructor2;
+    ...
+    method1; 
+    method2;
+    ...
+    field1;
+    field2;
+    ...
+}
+```
+#### 多个源文件的使用
+如果我们使用的是多个类如 Employee.java + EmployeeTest.java , 那么在编译的时候可以是用两种方式:
+* 使用通配符调用 Java 编译器
+    ```Shell
+    javac Employee*.java
+    ```
+* 直觉编译 EmployeeTest, 可以理解为 Java 内置了 make 功能, 可以自动查找依赖的 class , 如果依赖的 .java 有新版本, 则会重新编译输出 .class 文件
+
+#### 从构造器开始
+
+我们看雇员类的构造器:
+```Java
+public Employee(String n, double s, int year, int month, int day) 
+{
+    name = n;
+    salary = s;
+    hireDay = LocalDate.of(year, month, day);
+}
+new Employee("James Bond", 100000, 1950, 1, 1);
+```
+构造器和类同名,总是伴随 new 操作符的执行被调用, 不能对一个已存在的对象调用构造器实现 实例域 的设置.<font color=red> C++ 程序员容易犯的错误就是忘记 _new_ 操作符 </font>. 
+
+#### 隐式参数与显式参数
+* 隐式参数值得是出现在方法名前的 Employee 对象, 相当于 C++ 中默认传入的 this 指针
+* 显式参数就是明确在方法声明中列出的参数
+
+```Java
+public void raiseSalary(double byPercent){
+    double raise = this.salary * byPercent / 100;
+    this.salary += raise; // this 其实可以省略
+}
+```
+C++　和 Java 的类其实还有一个重要的区别, C++ 中通常在类的外面实现成员函数, 类内部的实现自动称为 inline 函数, <font color=red>但是在Java 编程中, 所有的方法都不许在类的内部定义</font>, 是否将方法设置内联是 Java 虚拟机的任务. 
+
+#### 封装的优点
