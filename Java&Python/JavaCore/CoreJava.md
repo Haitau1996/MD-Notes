@@ -243,17 +243,17 @@ class Employee {
 关键词 this 还有另一个含义, 可以用来调用同一个类的另一个构造器, 例如:
 ```Java
 public Employee(double s)
-{		
-	// calls Emiployee (String, double)	
-	this("Employee #" + nextId, s);
-	nextId++;	
+{        
+    // calls Emiployee (String, double)    
+    this("Employee #" + nextId, s);
+    nextId++;    
 }
 ```
 此外还有一种是初始化语句块, 在类的声明中可以包含多个代码块, 只要构造对象, 这些块就会被执行. 对类的静态域进行初始化的代码比较复杂, 可以采用 静态的初始化块. 
 
 ```Java
 public Employee(double s)
-{		
+{        
     ...
     static{
         Random generator = new Random();
