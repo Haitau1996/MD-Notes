@@ -38,7 +38,7 @@ Java 规范中没有依赖具体实现的地方, 基本数据类型的大小以�
     extern int i ; // C++ 声明一个变量
     ```
 * Java 中用关键词 `final` 声明一个常量, 表示该变量只能被赋值一次, 如果希望某个常量可以在一个类中的多个方法使用, 可以设置为 `static final`, const 是 Java 保留字, 但是没有使用 
-* C 中的右移运算都是用 `>>`(实际上是为 unsigned 定义的), 但是在 Java 中 `>>>` 用0 填充高位, '>>' 用sign bit 填充高位
+* C 中的右移运算都是用 `>>`(实际上是为 unsigned 定义的), 但是在 Java 中 `>>>` 用0 填充高位, `>>` 用sign bit 填充高位
 * Java Math 类中的方法(全都是静态方法) 都是使用 计算机浮点单元中的例程, 如果可预测结果比速度重要的话应该用 `StrictMath` 类
 * 数值类型之间的相互转换<br>
     ![](figure/Core3.1.png)<br>
@@ -265,7 +265,7 @@ public Employee(double s)
 由于Java 有自动的垃圾回收器, 不需要人工回收内存, 所以 Java 不支持析构器. 某些对象使用了内存之外的资源, 当资源不需要的时候将它回收和再利用就比较重要. **可以为一个类添加 finalize() 方法, 它将在垃圾回收器清除之前调用**.
 
 ### 包
- Java 允许使用包将类组织起来, 使用包的主要原因是确保类名的唯一性. 
+Java 允许使用包将类组织起来, 使用包的主要原因是确保类名的唯一性. 
 
 #### 类的导入
 可以使用 import 语句导入一个特定的类或者整个包:
@@ -351,4 +351,20 @@ public class Manager extends Employee{
 }
 ```
 <font color=red> java 中的所有继承都是公有继承, 不存在 C++ 中私有继承,保护继承的概念</font>. 已经存在的类被称为 超类/父类/基类, 新类型被称为 子类/派生类. **子类比超类拥有的功能更加丰富**, 超和子(super-/sub-) 来源于集合论中的术语, 不表示功能多少. <br>
-通过拓展超类的方式定义子类的时候, 只需要指出两者的不同之处. 超类的某些方法对于子类不一定使用, 这时候需要用覆盖的方式替代(区别于重载).
+通过拓展超类的方式定义子类的时候, 只需要指出两者的不同之处. 超类的某些方法对于子类不一定使用, 这时候需要用覆盖的方式替代(区别于重载).例如一个 Manager 的工资可能还有 bonus, 需要重载 getSalary 方法:
+
+```Java
+public double getSalary() {
+   return salary + bonus; // won't work 
+}
+```
+而 **Manager 类无法直接访问超类的私有域**, 就必须从公有方法的接口访问, 如果 getSalary() 调用 getSalary(), 就会造成无限调用自己, 最终的解决方案是 <font color=red>引入了 `super` 关键字 </font>.
+
+```Java
+public double getSalary(){
+    double baseSalary = super.getSalary();
+    return baseSalary + bonus;
+}
+```
+
+super 和 this 不同, 它不能理解为一个对象的引用, 只是提示编译器调用超类的方法. 在 C++ 中是使用 `superClassName::method()` 的方式调用, 
