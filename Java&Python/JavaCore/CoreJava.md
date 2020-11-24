@@ -341,7 +341,8 @@ JDK 中包含 javadoc, 可以从源文件中生成一个 Html的文档, 它从�
 ## Chap 05: Inheritance
 
 继承已经存在的类就是附中这些类方法和域, 在此基础上还可以添加一些新的方法和域, 以满足程序设计的要求.<br>
-反射指的是在程序运行期间发现更多的类及其属性的能力, 可以先浏览 //TODO:日后返回来学习.
+反射指的是在程序运行期间发现更多的类及其属性的能力, 可以先浏览
+//TODO:日后返回来学习.
 
 ### 类 超类 和 子类
 经理和雇员之间明显存在着 `is-a` 关系(继承的主要特征), 于是我们可以有以下代码:
@@ -358,7 +359,7 @@ public double getSalary() {
    return salary + bonus; // won't work 
 }
 ```
-而 **Manager 类无法直接访问超类的私有域**, 就必须从公有方法的接口访问, 如果 getSalary() 调用 getSalary(), 就会造成无限调用自己, 最终的解决方案是 <font color=red>引入了 `super` 关键字 </font>.
+而 **Manager 类无法直接访问超类的私有域**, 就必须从公有方法的接口访问, 如果 getSalary() 调用 getSalary(), 就会造成无限调用自己, 最终的解决方案是 <font color=red>引入了 _super_ 关键字 </font>.
 
 ```Java
 public double getSalary(){
@@ -367,4 +368,40 @@ public double getSalary(){
 }
 ```
 
-super 和 this 不同, 它不能理解为一个对象的引用, 只是提示编译器调用超类的方法. 在 C++ 中是使用 `superClassName::method()` 的方式调用, 
+super 和 this 不同, 它不能理解为一个对象的引用, 只是提示编译器调用超类的方法. 在 C++ 中是使用 `superClassName::method()` 的方式调用. 此外, 可以在构造器中使用 super. 
+
+```Java
+public Manager(String name, double salary, int year, int month, int day)
+{
+    super (name, salary, year, month,);// 调用 super 的构造函数
+    bonus = 0; 
+}
+```
+如果子类没有显式调用超类的构造器, 那么将调用超类默认的构造器, 如果超类没有带默认构造器(没有自定义构造器时会自动生成), 那么 Java 编译器会报告错误.运用场景 this 相似, 有两个用途, 其一是隐式类型参数, 其二是调用类的其他构造器.在 C++ 中可以用列表初始化调用父类的构造器, <br>
+```Java
+Manager::Manager(String name, double salary, int year, int month)          
+:Employee(name, salary, year,      month,     day)
+{
+    bonus = 0; 
+}
+```
+使用的时候, 可以让 Employee 类型的引用变量引用 Manager 的对象(多态), 在运行时自动选择调用哪种方法(动态绑定).<font color=blue> 在 Java 中, 不需要将方法声明为虚拟方法, 动态绑定是默认的处理方式, 如果不希望一个方法具有虚拟特性, 可以将它标志为 _final_ .</font> <br>
+
+#### 继承层次与多态
+继承并不一定仅限于一个层次, 层次继承中从某个特定的类型到其祖先的路径被称为该类的 **继承链**. 但是 <font color=red> Java 不支持多继承, 只能通过继承超类 + 实现接口 实现事实上的多继承</font>.<br>
+继承体系中有 "is-a" 关系, 即每个对象都是其超类的对象, 但是反过来不成立, 另一种表述就是 "置换原则", 在程序中使用超类对象的任何一个地方都可以用子类对象替换. 对象变量是多态的, 一个 Employee 变量既可以引用 Employee 对象, 也可以引用 Manager 对象. 
+
+```C++
+Manager boss = new Manager("Carl Cracker", 80000, 1987, 12, 15); 
+boss.setBonus(5000);
+Employee staff = new Employee[3]; //OK
+staff[0] = boss; 
+staff[0].setBonus(5000); // ERROR
+```
+
+staff 存的是一个 Employee 类型的对象, **不能直接调用 setBonus 的方法, 需要做强制类型转换之后才能使用**.
+
+#### 动态绑定
+
+首先回顾一下调用过程的详细描述:
+1. 
