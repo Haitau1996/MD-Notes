@@ -269,3 +269,7 @@ x86-64 的中央处理器包含了一组16个存储64位值的通用目的寄存
     ![数据格式](figure/Book3.2.png)<br>
 
 ##### 数据传送指令
+最频繁使用的指令是将数据从一个位置复制到另一个位置的指令, 再此我们将介绍不同的数据传送指令, 他们或者源类型和目的类型不同, 或者执行的转换不同, 或者具有不同的副作用. <br>
+最简单的数据移动指令就是 mov 类, 使用的形式为 `mov Source, Destination`, 包括 `movb`, `movw`, `movl`, `movq`, 分别对应 Move byte/ word/ long(double word)/ quad word.<br>
+Source 可以在 immediate/ 寄存器值/ 内存上, Destination 可以是 寄存器或者内存上.<font color=red> 但是两个operand 不能都是 refer to memory location</font>, 这需要分成两个指令. 此外 `movabsq` 可以操作任意的 64 位立即数, 而且只能以寄存器作为 Destination. <br>
+还有另外两种移动数据的指令, 将较小的源值复制到较大的目的的时候使用, 这些指令都是从源(内存或寄存器) 复制到寄存器. 
