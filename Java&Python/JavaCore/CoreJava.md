@@ -494,4 +494,75 @@ Employee e = （Employee） obj;
 ```
 
 #### equals 方法
-Object类中的equals方法用于检测一个对象是否等于另外一个对象。在 Object类中，**这个方法将判断两个对象是否具有相同的引用**。
+Object类中的equals方法用于检测一个对象是否等于另外一个对象。在 Object类中，**这个方法将判断两个对象是否具有相同的引用**。对于用户自定义的类型而言, 这种判断意义不大, 经常需要做的事情是判断两个对象的状态(实例域), 如果两个对象的状态完全一致, 那么就认为这两个对象是相等的. 
+```Java
+public class Employee
+{
+    ...
+    public boolean equals(Object otherObject)
+    {
+        // a quick test to see if the objects are identical
+        if (this == otherObject) return true;
+        // must return false if the explicit parameter is null
+        if (otherObject == null) return false;
+        // if the classes don't match, they can't be equal
+        if (getClass() != otherObject.getClass())
+            return false;
+        // now we know otherObject is a non-null Employee
+        Employee other = (Employee) otherObject;
+        // test whether the fields have identical values
+            return name.equals(other.name)
+            && salary == other.salary
+            && hireDay.equals(other.hireDay);
+    }
+}
+```
+getClass 将返回对象所属的类, 只有在属于同一个类的情况下才可能相等. 在子类调用 equals 方法之前, 首先调用父类的 equals, 如果父类的域都检测失败则没必要检测子类的.<br>
+
+```Java
+public class Manager extends Employee
+{
+    . . .
+    public boolean equals(Object otherObject)
+    {
+        if (!super.equals(otherObject)) return false;
+        // super.equals checked that this and otherObject belong to the same class
+        Manager other = (Manager) otherObject;
+        return bonus == other.bonus;
+    }
+}
+```
+<font color=red size=4> 如果隐式和显式地参数不属于同一个类, equals 将如何处理? </font> <br>
+Java语言规范要求equals方法具有下面的特性：
+
+1. **自反性**: 对于任意非空的引用x, _x.equals(x)_ 应该返回 true
+2. **对称性**: 对于任何引用 x 和 y, 当且仅当 _y.equals(x)_ 返回 true, _x.equals(y)_ 返回 true
+3. **传递性**: 对于任何引用x 、y 和 z , 如果 _x.equals(y)_ 返回 true, _y.equals(z)_ 返回 true, _x.equals(z)_ 也应该返回true
+4. **一致性**：如果 x 和 y 引用的对象没有发生变化，反复调用 _x.equals(y)_ 应该返回同样的结果。
+5. 对于任意非空引用 x , _x.equals(null)_ 应该返回 false
+
+现在回过头考虑, e 是一个 Employee 对象, m 为一个 Manager 对象, 两者具有相同的姓名/薪水和雇佣日期, 如果 e.equals(m) 在 Employee.equals 中应用 instanceof 关键词进行检测, 则返回 true, 这要求 m.equals(e) 也需要返回 true. 对称性不允许这个方法调用返回 false, 或者抛出异常. 于是可以从两个角度看待这个问题:
+
+1. 如果子类能够拥有自己的相等概念, 则对称性要求建强制采用 getClass 进行检测
+2. 如果由超类决定相等概念, 那么就可以使用 instanceof 进行检测, 这样 **可以在不同之类的对象之间进行相等性的检测**.
+
+于是下面给出了一个编写完美 equals 方法的建议:
+
+1. 显式参数命名为 otherObject, 稍后可能需要将它转换为一个叫做 other 的变量
+2. 检测 this 和 otherObject 是否是引用同一个对象 (做小代价检测,一种优化)
+3. 检测 otherObject 是否为 Null,  这个检测是很有必要的
+4. 比较 this 和 otherObject 是否是同一个类, 根据上面两种情况决定是用 getClass 或者 instanceof
+5. 将 otherObject 转化为 this 类的对象 other
+6. this 和 other 做所有域的比较
+
+#### _hashcode_ 方法
+
+hashCode 方法定义在 Object 类内, 每个对象都有一个默认的散列码, 其值为对象的存储地址. <br>
+如果重新定义了 equals 方法, 就必须重新定义hashCode 方法, **equals 和 hashCode 的行为必须一致**, 两个对象 equals 返回是 true, 那么应该产生一样的 hashCode. 例如, 如果使用 员工的 ID 去判断员工是否是同一个, 那么 hashCode 方法就是要用 ID 做散列, 而不是使用姓名或者存储地址.  而数组组成的域就可以调用静态的Array.hashCode 方法计算散列码, 它是由数组元素的散列码组成的.
+
+#### _toString_ 方法
+
+用于返回表示对象值得字符串, **只要对象与一个字符串通过操作符 "+" 连接起来, 编译器就会自动调用这个方法**, 获得一个关于该对象的字符串描述. <br>
+数组继承了 Object 的 同String 方法, 数组类型将按照旧的格式打印, 修正的方法是调用静态的方法 `Arrays.toString(arrayName)`, 想要打印多维数组的话需要用 `Arrays.deepToSring(multiArrayName)`.
+
+### 泛型数组方法
