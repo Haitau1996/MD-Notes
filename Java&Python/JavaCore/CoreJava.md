@@ -404,4 +404,94 @@ staff 存的是一个 Employee 类型的对象, **不能直接调用 setBonus �
 #### 动态绑定
 
 首先回顾一下调用过程的详细描述:
-1. 
+1. 编译器查看对象的声明类型和方法名. 调用 x.f(param) 且 x 声明为 C 类的对象. 编译器将意义列举所有 C 类中名为 f 的方法和其超类中访问属性为 public 且名为 f 的方法.
+2. 编译器根据调用方法提供的参数类型, 选择方法, 这个过程称为重载解析, 由于允许类型转换(int -> double, Manager -> Employee...), 这个过程可能很复杂<br>
+    如果子类定义了一个与超类签名相同的方法, 这个方法就可以覆盖超类的, 覆盖的时候一定要保证返回类型的兼容, 如:
+    ```Java
+    // in Employee class
+    public Employee getBuddy() { . . . }
+    // in Manager class
+    public Manager getBuddy() { . . . } // OK to change return type
+    ```
+    我们称这两个 getBuddy 方法具有可协变的返回类型. 
+3. 如果是 private/ static/ final 方法或者构造器, 编译器将准确知道调用哪个方法, 这种被调用方式称为**静态绑定**
+4. 程序运行的时候, 采用动态绑定的方式, 虚拟机一定调用与 x 所引用对象 **实际类型最适合的那个类的方法**, 每次调用都进行搜索的时间开销非常大, 虚拟机预先为每个类创建了方法表.
+
+动态绑定的一个重要特性是, **无需对现存的代码进行修改, 就可以对程序进行拓展**, 同时需要注意的是, 覆盖一个方法的时候, <font color=red> 子类方法的可见性不能低于超类方法的可见性 </font>.
+
+#### 阻止继承: final类和方法
+不允许拓展的类被称为 _final_ 类, 如不希望人们定义 Executive 的子类, 可以用下面的做法:
+
+```Java
+public final class Executive extends Manager { ... }
+```
+
+类中的方法也可以设置为 final, 如果这样的话子类就不能覆盖这个方法:
+
+```Java
+public class Employee{
+    ...
+    public final String getName() { return name; }
+    ...
+}
+```
+
+域也可以声明为 final, 对于 final 域, 构造对象之后就不允许改变他们的值了, 如果将一个 类声明为 final, <font color=pink> 那么其中的方法自动转为final, 而不包括域</font>.
+有很多程序员认为, 如果没有足够的理由使用多态性, 那么所有的方法都声明为 final, 如 C++/C# 中没有特别地声明, 所有的方法都不具备多态性. 
+
+#### 强制类型转换
+
+正如有时需要将浮点数值类型转换为整型值, 有时候也需要将某个类的对象引用转为另一个类的对象引用. 进行转型的唯一原因是, <font color=red> 在暂时忽视对象的实际类型之后，使用对象的全部功能。</font>  例如我们要将存放在 Employee 数组 staff 中 的 Manager 元素复原成 Manager,只有在使用 Manager 中特有的方法时才需要进行类型转换. 将一个值存入变量时，编译器将检查是否允许该操作。将一个子类的引用赋给一个超类变量，编译器是允许的。但将一个超类的引用赋给一个子类变量，必须进行类型转换，这样才能够通过运行时的检查, 于是应该养成这样一个良好的程序设计习惯：在进行类型转换之前，先查看一下是否能够成功地转换。
+
+```Java
+if (staff[1] instanceof Manager) {
+  boss = (Manager) staff[1];
+}
+```
+这个转型的用法来源于 C语言, 处理过程类似于 C++ 中的 `dynamic_cast`,  两者的区别在于转型失败的时候C++ 生成一个 null 对象, 而 Java 抛出异常, 异常的成本相对高昂, 于是我们在转型前使用 `instanceof` 运算符检查.
+
+```C++
+Manager boss = (Manager) staff[1]; // Java
+Manager* boss = dynamic_cast<Manager*>(staff[1]); // C++
+```
+
+#### 抽象类
+
+从某种程度看, getName() 这种方法可以放置在更高抽象层次的通用超类中, abstract 关键字用于修饰类和方法, <font color=red> 为了提高程序的清晰度，包含一个或多个抽象方法的类本身必须被声明为抽象的 </font>. 
+
+```Java
+public abstract class Person{
+    ...
+    public abstract String getDescription(); 
+}
+```
+除了抽象方法之外, 抽象类 <font color=pink> 还可以包含具体的数据和具体方法</font>. **许多程序员认为，在抽象美中不能包含具体方法。 建议尽量将通用的域和方法（不管是否是抽象的）放在超类（不管是否是抽象类）中。**<br>
+<font color=red>类即使不含抽象方法，也可以将类声明为抽象类, 抽象类的代价是不能被实例化。</font>
+
+```Java
+new Person("Vinee Vu"); // error
+Person p = new Student("Vince Vu", "Economics"); // correct
+```
+
+抽象方法有点类似于 C++ 语言中的纯虚函数 (`virtual void someFunc() = 0;`), C++ 中只需要有一个纯虚函数, 这个类就是抽象类. <br>
+
+如果不在 Person 中定义 `getDescription()` 方法,而是放到 Employee 和 student 中,  就不能通过变量 p 调用getDescription方法了。
+
+#### 受保护访问
+
+人们希望超类中的某些方法允许被子类访问，或允许子类的方法访问超类的某个域。为此，需要将这些方法或域声明为 protected, 将超类Employee 中的hireDay声明为proteced, 而不是私有的，Manager中的方法就可以直接地访问它, **Manager类中的方法只能够访问 Manager 对象中的 hireDay 域，而不能访问其他 Employee 对象中的这个域**, Java 的四种访问修饰符号:
+1. 仅对本类可见 ---- private
+2. 对所有类可见 ---- public 
+3. 对本包和所有子类可见 ---- proctected
+4. 对本包可见 ---- 默认, 无需修饰符
+
+### Object: 所有类的超类
+
+Object 类是 Java 中所有类的始祖，在 Java 中每个类都是由它扩展而来的, 这意味着 <font color=red> 可以使用 Object 类型的变量引用任何类型的对象</font> :
+```Java
+Object obj = new Employee（"Harry Hacker", 35000） ;
+Employee e = （Employee） obj;
+```
+
+#### equals 方法
+Object类中的equals方法用于检测一个对象是否等于另外一个对象。在 Object类中，**这个方法将判断两个对象是否具有相同的引用**。
