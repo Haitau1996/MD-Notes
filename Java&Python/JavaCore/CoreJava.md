@@ -592,3 +592,41 @@ a[i] = harry;
 2. 执行完成之后再使用 toArray 方法将数组元素拷贝到一个数组中
 
 ArrayList 也可以在中间插入/删除元素, 但是这种操作效率比较低, 如果经常需要在大的数组中间插入/删除, 这时候应该考虑链表.
+
+#### 类型化与原始数组列表的兼容性
+
+可以将一个类型化的数组列表传给原始的 ArrayList, 如
+
+```Java 
+public class EmployeeDB // Before Java SE 5.0, 没有泛型类
+{
+    public void update(ArrayList list) { . . . }
+    public ArrayList find(String query) { . . . }
+}
+ArrayList<Employee> staff = . . .;
+employeeDB.update(staff);
+```
+我们可以将类型化的数组列表传递给原始的 数组列表, 而不需要任何的类型转换, 相反地, 将一个原始的 ArrayList 赋值给类型化的 ArrayList 的时候就会出现一个警告, 使用类型转换并不能避免出现警告:
+
+```Java
+ArrayList<Employee> result = employeeDB.find(query); // warning
+ArrayList<Employee> result = (ArrayList<Employee>) employeeDB.find(query);
+                                        // yields another warning
+```
+
+### 对象包装器与自动打包
+
+我们可以将几倍类型转换为对象, 这些类被称为包装类 (Wrapper), **对象包装器是不可变的, 一旦构造了包装器, 就不允许更改包装在其中的值**, 包装器类还是 final, 不能定义他们的子类. 
+
+```Java
+var list = new ArrayList<Integer>(); // 方括号内不允许基本类型
+list.add(3);
+// 自动转换成, 这个过程成为自动打包(autoboxing) 
+list.add(Integer.valueOf(3));
+int n = list.get(i);
+// 自动转换成下面: 这个过程称为自动拆包
+int n = list.get(i).intValue();
+```
+基本类型与他们的包装类型是不一样的, 比如两个 Integer a,b, 他们取 == 实际上是看两个变量是否指向同一个对象. 
+
+### 参数数量可变的方法
