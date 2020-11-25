@@ -493,7 +493,7 @@ Object obj = new Employee（"Harry Hacker", 35000） ;
 Employee e = （Employee） obj;
 ```
 
-#### equals 方法
+#### _equals_ 方法
 Object类中的equals方法用于检测一个对象是否等于另外一个对象。在 Object类中，**这个方法将判断两个对象是否具有相同的引用**。对于用户自定义的类型而言, 这种判断意义不大, 经常需要做的事情是判断两个对象的状态(实例域), 如果两个对象的状态完全一致, 那么就认为这两个对象是相等的. 
 ```Java
 public class Employee
@@ -566,3 +566,29 @@ hashCode 方法定义在 Object 类内, 每个对象都有一个默认的散列�
 数组继承了 Object 的 同String 方法, 数组类型将按照旧的格式打印, 修正的方法是调用静态的方法 `Arrays.toString(arrayName)`, 想要打印多维数组的话需要用 `Arrays.deepToSring(multiArrayName)`.
 
 ### 泛型数组方法
+
+在 C 语言中, 必须在编译的时候就确定 non-heap based数组的大小, 而 Java 的情况就好很多, 允许在运行时确定数组的大小, <font color=red> 但是 java 中一旦确定了数组的大小, 改变它就不太容易了</font>. 最简单的解决办法就是使用一种被称为 _ArrayList_ 的类,**它是一种采用类型参数的泛型类, 具备自动调节容量的功能**:
+
+```Java
+ArrayList<Employee> staff = new ArrayList<Employee>();
+staff.add(new Employee("Harry Hacker", ...));
+```
+如果可以事先估计数组可能存储的元素数量, 就可以在填充数组之前调用 `staff.ensureCapacity(100)` 或者将参数100 传给 ArrayList 构造器 `ArrayList<Employee> staff = new ArrayList<>(100)`, size() 方法将返回 ArrayList 中世纪的元素数目, 一旦确认数组列表的大小不发生变化, 可以调用 `trimToSize` 方法, 垃圾回收器将回收多余的空间. 
+
+#### 访问 ArrayList 元素
+
+ArrayList 不是 java 程序设计语言的一部分, 只是某些人编写并且放在标准库中的一个实用类, 必须使用 get/set 方法实现访问或者改变 数组列表 的某个元素. 
+
+```Java
+// staff is an Array List
+staff.set(i, harry);
+// a is an Array
+a[i] = harry;
+```
+
+一个技巧可以方便灵活扩展数组同时方便地访问元素:
+
+1. 首先创建一个 ArrayList, 并且添加所有的元素
+2. 执行完成之后再使用 toArray 方法将数组元素拷贝到一个数组中
+
+ArrayList 也可以在中间插入/删除元素, 但是这种操作效率比较低, 如果经常需要在大的数组中间插入/删除, 这时候应该考虑链表.
