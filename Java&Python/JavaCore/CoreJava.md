@@ -21,7 +21,7 @@ Java 规范中没有依赖具体实现的地方, 基本数据类型的大小以�
 
 安装 Java 开发工具箱
 * 下载 JDK
-* 设置执行路径如在 Linux 的 shell rum command中加入 `export PATH=jdk/bin:$PATH`
+* 设置执行路径如在 Linux 的 shell run command(如 .zshrc)中加入 `export PATH=jdk/bin:$PATH`
 * 安装 源代码和库文件 `jdk-doc`, `wget https://horstmann.com/corejava/corejava.zip`
 * 命令行界面/ IDE 编写程序
 

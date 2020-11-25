@@ -2,12 +2,12 @@
 
 ## Accustoming Yourself to C++
 
-### Item 1 视c++为一个语言联邦
+### Item 1 视C++为一个语言联邦
 C++为一个多范式的编程语言，同时支持过程形式、面向对象形式、函数形式、泛型形式和元编程形式。为了避免误解，最好将它看成语言的联邦而不是单个语言，互相之间迁移时候，守则可能发生变化。
 
 - C ： 只用其中的C成分工作的时候，高效编程的守则和C相同，没有模板、异常和重载。。。
 - Object-Oriented C++ : 面向对象设计的时候，有class(构造、析构)、封装、继承、多态和虚函数（动态绑定）。。。
-- Template C++ : 带来了元编程的范式，和TMP的相关规则和主流c++相互之间的影响很小。
+- Template C++ : 带来了元编程的范式，和TMP的相关规则和主流C++相互之间的影响很小。
 - STL：使用template的库，对容器、迭代器、算法和仿函数之间的规约有紧密的配合与协调。
 
 ### Item 2 以编译器替换预处理器
@@ -175,7 +175,7 @@ ABEntry::ABEntry()
 * static对象, 寿命是沟造出来到程序结束为止, 包括global对象,定义在namespace作用域之内的对象,以及各种作用域中声明为static的对象.
 * 编译单元, 就是产出单一目标文件的哪些源代码, 基本就是一个源代码文件加入其所含入头文件
 
-**c++对于定义在不同的编译单元中的non-local static对象初始化次序并没有明确的定义**, 使用一个小的设计去消除定义次序的问题, 可以将non-local static对象搬到自己的专属函数内, 函数返回一个reference指向该对象, 用户调用这个函数,而不是直接涉及这些对象.
+**C++对于定义在不同的编译单元中的non-local static对象初始化次序并没有明确的定义**, 使用一个小的设计去消除定义次序的问题, 可以将non-local static对象搬到自己的专属函数内, 函数返回一个reference指向该对象, 用户调用这个函数,而不是直接涉及这些对象.
 ```C++
     class FileSystem { ... }; // as before
     FileSystem& tfs() // this replaces the tfs object; it could be
@@ -201,7 +201,7 @@ ABEntry::ABEntry()
 ***
 ## 构造、析构和赋值操作
 
-### Item 5 了解c++默认编写并且调用了哪些函数
+### Item 5 了解C++默认编写并且调用了哪些函数
 如果自己没有声明，那么编译器就会为它声明下面几个函数：
 - 默认构造函数
 - copy 构造函数
@@ -321,7 +321,7 @@ class DBConn {
 };
 ```
 ### Item 9 不要在构造和析构函数中调用virtual函数
-**Java /C#在这方面和c++不同** derived的构造函数调用之前，base的构造函数一定会更早调用。这个时候，我们在derived class构造函数中调用virtual的函数，先构造base class期间virtual函数不会到derived class的那层，<font color=red>这时候构造期间的virtual函数就不是virtual函数（没有多态）</font>。就是在base class构造期间，对象的类型是base class 而不是derived class。<br>
+**Java /C#在这方面和C++不同** derived的构造函数调用之前，base的构造函数一定会更早调用。这个时候，我们在derived class构造函数中调用virtual的函数，先构造base class期间virtual函数不会到derived class的那层，<font color=red>这时候构造期间的virtual函数就不是virtual函数（没有多态）</font>。就是在base class构造期间，对象的类型是base class 而不是derived class。<br>
 同样的道理，derived class进入base析构函数中就成了一个base对象，C++的任何部分，virtual 函数、dynamic_cast等等也将它视为是一个base class。<br>
 避免此类问题的做法是:**确定构造函数和析构函数都没有调用virtual函数，并且它们调用的函数也服从这个约束。**<br>
 此外还有其他方案：在base class中的log函数改成non-virtual，然后要求derived class传递必要的信息给base class的构造函数，之后构造函数就可以安全的调用non-virtual版本的log函数同时在不同的derived class中Log不同。
@@ -589,7 +589,7 @@ std::shared_ptr<Investment> createInvestment();// return a smart pointer
 
 ### Item 20 用pass by reference to const 替换 By value
 
-在default的情况下c++以by value的方式传递对象到函数，而这些对象的副本由<font color=red>对象的拷贝构造函数产出，使得pass-by-value成为昂贵的操作</font>.<br>
+在default的情况下C++以by value的方式传递对象到函数，而这些对象的副本由<font color=red>对象的拷贝构造函数产出，使得pass-by-value成为昂贵的操作</font>.<br>
 ```C++
     class Person {
     public:
@@ -948,7 +948,7 @@ C++中的inheritance有非常多dirty的细节问题, 如virtual函数意味着"
 
 ### Item 32 确定你的public继承塑模出is-a关系
 C++ OOP中最重要的一条规则是: **pubic inheritance意味"is-a"的关系**, 如果derived class D 用 public形式继承了base class B, 就是类型D的对象同时也是一个类型B的对象,反之不成立, 如每个学生都是人,但是不意味每个人都是学生,base更加一般化,而derived是base的一种特殊形式.<br>
-这个论点只在public继承时候才成立,有时候直觉会误导人,比如:企鹅是一种鸟,一般的鸟可以飞,但是如果直接用直觉写出c++程序,企鹅继承鸟类飞的member function,就会出现事实性的错误,这时候我们应该用双继承体系:
+这个论点只在public继承时候才成立,有时候直觉会误导人,比如:企鹅是一种鸟,一般的鸟可以飞,但是如果直接用直觉写出C++程序,企鹅继承鸟类飞的member function,就会出现事实性的错误,这时候我们应该用双继承体系:
 ```C++
 class Bird {
     ... // no fly function is declared
@@ -1011,7 +1011,8 @@ public:
 class Derived: private Base {
 public:
     virtual void mf1() // forwarding function; implicitly
-    { Base::mf1(); } // inline — see Item 30. (For info on calling a pure virtual function, see Item 34.)
+    { Base::mf1(); } // inline — see Item 30. 
+                     // (For info on calling a pure virtual function, see Item 34.)
     ... 
 };
 ...
