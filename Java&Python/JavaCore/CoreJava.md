@@ -682,3 +682,20 @@ public enum Size
 * 实现通用的数组操作代码
 * 利用Method 对象，这个对象很像C+＋中的函数指针
 
+#### Class 类
+
+Java 运行时系统始终为对象维护一个被称为运行时的类型标识, 这个信息跟踪着每个对象所属的的类. 保存谢谢信息的类 被称为 Class, getClass 方法将会返回一个 Class 类型的实例, 该类最常见的方法是 getName:
+
+```Java
+Employee e;
+. . .
+Class cl = e.getClass();
+System.out.println(e.getClass().getName() + " " + e.getName());
+```
+
+如果类在一个包中, `getName()` 将同时包含包名, 如一个 String 对象 str, `str.getClass().getName()` 就会返回 `java.lang.String`. 还可以调用静态方法 `forName(className)` 获得类名对应的 Class 对象, 如 `forName("java.lang.String")` 将得到一个 Class 对象, 和 `str.getClass()` 得到的一样. 启动的时候递归加载需要的类, 会消耗很多时间, 一个技巧十分有用:
+
+1. 确保包含 main 方法的类没有显式地引用其他类
+2. 首先显示一个启动画面
+3. 通过调用 `Class.forNmae` 手工加载其他类
+
