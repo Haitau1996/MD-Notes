@@ -311,7 +311,7 @@ public class Employee {
 3. 设置类路径(class path)
 
 Javac 编译器总是能在当前的目录中查找文件, 但是 java 虚拟机仅在classpath 有 "." 才查看当前目录, 默认没有设置classpath 是没有问题的, 但是如果设置的 classpath 而 classpath 不包含 . 目录时, 程序依旧可以通过编译, 但是无法正常运行.
-``` bash
+```C
 // unix
 java -classpath /home/user/classdir:.:/home/user/archives/archive.jar MyProg
 // windows
@@ -405,7 +405,7 @@ staff 存的是一个 Employee 类型的对象, **不能直接调用 setBonus �
 
 首先回顾一下调用过程的详细描述:
 1. 编译器查看对象的声明类型和方法名. 调用 x.f(param) 且 x 声明为 C 类的对象. 编译器将意义列举所有 C 类中名为 f 的方法和其超类中访问属性为 public 且名为 f 的方法.
-2. 编译器根据调用方法提供的参数类型, 选择方法, 这个过程称为重载解析, 由于允许类型转换(int -> double, Manager -> Employee...), 这个过程可能很复杂<br>
+2. 编译器根据调用方法提供的参数类型, 选择方法, 这个过程称为重载解析, 由于允许类型转换(`int -> double`, `Manager -> Employee`...), 这个过程可能很复杂<br>
     如果子类定义了一个与超类签名相同的方法, 这个方法就可以覆盖超类的, 覆盖的时候一定要保证返回类型的兼容, 如:
     ```Java
     // in Employee class
@@ -622,6 +622,7 @@ ArrayList<Employee> result = (ArrayList<Employee>) employeeDB.find(query);
 var list = new ArrayList<Integer>(); // 方括号内不允许基本类型
 list.add(3);
 // 自动转换成, 这个过程成为自动打包(autoboxing) 
+// Integer.valueOf 为一个静态方法
 list.add(Integer.valueOf(3));
 int n = list.get(i);
 // 自动转换成下面: 这个过程称为自动拆包
@@ -630,3 +631,55 @@ int n = list.get(i).intValue();
 基本类型与他们的包装类型是不一样的, 比如两个 Integer a,b, 他们取 == 实际上是看两个变量是否指向同一个对象. 
 
 ### 参数数量可变的方法
+现在的版本提供了可以用可变的参数数鼠惆用的方法, 有点像 C++ 11 的新特性可变参数模板,具体类似于这种定义:
+
+```Java
+public class PrintStream
+{
+public PrintStream printf(String fmt, Object... args) { return format(fmt, args); }
+}
+```
+
+其中的 `...` 为 Java 代码的一部分, 表明可以接受任意数量的对象, 对于 printf 的实现者来说, `Obbject...` 参数类型和 `Object[]` 完全一样. 我们可以自定义可变类型参数的方法, 并且将参数指定为任意的类型, 甚至基本类型. 甚至可以将 Main 方法的输入参数这样设置, 下面是两个简单的实现:
+
+```Java
+public static double max(double... values)
+{
+    double largest = Double.NEGATIVE_INFINITY;
+    for (double v : values) if (v > largest) largest = v;
+    return largest;
+}
+public static void main(String... args){
+    for(var arg:args)
+        System.out.println( arg );
+}
+```
+
+### 枚举类型
+
+```Java
+public enum Size { SMALL, MEDIUM, LARGE, EXTRA_LARGE };
+```
+Java SE 5.0 后允许用户自定义枚举类型, 而定义的类型实际上是一个类, 它刚好有四个实例, 在这里尽量不要构建新对象, 比较两个枚举类型的值时, 永远不要调用 equals, 而是直接使用 `==` 就可以了. <br>
+如果需要的话, 可以往枚举类型中添加构造器, 方法 和 域, 下面就是一个简单的例子:
+
+```Java
+public enum Size
+{
+    // 总共四个实例, 每个实例在生成的时候调用构造器 Size
+    SMALL("S"), MEDIUM("M"), LARGE("L"), EXTRA_LARGE("XL");
+    private String abbreviation;
+    private Size(String abbreviation) { this.abbreviation = abbreviation; }
+    // getAbbr... 就是一个典型的方法
+    public String getAbbreviation() { return abbreviation; }
+}
+```
+
+### 反射
+
+能够分析类能力的程序被称为反射, 反射库 (reflection library) 提供了一个非常丰富且精心设计的工具集，以便编写能够动态操纵 Java 代码的程序, 反射机制的功能十分强大:
+* 在运行时分析类的能力
+* 在运行时查看对象
+* 实现通用的数组操作代码
+* 利用Method 对象，这个对象很像C+＋中的函数指针
+
