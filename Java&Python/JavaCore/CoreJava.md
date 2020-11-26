@@ -634,9 +634,8 @@ int n = list.get(i).intValue();
 现在的版本提供了可以用可变的参数数鼠惆用的方法, 有点像 C++ 11 的新特性可变参数模板,具体类似于这种定义:
 
 ```Java
-public class PrintStream
-{
-public PrintStream printf(String fmt, Object... args) { return format(fmt, args); }
+public class PrintStream{
+    public PrintStream printf(String fmt, Object... args) { return format(fmt, args); }
 }
 ```
 
