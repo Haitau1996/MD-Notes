@@ -33,7 +33,7 @@ vector<list<int> >;//在过去要留一个空格,否则会认为这个 >> 是一
 vector<list<int>>  // since c++ 11
 ```
 
-c++ 11 使用**nullptr** instead of 0 or NULL, 在之前,如果重载函数`f(int)`和`f(int*)`, 那么`f(NULL)`就无法确定调用哪个,出现二义性. nullptr它是一个`std::nullptr_t` : <br>
+c++ 11 使用 **nullptr** instead of 0 or NULL, 在之前,如果重载函数`f(int)`和`f(int*)`, 那么`f(NULL)`就无法确定调用哪个,出现二义性. nullptr它是一个`std::nullptr_t` : <br>
 ```c++
 typedef decltype(nullptr) nullptr_t;
 ```
@@ -137,8 +137,37 @@ std::vector<int, MyAlloc<T>> coll;
 假设容器没有迭代器,迭代器没有traits的情况呢(标准库不会出现这个问题).
 
 ## template template parameter
-//TODO: 
 
+```C++
+template <typename T, // 元素的类型
+          template<class>
+          class Container>
+class XCLs{
+private:
+    Container<T> c;    // 只接受唯一参数
+public:
+    XCLs(){
+        for(long i=0; i < SIZE; ++i)
+            c.insert(c.end(),T());
+        
+        Container<T> c1(c);
+        Container<T> c2(std::move(c));
+        c1.swap(c2);
+    }
+} // 编译通过
+XCLs<MyString, vector> cl; // ERROR: why?
+// 考察 vector 的构造函数, 其实是需要两个构造参数 _Tp 和 _Alloc
+// 在别的情况下有默认值, 但是这里是模板, _Alloc 的默认值是依赖 _Tp 的
+// 第二参数是以第一参数为参数的, 在 template 中无法推导出
+template<typename _Tp, typename _Alloc=std::allocator<_Tp> >
+class vector : proctected _Vector_base<_Tp, _Alloc>{...}
+// 解决办法:
+template<typename T>
+using Vec = vector<T, allocator<T> >; // 不能在function body 中声明
+XCLs<MyString, Vec> c1; // OK
+```
+编译器编译模板的时候只是检查基本语法, 实际上给模板传入参数的时候能否符合要求是不确定的
+//todo:v12
 ## decltype
 使用这个新的关键字, 可以让编译器找出表达式的type,这更像是我们对于gcc中非标准的`typeof`的需求, 在c++中有`typeid`, 但不好用, decltype的用法如下:
 1. 用于声明return type, 允许后置返回类型,和lambdas声明return type很像

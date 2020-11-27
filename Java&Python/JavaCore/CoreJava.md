@@ -699,3 +699,79 @@ System.out.println(e.getClass().getName() + " " + e.getName());
 2. 首先显示一个启动画面
 3. 通过调用 `Class.forNmae` 手工加载其他类
 
+如果 T 是任意的 Java 类型, T.class 将代表匹配的 Class 对象, 例如 
+
+```Java
+Class cl1 = Data.class ;  // if you import java.util.*
+Class cl2 = int.class; // int 也可以这样做
+```
+
+从 Java SE 5.0 开始, Class 被参数化, Class<Employee> 的类型就是 `Employee.class`. 此外, Java 虚拟机为每个类型管理一个 Class 对象, 可以用 == 实现两个类对象的比较操作. 还提供一个很有用的方法, newInstance() 快速创建一个类的实例 如:
+```Java
+if (e.getClass() == Employee.class) ...
+e.getClass().newInstance() ; // 调用默认构造函数, 得到一个与 e 同类型的实例
+// 可以配合 forName 使用
+String s = "java.util.Random";
+Object m = Class.forName(s).newInstance(); 
+``` 
+
+#### 捕获异常
+
+程序的运行过程中发生错误的时候, 就会 "抛出异常", 如果没有提供异常处理器, 程序就会终止. 将可能抛出已检查异常的一个或者多个方法的调用放在 try 语句块中, 然后再 catch 语句中提供处理代码:
+```java
+    try{  
+         Class cl = Class.forName(className);
+    }
+    catch(Exception e){
+        e.printStackTrace();
+    }
+```
+
+#### 利用反射分析类的能力
+
+<font color = red>在 java.lang.reflect 中有三个类 Field , Method 和 Constructor 分别描述类的域 \ 方法和构造器</font>, 他们都有一个叫做 getName 的方法，用来返回项目的名称。Field 类有一个 getType 方法，用来返回描述域所属类型的 Class 对象。Method 和 Constructor 类有能够报告参数类型的方法， Method 类还有一个可以报告返回类型的方法。这三个类还有一个叫做 getModifiers 的方法，它将返回一个整型数值，用不同的位升关描述public 和 static 这样的修饰符使用状况。我们需要做的全部工作就是调用Modifier 类的相应方法，并对返回的整型数值进行分析. <br>
+值得注意的是, 他们可以分析 Java 解释器能够加载的任何类，而不仅仅是编译程序时可以使用的类。之后还将使用这个程序查看Java 编译器自动生成的内部类。<br>
+
+![](figure/Core5.1.png)<br>
+![](figure/Core5.2.png)<br>
+![](figure/Core5.3.png)<br>
+
+#### 在运行时使用反射分析对象
+
+知道想要查看域名和类型, 查看指定的域是很容易, **而利用反射机制可以查看在编译时候还不清楚的对象域**.
+// TODO: Page 191 ~ 203
+
+## Chap 06: 接口与内部类
+接口技术, 主要用于描述类有怎样的功能, 而并不给出每个功能的具体实现. 
+
+### 接口
+在Java 语言中, 接口不是类, 而是对类需求的一种描述, 实现接口的类要遵从接口描述的同一格式进行定义, 接口的形式如下:
+```Java
+public interface Comparable {
+    int compareTo(Object other); // 任何实现 Comparable 接口的类都需要有这个方法, 参数为 Object, 返回值为int
+}
+// Since Java SE 5.0
+public interface Comparable<T> {
+    int compareTo(T other); // parameter has type T 
+}
+```
+接口中绝不能含有实例域, 也不能在接口中实现方法. 在接口中的所有方法都自动是 _public_, 不过在实现接口的时候必须把方法声明为 _public_. 具体接口的实现的例子如下:
+
+```Java
+// Before Java EE 5.0 , 需要使用转型实现
+public int compareTo(Object otherObject) { 
+    Employee other = (Employee) otherObject; 
+    return Double.compare(salary, other.salary); 
+}
+// 将 Object 使用转型不太顺眼, 引入了泛型参数之后就消失了
+class Employee implements Comparable<Employee> {
+    public int compareTo(Employee other) {
+    return Double.compare(salary, other.salary);
+    }
+    . . .
+}
+```
+
+Java 是一种强类型语言, 调用方法的时候编译器会检查这个方法是否存在. 
+
+#### 接口的特性
