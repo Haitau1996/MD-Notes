@@ -68,3 +68,7 @@ git log 的其他常用选项列举如下:<br>
 `git tag -l "v1.8.7=5" ` 按照某个特定的模式搜索标签<br>
 `git tag -a v1.4 -m "my version 1.4"` 只要用 _-a_ 就可以轻易添加标签<br>
 `git show v1.4` 查看标签数据以及对应的标签<br>
+默认情况下 `git push` 不会将标签传输到远程服务器上, 在创立了标签之后, 不明确地将标签推送到远程服务器上:<br>
+`git git push origin v1.5`
+
+## Chap 3: 分支机制
