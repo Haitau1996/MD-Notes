@@ -519,7 +519,7 @@ changeFontSize(FRAII.get(), newFontSize); // 提供转换函数
 FontHandle f2 = FRAII; // 隐式类型转换, Font 类的对象直接转为 FontHandle 
 FontHandle f2 = FRAII.get();
 ```
-具体在使用的时候是添加显式的转换函数还是提供隐式类型转换 **取决于 _RAII class_ 被设计执行的工作, 以及其使用情况, 一般 get 是比较受欢迎的, 但是如果隐式类型转换带来的 "自然用法" 也会引发天秤的倾斜**.
+具体在使用的时候是添加显式的转换函数还是提供隐式类型转换 **取决于 _RAII class_ 被设计执行的工作, 以及其使用情况, 一般 get 是比较受欢迎的, 但是如果隐式类型转换带来的 "自然用法" 也会引发天秤的倾斜**. RAII classes 并不是为了封装某物而存在的, 他们是为了确保某一类特殊的行为,<font color=red> 资源释放, 会发生</font>.
 ### Item 16 成对使用new和delete时采取相同的形式
 
 new的时候，两件事情发生：内存被分配出来，然后对这片内存做一个或者多个的构造函数。同样的，delete的时候，先对此内存做一个或者多个析构函数，再释放内存。最大的问题在于：**即将删除的内存究竟有多少个对象**，数组内存通常还包括数组大小的记录，因此我们需要清楚删除的是一个对象还是一个数组。<br>
@@ -533,7 +533,25 @@ delete [] pal; // fine
 ```
 
 ### Item 17 以独立语句将newed对象置入智能指针
-//TODO: 这部分已经懂了, 到工位再添加代码
+
+考虑有下面的函数, 接受一个 Widget 类型的只能指针 和一个 int 作为输入参数, 实际调用时候, 如果传入的是裸指针,  `shared_ptr` 构造函数是一个 `explicit` , 无法进行隐式类型转换, 于是会报错,如果使用的是强制类型转换, 依旧可能发生资源泄露:
+
+```C++
+int priority();
+void processWidget(std::shared_ptr<Widget> pw, int priority);
+processWidget(new Widget, priority()); // ERROR
+processWidget(std::shared_ptr<Widget>(new Widget), priority());
+```
+在 `processWidget` 被调用前, 需要完成三件事, 而他们的顺序确实未定义的(但是有一个限制就是 new 了 widget 之后才能构造只能指针):
+1. 调用 _priority()_
+2. 执行 _new Widget_
+3. 调用 `std::shared_ptr` 构造函数
+
+如果调用 priority 介于两者之间, 并且抛出异常的话, 那么 `Widget` 就发生了资源泄露, 于是我们要**将对象放入智能指针这个事情放在独立语句中, 就不会收到异常的干扰**:
+```C++
+std::shared_ptr<Widget> pw(new Widget);
+processWidget(pw, priority());
+```
 
 ***
 
