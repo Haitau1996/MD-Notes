@@ -699,10 +699,42 @@ if (operator==(operator*(a, b), operator*(c, d)))//等价形式
 
 ### Item 24 若所有参数都需要类型转换, 请为此采用non-member 函数
 
-class支持隐式类型转换是非常糟糕的主义, 一个常见的例外是建立 **数值类型** 时候.
+class支持隐式类型转换是非常糟糕的主义, 一个常见的例外是建立 **数值类型** 时候, 往往需要类型转换系统:
 
-//todo: item 24 
+```C++
+class Rational {
+public:
+    Rational(int numerator = 0,    // ctor is deliberately not explicit;
+             int denominator = 1); // 允许隐式类型转换
+    int numerator() const; // accessors for numerator and
+    int denominator() const; // denominator — see Item22
+private:
+    ...
+};
+```
+但是在这种情况下在 class 内部实现 operator 时候往往会带来问题, 在下面的情况下, 一个问题就是乘法不再满足交换律:
 
+```C++
+class Rational {
+public:
+    ...
+    const Rational operator*(const Rational& rhs) const;
+};
+Rational oneHalf(1, 2);
+result = oneHalf * 2; // fine, 相当于 oneHalf.operator*(2);
+result = 2 * oneHalf; // error!, 相当于 2.operator*(oneHalf)
+                      // int 的 operator * 不接受一个作为 Rational 的参数
+```
+问题就出在第二句中 2作为 `this` 本身, 不是隐式类型转换的合格参与者. 此外, 编译器也会试图在全局查找一个 non-member 的 operator*, `result = operator*(2, oneHalf)`, 再这里没有定义, 于是最终无法通过编译. 此外, 如果 Rational 的构造函数y有 `explicit` 声明, 连上面那个 OK 的表达式也无法通过编译. <br>
+可行之道就是, <font color=red> 让 _operator*_ 称为一个 non-member 的函数, 同时允许编译器在每个实参身上执行隐式类型转换</font>, 同时不需要将这个函数声明为 friend, member 反面是 non-member, 不是 friend, 可以避免 friend 就尽量避免:
+
+```C++
+const Rational operator*(const Rational& lhs, const Rational& rhs) {
+    return Rational(lhs.numerator() * rhs.numerator(),
+    lhs.denominator() * rhs.denominator());
+}
+```
+这个条款意味着, 当为某个函数的所有参数 (**包括 this 指针所指向的隐喻参数**) 进行类型转换的时候, 这个函数必须是 non-member.
 ### Item 25 考虑写出一个不抛异常的swap函数
 //todo: Item 25
 
@@ -784,7 +816,8 @@ public:
 class SpecialWindow: public Window {
 public:
     virtual void onResize() {
-    Window::onResize(); // call Window::onResize on *this(隐藏的*this传入，用它调用Base的onResiize)
+    Window::onResize(); // call Window::onResize on *this
+    //(隐藏的*this传入，用它调用Base的onResiize)
     ...  
     }
     ...
