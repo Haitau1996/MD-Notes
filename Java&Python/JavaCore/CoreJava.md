@@ -840,3 +840,28 @@ class Employee implements Cloneable{
 我们必须非常谨慎地实现子类的克隆, Manager 中可能存在一些需要深拷贝的类, 或者包含一些类没有实现 Cloneable 接口的实例域, 没有人保证子类的 clone 一定正确. 
 
 ### 接口与回调
+回调 (callback) 是一种常见的程序设计模式。在这种模式中，可以指出某个特定事件发生时应该采取的动作。 在Java.swing 包中有一个 Timer 类，可以使用它在到达给定的时间间隔时发出通告。同时, Java 采用的是面向对象的方法, 将某个类的对象传递给定时器, 然后定时器调用该对象的方法. 由于对象可以携带一些附加的信息，所以传递一个对象比传递一个函数要灵活得多, 定时器需要知道自己调用的是哪个方法, 要求传递的对象实现某个接口:
+
+```Java
+public interface ActionListener{
+    void actionPerformed(ActionEvent event);
+}
+class TimePrinter implements ActionListener{
+    public void actionPerformed(ActionEvent event){
+        System.out.println("At the tone, the time is " + new Date());
+        Toolkit.getDefaultToolkit().beep();
+    }
+}
+```
+
+方法有一个 ActionEvent 参数, 提供了事件的相关信息. 
+
+### 内部类
+
+内部类 (inner class) 是定义在另一个类中的类, 引入的原因主要有三个:
+1. 内部类方法可以访问该类定义所在的作用域中的数据，包括私有的数据。
+2. 内部类可以对同一个包中的其他类隐藏起来。
+3. 当想要定义一个回调函数且不想编写大量代码时，使用匿名 (anonymous ) 内部类比较
+便捷。
+
+#### 使用内部类访问对象状态
