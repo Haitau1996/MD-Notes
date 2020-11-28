@@ -775,3 +775,68 @@ class Employee implements Comparable<Employee> {
 Java 是一种强类型语言, 调用方法的时候编译器会检查这个方法是否存在. 
 
 #### 接口的特性
+
+接口不是类, 尤其是 <font color=red>不能使用 _new_ 操作符实例化一个接口, 但是可以声明接口的变量, 可以使用 Instance 查看一个类是否实现了某些接口, 也可以被扩展</font>:
+
+```Java
+x = new Comparable(. . .); // ERROR
+Comparable x; // OK
+x = new Employee(. . .); // OK provided Employee implements Comparable
+if (anObject instanceof Comparable) { ... }
+public interface Moveable{     // 一个带有 move 方法的类
+    void move(double x, double y);
+}
+public interface Powered extends Moveable{
+    double milesPerGallon();
+}
+```
+
+此外需要注意的是, 接口中不能包含实例域(非 static 的域)或者静态方法, 但是却可以包含常量( 接口中的方法默认是 public, 同时接口中的域被自动设置为 `public static final`):
+
+``` Java
+public interface Powered extends Moveable{
+    double milesPerGallon(); // 一个 public 的非静态方法
+    double SPEED_LIMIT = 95; // a public static final constant
+}
+```
+
+尽管 Java 中不允许多继承, 但是继承一个超类的同时可以实现多个接口, 这为语言带了了很大的灵活性, 例如 语言中有一个非常重要的内置接口 Cloneable, 实现该接口就可以调用 Object 类的 clone 方法创建对象的一个拷贝.<br>
+C++ 语言可以有多继承, 但是带来的一些 虚基类 / 控制规则 / 横向指针类型转换 等复杂特性, 很少有程序员使用多继承, 更多的是使用混合的风格, 一个主要的基类描述父类对象, 其他的基类扮演辅助的角色, 相当于现在 Java 的风格. <br>
+可以为接口方法提供一个默认实现,必须用 default 修饰符标记这样一个方法:
+
+```Java
+public interface Comparable<T>{
+    default int compareTo(T other) { return 0; }
+    // By default, all elements are the same
+}
+```
+
+### 对象克隆
+拷贝一个对象和对象克隆有着本质的区别, 前者是两个引用变量引用同一个对象, 而后者默认的实现也是潜拷贝, 如果原始对象与潜克隆对象共享的子对象是不可变的(如String), 这样不会有任何问题. 但是更常见的情况可能是子对象可变, 这时候我们需要实现自己的版本:<br>
+![](figure/Core6.1.png)<br>
+需要注意的是, Object 中的 clone 方法是 proctected的, 子类只能调用 clone 的方法克隆它自己, 为此我们需要重新定义 clone 方法, 并且将它声明为 public, 这样才能让所有的方法克隆对象.  值得注意的是, Cloneable 接口的出现并没有指定 clone 方法, 这个方法是从 Object 类继承而来的. 如果一个对象需要克隆, 但是没有实现 Cloneable 接口, 就会产生一个已检出的异常. 在 clone 默认实现已经满足需求时依旧需要实现这个接口, 并且调用 `super.clone()`, 不满足需求时,为了实现深拷贝, 我们必须克隆所有的可变实例域:
+
+```Java
+class Employee implements Cloneable{
+// raise visibility level to public, change return type
+    public Employee clone() throws CloneNotSupportedException{
+      return (Employee) super.clone();
+    }
+    . . .
+}
+// deep copy
+class Employee implements Cloneable{
+    . . .
+    public Employee clone() throws CloneNotSupportedException{
+        // call Object.clone()
+        Employee cloned = (Employee) super.clone();
+        // clone mutable fields
+        cloned.hireDay = (Date) hireDay.clone();
+        return cloned;
+    }
+}
+```
+
+我们必须非常谨慎地实现子类的克隆, Manager 中可能存在一些需要深拷贝的类, 或者包含一些类没有实现 Cloneable 接口的实例域, 没有人保证子类的 clone 一定正确. 
+
+### 接口与回调
