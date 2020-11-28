@@ -407,7 +407,17 @@ Widget& Widget::operator=(const Widget& rhs){
 
 当我们自己声明copying函数，实现的代码几乎必然出错编译器并不会告诉你。一个典型的例子是，给一个class写好copying函数之后，随着需求的变化**加入了新的data member**，但是copying 函数没有随之变化。<br>
 更极端的情况是，随着该类被继承，我们在继承类的copying函数中更加难以发现base class的data member没有被拷贝的情况。此外，我们必须小心地复制base class成分，而这些成分往往是private的，无法直接访问，因此我们要**让derived class的copying函数调用相应的base class copying 函数**。
-//todo: add code here
+```C++
+PriorityCustomer::PriorityCustomer(const PriorityCustomer& rhs)
+: Customer(rhs), // invoke base class copy ctor
+priority(rhs.priority){}
+PriorityCustomer&
+PriorityCustomer::operator=(const PriorityCustomer& rhs){
+    Customer::operator=(rhs); // assign base class parts
+    priority = rhs.priority;
+    return *this;
+}
+```
 copy构造函数和copy assignment operator有相近的代码，但是**不应该让两者相互调用**,更理想的方式是写一个private的init函数，然后在两个copying函数中都调用它。
 ***
 
