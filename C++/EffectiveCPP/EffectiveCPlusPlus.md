@@ -154,11 +154,13 @@ Point p;// 数据成员x,y没有被初始化
 一般而言，C part of C++初始化可能导致运行期成本，不保证发生初始化，non-C parts of C++，规则就相反。内置类型在使用之前将它初始化，对于内置类型之外的类型，初始化<font color=red>由构造函数负责，确保构造函数将对象的每一个成员都初始化。</font>构造函数比较好的写法是member initialization list替换赋值动作.<br>
 目前我们奉行的规则是: **确保每一个构造函数都将对象的每一个成员初始化** , 这需要我们不要混淆赋值和初始化,他们之间的区别在于, 赋值是在对象创建之后给他们的值,而初始化是在对象创建的时候给予初值:<br>
 ```C++
-ABEntry::ABEntry(const std::string& name, const std::string& address,const std::list<PhoneNumber>& phones)
+ABEntry::ABEntry(const std::string& name, 
+                 const std::string& address,
+                 const std::list<PhoneNumber>& phones)
 : theName(name),
-theAddress(address), // these are now all initializations
-thePhones(phones),
-numTimesConsulted(0)
+  theAddress(address), // these are now all initializations
+  thePhones(phones),
+  numTimesConsulted(0)
 {} // the ctor body is now empty
 ```
 上面的做法被称为member initialization list, 对大多数类型而言, 使用它比调用default构造函数再调用copy assignment操作符 要更加高效, 甚至想要default构造成员变量, 都可以使用成员初始列, 只要指定nothing为初始化实参,我们要规定总是在初值列中列出所有的成员变量, 以免需要记住哪些成员变量可以无需初值.
@@ -309,9 +311,10 @@ class DBConn {
                 try { // close the connection
                 db.close(); // if the client didn’t
                 }
-                catch (...) { // if closing fails,
-                make log entry that call to close failed; // note that and
-                ... // terminate or swallow
+                catch (...) { 
+                // if closing fails, make log entry that call to close failed; 
+                // note that and terminate or swallow
+                ... 
                 }
             }
         }
@@ -344,7 +347,7 @@ class Widget{
     ...
 };
 ```
-对于其他赋值相关的运算，+=和-=之类，也建议遵循这个规则。
+对于其他赋值相关的运算，`+=` 和 `-=` 之类，也建议遵循这个规则。
 
 ### Item 11 在operator=中处理“自我赋值”
 自我赋值就是对象自己给自己赋值,大多数时候自我赋值并不是那么明显：
