@@ -996,7 +996,78 @@ public:
 即便如此, upperLeft还可能导致dangling handles的问题, 这种Handles所指向的对象不存在,如函数调用获得一个新的暂时的Rectangle对象,upperLeft作用在身上产生一个reference指向temp内部的一个部分,这就是handles比对象本身寿命更长的问题.
 
 ### Item 29 为异常安全而努力是值得的
-    //TODO: Item 29 
+
+如果有一个用来表现夹带背景的 GUI 菜单,希望用于多线程环境(有互斥器作为并发控制):
+
+```C++
+class PrettyMenu {
+public:
+    ...
+    void changeBackground(std::istream& imgSrc); // change background image
+    ...
+private:
+    Mutex mutex; // mutex for this object
+    Image *bgImage; // current background image
+    int imageChanges; // # of times image has been changed
+};
+void PrettyMenu::changeBackground(std::istream& imgSrc){
+    lock(&mutex); // acquire mutex (as in Item 14)
+    delete bgImage; // get rid of old background
+    ++imageChanges; // update image change count
+    bgImage = new Image(imgSrc); // install new background
+    unlock(&mutex); // release mutex
+}
+```
+从 异常安全的角度, 这个函数是十分差的, 在异常被抛出的时候, 没有异常安全的函数会做到:
+* **不泄露任何资源**: new Image 抛出异常后, 导致 unlock 无法执行
+* **不允许数据被破坏**: new Image 抛出异常后, bgImage 指向一个已经被删除的对象, imageChanges 也被累加
+
+如果使用对象管理资源, 那么可以解决资源泄露的问题:
+
+```C++
+void PrettyMenu::changeBackground(std::istream& imgSrc){
+    Lock ml(&mutex); // 对象中使用智能指针存储这个对象
+    delete bgImage;
+    ++imageChanges;
+    bgImage = new Image(imgSrc);
+}
+```
+
+异常安全函数提供以下三个承诺之一:
+1. **基本承诺**: 如果异常被抛出, 程序内所有的事务仍然保持在有效的状态下. 
+2. **强烈保证**: 如果异常被抛出, 程序的状态不变(如函数调用失败,程序回到函数调用之前的状态)
+3. **不抛掷保证**: 承诺绝不抛出异常, 因为他们总是能够完成原先承诺的功能. `int doSomething() throw(); ` 带着空白的异常明细意味着如果 doSomething 抛出异常, 将是严重的错误. 
+
+对于大部分的函数而言, 往往选择落在 基本承诺 和 强烈保证之间, 例如我们在上面, 可以重新排列 changeBackground 内的语句次序, 
+```C++
+class PrettyMenu {
+    ...
+    std::tr1::shared_ptr<Image> bgImage;
+    ...
+};
+void PrettyMenu::changeBackground(std::istream& imgSrc){
+    Lock ml(&mutex);
+    bgImage.reset(new Image(imgSrc)); // 在语句内部用 资源管理的方式实现,无需手动删除
+                                      // 如果 new 失败, 则不会删除旧对象 也不会有空指针
+    ++imageChanges;                 // 成功之后再累加
+}
+```
+这个多层只I工基本的异常安全保证, new 失败后 input 的读取记号被移走, 这对其余部分是一种可见的状态改变, 有种被称为 copy and swap 的 策略, **为打算修改的对象原件做出一个副本, 在部分上做一切修改, 动作不抛出任何异常之后, 将修改过的副本和原对象 做一个不抛出异常的置换**:
+
+```C++
+void PrettyMenu::changeBackground(std::istream& imgSrc){
+    using std::swap; // see Item25
+    Lock ml(&mutex); // acquire the mutex
+    std::tr1::shared_ptr<PMImpl> // copy obj. data
+    pNew(new PMImpl(*pImpl));
+    pNew->bgImage.reset(new Image(imgSrc)); // modify the copy
+    ++pNew->imageChanges;
+    swap(pImpl, pNew); // swap the new data into place
+    // release the mutex
+} 
+```
+即便如此, 函数依旧不保证有强烈的异常安全性, 问题出现在 side-effect, 如果函数只操作局部性状态, 相对容易提供强烈的保证, 但是对非局部性数据有连带影响的时候, 提供强烈保证就困难很多. 这意味着必须为每一个即将改动的对象做出一份副本, 那可能耗用无法供应的空间和时间<br>
+如果系统内有一个函数不具备异常安全性, 整个系统就不具备异常安全性, 因为调用哪个函数可能导致资源泄露或者数据结构败坏(如一个 sorted array 实际上不再处于 sorted 状态).
 
 ### Item 30 透彻了解inlining的里里外外
 不恰当的inline造成代码膨胀会导致额外的换页行为,降低高速缓存装置的击中率,以及伴随而来的效率损失,它只是对编译器的一个申请,并不是强制命令.inlining在大多数程序中都是编译时行为,某些环境可以在链接时候inlining,少量建置环境如.NET CLI的托管环境可以在运行期完成inlining. 大多数编译器拒绝将过于复杂的函数inlining, 并且对所有virtual函数的调用也都会使得inlining落空.<br>
@@ -1029,21 +1100,21 @@ Derived::Derived() {// conceptual implementation of “empty” Derived ctor
     Base::Base(); // initialize Base part
     try { dm1.std::string::string(); } // try to construct dm1
     catch (...) { // if it throws,
-    Base::~Base(); // destroy base class part and
-    throw; // propagate the exception
+        Base::~Base(); // destroy base class part and
+        throw; // propagate the exception
     }
     try { dm2.std::string::string(); } // try to construct dm2
     catch(...) { // if it throws,
-    dm1.std::string::~string(); // destroy dm1,
-    Base::~Base(); // destroy base class part, and
-    throw; // propagate the exception
+        dm1.std::string::~string(); // destroy dm1,
+        Base::~Base(); // destroy base class part, and
+        throw; // propagate the exception
     }
     try { dm3.std::string::string(); } // construct dm3
     catch(...) { // if it throws,
-    dm2.std::string::~string(); // destroy dm2,
-    dm1.std::string::~string(); // destroy dm1,
-    Base::~Base(); // destroy base class part, and
-    throw; // propagate the exception
+        dm2.std::string::~string(); // destroy dm2,
+        dm1.std::string::~string(); // destroy dm1,
+        Base::~Base(); // destroy base class part, and
+        throw; // propagate the exception
     }
 }
 ```
