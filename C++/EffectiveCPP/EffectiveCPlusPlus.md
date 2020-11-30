@@ -738,8 +738,78 @@ const Rational operator*(const Rational& lhs, const Rational& rhs) {
 }
 ```
 这个条款意味着, 当为某个函数的所有参数 (**包括 this 指针所指向的隐喻参数**) 进行类型转换的时候, 这个函数必须是 non-member.
-### Item 25 考虑写出一个不抛异常的swap函数
-//todo: Item 25
+### Item 25 考虑写出一个不抛异常的 _swap_ 函数
+
+swap 是一个有趣的函数, 原来是 STL 的一部分, 后来成为异常安全性编程的脊柱, 是用来处理自我赋值可能性的常见机制, 典型的实现十分简单: <br>
+
+```C++
+namespace std {
+    template<typename T> // typical implementation of std::swap;
+    void swap(T& a, T& b){ // swaps a’s and b’s values
+        T temp(a);
+        a = b;
+        b = temp;
+    }
+}
+```
+但是这种默认的实现很大程度是没有必要的, 特别是那种 pointer to implementation 手法的class, 置换两个类似对象的值, 唯一需要做的就是置换其 pImpl 指针, 但是缺省的 swap 算法并不知道这点, 实践这个思路的做法是 swap 对 Widget 特化:
+
+```C++
+namespace std {
+template<> // this is a specialized version of std::swap for when T is Widget
+void swap<Widget>(Widget& a, Widget& b) {
+    swap(a.pImpl, b.pImpl); // to swap Widgets, swap their pImpl pointers; this won’t compile
+    } 
+} 
+```
+这个函数试图访问 a 和 b 内部 private 的数据, 我们可以将这个特化版本的 swap 声明为 friend, 但是更好的实现还是将它声明为 Widget 的一个 public 成员函数, 然后将 std::swap 特化, 令他调用该成员函数:
+
+```C++
+class Widget { 
+public:
+    void swap(Widget& other){
+        using std::swap;
+        swap(pImpl, other.pImpl);
+    }
+    ...
+}
+namespace std {
+    template<>
+    void swap<Widget>(Widget& a,Widget& b){
+        a.swap(b);
+    }
+}
+```
+然而, 如果 Widget 和 WidgetImpl 都是 class template, 在特化 std::swap 时候就会有问题, C++ 只对 class Template 允许偏特化, 在 function template 上做偏特是行不通的. 打算偏特化一个 function 的时候, 通常的做法是为它添加一个重载的版本,同时为了避免污染 std 命名空间:
+
+```C++
+namespace WidgetStuff {
+    ...                   // templatized WidgetImpl, etc.
+    template<typename T>  // as before, including the swap
+    class Widget { ... }; // member function
+    template<typename T> // non-member swap function;
+    void swap(Widget<T>& a,  Widget<T>& b){
+        a.swap(b);
+    }
+}
+```
+如果想要 class 专属版本在更多语境下被调用, 需要同时在 class 的命名空间内写一个 non-menber 的版本以及一个 std::swap 的特化版本.  我们最想要调用哪个版本的 swap 版本? 希望的是调用 T 专属的版本, 并在该版本不存在的情况下调用 std 内的一般化版本:
+
+```C++
+template<typename T>
+void doSomething(T& obj1, T& obj2){
+    using std::swap; // make std::swap available in this function
+    ...
+    swap(obj1, obj2); // call the best swap for objects of type T
+    ...
+}
+```
+C++ 名称查找法则确保找到 global 作用域或者 T 所在 namespace 中的任何 T 专属的 swap. 但是如果是使用 `std::swap(Obj1, Obj2)` , 强迫编译器只认 std 内的swap, 因此不在可能调用一个定义于别的地方比较适合的 T 专属版本. 
+1. 提供一个 public swap 成员函数, 让它高效地置换两个对象值(<font color=red> 这个函数绝不该抛出异常</font>)
+2. 在 class 或者 template 所在的命名空间中加入 一个 non-member 的 swap, 内部实现调用上面的 swap
+3. 如果编写的是一个 class 而不是 class template, 为你的 class 特化 std::swap
+
+此外, 如果调用 swap , 前面确定包含一个 using 声明式, 在函数内曝光可用, 然后不加任何 namespace 修饰符, 直接赤裸地使用 swap. 
 
 ## Implementations
 
@@ -747,15 +817,14 @@ const Rational operator*(const Rational& lhs, const Rational& rhs) {
 
 在很多情况下,define一个有构造析构函数的变量, 程序到达时候必须承受沟造成本,离开作用域时候有析构成本.很多时候我们可能定义一个没有使用的变量,如:
 ```C++
-std::string encryptPassword(const std::string& password)
-{
-using namespace std;
-string encrypted;
-if (password.length() < MinimumPasswordLength) {
-throw logic_error("Password is too short");
-}
-... // do whatever is necessary to place an encrypted version of password in encrypted
-return encrypted;
+std::string encryptPassword(const std::string& password){
+    using namespace std;
+    string encrypted;
+    if (password.length() < MinimumPasswordLength) {
+    throw logic_error("Password is too short");
+    }
+    ... // do whatever is necessary to place an encrypted version of password in encrypted
+    return encrypted;
 }
 ```
 在这种情况下, 如果抛出异常,那么string就没有被使用,但是依旧 **付出构造析构成本**, 所以应该延后`encrypted`的定义式. 此外通过default构造函数构造对象然后赋值的效率低于直接在构造时候指定初值,一个更好的做法是跳过无意义的default构造过程:
@@ -1236,7 +1305,7 @@ private:
 ```
 这时候，onTick同样需要在private中。此外，我们可以用复合的方式取代这种做法，
 ### Item 40 明智而审慎地使用多重继承
-当设计框架涉及多重继承的时候,程序可能从一个以上的base class _继承相同的名称_(如函数,typedef),会导致歧义,即使是private的域将其中之一隐藏无法调用,解决歧义的做法是 _指定_ 从哪个base class 调用`mp.BorrowableItem::checkOut()`, 涉及到钻石继承后, 事情变得更加不可控:
+当设计框架涉及多重继承的时候,程序可能从一个以上的base class _继承相同的名称_(如函数,typedef),会导致歧义,即使是private的域将其中之一隐藏无法调用,解决歧义的做法是 _指定_ 从哪个base class 调用`mp.BorrowableItem::checkOut()`, 涉及到钻石继承后, 事情变得更加不可控:<br>
 ![diamond](figure/40.1.png)<br>
 某个base class和某个derived之间有多条相通的路线,base class的内部成员是否需要经由每一条路径被复制? 
 - 默认的做法是都执行复制,对象内有多份成员变量
@@ -1282,7 +1351,7 @@ void doProcessing(T& w) {
 
 ## 定制new和delete
 
-多线程环境下的内存管理, 受到单线程系统不曾遇到过的挑战, heap 是一个可被改动的全局资源, 在多线程系统充斥着疯狂访问这类资源的**race condition** ,如果没有适当的同步控制,一旦使用无锁算法或者精心防止并发访问时,  调用内存的例程很容易导致heap的数据结构内容损坏.此外, STL中使用的内存**是由容器所拥有的分配器对象(allocator objects)管理**, 而不是直接由new和delete管理 .
+多线程环境下的内存管理, 受到单线程系统不曾遇到过的挑战, heap 是一个可被改动的全局资源, 在多线程系统充斥着疯狂访问这类资源的**race condition** ,如果没有适当的同步控制,一旦使用无锁算法或者精心防止并发访问时,  调用内存的例程很容易导致heap的数据结构内容损坏.此外, STL中使用的内存**是由容器所拥有的分配器对象(allocator objects)管理**, 而不是直接由new和delete管理.
 
 
 ### Item 49 了解new-handler的行为
@@ -1310,8 +1379,6 @@ int main(){
 * 卸除handler, 将null指针传给set_new_handler
 * 抛出bad_alloc异常, 不被operator new捕捉, 从而能传到内存索引处
 * 不返回
-
-
 
 ***
 ## 杂项讨论
