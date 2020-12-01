@@ -34,7 +34,7 @@ class ConstEstimate{
 // in the implementation file
 const double ConstEstimate::FudgeFactor = 1.35;
 ```
-还有一种情况，就是在class编译期间需要一个常量，但是编译器不允许static整型完成in class初值，使用**enum hack**的补偿做法：
+还有一种情况，就是在class编译期间需要一个常量，但是编译器不允许static整型完成in class初值，使用 **enum hack** 的补偿做法：
 ```C++
 class GamePlayer{
     private:
