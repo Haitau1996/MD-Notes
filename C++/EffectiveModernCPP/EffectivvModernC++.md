@@ -327,7 +327,7 @@ w1 = w2;	// an assignment; calls copy operator=
     std::atomic<int> ai3 = 0;	// error!
     ```
 
-同时, 一致初始化可以防止built-in types隐式narrowing conversions, 而等号不能做此保证.<br>
+同时, **一致初始化可以防止 built-in types 隐式 narrowing conversions**, 而等号不能做此保证.<br>
 过去的C++是要求 _vexing parse_:anything that can be parsed as a declaration must be interpreted as one. 而在调用默认构造函数的时候最可能出现这个问题,现在这个问题被一致初始化解决:
 ```C++
 Widget w2();	// most vexing parse! declares a function named w2 that returns a Widget!
@@ -413,7 +413,7 @@ auto result3 = lockAndCall(f3, f3m, nullptr);    // fine, 但是传入0或者NUL
 ```
 因为 `std::nullptr_t` 可以被隐式转换成为各种指针类型, 因此使用裸指针和智能指针都可以,因此上面的过程提高了代码的复用性.
 
-### Item9: Prefer alias declarations to typedefs
+### Item 9: Prefer alias declarations to typedefs
 在涉及函数指针的时候, 我们发现alias声明比 _typedef_ 更加方便理解:
 ```C++
 typedef void (*FP)(int, const std::string&);	// typedef
@@ -454,3 +454,57 @@ private:
 };
 ```
 这看上去和使用typedef一样是依赖于 template parameter T, 但是编译器处理alias的时候知道  `MyAllocList` 是 alias template: `MyAllocList<T>` 一定是在 name a type, 是 non-dependent type.在某些例子中, `MyAllocList<T>::type list` 可能是类的一个数据成员, 所以编译器要求加上`typename` 的前缀.<br>
+C++ 11 引入了使用 _type traits_ 转化类型的机制(在头文件 <type_traits> 中), 使用的方法就是 `std::transformation<T>::type`, 例如:
+
+```C++
+std::remove_const<T>::type // yields T from const T
+std::remove_reference<T>::type // yields T from T& and T&&
+std::add_lvalue_reference<T>::type // yields T& from T
+```
+在 C++ 11 中这些特性都是在 templatized struct 中 使用 nested typedefs 实现的, C++ 14 引入了一个新的转换, `std::transformation_t`, 可以更好的和 alias 配合:
+
+```C++
+std::remove_const_t<T>::type 
+std::remove_reference_t<T>  
+std::add_lvalue_reference_t<T> 
+
+template <class T>
+using remove_const_t = typename remove_const<T>::type;
+
+template <class T>
+using remove_reference_t = typename remove_reference<T>::type;
+
+template <class T>
+using add_lvalue_reference_t = typename add_lvalue_reference<T>::type;
+```
+
+### Item 10: 优先考虑限域枚举而⾮未限域枚举
+
+花括号中声明的名字限制其作用域, 对于 C++ 98 中的 enum 类型是不成立的, 但是 C++ 11 中引入了 scoped enums 例如:
+
+```C++
+enum Color { black, white, red }; // black, white, red are in same scope as Color
+auto white = false; // Error: 这个 scope 中已经声明了 white, 无法再声明
+
+enum class Color { black, white, red }; // black, white, red are scoped to Color
+auto white = false; // fine, scope 中没有其他的 white
+// scoped enums 的使用如下:
+Color c = Color::white; // fine
+auto c = Color::white;  // fine
+```
+
+除了不会污染名字空间, 这种新型的 enums 还有一个好处: **这是一个强类型**, unscoped enums 可以隐式类型转换成为 整型(现在也可以转化为浮点类型), 使用 scoped 的枚举类型只能使用 强制类型转换实现:
+
+```C++
+enum class Color { black, white, red }; // enum is now scoped
+Color c = Color::red;
+if (static_cast<double>(c) < 14.5) { // odd code, but it's valid
+    auto factors = primeFactors(static_cast<std::size_t>(c)); // suspect, but it compiles
+    ...
+}
+```
+此外, scoped 枚举类型还可以支持前置声明(forward-declared), 
+```C++
+enum Color; // error!
+enum class Color; // fine
+```
