@@ -1420,6 +1420,76 @@ void doProcessing(T& w) {
 * 对于这一组代码, 想要通过编译, 那么T必须支持一组隐式接口,它是基于有效表达式组成
 * 所有关于w的函数调用, 可能造成template具现化,这些instantiated的过程发生在编译期间
 
+### Item 42 了解 _typename_ 的双重含义
+
+声明 template 参数的时候, typename 和 class 有相同的含义, 除此之外, typename 还有 标识嵌套从属名称的作用, 下面是一个语义解析有歧义的例子:
+
+```C++
+template<typename C>                // print 2nd element in
+void print2nd(const C& container){  // container; this is not valid C++!
+    if (container.size() >= 2) {
+        C::const_iterator iter(container.begin()); // get iterator to 1st element
+        ++iter; // move iter to 2nd element
+        int value = *iter; // copy that element to an int
+        std::cout << value; // print the int
+    }
+}
+// 一个新的例子
+template<typename C>
+void print2nd(const C& container){
+    C::const_iterator * x;
+    ...
+}
+```
+tempalte 内出现的名称如果依赖于某个 template 参数, 称之为从属名称, 如果从属名称在 class 内呈现嵌套装, 我们称之为嵌套从属名称(例如上面的 C::const_iterator).<br>
+**嵌套从属名称容易导致解析困难**, 如果 C 类有个 static 成员变量恰巧被命名为 `const_iterator`,  或者在全局有变量 x, 这样的话上面的新例子就是一个乘法而不是声明一个 local 变量. C++ 用这样的规则来解析一个歧义状态: <font color=red> 如果解析器在template 中遭遇一个嵌套从属名称, 它便首先假设它不是一个类型, 除非程序告诉它是</font>, 于是我们需要使用 typename 告诉编译器:
+
+```C++
+template<typename C>
+void print2nd(const C& container){
+    if (container.size() >= 2) {
+        C::const_iterator iter(container.begin());
+    }
+    ...
+}
+```
+typename 只是用来说明嵌套从属名称, 其他名称下不应该有其存在:
+
+```C++
+template<typename C> // typename allowed (as is “class”)
+void f( const C& container, // typename not allowed
+        typename C::iterator iter); // typename required
+```
+这个规则还有一个例外是, typename 不可以出现在 base classes list 内嵌套的从属名称之前, 也不能在成员初值列中作为 base class 的修饰符:
+
+```C++
+template<typename T>
+class Derived: public Base<T>::Nested { // base class 列: 不能使用
+public: 
+    explicit Derived(int x)
+    : Base<T>::Nested(x){ // init. list: typename not allowed
+        typename Base<T>::Nested temp; // 使用typename
+        ...
+    }
+    ...
+}
+```
+下面是一个复杂的例子, 是一个 traits class 的一种运用,`value_type` 被嵌套在 `iterator_traits<IterT>` 之内而且 IterT 为一个 template 参数, 于是我们放置 typename. 为了简化书写, 这种类型常常和 typename 一起使用:
+```C++
+template<typename IterT>
+void workWithIterator(IterT iter){
+    typename std::iterator_traits<IterT>::value_type temp(*iter);
+    ...
+}
+// 使用 typedef 简化
+template<typename IterT>
+void workWithIterator(IterT iter){
+    typedef typename std::iterator_traits<IterT>::value_type value_type;
+    value_type temp(*iter);
+    ...
+}
+```
+
 ## 定制new和delete
 
 多线程环境下的内存管理, 受到单线程系统不曾遇到过的挑战, heap 是一个可被改动的全局资源, 在多线程系统充斥着疯狂访问这类资源的**race condition** ,如果没有适当的同步控制,一旦使用无锁算法或者精心防止并发访问时,  调用内存的例程很容易导致heap的数据结构内容损坏.此外, STL中使用的内存**是由容器所拥有的分配器对象(allocator objects)管理**, 而不是直接由new和delete管理.
