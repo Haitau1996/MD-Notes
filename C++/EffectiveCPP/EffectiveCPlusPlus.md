@@ -1671,7 +1671,19 @@ private:
 上面的讨论是由 non-type template parameter 带来的膨胀, 其实 类型参数也会导致膨胀. 例如大多数平台上, 所有指针都有相同的二进制表达, 凡有 template 指针的持有者, 往往对每一个成员函数使用唯一的一份底层实现, **如果你是想某些成员函数而他们操作的是强类型指针, 应该让他们调用另一个操作无类型指针的函数, 由后者完成实际的操作**. 
 
 ### Item 45 运用成员函数模板接受所有兼容类型
+真实指针做的最好的一件事情是支持隐式转换, 例如,Derived class 的指针可以隐式转换为 base class 的指针,指向 non-const 对象的指针可以转换为指向 const 对象的指针:
+```C++
+class Top { ... };
+class Middle: public Top { ... };
+class Bottom: public Middle { ... };
+Top *pt1 = new Middle; // convert Middle* ⇒ Top*
+Top *pt2 = new Bottom; // convert Bottom* ⇒ Top*
+const Top *pct2 = pt1; // // convert Top* ⇒ const Top*
+```
+但是一个 template 的不同具现体之间不存在什么与生俱来的关系, 为了获得我们所需要的 智能指针之间的转换关系, 我们需要明确地将它们编写出来.
 
+#### Templates 和泛型编程
+// TODO: 
 ## 定制new和delete
 
 多线程环境下的内存管理, 受到单线程系统不曾遇到过的挑战, heap 是一个可被改动的全局资源, 在多线程系统充斥着疯狂访问这类资源的**race condition** ,如果没有适当的同步控制,一旦使用无锁算法或者精心防止并发访问时,  调用内存的例程很容易导致heap的数据结构内容损坏.此外, STL中使用的内存**是由容器所拥有的分配器对象(allocator objects)管理**, 而不是直接由new和delete管理.
