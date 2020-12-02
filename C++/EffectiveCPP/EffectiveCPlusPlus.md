@@ -1607,8 +1607,70 @@ sm1.invert(); // call SquareMatrix<double, 5>::invert
 SquareMatrix<double, 10> sm2;
 sm2.invert(); // call SquareMatrix<double, 10>::invert
 ```
-于是实例化出两份 invert 函数, 除了常量 5 和 10, 其他部分完全相同, 这就是代码膨胀的一个典型例子. 
-// todo:
+于是实例化出两份 invert 函数, 除了常量 5 和 10, 其他部分完全相同, 这就是代码膨胀的一个典型例子, 一个改进的思路是, 带参数 size_t 的 invert 放在更 base 的类中, 然后用一个类 protected 继承这个类(这里使用保护继承的原因是 base class 只是为了帮助 derived 实现, 而不是为了表现两者之间的 is-a 关系), 新的子类只是对矩阵元素的类型参数化, 而不对矩阵的尺寸参数化:
+
+```C++
+template<typename T> // size-independent base class for
+class SquareMatrixBase { // square matrices
+protected:
+    ...
+    void invert(std::size_t matrixSize); // invert matrix of the given size
+    ...
+};
+template<typename T, std::size_t n>
+class SquareMatrix: private SquareMatrixBase<T> {
+private:
+    using SquareMatrixBase<T>::invert; // make base class version of invert
+                                       // visible in this class; see Items 33 and 43    
+public:
+    ...
+    void invert() { invert(n); } // make inline call to base class
+};
+```
+
+然而还有一个问题是, `SquareMatrixBase::invert` 如何知道应该怎样操作数据? 一个做法是让 SquareMatrixBase 存储一个指针, 指向矩阵数组值所在的内存, 看起来是这样:
+
+```C++
+// 允许derived 决定内存分配的方式, 在 base 里面放一个指针
+template<typename T>
+class SquareMatrixBase {
+protected:
+    SquareMatrixBase(std::size_t n, T *pMem) // store matrix size and a
+    : size(n), pData(pMem) {} // ptr to matrix values
+    void setDataPtr(T *ptr) { pData = ptr; } // reassign pData
+    ...
+private:
+    std::size_t size; // size of matrix
+    T *pData; // pointer to matrix values
+};
+// 直接将矩阵的数据存储在 SquareMatrix 内部
+// 对象自身可能非常大
+template<typename T, std::size_t n>
+class SquareMatrix: private SquareMatrixBase<T> {
+public:
+    SquareMatrix() // send matrix size and
+    : SquareMatrixBase<T>(n, data) {} // data ptr to base class
+    ...
+private:
+    T data[n*n];
+};
+// 或者让每一个矩阵放到 heap 中
+template<typename T, std::size_t n>
+class SquareMatrix: private SquareMatrixBase<T> {
+public:
+    SquareMatrix() // set base class data ptr to null,
+    : SquareMatrixBase<T>(n, 0), // allocate memory for matrix values, save a ptr to the
+    pData(new T[n*n]) // memory, and give a copy of it to the base class
+    { this->setDataPtr(pData.get()); } 
+    ... 
+private:
+    boost::scoped_array<T> pData; 
+};
+```
+
+上面的讨论是由 non-type template parameter 带来的膨胀, 其实 类型参数也会导致膨胀. 例如大多数平台上, 所有指针都有相同的二进制表达, 凡有 template 指针的持有者, 往往对每一个成员函数使用唯一的一份底层实现, **如果你是想某些成员函数而他们操作的是强类型指针, 应该让他们调用另一个操作无类型指针的函数, 由后者完成实际的操作**. 
+
+### Item 45 运用成员函数模板接受所有兼容类型
 
 ## 定制new和delete
 
