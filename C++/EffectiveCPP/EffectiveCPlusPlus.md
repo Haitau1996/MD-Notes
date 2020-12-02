@@ -1296,7 +1296,7 @@ class Ellipse: public Shape { ... };
 ### Item 36 绝不重新定义继承而来的non-virtual函数
 **non-virtual函数是静态绑定，而virtual是动态绑定**,如果pB是一个Pointer to base class，即使pB指向一个derived class，pB调用的non-virtual函数永远是Base class所定义的版本。这背后的原因在之前is-a关系和不同种类继承之间的区别已经讨论过了，重新定义D的mf(),"每个D对象都是一个B对象"就不为真，因此在这里Item 7就是本条款的一个特殊案例。
 
-### Item 37: 绝不重新定义继承而来的缺省参数值
+### Item 37 绝不重新定义继承而来的缺省参数值
 本Item讨论的内容局限于继承一个带有默认参数值的virtual函数,因为重新定义一个non-virtual是错误的.**virtual函数是动态绑定,而默认参数值是静态绑定** 的,
 ```C++
 class Shape {
@@ -1493,7 +1493,105 @@ void workWithIterator(IterT iter){
 ### Item 43 学习模板化基类内的名称
 
 如果在编译期间有足够的信息来决定数据类型, 就可以采用基于 template 的解法
-// TODO: 
+
+```C++
+template<typename Company>
+class MsgSender {
+public:
+    ... // ctors, dtor, etc.
+    void sendClear(const MsgInfo& info){
+        std::string msg;
+        create msg from info;
+        Company c;
+        c.sendCleartext(msg);
+    }
+    void sendSecret(const MsgInfo& info) // similar to sendClear, except
+    { ... } // calls c.sendEncrypted
+};
+
+template<typename Company>
+class LoggingMsgSender: public MsgSender<Company> {
+public:
+    ... // ctors, dtor, etc.
+    void sendClearMsg(const MsgInfo& info){
+    write "before sending" info to the log;
+    sendClear(info);    // call base class function;
+                        // this code will not compile!
+    write "after sending" info to the log;
+    }
+    ...
+};
+```
+如果我们写一个 class template, 它接受一个 company 类作为参数(支持 sendEncrypted/sendCleartext 两个成员函数), 然后用一个新的 class template 继承这个class, 这时候编译器就会报错, 因为 derived class 继承的是一个 `MsgSender<Company>`, 但是 Company 是一个模板参数, 就不知道 class MsgSender<Company> 看起来来像什么( 没有办法知道 它是否有个 sendClear 函数). 如果有个 class CompanyZ 坚持加密通信(无 sendClear 函数), 一般性的 MsgSender 对它不那么合理, 我们可以对此产生一个特化的版本:
+
+```C++
+template<>                  // a total specialization of
+class MsgSender<CompanyZ> { // MsgSender; the same as the
+public:                     // general template, except sendClear is omitted
+    ... 
+    void sendSecret(const MsgInfo& info)
+    { ... }
+};
+```
+这就是所谓的模板全特化: 一旦template 针对 Z公司特化了, **这种特化就是全面性的, 没有其他的 template 参数可供变化**.  这个时候当 baseClass 被指定为 Z公司, 就没有提供 `sendClear()` 函数, C++ 拒绝这个调用的原因就十分清楚了 : <font color=red> 它知道 base class template 可能被特化, 而那个特化的版本可能不提供一个和一般性 template 相同的接口, 因此它往往拒绝在 templatized base classes 内寻找继承而来的名称</font>, 这意味着我们从 OO C++ 到 Template C++ 时候, 继承就不那么畅通无阻了. 这时候我们必须用某种方法令 C++ 不进入 templated base class 观察的行为失效, 解决的办法有三个:
+1. 在 base class 函数调用动作之前加上 `this->`:
+    ```C++
+    template<typename Company>
+    class LoggingMsgSender: public MsgSender<Company> {
+    public:
+        ...
+        void sendClearMsg(const MsgInfo& info){
+            write "before sending" info to the log;
+            this->sendClear(info); // okay, assumes that
+            // sendClear will be inherited
+            write "after sending" info to the log;
+        }
+        ...
+    }
+    ```
+2. 使用 using 声明式: 被掩盖的 base class 名称带入一个 derived class 作用域内(原因和之前不同, OO 中是被新名称掩盖, 这里显式告诉编译器进入 base class 内部寻找):
+    ```C++
+    template<typename Company>
+    class LoggingMsgSender: public MsgSender<Company> {
+    public:
+        using MsgSender<Company>::sendClear; // tell compilers to assume
+        ... // that sendClear is in the
+        // base class
+        void sendClearMsg(const MsgInfo& info){
+        ...
+        sendClear(info); // okay, assumes that
+        ... // sendClear will be inherited
+        }
+        ...
+    };
+    ```
+3. 明确指定被调用的函数位于 base class 内部:
+    ```C++
+    template<typename Company>
+    class LoggingMsgSender: public MsgSender<Company> {
+    public:
+        ...
+        void sendClearMsg(const MsgInfo& info){
+        ...
+        MsgSender<Company>::sendClear(info); // okay, assumes that
+        ... // sendClear will be
+        } // inherited
+        ...
+    };
+    ```
+    这是最不让人满意的一个解法: **如果被调用的是虚函数, 这个明确地修饰会关闭 virtual 绑定行为.**
+
+上面的三件事情做的都是一样的, **就是对编译器承诺 "base class template" 的任何特化版本都支持其一般(泛化) 版本所提供的接口**, 如果承诺没有实现, 那么在编译过程就会明确拒绝:
+
+```C++
+LoggingMsgSender<CompanyZ> zMsgSender;
+MsgInfo msgData;
+... 
+zMsgSender.sendClearMsg(msgData); // error! won’t compile
+```
+
+### Item 44 将参数无关的代码抽离 templates
+// TODO
 
 ## 定制new和delete
 
