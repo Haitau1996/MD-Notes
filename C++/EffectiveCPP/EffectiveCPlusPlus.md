@@ -1591,7 +1591,24 @@ zMsgSender.sendClearMsg(msgData); // error! won’t compile
 ```
 
 ### Item 44 将参数无关的代码抽离 templates
-// TODO
+
+**使用 template 可能导致代码膨胀, 生成的二进制代码带着重复的代码和数据** , 结果是源代码看看起来非常整齐但是目标代码(Object Code)却没有. 我们这时需要使用的工具是 **共性与变性分析** (commonality and variability analysis), 但是在 template 代码中, 重复是隐晦的, 我们必须训练自己感受当 template 被具现化多次时可能发生的重复.<br>
+例如为一个固定尺寸的方针编写模板:
+```C++
+template<typename T,    // template for n x n matrices of
+         std::size_t n> // objects of type T; see below for info
+class SquareMatrix { // on the size_t parameter
+public:
+    ...
+    void invert(); // invert the matrix in place
+};
+SquareMatrix<double, 5> sm1;
+sm1.invert(); // call SquareMatrix<double, 5>::invert
+SquareMatrix<double, 10> sm2;
+sm2.invert(); // call SquareMatrix<double, 10>::invert
+```
+于是实例化出两份 invert 函数, 除了常量 5 和 10, 其他部分完全相同, 这就是代码膨胀的一个典型例子. 
+// todo:
 
 ## 定制new和delete
 
