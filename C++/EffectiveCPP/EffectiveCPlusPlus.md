@@ -1712,7 +1712,28 @@ private: // built-in pointer held
 };
 ```
 在构造函数的初始化列中, 要求了只有 U 型指针可以隐式类型转换成为 T 型号, 这个程序编译才得以通过. <br>
-此外需要注意的是, 泛化的copy 构造函数(member template)并不会阻止编译器生成自己的 copy 构造函数(一个 non-template), 如果我们想要阻止默认的构造函数 和 赋值函数, 光声明泛化的 copy 构造函数还不够, 需要同时声明一个正常的 copy 构造函数. 
+此外需要注意的是, **泛化的copy 构造函数(member template)并不会阻止编译器生成自己的 copy 构造函数(一个 non-template)**, 如果我们想要阻止默认的构造函数 和 赋值函数, 光声明泛化的 copy 构造函数还不够, 需要同时声明一个正常的 copy 构造函数. 
+
+### Item 46 需要类型转换时请为模板定义非成员函数
+
+之前提到过, 只有 non-member 才有能力才所有实参身上(包含 this 指针指向的隐式参数) 事实类型转换, 现在我们将这个例子模板化:
+
+```C++
+template<typename T>
+class Rational {
+public:
+    Rational(const T& numerator = 0, 
+    const T& denominator = 1); // para are now passed by reference
+    const T numerator() const; // see Item28 for why return
+    const T denominator() const; // values are still passed by value,
+    ... // Item 3 for why they’re const
+};
+template<typename T>
+const Rational<T> operator*(const Rational<T>& lhs,
+const Rational<T>& rhs)
+{ ... }
+```
+// TODO
 ## 定制new和delete
 
 多线程环境下的内存管理, 受到单线程系统不曾遇到过的挑战, heap 是一个可被改动的全局资源, 在多线程系统充斥着疯狂访问这类资源的**race condition** ,如果没有适当的同步控制,一旦使用无锁算法或者精心防止并发访问时,  调用内存的例程很容易导致heap的数据结构内容损坏.此外, STL中使用的内存**是由容器所拥有的分配器对象(allocator objects)管理**, 而不是直接由new和delete管理.
