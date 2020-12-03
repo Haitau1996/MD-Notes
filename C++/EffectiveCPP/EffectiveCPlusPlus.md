@@ -1683,7 +1683,36 @@ const Top *pct2 = pt1; // // convert Top* ⇒ const Top*
 但是一个 template 的不同具现体之间不存在什么与生俱来的关系, 为了获得我们所需要的 智能指针之间的转换关系, 我们需要明确地将它们编写出来.
 
 #### Templates 和泛型编程
-// TODO: 
+
+例如我们想对上面的模板的继承体系有所扩充, 希望 SmartPrt<Top> 对象 **又必须能根据其他智能指针构造自己, 可行的做法是将 构造函数写成构造模板**(member function templates), 其作用是一个 class 生成函数(除了一般的函数模板, 成员函数也可以模板化):
+
+```C++
+class BelowBottom: public Bottom { ... };
+template<typename T>
+class SmartPtr {   //根据对象 u 构造传入的对象 t
+public:
+    template<typename U> // member template
+    SmartPtr(const SmartPtr<U>& other); // for a ”generalized
+        ... // copy constructor”
+};
+```
+这种函数不能声明为 explicit, 因为其行为要像原始指针那样做类型转换, 同时我们发现, 继承体系是有方向的, 我们不希望一个根据一个 derived 指正指针创建 base 的对象, 于是我们需要在构造模板的实现代码中约束转换的行为:
+
+```C++
+template<typename T>
+class SmartPtr {
+public:
+    template<typename U>
+    SmartPtr(const SmartPtr<U>& other)  // initialize this held ptr
+    : heldPtr(other.get()) { ... }      // with other’s held ptr
+    T* get() const { return heldPtr; }
+    ...
+private: // built-in pointer held
+    T *heldPtr; // by the SmartPtr
+};
+```
+在构造函数的初始化列中, 要求了只有 U 型指针可以隐式类型转换成为 T 型号, 这个程序编译才得以通过. <br>
+此外需要注意的是, 泛化的copy 构造函数(member template)并不会阻止编译器生成自己的 copy 构造函数(一个 non-template), 如果我们想要阻止默认的构造函数 和 赋值函数, 光声明泛化的 copy 构造函数还不够, 需要同时声明一个正常的 copy 构造函数. 
 ## 定制new和delete
 
 多线程环境下的内存管理, 受到单线程系统不曾遇到过的挑战, heap 是一个可被改动的全局资源, 在多线程系统充斥着疯狂访问这类资源的**race condition** ,如果没有适当的同步控制,一旦使用无锁算法或者精心防止并发访问时,  调用内存的例程很容易导致heap的数据结构内容损坏.此外, STL中使用的内存**是由容器所拥有的分配器对象(allocator objects)管理**, 而不是直接由new和delete管理.
