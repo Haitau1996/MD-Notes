@@ -42,14 +42,52 @@ bool Solution::SearchMatrixHelper(vector<vector<int>>& matrix, int target, int r
 3. 从后向前扫描, 如果是老指针指的是一个正常字符就复制后往前移动
 4. 遇到空格之后只挪新的指针, 如果新老指针相同说明就全部挪动完毕
 
-//todo: add code here
 
 ## 面试题 7: 重建二叉树
 
 题目描述:输入某二叉树的前序遍历和中序遍历的结果，请重建该二叉树。假设输入的前序遍历和中序遍历的结果中都不含重复的数字。<br>
 
 解法分析: 前序遍历的第一个数值实际上就是根节点的数值, 然后根据中序遍历的结果, 可以得将后面的序列分别划分到左子树和右子树中.
+```C++
+class Solution {
+public:
+    TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
+        return buildTreeHelper(preorder,0,inorder,0,preorder.size());
+    }
+private:
+    TreeNode* buildTreeHelper(vector<int>& preorder, size_t preHead, 
+                              vector<int>& inorder, size_t inHead, size_t length);
+};
 
+TreeNode* Solution::buildTreeHelper (vector<int>& preorder, size_t preHead,
+                            vector<int>& inorder, size_t inHead, size_t length){
+    if(length == 0 ) return nullptr;
+    else {
+        int rootVal = preorder[preHead];
+        TreeNode* root = new TreeNode;
+        root->val = rootVal;
+        size_t rootIndex{inHead};
+        size_t leftLen{};
+        while(inorder[rootIndex] != rootVal){
+            rootIndex ++;
+            ++leftLen;
+        }
+        root->left = buildTreeHelper(preorder,preHead+1, inorder, inHead,leftLen);
+        root->right = buildTreeHelper(preorder,preHead+1+leftLen,
+                                      inorder,inHead+1+leftLen,length-leftLen-1 );
+        return root;
+    }
+}
+```
+在解题的时候, 一开始我们使用的是留个参数, preHear, preTail, inHead, inTail. 然后写起来有一些麻烦, 后来发现, 前序和中序打出来的长度是一样的, 少一个参数后实际上写下标的时候就会方便很多.
+
+## 面试题 8: 二叉树的下一个节点
+
+题目描述: 给出二叉数和其中一个节点, 如何找出中序遍历的下一个节点(数中有指向左右子树指针和指向父节点指针).<br>
+解题思路,将节点的类型分成三类:
+1. 该节点有右子树, 显然它的下一个打印的节点就是右子数中最左的节点
+2. 该节点没有右子树, 且该节点位于父节点的左边, 那么打印的就是其父节点
+3. 该节点没有右子树, 且该节点位于父节点的右边, 那么就一直向上遍历, 直到找到一个节点, 恰好它是父节点的左子数, 打印该节点
 
 ## KMP 模式匹配算法
 
