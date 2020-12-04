@@ -89,6 +89,38 @@ TreeNode* Solution::buildTreeHelper (vector<int>& preorder, size_t preHead,
 2. 该节点没有右子树, 且该节点位于父节点的左边, 那么打印的就是其父节点
 3. 该节点没有右子树, 且该节点位于父节点的右边, 那么就一直向上遍历, 直到找到一个节点, 恰好它是父节点的左子数, 打印该节点
 
+## 面试题 9: 使用两个栈实现队列
+题目描述：用两个栈实现一个队列。队列的声明如下，请实现它的两个函数appendTail 和deleteHead, 分别完成在队列尾部插入节点和在队列头部删除节点的功能。<br>
+解题思路:
+使用两个两个栈, 一个 stack1 和 stack2, 平时往stcak1 插入元素, 如果想要删除元素,如果 2 是空的, 将 1 中的元素全部压入 2, 两个 LIFO 就实现了一个 FIFO, 如果 2 不空, 直接弹出栈顶.
+```C++
+class CQueue {
+public:
+    CQueue() {
+    }
+    void appendTail(int value) {
+        stack1.push(value);
+    }
+    
+    int deleteHead() {
+        if(stack2.empty()){
+            while(!stack1.empty()){
+                int data = stack1.top();
+                stack1.pop();
+                stack2.push(data);
+            }
+        }
+        if(stack2.empty()) return -1;
+        int head = stack2.top();
+        stack2.pop();
+        return head;
+    }
+private:
+    stack<int> stack1;
+    stack<int> stack2;
+};
+```
+
 ## KMP 模式匹配算法
 
 假设有 Source 字符串 S("abcababca") 和 Target 字符串 T("abcabx"), T 的首字母"a" 与第二位 "b" 以及第三位 "c" 都是不想等的, 可以忽略朴素匹配算法的某些判断. i 值不回溯, 就是不能表笑, 需要考虑的变化就是 j 值了, **j 值得大小取决于当前字符之前的串的前后缀相似程度**:
