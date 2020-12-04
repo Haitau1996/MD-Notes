@@ -115,7 +115,7 @@ $\overline{\overline{A}\ \text{AND}\ \overline{B}} = A\ \text{OR}\ B$
 ![mux](figure/Patt3.8.png)<br>
 
 #### 全加器
-二进制的加法每个位有三个输入$A_i , B_i, 和 Carrier_{i}$, 输出为两个Bit,一个为$Carrier_{i+1}$,另一个为当前位.一个全加器的典型实现如下, 多个全加器串联起来就是多个Bit的加法器:<br>
+二进制的加法每个位有三个输入$A_i , B_i, \text{和 }  Carrier_{i}$, 输出为两个Bit,一个为$Carrier_{i+1}$,另一个为当前位.一个全加器的典型实现如下, 多个全加器串联起来就是多个Bit的加法器:<br>
 ![full add](figure/Patt3.9.png)<br>
 
 **通过足够数量的{AND, NOT, OR}, 可以实现任意的真值表,他们是逻辑完备的**. 

@@ -1733,7 +1733,6 @@ const Rational<T> operator*(const Rational<T>& lhs,
 const Rational<T>& rhs)
 { ... }
 ```
-// TODO
 ## 定制new和delete
 
 多线程环境下的内存管理, 受到单线程系统不曾遇到过的挑战, heap 是一个可被改动的全局资源, 在多线程系统充斥着疯狂访问这类资源的**race condition** ,如果没有适当的同步控制,一旦使用无锁算法或者精心防止并发访问时,  调用内存的例程很容易导致heap的数据结构内容损坏.此外, STL中使用的内存**是由容器所拥有的分配器对象(allocator objects)管理**, 而不是直接由new和delete管理.
