@@ -1070,7 +1070,7 @@ void PrettyMenu::changeBackground(std::istream& imgSrc){
 如果系统内有一个函数不具备异常安全性, 整个系统就不具备异常安全性, 因为调用哪个函数可能导致资源泄露或者数据结构败坏(如一个 sorted array 实际上不再处于 sorted 状态).
 
 ### Item 30 透彻了解inlining的里里外外
-不恰当的inline造成代码膨胀会导致额外的换页行为,降低高速缓存装置的击中率,以及伴随而来的效率损失,它只是对编译器的一个申请,并不是强制命令.inlining在大多数程序中都是编译时行为,某些环境可以在链接时候inlining,少量建置环境如.NET CLI的托管环境可以在运行期完成inlining. 大多数编译器拒绝将过于复杂的函数inlining, 并且对所有virtual函数的调用也都会使得inlining落空.<br>
+不恰当的inline造成代码膨胀会导致额外的换页行为,降低高速缓存装置的击中率,以及伴随而来的效率损失,它只是对编译器的一个申请,并不是强制命令. inlining 在大多数程序中都是编译时行为,某些环境可以在链接时候 inlining,少量建置环境如 .NET CLI的托管环境可以在运行期完成 inlining. 大多数编译器拒绝将过于复杂的函数 inlining, 并且对所有virtual函数的调用也都会使得 inlining 落空.<br>
 除此之外，还有可能编译器将某个函数inline，但是还可能生成一个outlined的主体，例如，想要通过function ptr调用函数， 不生成主体的话将无可调用：
 ```C++
 inline void f() {...} // assume compilers are willing to inline calls to f
@@ -1079,7 +1079,7 @@ void (*pf )() = f; // pf points to f
 f(); // this call will be inlined, because it’s a “normal” call
 pf(); // this call probably won’t be, because it’s through a function pointer
 ```
-此外，构造函数和析构函数往往是inlining的糟糕候选人，原因如下：<br>
+此外，构造函数和析构函数往往是 inlining 的糟糕候选人，原因如下：<br>
 C++对构造对象和销毁对象做了保证， 但是具体的实现依赖于编译器的实现者，编译为空的构造函数析构函数产生的代码一定存放于某个地方，有时候就放在构造函数和析构函数内，
 ```C++
 class Base {
@@ -1294,10 +1294,10 @@ class Ellipse: public Shape { ... };
 // TODO: 重新看这部分内容
 
 ### Item 36 绝不重新定义继承而来的non-virtual函数
-**non-virtual函数是静态绑定，而virtual是动态绑定**,如果pB是一个Pointer to base class，即使pB指向一个derived class，pB调用的non-virtual函数永远是Base class所定义的版本。这背后的原因在之前is-a关系和不同种类继承之间的区别已经讨论过了，重新定义D的mf(),"每个D对象都是一个B对象"就不为真，因此在这里Item 7就是本条款的一个特殊案例。
+**non-virtual函数是静态绑定，而virtual是动态绑定**,如果pB是一个 Pointer to base class，即使pB指向一个 derived class，pB调用的 non-virtual 函数永远是 Base class 所定义的版本。这背后的原因在之前 is-a 关系和不同种类继承之间的区别已经讨论过了，重新定义 D 的 mf(),"每个D对象都是一个B对象"就不为真，因此在这里 Item 7 就是本条款的一个特殊案例。
 
 ### Item 37 绝不重新定义继承而来的缺省参数值
-本Item讨论的内容局限于继承一个带有默认参数值的virtual函数,因为重新定义一个non-virtual是错误的.**virtual函数是动态绑定,而默认参数值是静态绑定** 的,
+本Item讨论的内容局限于继承一个带有默认参数值的 virtual 函数,因为重新定义一个 non-virtual 是错误的.**virtual函数是动态绑定,而默认参数值是静态绑定** 的,
 ```C++
 class Shape {
 public:
@@ -1344,7 +1344,8 @@ private:
 ```
 
 ### Item 38 通过复合塑模出has-a 或者 is-implemented-in-terms-of
-程序中某些对象相当于所塑造世界的的某些事物，如人、汽车，这些是**应用域**，其他可能是实现细节上的人工制品，如缓冲区、查找树，称为**实现域**。复合发生在前者，是has-a关系，后者常表现出is-implementation-in-terms-of的关系。<br>
+
+程序中某些对象相当于所塑造世界的的某些事物，如人、汽车，这些是**应用域**，其他可能是实现细节上的人工制品，如缓冲区、查找树，称为**实现域**。复合发生在前者，是has-a关系，后者常表现出 is-implementation-in-terms-of 的关系。<br>
 如一个set对象用list实现,不是is-a关系，public继承肯定是错的，应该使用复合：
 ```C++
 template<class T> // the right way to use list for Set
@@ -1735,12 +1736,12 @@ const Rational<T>& rhs)
 ```
 ## 定制new和delete
 
-多线程环境下的内存管理, 受到单线程系统不曾遇到过的挑战, heap 是一个可被改动的全局资源, 在多线程系统充斥着疯狂访问这类资源的**race condition** ,如果没有适当的同步控制,一旦使用无锁算法或者精心防止并发访问时,  调用内存的例程很容易导致heap的数据结构内容损坏.此外, STL中使用的内存**是由容器所拥有的分配器对象(allocator objects)管理**, 而不是直接由new和delete管理.
+多线程环境下的内存管理, 受到单线程系统不曾遇到过的挑战, heap 是一个可被改动的全局资源, 在多线程系统充斥着疯狂访问这类资源的 **race condition** ,如果没有适当的同步控制,一旦使用无锁算法或者精心防止并发访问时,  调用内存的例程很容易导致heap的数据结构内容损坏.此外, STL中使用的内存**是由容器所拥有的分配器对象(allocator objects)管理**, 而不是直接由new和delete管理.
 
 
 ### Item 49 了解new-handler的行为
 
-operator new 无法满足内存分配需求的时候, 会抛出异常(以前是返回一个null指针), 在抛出异常之前, 会调用一个客户指定的错误处理函数(new-handler),为了指定这个函数, 用户必须调用<new>中的set_new_handler,`set_new_handler` 实际上参数和返回值都是一个函数指针.
+operator new 无法满足内存分配需求的时候, 会抛出异常(以前是返回一个null指针), 在抛出异常之前, 会调用一个客户指定的错误处理函数(new-handler),为了指定这个函数, 用户必须调用<new>中的set_new_handler,`set_new_handler` 实际上参数和返回值都是一个函数指针, 参数指向 operator new 无法分配足够内存时候被调用的函数, 返回值指向 `set_new_handler` 被调用前正在执行的那个 new-handler 函数. 
 ```C++
 namespace std {
 typedef void (*new_handler)();
@@ -1763,6 +1764,9 @@ int main(){
 * 卸除handler, 将null指针传给set_new_handler
 * 抛出bad_alloc异常, 不被operator new捕捉, 从而能传到内存索引处
 * 不返回
+
+有时候我们希望用不同的方式处理内存分配失败的情况, C++ 不支持 class 专属的 new handler, 但是只需要为每一个 class 提供自己的set_new_handler, 指向 class 专属的 new handler(默认指向是 global new handler), 
+// todo: 这部分依旧看不懂
 
 ***
 ## 杂项讨论
