@@ -675,3 +675,63 @@ java **只允许为类的继承做单一继承**, 但是允许 <font color=red> 
 **泛型可以让我们在编译的时候检查出错误而不是在运行时**,泛型可以参数化类型, 随后编译器会用具体的类来替换它.<br>
 
 ### 动机和优点
+![](figure/19.1.png)<br>
+我们可以看到, 在使用泛型之前, 编译器是无法检出 `compareTo("red")` 时候发生的错误, 但是会在运行时出错, 因为一个 Date 对象无法与 String 直接进行比较, 但是如果我们使用泛型, 这样的代码会产生编译错误, 因为传递给 compareTo() 方法的参数类型必须是 Date 类型的, 因此可以说 **泛型类型使得程序更加可靠**.<br>
+ArrayList 类就是一个泛型类, 此外 **泛型类型必须是引用类型,不能使用 int 这种基本类型来替换泛型类型**. 如果在 ArrayList<Integer> 中插入一个 int 值, Java 会做自动打包过程, 同样的也可以做自动拆包, 这个过程无需类型转换. 
+
+### 定义泛型类和接口
+
+可以为类或者接口定义泛型, **当使用泛型类创建对象, 或者使用类或者接口来声明引用变量时, 必须指定具体的类型**.需要注意的是,泛型的构造方法定义为:
+
+```Java
+public GenericStack(); // Correct
+public GenericStack<E>(); // Wrong
+```
+泛型类可能有多个参数,这种情况下应该将所有的参数一起放在尖括号中, 并且用逗号分开:`<E1, E2, E3>`. 也可以实现一个接口或者类的时候指定参数类型:
+
+```Java
+public class String implements Comparable<String>
+```
+### 泛型方法
+可以为静态方法定义泛型类型, 调用的时候需要将实际类型放在尖括号内作为方法名的前缀, 或者简单调用:
+
+```Java
+public class GenericMethodDemo {
+    public static void main(String[] args ) {
+        Integer[] integers = {1, 2, 3, 4, 5};
+        String[] strings = {"London", "Paris", "New York", "Austin"};
+        GenericMethodDemo.<Integer>print(integers);
+        GenericMethodDemo.<String>print(strings);
+    }
+    public static <E> void print(E[] list) {// Generic Static method
+        for (int i = 0; i < list.length; i++)
+        System.out.print(list[i] + " ");
+        System.out.println();
+    }
+}
+// 将实际类型放在尖括号内:
+GenericMethodDemo.<Integer>print(integers);
+GenericMethodDemo.<String>print(strings);
+// 简单调用, 编译器将自动发现实际的类型
+print(integers);
+print(strings);
+```
+**也可以将泛型指定为另一种类型的子类型**(受限的泛型类型) :
+```Java
+1 public class BoundedTypeDemo {
+2 public static void main(String[] args ) {
+3   Rectangle rectangle = new Rectangle(2, 2);
+4   Circle circle = new Circle(2);
+5
+6   System.out.println("Same area? " +
+7   equalArea(rectangle, circle));
+8 }
+9
+10 public static <E extends GeometricObject> boolean equalArea(
+11 E object1, E object2) {
+12  return object1.getArea() == object2.getArea();
+13 }
+14 }
+```
+
+### 原生类型和向后兼容
