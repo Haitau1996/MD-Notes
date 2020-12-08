@@ -735,3 +735,57 @@ print(strings);
 ```
 
 ### 原生类型和向后兼容
+
+没有指定具体类型的泛型类和泛型接口被称为原生类型, 用于和早期的 Java 代码兼容使用:
+
+```Java
+GenericStack stack = new GenericStack(); // raw type
+// 可以理解为是
+GenericStack<Object> stack = new GenericStack<Object>();
+```
+需要注意的是, 原生类型是不安全的, 如很多代码依旧使用原生类型 Comparable, java.lang.Comparable 使用了泛型类型, 那么这种代码就会引发运行时错误(使用编译选项 `-Xlint:unchecked` 可以让编译器生成警告):
+
+```Java
+Max.max("Welcome", 23); // 23 is autoboxed into new Integer(23)
+```
+更好的做法是使用泛型的方法编写 max 方法, 由于原生类型是不安全的, 我们尽量避免使用. 
+
+### 通配泛型
+很多时候我们希望避免这样的问题, Integer 是 Number 的子类型, 但是 `GenericStack<Integer>` 不是 `GenericStack<Number>` 的子类型, 这时候就会报错. 这时候我们就可以使用通配泛型类型, 它有三种形式:`?`, `? extend T` 和 `? super T`. (T 为泛型类型)
+* `?`:非受限通配, 理解为 `? extend Object`, 表示任何一个对象
+* `? extend T`: 受限通配, 表示 T 或者 T 的一个子类型
+* `? super T`: 下限通配, 表示 T 或者 T 的一个父类型
+
+```Java
+public static double max(GenericStack<Number> stack) {...}
+System.out.print("The max number is " + max(intStack)); // ERROR: 类型不匹配
+public static double max(GenericStack<? extends Number> stack){...}
+System.out.print("The max number is " + max(intStack));  // correct
+```
+![](figure/19.2.png)<br>
+
+### 泛型的擦除和限制
+泛型相关的信息可以被编译器使用, 但是**这些信息在运行时是不可使用的**, 这被称为是类型擦除.泛型存在于编译时, 一旦编译器确认泛型类型是安全使用的, 就会将它转换为原生类型.如用下面的方式创建两个对象:
+
+```Java
+ArrayList<String> list1 = new ArrayList<>();
+ArrayList<Integer> list2 = new ArrayList<>();
+System.out.println(list1 instanceof ArrayList);
+System.out.println(list2 instanceof ArrayList);
+```
+在编译时候他们是两个不同的类型, 但是运行的时候只有一个 ArrayList 类会被加载到 JVM 中, list1 和 list2 都是该类的实例, 因此返回的都是 true, `list1 instanceof ArrayList<String>` 这个表达式就毫无意义, 因为 `ArrayList<String>` 并没有在 JVM 中作为一个单独的类. <br>
+由于运行时的类型擦除, 对于如何使用泛型类型是有一定限制的:
+* 不能使用 `new E()`
+* 不能使用 `new E[]` : 但是可以通过创建一个 Object 类型的数组,然后类型转换为 E[] 以移除这个限制,同时类型转换会导致一个免检的编译警告(编译器无法确定类型转换能否成功)
+* 静态上下文中不允许类的参数是泛型类型: 泛型类型的所有实例都有相同的运行时类, 泛型类静态变量和方法是被它的所有实例桐乡的, 在静态方法\数据域或者初始化语句中, 为类引用泛型类型参数是非法的:
+    ```Java
+    public class Test<E> {
+        public static void m(E o1) { // Illegal
+        }
+        public static E o1; // Illegal
+        static {
+            E o2; // Illegal
+        }
+    }
+    ```
+* 异常类不能是泛型的
