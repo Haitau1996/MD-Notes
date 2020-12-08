@@ -121,6 +121,49 @@ private:
 };
 ```
 
+## 面试题 11: 旋转数组的最小数字
+不同的排序算法应用场合也不尽相同, 快排的总体平均效率是最好的, 但也不是在任何时候都是最优的算法, 如果面试官要求实现一个排序算法, 一定要问清楚这个拍讯的应用环境是什么, 有哪些约束条件. <br>
+题目描述: 把一个数组最开始的若干个元素搬到数组的末尾，我们称之为数组的旋转。输入一个递增排序的数组的一个旋转，输出旋转数组的最小元素。例如，数组{3, 4, 5, 1, 2} 为{l,2,3,4,5} 的一个旋转，该数组的最小值为1.<br>
+解题思路: 
+1. 本题给出的数组在一定程度上是有序的, 因此可以使用二分法寻找这个最小元素
+2. 使用两个指针指向数组的第一个元素和最后一个元素, 第一个元素应该是大于等于最后一个元素的(特例:排序数组的0号元素搬最后面, 整个数组旋转后刚好也是有序的)
+3. 取中间的元素和前面的第一个元素 以及后面的最后一个元素对比, 然后递归查找子数组,总的来说, **第一个指针总是指向前面递增数组的元素, 第二个指针总是指向后面递增数组的元素**
+```C++
+class Solution {
+public:
+    int minArray(vector<int>& numbers) {
+        if(numbers[0] < numbers[numbers.size()-1]) return numbers[0];
+        else return minArrayHelper(numbers,0,numbers.size()-1);
+    }
+    int minArrayHelper(vector<int>& number, size_t ptr1,size_t ptr2);
+    int minInOrder(vector<int>& number, size_t ptr1, size_t ptr2);
+};
+int Solution::minArrayHelper(vector<int>& number, size_t ptr1, size_t ptr2){
+    if(ptr2 - ptr1 <= 1) return number[ptr2];
+    else {
+        size_t mid = (ptr1 + ptr2) / 2;
+        if(number[ptr1] == number[ptr2] && number[ptr1] == number[mid])
+            return minInOrder(number, ptr1,ptr2);
+        if(number[mid] >= number[ptr1] ) 
+            return minArrayHelper(number, mid, ptr2);
+        else if(number[mid] <= number[ptr2])
+            return minArrayHelper(number,ptr1,mid);
+    }
+    return number[ptr2];
+}
+int Solution::minInOrder(vector<int>& number, size_t ptr1, size_t ptr2){
+    int result = number[ptr1];
+    for(size_t i = ptr1; i <= ptr2; ++i){
+        if(number[i] < result) 
+            result = number[i];
+    }
+    return result;
+}
+```
+这个题目解答的过程中需要考虑解决两个特殊的情况:
+1. 数组刚好是有序的, 旋转一轮之后又回来了
+2. 数组中相等的元素比较多, index1, index2 和 middle 指向的元素相同(这时候无法判断, 只能从头往后扫描)
+
 ## KMP 模式匹配算法
 
 假设有 Source 字符串 S("abcababca") 和 Target 字符串 T("abcabx"), T 的首字母"a" 与第二位 "b" 以及第三位 "c" 都是不想等的, 可以忽略朴素匹配算法的某些判断. i 值不回溯, 就是不能表笑, 需要考虑的变化就是 j 值了, **j 值得大小取决于当前字符之前的串的前后缀相似程度**:
