@@ -801,5 +801,39 @@ System.out.println(list2 instanceof ArrayList);
 * 存储 key-value 对, 称为映射
 
 这些集合的通用操作在接口中定义, 而实现则由具体的类中提供:<br>
-接口定义了通用的操作, 抽象类提供部分实现, 具体类用具体的数据结构实现这个接口. 提供一个部分实现接口的抽象类为用户编写代码提供了方便. 
+接口定义了通用的操作, 抽象类提供部分实现, 具体类用具体的数据结构实现这个接口. 提供一个部分实现接口的抽象类为用户编写代码提供了方便. <br>
 ![](figure/20.1.png)<br>
+Collection 接口提供了集合中添加与删除元素的基本操作, addAll removeAll retainAll 类似于集合规则上的并,差,交运算. 此外, Collection 接口中有的方法是不能再具体子类中实现的, 这种情况下可能抛出 `java.lang. UnsupportedOperationException`(运行时异常的一种), 我们也可以使用,如果一个方法在子类中没有意义, 可以按照如下方法实现它:
+```Java
+public void someMethod() {
+    throw new UnsupportedOperationException
+                    ("Method not supported");
+}
+```
+除了 Java.util.PriorityQueue 没有实现 Clonable 接口之外, Java 集合框架其他所有的具体类都实现了 `java.lang.Cloneable` 和 `java.io.Serializable`.<br>
+
+### 迭代器
+每种集合都是可迭代的, 可以获得集合的 Iterator 对象来遍历集合中的所有元素. 迭代器是一种经典的设计模式, 用于 **不需要暴露数据是如何保存在数据结构中细节的情况下,遍历一个数据结构**. 集合接口继承自 Iterable 接口, 其中定义了 iterator 方法返回一个迭代器, next() 方法提供对集合中元素的顺序访问, hasNext() 检测是否还有更多元素, remove方法移除迭代器返回的最后一个元素. 
+
+### _for each_ 方法
+可以使用 _for each_ 方法对集合中的每个元素执行一个操作:<br>
+![](figure/20.2.png)<br>
+Iterable 接口中添加了一个新的方法 forEach, 该方法指定一个参数来指定动作. 
+
+### 线性表
+继承自 Collection 接口, 定义了一个用于顺序存储元素的接口, 可以使用它的两个具体类 `ArrayList` 或者 `LinkedList` 来创建一个线性表. 
+#### List 接口中的通用方法
+List 接口定义了一个允许重复的有序集合, 支持的操作如下:<br>
+![](figure/20.3.png)<br>
+此外有相应的迭代器, ListIterator 接口让我们可以双向遍历线性表:<br>
+![](figure/20.4.png)<br>
+
+#### 数组线性表类 和 链表类
+数组, ArrayList 和 LinkedList 适用于不同的场合, 在这里我们讨论实现 List 接口的两个具体类.<br>
+ArrayList 使用可变大小的数组实现 List 接口, 并且提供一些方法用于管理存储线性表的内部数组大小:<br>
+![](figure/20.5.png)<br>
+LinkedList 是 List 接口的链表实现, 除了实现 List 接口外, 还提供从线性表两端获取,插入和删除元素的方法:<br>
+![](figure/20.6.png)<br>
+两种表最主要的不同体现在它们的内部实现上, 这种实现影响其性能, 链表可以用 get(i) 方法, 但是这是一个耗时的操作, 需要遍历所有元素时,我们应该使用一个 foreach 循环或者一个 forEach 方法:<br>
+![](figure/20.7.png)<br>
+
