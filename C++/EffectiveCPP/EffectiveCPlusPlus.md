@@ -1888,7 +1888,52 @@ void advance(IterT& iter, DistT d){
 
 ### Item 48: 认识元编程
 所谓元编程, 是一种C++ 写成, 执行于 C++ 编译器内的程序. 一旦程序执行, 其输出(template 具现出来的若干 C++ 源码) 便会一如既往地被编译. 其有两个主要的作用:
-//TODO
+* 让某些事情变得容易
+* 由于 template metaprograms 执行于 C++ 的编译期, 可以将工作从运行期转到编译期,错误可以在编译过程中找出
+
+过去我们说在检查 traits 类型的时候用 If-Else 检查发生在运行期, 这里使用typeid 实现它:
+```C++
+template<typename IterT, typename DistT>
+void advance(IterT& iter, DistT d){
+    if ( typeid(typename std::iterator_traits<IterT>::iterator_category) ==
+        typeid(std::random_access_iterator_tag)) {
+        iter += d; // use iterator arithmetic for random access iters
+    }              
+    else {
+    if (d >= 0) { while (d--) ++iter; } // use iterative calls to  ++ or -- for others
+    else { while (d++) --iter; }
+    }
+}
+```
+它的效率比 traits 解法(traits 解法就是 TMP) 低:
+* 类型测试发生在运行期而不是编译期
+* 运行期测试的代码会出现在(被连接于)可执行文件中
+
+TMP 中没有真正地循环构件, 所以循环效果系由递归(recursion) 完成, TMP 是一个函数式语言, **TMP 循环并不涉及递归函数调用, 而是涉及 "递归模板具现化"**:
+```C++
+template<unsigned n> // general case: the value of
+struct Factorial {   // Factorial<n> is n times the value of Factorial<n-1>
+    enum { value = n * Factorial<n-1>::value };
+};
+template<>            // special case: the value of
+struct Factorial<0> { // Factorial<0> is 1
+    enum { value = 1 };
+};
+// 得到阶乘的值
+Factorial<n>::value ;
+```
+每个 Factorial template 具现体都是一个 struct, 它们调用 enum hack 得到一个名为 value 的 TMP 变量, 每个具现体都有一份自己的 value, 每个 value 的值都是循环内的适当值. 这只是一个 TMP 的 hello world 示范程序, 在很多场景都能实现比较好的目标, 下面是几个例子:
+* 确保度量单位正确: 使用 TMP 可以确保在编译期程序中所有单位度量组合都正确, 因为分数指数也可以支持, 分数必须在编译期间被约简
+* 优化矩阵运算: 
+    ```C++
+    typedef SquareMatrix<double, 10000> BigMatrix;
+    BigMatrix m1, m2, m3, m4, m5;
+    ...
+    BigMatrix result = m1 * m2 * m3 * m4 * m5;
+    ```
+    正常地调用函数动作, 会产生 4 个临时性矩阵, 使用高级的 TMP 相关的技术(expression templates),就可能消除那些临时对象并且合并循环, 使用较小的内存, 提升执行速度
+* 可以生成客户定制的设计模式实现品
+
 ***
 ## 定制new和delete
 
