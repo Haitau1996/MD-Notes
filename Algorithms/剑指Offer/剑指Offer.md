@@ -129,6 +129,7 @@ private:
 2. 使用两个指针指向数组的第一个元素和最后一个元素, 第一个元素应该是大于等于最后一个元素的(特例:排序数组的0号元素搬最后面, 整个数组旋转后刚好也是有序的)
 3. 取中间的元素和前面的第一个元素 以及后面的最后一个元素对比, 然后递归查找子数组,总的来说, **第一个指针总是指向前面递增数组的元素, 第二个指针总是指向后面递增数组的元素**
 ```C++
+// 下面给出一个递归实现, 可以用 while 循环节约递归需要的程序调用栈
 class Solution {
 public:
     int minArray(vector<int>& numbers) {
@@ -148,8 +149,8 @@ int Solution::minArrayHelper(vector<int>& number, size_t ptr1, size_t ptr2){
             return minArrayHelper(number, mid, ptr2);
         else if(number[mid] <= number[ptr2])
             return minArrayHelper(number,ptr1,mid);
+        return number[mid];
     }
-    return number[ptr2];
 }
 int Solution::minInOrder(vector<int>& number, size_t ptr1, size_t ptr2){
     int result = number[ptr1];

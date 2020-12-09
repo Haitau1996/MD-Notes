@@ -577,7 +577,7 @@ processWidget(pw, priority());
 - 客户可能以错误的次序传递参数
 - 客户可能传递无效的天数或者月份
 
-类型系统是主要防范“undesirable code from compiling”的主要盟友，我们可以导入外覆类型(wrapper types)来区别天，月和年份，然后再在date的构造函数中使用这些类型。、
+类型系统是主要防范“undesirable code from compiling”的主要盟友，我们可以导入外覆类型(wrapper types)来区别天，月和年份，然后再在date的构造函数中使用这些类型。
 ```C++
 Date d(30, 3, 1995);                   // error! wrong types
 Date d(Day(30), Month(3), Year(1995)); // error! wrong types
@@ -618,7 +618,7 @@ std::shared_ptr<Investment> createInvestment();// return a smart pointer
 - **How general is your new type?** 也许是一个types家族，需要一个新的class template.
 - **确实需要新的type？** 
 
-### Item 20 用pass by reference to const 替换 By value
+### Item 20 用 pass by reference to const 替换 By value
 
 在default的情况下C++以by value的方式传递对象到函数，而这些对象的副本由<font color=red>对象的拷贝构造函数产出，使得pass-by-value成为昂贵的操作</font>.<br>
 ```C++
@@ -1733,7 +1733,64 @@ template<typename T>
 const Rational<T> operator*(const Rational<T>& lhs,
 const Rational<T>& rhs)
 { ... }
+Rational<int> oneHalf(1, 2);
+Rational<int> result = oneHalf * 2; // error! won’t compile
 ```
+为了完成具现化的过程, 编译器需要先知道 T 是什么, 如 operator* 的第一个参数 oneHalf 是一个 `Rational<int>`, 我们期待 non-explicit 构造函数将 2 转为 `Rational<int>`, 进而将 T 推导为 Int 调用具现化的 operator* , 但是 <font color=red> template 实参推导过程中从不将隐式类型转换函数纳入考虑</font>, 之前不涉及template part of C++ 中能做的事情现在无法实现.<br>
+利用一个事实: template class 内 friend 声明式可以指涉某个特定的函数, Class templates 并不倚赖 template 实参推导(它施行于 function templates 身上), **编译器总是能在 _class Rational\<T>_ 具现化时候知道 T 的类型**, 令 Rational\<T> class 声明适当的 operator* 为它的 friend 函数可以简化这个问题:
+```C++
+template<typename T>
+class Rational {
+public:
+    ...
+    friend // declare operator*
+    const Rational operator*(const Rational& lhs,  // function (see
+                             const Rational& rhs); // below for details)
+};
+template<typename T> // define operator* functions
+const Rational<T> operator*(const Rational<T>& lhs, 
+                            const Rational<T>& rhs)
+{ ... }
+```
+这时候对 operator* 的混合表达式调用就可以通过编译了, oneHalf 被声明为一个 `Rational<int>` , class Rational\<int> 被具现化出来, 作为过程的一部分, friend 函数 operator* 也就自动声明出来了, **后者是一个函数而不是函数模板, 编译器可以在调用它的时候使用隐式类型转换函数**, 这段代码可以通过编译, 但是无法连接.<br>
+我们已经声明了一个函数, 就有责任定义那个函数, 既然没有提供定义式, 连接器自然无法找到, 简单的解决办法就是直接在声明后写出函数本体:
+```C++
+template<typename T>
+class Rational {
+public:
+    ...
+    friend const Rational operator*(const Rational& lhs, const Rational& rhs){
+        return Rational( lhs.numerator() * rhs.numerator(), 
+                         lhs.denominator() * rhs.denominator()); 
+    } 
+};
+```
+我们声明了 friend , 但是与传统的 friend 用途(访问类内私有成员) 毫不相干, 这个 friend 在类内实现, 自动成为 inline, 为了减小这种冲击, 可以让 operator* 不做任何事情, 只是调用一个定义在 class 外部的辅助函数, 只是在这个简单的 case 中这么做意义不大, 具体是这样做的:
+```C++
+// 在头文件中
+template<typename T> class Rational; // 声明类模板
+template<typename T>                 // 声明辅助函数模板
+const Rational<T> doMultiply( const Rational<T>& lhs, 
+                              const Rational<T>& rhs);
+template<typename T>
+class Rational {
+public:
+    ...
+    friend const Rational<T> operator*(const Rational<T>& lhs,
+                                    const Rational<T>& rhs) 
+    { return doMultiply(lhs, rhs); } // friend 调用辅助函数
+    ...
+};
+// 在实现的文件中, 声明语句也要在头文件中
+template<typename T> 
+const Rational<T> doMultiply(const Rational<T>& lhs, 
+                             const Rational<T>& rhs) 
+{ 
+    return Rational<T>(lhs.numerator() * rhs.numerator(), 
+    lhs.denominator() * rhs.denominator());
+}
+```
+***
 ## 定制new和delete
 
 多线程环境下的内存管理, 受到单线程系统不曾遇到过的挑战, heap 是一个可被改动的全局资源, 在多线程系统充斥着疯狂访问这类资源的 **race condition** ,如果没有适当的同步控制,一旦使用无锁算法或者精心防止并发访问时,  调用内存的例程很容易导致heap的数据结构内容损坏.此外, STL中使用的内存**是由容器所拥有的分配器对象(allocator objects)管理**, 而不是直接由new和delete管理.
