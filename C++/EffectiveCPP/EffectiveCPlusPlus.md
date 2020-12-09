@@ -1790,6 +1790,22 @@ const Rational<T> doMultiply(const Rational<T>& lhs,
     lhs.denominator() * rhs.denominator());
 }
 ```
+
+### Item 47: 使用 traits class 表现类型信息
+首先回顾一下 STL 的迭代器分类:
+* Input/Output 迭代器: 只能向前/向后移动, 一次一步, 客户只能读取(不可写)/涂写(不可读) 他们所指的东西, 而且只能读取/涂写一次
+* Forward 迭代器: 可以做上面两种迭代器能做的每一件事, 而且能做多次
+* BiDirectional 迭代器: 可以向前移动也可以向后移动
+* random access 迭代器: 可以执行迭代器算术
+    ```C++
+    struct input_iterator_tag {};
+    struct output_iterator_tag {};
+    struct forward_iterator_tag: public input_iterator_tag {};
+    struct bidirectional_iterator_tag: public forward_iterator_tag {};
+    struct random_access_iterator_tag: public bidirectional_iterator_tag {};
+    ```
+    
+这种情况下, 我们知道 STL 迭代器有不同的能力, 如果我们要利用 random access 迭代器随机访问的优化, 我们最好先要能判断一个迭代器到底是不是. 
 ***
 ## 定制new和delete
 
