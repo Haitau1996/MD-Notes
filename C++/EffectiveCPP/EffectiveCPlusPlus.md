@@ -1805,7 +1805,87 @@ const Rational<T> doMultiply(const Rational<T>& lhs,
     struct random_access_iterator_tag: public bidirectional_iterator_tag {};
     ```
     
-这种情况下, 我们知道 STL 迭代器有不同的能力, 如果我们要利用 random access 迭代器随机访问的优化, 我们最好先要能判断一个迭代器到底是不是. 
+这种情况下, 我们知道 STL 迭代器有不同的能力, 如果我们要利用 random access 迭代器随机访问的优化, 我们最好先要能判断一个迭代器到底是不是 random access iterator, 这就是 traits 做的事情 : **它允许你在编译期间得到某些类型信息**. <br>
+Traits 并不是关键字或者预定义好的构件, 它是一种技术, 也是一个 C++ 程序员共同遵守的协议, 这个技术 **要求内置类型和用户自定义类型的表现必须一样好**: 这意味着 类型内嵌套信息这种东西出局, 因为无法将信息嵌套在原始指针内. **标准的技术是将它放入一个 _template_ 以及其一个或者多个特化的版本中**, 这样的模板在标准库中有若干个, 其中针对迭代器的实现命名为 _iterator\_traits_:
+```C++
+template<typename IterT>    // template for information about
+struct iterator_traits;     // iterator type
+```
+具体的工作方式如下: 针对每个类型的 IterT, 在 `struct iterator_traits<IterT>` 声明一个 typedef 名为 iterator_category , 这个 typedef 用来确定 IterT 的类型:
+```C++
+// deque 支持随机访问迭代器
+template < ... > // template params 在此省略
+class deque {
+public:
+    class iterator {
+    public:
+        typedef random_access_iterator_tag iterator_category;
+        ...
+    };
+    ...
+};
+// list 支持双向访问
+template < ... > 
+class list {
+public:
+    class iterator {
+        public:
+        typedef bidirectional_iterator_tag iterator_category;
+        ...
+    };
+    ...
+};
+// 在 iterator class 中使用嵌套的 typedef
+template<typename IterT>
+struct iterator_traits {
+    typedef typename IterT::iterator_category iterator_category;
+    ...
+};
+```
+指针不能嵌套 typedef, 我们专门为了指针类型提供一个偏特化的版本:
+```C++
+template<typename T> // partial template specialization for built-in pointer types
+struct iterator_traits<T*> {
+    typedef random_access_iterator_tag iterator_category;
+    ...
+};
+```
+
+这时候我们就可以使用 iterator_traits 针对 random_access_iterator 实现更好的 advance 函数, 这时候 if-else 是在运行时判断, 我们可以**使用函数重载的方式在编译期间核定类型**:
+```C++
+template<typename IterT, typename DistT> // use this impl for random access iterators
+void doAdvance( IterT& iter, DistT d, 
+                std::random_access_iterator_tag) {
+    iter += d;
+}
+template<typename IterT, typename DistT> // use this impl for  bidirectional iterators
+void doAdvance( IterT& iter, DistT d, 
+                std::bidirectional_iterator_tag) {
+    if (d >= 0) { while (d--) ++iter; }
+    else { while (d++) --iter; }
+}
+template<typename IterT, typename DistT> // use this impl for input iterators
+void doAdvance( IterT& iter, DistT d, 
+                std::input_iterator_tag){
+    if (d < 0 ) {
+    throw std::out_of_range("Negative distance"); 
+    }
+    while (d--) ++iter;
+}
+// 在此基础上, advance 只需要做很少的事情
+template<typename IterT, typename DistT>
+void advance(IterT& iter, DistT d){
+    doAdvance( 
+        iter, d, 
+        typename 
+        std::iterator_traits<IterT>::iterator_category() 
+    ); 
+}
+```
+这就是一个 traits class 典型的使用方式:
+* 建立一组重载的函数(像是劳工)或者函数模板(上面的 doAdvance), 彼此间的差异只有各个的 traits 参数
+* 建立一个控制函数(像是工头)或者函数模板(上面的 Advance), 调用上面的劳工函数并且传递 traits 信息
+
 ***
 ## 定制new和delete
 
