@@ -219,6 +219,53 @@ public:
 * 在书中使用一个 bool* 存放已经访问过的位置的信息, 我使用 `vector<vetcot<bool>>` 用类似的方法发现时间不够
 * 可以在原数组中将访问过的元素设置为 `\0`, 如果失败的话就改回来, 这样看起来能节约不少时间空间
 * 这里的回溯过程就是将 chaIndex 减小, 同时将已经访问过的点改回原来的值
+
+## 面试题 13: 机器人的运动范围
+题目描述:题目：地上有一个m 行n 列的方格。一个机器人从坐标(0, 0) 的格子开始移动，它每次可以向左、右、上、下移动一格，但不能进入行坐标和列坐标的数位之和大千k 的格子。例如，当k 为18 时，机器人能够进入方格(35, 37) ，因为3+5+3+7= 18 。但它不能进入方格(35 , 38) ， 因为3+5+3+8= 19 。请问该机器人能够到达多少个格子？<br>
+解题思路: 
+* 初始化 `vector<vetcot<bool>>(m,vector<bool>(n,false))` 用于存储访问过的点
+* 如果当前点可行, 将访问信息设置为 true, sum + 1, 然后将周围的点全部累加起来, 计算过的就不会再算一次了
+
+```C++
+class Solution {
+public:
+    int movingCount(int m, int n, int k) {
+        if(m <= 0 || n <= 0 || k < 0) return 0;
+        else if(k == 0) return 1;
+        else{
+            vector<vector<bool>> marked = vector<vector<bool>>(m,vector<bool>(n,false)) ;
+            return count(marked,0,0,m,n,k);
+        }
+    }
+private:
+    int getDigitsSum(int k);
+    bool canCount(int row, int col, int m, int n,int k,vector<vector<bool>>& marked);
+    int count(vector<vector<bool>>& marked, int row, int col, int m, int n, int k);
+};
+int Solution::getDigitsSum(int k){
+    int digitSum{0};
+    while(k>0){
+        digitSum += (k % 10);
+        k /= 10;
+    }
+    return digitSum;
+}
+bool Solution::canCount(int row, int col, int m, int n, int k,vector<vector<bool>>& marked){
+    if(row >= 0 && row <=m-1 && col >= 0 && col <= n-1 && getDigitsSum(row)+ getDigitsSum(col) <=k && !marked[row][col] )
+        return true;
+    else return false;
+}
+int Solution::count(vector<vector<bool>>& marked, int row, int col, int m, int n, int k){
+    int sum = 0;
+    if(canCount(row,col,m,n, k,marked)){
+        marked[row][col] = true;
+        sum = 1 + count(marked, row+1, col, m,n,k) + count(marked, row-1, col, m,n,k) 
+                + count(marked, row, col+1, m,n,k) + count(marked, row, col-1, m,n,k);
+    }
+    return sum;
+}
+```
+做这个题目的时候, 最常见的额问题就是将 m,n,k 搞混, leetcode 默认给的命名不是特别好
 ## KMP 模式匹配算法
 
 假设有 Source 字符串 S("abcababca") 和 Target 字符串 T("abcabx"), T 的首字母"a" 与第二位 "b" 以及第三位 "c" 都是不想等的, 可以忽略朴素匹配算法的某些判断. i 值不回溯, 就是不能表笑, 需要考虑的变化就是 j 值了, **j 值得大小取决于当前字符之前的串的前后缀相似程度**:
