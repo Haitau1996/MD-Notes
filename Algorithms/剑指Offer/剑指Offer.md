@@ -165,6 +165,60 @@ int Solution::minInOrder(vector<int>& number, size_t ptr1, size_t ptr2){
 1. 数组刚好是有序的, 旋转一轮之后又回来了
 2. 数组中相等的元素比较多, index1, index2 和 middle 指向的元素相同(这时候无法判断, 只能从头往后扫描)
 
+## 面试题 12 : 矩阵中的路径
+回溯可以看成是暴力发的升级版本, 适合解决由多个步骤组成的问题, 并且每个步骤都有多个选项, 当我们在某一步选择了其中一个选项时，就进入下一步，然后又面临新的选项。解决问题的过程可以形象地用树表示. <br>
+题目描述: ：请设计一个函数，用来判断在一个矩阵中是否存在一条包含某字符串所有字符的路径。路径可以从矩阵中的任意一格开始，每一步可以在矩阵中向左、右、上、下移动一格。如果一条路径经过了矩阵的某一格，那么该路径不能再次进入该格子。<br>
+* 矩阵中任意选取一个格子作为路径的起点
+* 某个格子字符为 ch, 且对应 str 的第 i 个字符, 若不想等, 则这个格子不可能在路径上
+* 若相当等, 就到临近的地方找第 i+1 个字符
+
+```C++
+class Solution {
+public:
+    bool exist(vector<vector<char>>& board, string word) {
+        // 遇到特殊的情况, 直接返回 false
+        if(board.size()==0 || board[0].size()==0 || word.length() == 0) return false;
+        else {
+            size_t chaIndex = 0;
+            for(size_t i=0; i < board.size(); ++i){
+                for(size_t j=0; j < board[0].size(); ++j){
+                    if(existHelper(board, i, j, word, chaIndex)){
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+    }
+    bool existHelper(vector<vector<char>>& board, size_t row, size_t col, const string& word, size_t chaIndex){
+        // base case: charIndex == word.length()
+        if(chaIndex == word.length()) return true;
+        if( row < board.size() && col < board[0].size() && board[row][col] == word[chaIndex])
+        {
+            ++chaIndex;
+            char temp = board[row][col];
+            board[row][col] = '\0';
+            if (existHelper(board, row, col-1,word,chaIndex) ||
+                existHelper(board, row, col+1,word,chaIndex) ||
+                existHelper(board, row-1, col,word,chaIndex) ||
+                existHelper(board, row+1, col,word,chaIndex)) 
+              return true;
+
+            else{
+                --chaIndex;
+                board[row][col] = temp;
+            }
+        }
+        return false;
+    }
+};
+```
+
+写这个题目时候有几点需要注意:
+* 在书中使用一个 bool* 存放已经访问过的位置的信息, 我使用 `vector<vetcot<bool>>` 用类似的方法发现时间不够
+* 可以在原数组中将访问过的元素设置为 `\0`, 如果失败的话就改回来, 这样看起来能节约不少时间空间
+* 这里的回溯过程就是将 chaIndex 减小, 同时将已经访问过的点改回原来的值
 ## KMP 模式匹配算法
 
 假设有 Source 字符串 S("abcababca") 和 Target 字符串 T("abcabx"), T 的首字母"a" 与第二位 "b" 以及第三位 "c" 都是不想等的, 可以忽略朴素匹配算法的某些判断. i 值不回溯, 就是不能表笑, 需要考虑的变化就是 j 值了, **j 值得大小取决于当前字符之前的串的前后缀相似程度**:
