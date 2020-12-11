@@ -265,7 +265,68 @@ int Solution::count(vector<vector<bool>>& marked, int row, int col, int m, int n
     return sum;
 }
 ```
-做这个题目的时候, 最常见的额问题就是将 m,n,k 搞混, leetcode 默认给的命名不是特别好
+* 做这个题目的时候, 最常见的问题就是将 m,n,k 搞混, leetcode 默认给的命名不是特别好, 在 vector 中访问出现了内存溢出
+* 还有一个细节问题, 就是m,n 不为 0, 但是 k 为零的时候应该返回 1 (存在一个点<0,0>可以访问) 
+
+## 面试题 14: 剪绳子
+题目描述: 给你一根长度为n 的绳子，请把绳子剪成m 段( m 、n 都是整数，n>l 并且m>l) ，每段绳子的长度记为k[0],k[1 ], · · ·,k[m] 。请问 $k[0] \times k[l] \times · · · \times k[m]$可能的最大乘积是多少？例如， 当绳子的长度是8 时，我们把它剪成长度分别为2 、3 、3 的三段，此时得到的最大乘积是18。
+### 动态规划解法
+应用动态规划之前要分析能否把大问题分解成小问题，分解后的每个小问题也存在最优解。如果把小问题的最优解组合起来能够得到整个问题的最优解， 就可以使用它来解决问题.<br>
+* 如果可以得到从 1 到 n-1 时候剪绳子的最大值 f(1) ... f(n-1)
+* 那我们只需要考虑将绳子分为两个部分, i 和 n-i, i 从 1 取到 n/2, 取其中的最大值即可
+
+```C++
+class Solution {
+public:
+    int cuttingRope(int n) {
+        // 使用动态规划解决问题
+        if(n <=1 ) return 0;
+        else if(n == 2) return 1;
+        else if(n == 3) return 2;
+        int result[n+1];
+        result[0] = 0;
+        result[1] = 1;
+        result[2] = 2;
+        result[3] = 3;
+        for(int index = 4; index <=n; ++index){
+            int temp{};
+            for(int j = 1; j <= index/2; ++j){
+                // 从 result 数组中直接读取数据, 而不是用递归
+                int local = result[j] * result[index-j];
+                if( local > temp)
+                    temp = local;
+            }
+            result[index] = temp;
+        }
+        return result[n];
+
+    }
+};
+```
+* 需要注意的是, 对于每个 index, 都是需要从数组中直接读取 result, 用递归的话函数调用栈会十分庞大
+* n= 2 时候, 因为需要切割(m>1), 输出是 1, 但是 4分成两个 2 的时候, 是可以按照不切的情况算, 所以向数组中写入的数据是2不是1, 同样的 3 写入的是 3 不是 2, result[0] = 0, 说明不能不切
+
+### 贪婪算法
+
+剩下绳子的长度大于等于 5 的时候, 我们应该尽可能多地将他们剪成 3 的小段:
+```C++
+class Solution {
+public:
+    int integerBreak(int n) {
+        if(n == 2) return 1;
+        else if(n == 3) return 2;
+        else{
+            int result = 1;
+            while( n >= 5){
+                result = (result *3) ;
+                n -= 3;
+            }
+            result = (result *n) ;
+            return result;
+        }
+    }
+};
+```
 ## KMP 模式匹配算法
 
 假设有 Source 字符串 S("abcababca") 和 Target 字符串 T("abcabx"), T 的首字母"a" 与第二位 "b" 以及第三位 "c" 都是不想等的, 可以忽略朴素匹配算法的某些判断. i 值不回溯, 就是不能表笑, 需要考虑的变化就是 j 值了, **j 值得大小取决于当前字符之前的串的前后缀相似程度**:
