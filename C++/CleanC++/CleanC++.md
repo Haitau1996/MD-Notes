@@ -56,7 +56,124 @@ void BookInventoryTest::aBookThatIsAlreadyBorrowedCanNotBeBorrowedTwice();
 
 #### 单元测试的独立性
 
-每个单元测试和其他单元测试都必须是独立的, 如果单元测试之间是以特定的顺序执行, 拿将是致命的. 当离开一个单元测试的时候, 不应该改变测试单元的状态. 
+每个单元测试和其他单元测试都必须是独立的, 如果单元测试之间是以特定的顺序执行, 拿将是致命的. 当离开一个单元测试的时候, 不应该改变测试单元的状态. 同时需要注意, 测试环境也是要独立初始化, 每个单元测试都必须是应用程序的一个独立可运行的实例: 完全自行设置和初始化所需要的环境, 执行单元测试后的清理工作.
 
 #### 一个测试一个断言
 一个测试中多个断言带来的问题是显而易见的:
+* 开发人员难以快速找到错误的原因
+* 我们应该用精确而且富有表现力的方式命名测试, 但是很难为多个测试的单元找到合适的名字
+    ```C++
+    // 一个测试用一个断言
+    void MoneyTest::givenTwoMoneyObjectsWithDifferentBalance_theInequalityComparison_Works(){ 
+        const Money m1(-4000.0); 
+        const Money m2(2000.0); 
+        ASSERT_TRUE(m1 != m2); 
+    }
+    // 一个测试里面多个断言, 不是好的范例
+    void MoneyTest::givenTwoMoneyObjectsWithDifferentBalance_testAllComparisonOperators() {
+        const Money m1(-4000.0);
+        const Money m2(2000.0);
+        ASSERT_TRUE(m1 != m2);
+        ASSERT_FALSE(m1 == m2);
+        ASSERT_TRUE(m1 < m2);
+        ASSERT_FALSE(m1 > m2);
+        // ...more assertions here...
+    }
+    ```
+#### 一些提醒 
+
+* **不到对 getters 和 setters 做单元测试**: 测试常见且简单的单元 _getters / setters_ 是没有必要的
+* **不要对第三方代码做单元测试**: 我们预设第三方库都是有自己的单元测试, 在自己的项目中, 不要使用那些没有单元测试或者质量可疑的库或者框架
+* 不要对外部系统做单元测试: 需要注意的是这不是你的责任, 测试自己的代码而不是别人的
+* 处理数据库的访问: **能不使用数据库进行单元测试, 就不使用**, 单元测试为了不同的目的而共享数据库, 对独立性有影响,此外数据库的访问可能使得测试需要多花费几分钟的时间(解决的办法是模拟数据库, 也不要访问磁盘网络)
+* **不要混淆测试代码和产品代码**,上面这个例子将用一个布尔值确认是否进入测试代码, 测试时用的替身(FackDAOForTest) 替换 DAO(Data Access Object), 带来两个问题:
+    - 增加产品复杂度并且降低代码的可读性
+    - 测试类也变成了系统的一部分, 被部署到了生产环境中
+    ```C++
+    #include <memory>
+    #include "DataAccessObject.h"
+    #include "CustomerDAO.h"
+    #include "FakeDAOForTest.h"
+    using DataAccessObjectPtr = std::unique_ptr<DataAccessObject>;
+    class Customer {
+    public:
+        Customer() {}
+        explicit Customer(bool testMode) : inTestMode(testMode) {}
+        void save() {
+        DataAccessObjectPtr dataAccessObject = getDataAccessObject();
+        // ...use dataAccessObject to save this customer...
+        };
+    private:
+        DataAccessObjectPtr getDataAccessObject() const {
+            if (inTestMode) {
+                return std::make_unique<FakeDAOForTest>();
+            } else {
+                return std::make_unique<CustomerDAO>();
+            }
+        }
+        // ...more operations here...
+        bool inTestMode{ false };
+        // ...more attributes here...
+    };
+    ```
+    解决办法有很多种, 如在 save 中注入特定的DAO作为一个参数:
+    ```C++
+    class DataAccessObject;
+    class Customer {
+    public:
+        void save(DataAccessObject& dataAccessObject) {
+        // ...use dataAccessObject to save this customer...
+        }
+    }
+    ```
+    可以在构造实例的时候完成, 保存一个 DAO 对象的引用, 然后用特定 DAO 构造对象, 同时禁止默认构造函数:
+    ```C++
+    class DataAccessObject;
+    class Customer {
+    public:
+        Customer() = delete;
+        Customer(DataAccessObject& dataAccessObject) : dataAccessObject(dataAccessObject) {}
+        void save() {
+        // ...use member dataAccessObject to save this customer...
+        }
+        // ...
+    private:
+        DataAccessObject& dataAccessObject;
+        // ...
+    };
+    ```
+    第三种方式是用一个 Customer 已知的工厂函数创建, 测试环境中可以外部配置工厂创建需要的DAO对象, 这三种做法的目的在于: **Customer 与特定的 DAO 没有依赖关系**.
+* **测试必须快速执行** : 单元测试必须为开发者建立一套快速反馈机制. 
+
+#### 测试替身
+要测试的单元与其他模块或者外部系统的依赖性应该被**测试替身**(Test DOubles) 替换, 尽量达到被测试单元之间的松耦合, 例如我们写的程序用外部的 Web 服务进行货币转换, 单元测试期间, 外部服务不可得.就必须在代码中间引入一个可变点(通常使用一个接口达到目的, C++ 中形式就是一个仅包含 纯虚成员函数的抽象类), 得益于接口这种抽象, 客户代码在运行时对于不同的实现都很 transparent:
+```C++
+class CurrencyConverter {
+public:
+    virtual ~CurrencyConverter() { }
+    virtual long double getConversionFactor() const = 0;
+};
+// Internet 访问被封装在此
+class RealtimeCurrencyConversionService : public CurrencyConverter {
+public:
+    virtual long double getConversionFactor() const override;
+    // ...more members here that are required to access the service...
+};
+// 使用一个测试替身
+class CurrencyConversionServiceMock : public CurrencyConverter {
+public:
+    virtual long double getConversionFactor() const override {
+        return conversionFactor;
+    }
+    void setConversionFactor(const long double value) {
+        conversionFactor = value;
+    }
+private:
+    long double conversionFactor{0.5};
+};
+```
+![](figure/2.2.jpg)<br>
+
+## Chap 3: 原则
+原则是一种规则或者指引你的观点, 并不是不可改变的法律, 有时编程必须故意违背其中一些原则, 只要我们有充分的理由, 但是这么做的时候要小心.
+* 保持简单和直接: 
