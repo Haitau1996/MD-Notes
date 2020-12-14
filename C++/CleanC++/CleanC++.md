@@ -193,3 +193,61 @@ private:
 * 童子军原则: 离开营地的时候, 应该让露营比你来的时候更干净. 一旦发现了容易引起混乱的东西, 应该立即处理.
 
 ## Chap 4: C++ 整洁代码的基本规范
+
+如果还没有开始使用 C++11 的更高版本, 请立即开始使用.
+
+### 良好的命名
+源代码文件,命名空间, 类, 模板, 函数, 参数,变量和常量, 都应该有具体并且富有表现力的名称, 我们看一个反面的例子:
+```C++
+SbxInfo* ProcessWrapper::GetInfo( short nIdx ){
+    Methods* p = &pMethods[ nIdx ];
+    // Wenn mal eine Hilfedatei zur Verfuegung steht:
+    // SbxInfo* pResultInfo = new SbxInfo( Hilfedateiname, p->nHelpId );
+    SbxInfo* pResultInfo = new SbxInfo;
+    short nPar = p->nArgs & _ARGSMASK;
+    for( short i = 0; i < nPar; i++ ){
+        p++;
+        String aMethodName( p->pName, RTL_TEXTENCODING_ASCII_US );
+        sal_uInt16 nInfoFlags = ( p->nArgs >> 8 ) & 0x03;
+        if( p->nArgs & _OPT )
+        nInfoFlags |= SBX_OPTIONAL;
+        pResultInfo->AddParam( aMethodName, p->eType, nInfoFlags );
+    }
+    return pResultInfo;
+}
+```
+这段代码一个主要的问题就是命名不佳, 如函数名 GetInfo() 非常抽象, 命名空间 `ProcessWrapper` 也不是很有帮助, 如果这个函数提取正在运行的进程信息, `RetrieveProcessInformation()` 就是个很好的名字, 此外函数还用 new 运算符创建新的东西, 为了强调这个事实, `CreateProcessInformation()` 也是一个更好的选择. 此外, 这个函数的参数和返回值都相对较为抽象.<br>
+#### 名称应该自注释
+所谓自注释代码, 就是不需要注释和解释其用途的代码, 这种自注释代码要求为它的命名空间/类/变量/常量和函数提供自我解释性质的命名. 
+```C++
+// 没有意义的命名例子
+unsigned int num;
+bool flag;
+std::vector<Customer> list;
+Product data;
+// 对他们的一些改进
+unsigned int numberOfArticles;
+bool isChanged;
+std::vector<Customer> customers;
+Product orderedProduct;
+// 太冗长的命名也是不恰当的
+totalNumberOfCustomerEntriesWithMangledAddressInformation =
+        amountOfCustomerEntriesWithIncompleteOrMissingZipCode +
+        amountOfCustomerEntriesWithoutCityInformation +
+        amountOfCustomerEntriesWithoutStreetInformation;
+```
+
+#### 使用域中的名称
+领域驱动设计(Domain-Driven Design) 试图将业务领域中的事务和概念映射到代码中, 使你的软件称为一个真实系统的模型. 这可以促进开发人员与其他利益相关人员之间的沟通和交流. 如一个汽车租赁使用情况的类可以这样设计:
+```C++
+class ReserveCarUseCaseController {
+public:
+    Customer identifyCustomer(const UniqueIdentifier& customerId);
+    CarList getListOfAvailableCars(const Station& atStation, 
+                                   const RentalPeriod&  desiredRentalPeriod) const;
+    ConfirmationOfReservation reserveCar(const UniqueIdentifier& carId, 
+                                         const RentalPeriod& rentalPeriod) const;
+private:
+    Customer& inquiringCustomer;
+};
+```
