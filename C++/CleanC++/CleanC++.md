@@ -287,4 +287,44 @@ Car carToWash; // Good
 CustomerAccount* account = customer->getAccount(); // Retrieve the customer's account(这是很显然的)
 account->setLoyaltyDiscountInPercent(discount); // Grant a 10% discount(这里代码和注释就不同了)
 ```
-**不要通过注释禁用代码**:
+**不要通过注释禁用代码**:这除了增加代码的混乱程度外没有带来实际意义的好处. **除了快速进行测试之外, 不要通过注释禁用代码, 同时还需要有一个版本控制系统**.<br>
+**不要写块注释**: 这种注释纯粹是引入混乱, 应该立即删除. 我们无需添加版权注释或者进行其他操作即可对自己的作品拥有版权, 如果要添加, 可以将它们放到独立的文件中. 此外, 不要使用注释代替版本控制, `git log --[filename]` 可以轻松查看到修改的历史记录.<br>
+**特殊情况的注释是有用的**: 如果一段代码具有高度的内在复杂性, 以至于没有深入专业知识的人无法轻易理解, 那么注释就是合理的. 这时候可能故意偏离了良好的设计原则, 如违背了DRY. 下面是针对不可避免添加的注释的建议:
+* 确保你的注释为代码增加了价值
+* 应该解释为什么这样做, 而不是怎样做的
+* 尽量做到注释尽可能短而且富有表现力
+
+#### 从源代码生成文档
+Doxygen 可以从文档生成提取文档, 为了获得有意义的文档, 代码必须以特定的注释格式进行注释. 如果不得不用这种风格注释, 建议**只关注公共API的部分**, 对于其他部分(如内部使用的模块或者私有功能), 不建议配备 Doxygen 注释.
+```C++
+//! Each customer must have an account, so bookings can be made. The account
+//! is also necessary for the creation of monthly invoices.
+//! @ingroup entities
+//! @ingroup accounting
+class CustomerAccount {
+    // ...
+    //! Regular customers occasionally receive a regular discount on their
+    //! purchases.
+    void grantDiscount(const PercentageValue& discount);
+    // ...
+};
+```
+这时候, 我们就可以用 `const PercentageValue` 替代 `unsigned short`,让参数可以自我解释.
+
+### 函数
+函数代表代码之上的第一个组织单位, 编写良好的函数可以显著提高程序的可读性和可维护性. 我们在设计优秀的软件时应该考虑下面的因素:<br>
+**只做一件事情**: 一个函数, 必须定义一个非常清晰的任务或者功能,它应该用它的函数签名来表示. 下面是一些判断函数做了太多事情的标志:
+* 函数体量比较大
+* 如果试图为函数找到一个有意义的词语描述函数的功能的时候, 名字中无法避免使用连词(_and/or_)
+* 圈复杂度比较高(包含太多的 if-else 或者 switch)
+* 函数的输入参数比较多
+
+**让函数尽可能小**: 函数应该尽可能小, 理想情况下是 5-6 行, 最多 12~15 行. 大函数使用起来, 通常有比较高的复杂性, 难以看出函数的作用, 此外也容易拥有比较多的职责. 当然, 如果一个包含单个 switch 语句的函数极其整洁也容易理解, 这也是可以接受的. 现代的 C++ 编译器已经非常擅长优化, 我们应该将时间花在真正地性能问题上(通常源于糟糕的结构和设计), 不用过于担心函数调用的开销.<br>
+**函数命名**: 函数定义了程序的行为, 其名称都有动词, 一般都用动词开头. 如果用于提供信息, 通常用 is/has 开头, 下面是一些良好命名函数的例子:
+```C++
+void CustomerAccount::grantDiscount(DiscountValue discount);
+void Subject::attachObserver(const Observer& observer);
+void Subject::notifyAllObservers() const;
+int Bottling::getTotalAmountOfFilledBottles() const;
+bool AutomaticDoor::isOpen() const;
+```
