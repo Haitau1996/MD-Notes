@@ -328,3 +328,57 @@ void Subject::notifyAllObservers() const;
 int Bottling::getTotalAmountOfFilledBottles() const;
 bool AutomaticDoor::isOpen() const;
 ```
+**使用容易理解的名称**(Intention-Revealing): 
+函数名称应该很好地表达其目的或者意图, 而不是解释它的工作原理. 我们想要从 HTML 中提取标题, 可以用一行代码 `std::string head = html.substr(startOfHeader, lengthOfHeader);` 做到, 一个更好的做法是提供一个暴露目的的名称:
+```C++
+std::string ReportRenderer::extractHtmlHeader(const std::string& html) {
+    return html.substr(startOfHeader, lengthOfHeader);
+}
+...
+std::string head = extractHtmlHeader(html);
+```
+#### 函数的参数和返回值
+Clean Code 中对于函数参数个数的建议: 理想的参数是 0 个, 接下来是 1 个, 接下来是 2 个, 尽可能避免使用三个参数, 超过 3 个就需要特别的证明, 或者无论如何都不应该使用. <br>
+0 个参数包含了隐式参数(_this_), 函数没有参数一定程度上意味着副作用. 函数参数多了会带来一系列的问题:
+* 除了内置类型, 每个参数都可能导致依赖关系
+* 必须在函数内的某处处理每个参数(如果不是, 参数不是必须的, 应该马上删除), 这让函数变得十分复杂
+
+本书的建议是, 函数的参数应该尽可能地少, 一个参数是比较理想的, 类的成员函数一般没有参数(这种函数一般用于操作对象内部的状态或者从对象中查询内容). <br>
+**避免使用标志参数**: 函数根据标志参数的值选择执行不同的操作, 这背后其实是有问题的. 例如:
+* 参数标志意味着函数引入了多条执行路径, 这意味着函数没有完全正确地完成一件事(违反单一职责原则)
+* 函数在某个地方调用, 不分析函数体的话无法知道 true/false 究竟意味着什么
+
+这种情况下有两种解决办法:
+1. 提供单独的,命名良好的函数
+    ```C++
+    Invoice Billing::createSimpleInvoice(const BookingItems& items) {
+        //... 这是简单的服务清单
+    }
+    Invoice Billing::createInvoiceWithDetails(const BookingItems& items) {
+        Invoice invoice = createSimpleInvoice(items);
+        //... 在这里, 做 detailed Invoice 额外的事情
+    }
+    ```
+2. 对他们做特殊化处理, 使用多态改变实现不同细节的 Invoice:
+    ```C++
+    class Billing {
+    public:
+        virtual Invoice createInvoice(const BookingItems& items) = 0;
+        // ... 在基类中声明接口
+    };
+    class SimpleBilling : public Billing {
+    public:
+        virtual Invoice createInvoice(const BookingItems& items) override;
+        // ...
+    };
+    class DetailedBilling : public Billing {
+    public:
+        virtual Invoice createInvoice(const BookingItems& items) override;
+        // ...
+    private:
+        SimpleBilling simpleBilling;
+    };
+    ```
+
+**避免使用输出参数**: 输出参数就是用作函数返回值的参数, 使得函数可以一次传回多个值. 我们应该<font color=blue> 不惜一切代价也要避免使用输出参数</font>, 因为输出参数很不直观, 可能导致混淆. 这还会使得表达式的简单组合变得十分复杂, 开发人员需要在调用端保存所有的输出变量, 导致调用端的代码十分混乱. 此外, 这种函数对于减少副作用是很大的挑战. <br>
+**不要传递或者返回 0 ( _NULL, nullptr_ )**: 返回 NULL 或者 _nullptr_ 让接收端十分困惑, 例如一个应该返回客户 handler 的函数返回了 nullptr, 调用端很难知道具体是客户不存在还是程序运行出了问题. 更主要的原因是,<font color=red>调用端必须检查并且处理它</font>, 太多的控制检查会降低代码的可读性增加其复杂性.<br>
