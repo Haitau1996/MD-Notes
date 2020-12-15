@@ -251,3 +251,40 @@ private:
     Customer& inquiringCustomer;
 };
 ```
+**选择适当抽象层次的名称**:
+为了控制软件系统的复杂性, 这些系统通常是分层的, 将整个问题分解为子任务, 直到软件开发人员确信他们能够处理这些较小部分, 每当我们在结构层次深入一层的时候, 元素的名称就会变得更加具体.<br>
+**避免冗余的名称**:
+例如将类型的名称放到成员变量名, 就是多余的, 如:
+```C++
+class Movie {
+private:
+    std::string movieTitle;// 一个类的成员, 没有必要加上类名
+    std::string stringTitle;// 没有必要名字加上 String ,这相当于是小的自我重复
+    // ...
+};
+```
+**避免晦涩难懂的缩写**:
+这会明显降低代码的可读性, 变量也应该容易发音. 如:
+```C++
+std::size_t idx; // Bad!
+std::size_t index; // Good; might be sufficient in some cases
+std::size_t customerIndex; // To be preferred, especially in situations where several objects are indexed
+Car ctw; // Bad!
+Car carToWash; // Good
+```
+**避免匈牙利命名和命名前缀**:
+使用匈牙利命名法时, 变量的类型被用作该变量命名的前缀. 这种做法其实会带来一些问题, 例如:
+* 我们可能在开发期间改变了变量的类型, 但是并没有将变量的前缀修正过来
+* 在支持多态的面向对象程序设计语言中, 前缀不能轻易指定, 或者前缀会令人费解
+
+**避免相同的名称用于不同的目的**
+
+### 注释
+比较专业的代码必须有适当的注释, 其他开发人员或者新团队成员可以轻松地理解代码的意图. <br>
+**代码应该像是讲故事一样**:能够自我解释, 且尽可能避免注释. <br>
+**不要为易懂的代码写注释**: 无用的代码注释本身就是代码的一种重复, 还有可能带来的问题就是代码已经被修改了, 但是相应的注释并没有被完全修改. 例如:
+```C++
+CustomerAccount* account = customer->getAccount(); // Retrieve the customer's account(这是很显然的)
+account->setLoyaltyDiscountInPercent(discount); // Grant a 10% discount(这里代码和注释就不同了)
+```
+**不要通过注释禁用代码**:
