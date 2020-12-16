@@ -437,3 +437,40 @@ C++ 风格的类型转换会在编译期间进行检查, 而 C 不会, 这常常
 
 ## Chap 5: 现代 C++ 的高级概念
 ### 资源管理
+对于软件开发人员而言, 管理资源(包括内存/访问硬盘或者其他介质的文件/网络连接/线程/其他的操作系统资源等) 是一项基本的任务. 但是发生异常之后, 不会回到函数体内, 如果捕获异常的某个分支没有释放资源,就会导致资源泄漏. 但是不是在任何时候, 我我们都能在栈上分配资源.<br>
+**RAII**:
+在类的构造函数中分配资源, 在析构函数中释放资源(资源申请即初始化).
+```C++
+template <typename RESTYPE>
+class ScopedResource final {
+public:
+    ScopedResource() { managedResource = new RESTYPE(); }
+    ~ScopedResource() { delete managedResource; }
+    RESTYPE* operator->() const { return managedResource; }
+private:
+    RESTYPE* managedResource;
+};
+```
+#### 智能指针
+事实上我们不需要 reinvent the wheel, 上面那种包装器实际上就是 C++ 的智能指针.<br>
+**具有独占所有权的 _std::unique_ptr<T>_** :
+智能指针的使用非常类似于裸指针, 我们可以使用 `*` 和 `->` 操作符来简介引用指针. 更好的是, **智能指针可以很容易地放入容器中**(老式的智能指针`auto_ptr`已经被废弃, 其实现不支持 rvalue 引用和 Move语义), 也不能存储到 STL 库的容器中, `unique_ptr` 是其完美替代者. 此外, 不允许调用 `std::unique_ptr<T>` 的拷贝构造函数, 但是可以使用 Move 语义将资源转给另一个智能指针:
+```C++
+std::unique_ptr<ResourceType> pointer1 = std::make_unique<ResourceType>();
+std::unique_ptr<ResourceType> pointer2; // pointer2 owns nothing yet
+pointer2 = std::move(pointer1); // Now pointer1 is empty, pointer2 is the new owner
+```
+**共享所有权的 _std::shared_ptr<T>_** : 通过引用计数提供简单并且优先的垃圾回收功能, 这种智能指针可以拷贝, 也可以使用 `std::move`.<br>
+![](figure/5.1.jpg)<br>
+**无所有权但是可以安全访问的 _std::weak_ptr<T>_** : 可以使用 get 得到裸指针, 但是此时如果 `shared_ptr<T>`在程序的某个地方被释放, 这种智能指针就变成野指针. 这时候我们可以使用 `std::weak_ptr<T>` 仅仅观察它指向的资源, 并且检查该资源是否有效.有下面几个具体的使用场景:
+* 用于区分软件设计中的资源所有者和资源使用者, 在缓存等场合, 只需要资源完成特定的,有时间限制的任务
+* 解决循环依赖的问题 
+
+**避免使用 new/delete**: 在现代 C++ 编程中, new / delete 会增加代码的复杂度, 调用的时候需要注意异常情形/非默认情形/需要特别处理的情形... 我们可以通过以下的方式来避免:
+* 尽可能使用栈内存
+* 使用 make functions(`std::make_unique<T>` `std::make_shared<T>`) 在堆上分配资源
+* 尽量使用容器(标准库容器, boost 容器等): 自己开发数据结构或者序列式容器的时候必须自己实现所有的内存管理细节
+* 特殊需求, 利用特有的第三分库封装资源
+
+### Move 语义
+在很多情况下, 没有必要保持对象的完整性(创建一个深度的/在运行时效率方面十分耗时的复制,以便源对象保持可用). 
