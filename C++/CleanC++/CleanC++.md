@@ -531,5 +531,114 @@ template <typename T>
 constexpr T pi = T(3.1415926535897932384626433L);
 ```
 这就是常说的模板变量, 是一个很好的/灵活替代宏定义变量的方法, 实例化的时候, 根据上下文决定字符常量 pi 的类型为 `float` `double` 或者 `long double`. 同样的, `constexpr` 类在运行和编译的时候都能用, 与常规类相反, 这种类中不允许定义虚函数(编译期间没有多态性), 并且其析构函数不能显式地定义出来(Effective C++ 中要求将析构函数定义为虚, 这和前面那条矛盾).
+```C++
+class Rectangle {
+public:
+    constexpr Rectangle() = delete;
+    constexpr Rectangle(const double width, const double height) :
+        width { width }, height { height } { }
+    constexpr double getWidth() const { return width; }
+    constexpr double getHeight() const { return height; }
+    constexpr double getArea() const { return width * height; }
+    constexpr double getLengthOfDiagonal() const {
+        return std::sqrt(std::pow(width, 2.0) + std::pow(height, 2.0));
+    }
+private:
+    double width;
+    double height;
+};
+```
 
 ### 不允许未定义的行为
+一个简单的 未定义行为(未正常使用智能指针) 的例子:
+```C++
+const std::size_t NUMBER_OF_STRINGS { 100 };
+std::shared_ptr<std::string> arrayOfStrings(new std::string[NUMBER_OF_STRINGS]);
+```
+上面的例子中, 智能指针默认的删除操作是 `delete` 而不是 `delete[]`, 因此用智能指针管理一个 `new[]`分配的对象, 不确定会发生什么事情, 可能内存泄漏也可能不会, 与编译器的实现有关, 最终可能导致程序悄无声息地出错. 有集中方案可以考虑, 例如使用 std::vector 或者是 自定义一个删除器对象(仿函数):
+```C++
+template< typename Type >
+struct CustomArrayDeleter{
+    void operator()(Type const* pointer){
+    delete [] pointer;
+    }
+};
+const std::size_t NUMBER_OF_STRINGS { 100 };
+std::shared_ptr<std::string> arrayOfStrings( new std::string[NUMBER_OF_STRINGS],
+                                             CustomArrayDeleter<std::string>());
+// C++ 11 中也有对 Array 的删除器对象
+const std::size_t NUMBER_OF_STRINGS { 100 };
+std::shared_ptr<std::string> arrayOfStrings(new std::string[NUMBER_OF_STRINGS],
+                                            std::default_delete<std::string[]>());
+```
+
+### Type Rich 编程
+人难以避免地犯错, 而类型系统就是一个检测错误的良好机制.C++ 中有下面这种成员函数的声明方式, 但是它不够好, double 的意思不是很明确:
+```C++
+class SpacecraftTrajectoryControl {
+public:
+    void applyMomentumToSpacecraftBody(const double impulseValue);
+}
+// 一点改进
+class SpacecraftTrajectoryControl {
+public:
+    void applyMomentumToSpacecraftBody(const Momentum& impulseValue);
+};
+```
+为了使用这种类型, 我们必须先引入该类型.
+```C++
+// 引入 K-M-S 单位制, 其中的三个 int 表示单位的指数
+template <int M, int K, int S>
+struct MksUnit {
+    enum { metre = M, kilogram = K, second = S};
+};
+// Value 是表示值得类模板, 存了一个值(大小), 同时用 KMS 限制类型
+template <typename MksUnit>
+class Value {
+private:
+    long double magnitude{ 0.0 };
+public:
+    explicit Value(const long double magnitude) : magnitude(magnitude) {}
+    long double getMagnitude() const {
+        return magnitude;
+    }
+};
+using Momentum = Value<MksUnit<1, 1, -1> >;
+```
+引入类型之后, 并未完全结束, 因为没有合适的构造函数将 double 转为 `Value<MksUint<1,1,-1>>`, 只能用这种写法:
+```C++
+SpacecraftTrajectoryControl control;
+Momentum momentum { 13.75 };
+control.applyMomentumToSpacecraftBody(momentum);
+```
+此外, 可以稍加改变加入关键字 `constexpr`, 就可以在编译时使用物理值进行计算,还能实现带类型的乘法和除法:
+```C++
+template <typename MksUnit>
+class Value {
+public:
+    constexpr explicit Value(const long double magnitude) noexcept : magnitude{magnitude} {}
+    constexpr long double getMagnitude() const noexcept {
+        return magnitude;
+    }
+private:
+    long double magnitude { 0.0 };
+};
+using Acceleration = Value<MksUnit<1, 0, -2>>;
+constexpr Acceleration gravitationalAccelerationOnEarth { 9.80665 };
+template <int M1, int K1, int S1, int M2, int K2, int S2>
+constexpr Value<MksUnit<M1 + M2, K1 + K2, S1 + S2>> operator*
+(const Value<MksUnit<M1, K1, S1>>& lhs, const Value<MksUnit<M2, K2, S2>>& rhs) noexcept {
+    return Value<MksUnit<M1 + M2, K1 + K2, S1 + S2>>(lhs.getMagnitude() * rhs.getMagnitude());
+}
+constexpr Momentum impulseValueForCourseCorrection = Force { 30.0 } * Time { 3.0 };
+SpacecraftTrajectoryControl control;
+control.applyMomentumToSpacecraftBody(impulseValueForCourseCorrection);
+```
+这样坐下来, 我们可以 **让类型安全在编译期得到保障**, C++ 11 之后还允许自己定义后缀:
+```C++
+constexpr Acceleration operator"" _ms2(long double magnitude) {
+    return Acceleration(magnitude);
+}
+constexpr Acceleration gravitationalAccelerationOnEarth = 9.80665_ms2;
+```
+我们应该创建强类型的接口, 很大程度上要避免在公共接口中使用通用的\底层的内置类型, 比如 int / double 或者最坏的 `void*`. 
