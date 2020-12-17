@@ -628,7 +628,8 @@ constexpr Acceleration gravitationalAccelerationOnEarth { 9.80665 };
 template <int M1, int K1, int S1, int M2, int K2, int S2>
 constexpr Value<MksUnit<M1 + M2, K1 + K2, S1 + S2>> operator*
 (const Value<MksUnit<M1, K1, S1>>& lhs, const Value<MksUnit<M2, K2, S2>>& rhs) noexcept {
-    return Value<MksUnit<M1 + M2, K1 + K2, S1 + S2>>(lhs.getMagnitude() * rhs.getMagnitude());
+    return Value<MksUnit<M1 + M2, K1 + K2, S1 + S2>>
+        (lhs.getMagnitude() * rhs.getMagnitude());
 }
 constexpr Momentum impulseValueForCourseCorrection = Force { 30.0 } * Time { 3.0 };
 SpacecraftTrajectoryControl control;
@@ -642,3 +643,17 @@ constexpr Acceleration operator"" _ms2(long double magnitude) {
 constexpr Acceleration gravitationalAccelerationOnEarth = 9.80665_ms2;
 ```
 我们应该创建强类型的接口, 很大程度上要避免在公共接口中使用通用的\底层的内置类型, 比如 int / double 或者最坏的 `void*`. 
+
+### 了解你使用的库
+
+如果你想提高团队代码的质量, 那么请用一个目标替代所有的编码指南: 没有原始循环.<br>
+C++ 标准库提供了一百多种算法,可以用于搜索/计数和操作顺序容器或者序列中的元素.如想要颠倒标准容器中的元素顺序, 可以使用 `std::reverse`:
+```C++
+std::vector<int> integers = { 2, 5, 8, 22, 45, 67, 99 };
+std::reverse(std::begin(integers), std::end(integers));
+std::string text { "The big brown fox jumps over the lazy dog!" };
+std::reverse(std::begin(text) + 13, std::end(text) - 9);
+```
+**C++ 17中有简单的并行算法**: C++ 11 开始所谓线程库就支持多线程和并行编程, 这个标准库引入了线程/互斥/条件变量和 futures. C++ 17 中部分标准库根据 C++ 并行扩展技术规范 进了重新设计.
+
+### 恰当的异常错误处理机制
