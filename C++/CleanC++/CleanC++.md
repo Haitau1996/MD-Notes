@@ -657,7 +657,86 @@ std::reverse(std::begin(text) + 13, std::end(text) - 9);
 **C++ 17中有简单的并行算法**: C++ 11 开始所谓线程库就支持多线程和并行编程, 这个标准库引入了线程/互斥/条件变量和 futures. C++ 17 中部分标准库根据 C++ 并行扩展技术规范 进了重新设计.
 
 ### 恰当的异常错误处理机制
-// TODO:
+横切点问题指的是难以用模块化概念解决的问题, 通常用那个软件架构和设计来解决. 其中一个关键点就是安全问题, 还有一个关注点是事务处理(必须保证事务要么成功, 要么作为一个完整的单元失败,不可能只完成部分), 日志也是夜个关注点(douman-specific 和 productive被日志打乱,这会降低代码的可读性和可理解性).<br>
+异常和作物处理是另外一个横切关注点, 怎样的策略指导异常抛出异常十分重要.
+#### 防患于未然
+处理错误和异常的基本策略是避免他们, 异常安全是接口设计的一部分, API 不但包括函数签名, 还应该包括函数可能抛出的异常部分.此外还有三个方面必须考虑:
+* 前置条件: 在函数或者类的方法调用之前必须要总为真
+* 不变式: 在函数调用过程中必须总是为真(如正方形的 `setLength()` 必须保证 `length==height`)
+* 后置条件: 函数执行结束后立即返回真, 后置条件不成立, 说明函数调用的过程中肯定出错了
+
+##### 无异常安全
+最低的异常安全级别, 完全不能保证任何事情, 任何发生的异常都会导致严重的后果, 如代码的一部分违反了不变式和后置条件, 就可能导致崩溃. 所写的代码**永远不应该提供这个级别的安全保证**.
+##### 基本异常安全
+这是任何代码都应该至少保证的异常安全级别, 基本可以保证以下方面:
+* 如果函数调用过程中发生了异常, 保证无资源泄露(RAII)
+* 如果函数调用过程中发生了异常, 所有的不变式不保持不变
+* 如果函数调用过程中发生了异常, 不会有数据或者内存损坏, 所有对象都是良好一致的状态,但是不能保证调用函数后数据的内容不变
+
+设计我们代码, 让他们至少保证达到基本异常安全的级别.
+##### 强异常安全
+除了基本异常安全的所有事情之外, 还要确保发生异常的情况下, 数据内容完全恢复到调用函数或者方法之前一样, 一个典型的例子就是 _copy-and-swap_ 习惯, 这种实现**通常需要花一些功夫,运行时开销可能比较大**. 只有在绝对需要的情况下, 才为代码听强异常安全保证.
+##### 保证不抛出异常
+函数或者方法的调用用总是成功的, 不会抛出任何异常.所有事情在内部都已经得到处理, 永远也不会违反后置条件和不变式. 但是有很多情况下不可能达到, 例如在函数内使用任何一种动态内存分配, `new`/ `std::make_shared<T>`, 遇到异常的时候, 函数调用绝对不会成功.下面的情况是保证不抛出异常是绝对强制或者是明确建议的:
+* 任何情况下应该保证类的析构函数必须绝对不抛出异常
+* move 操作应该保证不抛出异常: move 抛出异常那么 move 操作大概率没有起作用
+* 默认构造函数最好不抛出异常: 半构造对象可能违反不变式, 对象直接处于"腐败"状态, 也是非常危险的
+* 在任何情况下, swap 函数必须保证不抛出异常
+
+#### 异常就是 Literally 的异常
+仅仅在于特殊情况下抛出异常, 不要滥用异常来控制正确地程序流程. 
+#### 如果不能恢复请尽快退出
+如果遇到的异常导致不能恢复, 通常的做法是写日志记录异常(如果可能)或者生成一个 crash dump 文件稍后分析, 然后立即终止程序. **没有什么比 "严重错误之后当作无事发生过继续下去" 更严重**, 比如生成数以万计的错误订单, 在灾难性的后果发生之前退出程序是明智地决定.
+#### 用户自定义异常
+我们可以通过继承 `std::exception` 创建自定义异常类, 通过重写继承的 `what()`, 可以为调用者提供错误的输出信息:
+```C++
+#include <stdexcept>
+//...
+class MyCustomException : public std::exception {
+    virtual const char* what() const noexcept override {
+        return "Provide some details about what was going wrong here!";
+    }
+};
+```
+事实上异常类的设计应该简洁, 为了提供更多异常相关的信息, 我们也可以编写更复杂的异常类:
+```C++
+class DivisionByZeroException : public std::exception {
+public:
+    DivisionByZeroException() = delete;
+    explicit DivisionByZeroException(const int dividend) {
+        buildErrorMessage(dividend);
+    }
+    virtual const char* what() const noexcept override {
+        return errorMessage.c_str();
+    }
+private:
+    void buildErrorMessage(const int dividend) {
+        errorMessage = "A division with dividend = ";
+        errorMessage += std::to0_string(dividend);
+        errorMessage += ", and divisor = 0, is not allowed (Division by Zero)!";
+    }
+    std::string errorMessage;
+};
+int divide(const int dividend, const int divisor) {
+    if (divisor == 0) {
+        throw DivisionByZeroException(dividend);
+    }
+    return dividend / divisor;
+}
+int main() {
+    try {
+        divide(10, 0);
+    } catch (const DivisionByZeroException& ex) {
+        std::cerr << ex.what() << std::endl;
+        return 1;
+    }
+    return 0;
+}
+```
+但是只能保证上面的`buildErrorMessage` 是强异常安全的, 因为它使用了可能抛出异常的 `std::string::operator+=()`, **初始化构造函数不能保证不抛出异常**. <br>
+使用异常的时候还有一些需要注意的事情:
+* 值类型抛出异常, 常量引用捕获异常(参考 More Effective C++)
+* 注意异常捕获的顺序(异常捕获和重载函数调用不同, 后者编译器会自动解析调用最合适的)
 
 ## Chap 6: 面向对象
 ### 面向对象的思想
