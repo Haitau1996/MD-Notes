@@ -763,3 +763,87 @@ SRP 规定, 每个软件单元,其中包括组件/类和函数, 应该只有一�
 #### 开放封闭原则
 所有的系统在其声明周期内都会发生变化. 对于类的设计, 另一个重要的指南是开放封闭原则(OCP), 它指出软件实体(类/函数/模板等)对扩展应该是开放的, 但是对修改应该必须是封闭的. 这意味着扩展 **应该以优雅的方式实现, 而且以最可能小的代价, 最好是在不需要修改现有代码的基础上实现**. 面向对象中支持这一原则的一种方法就是继承, 这种设计的另一个优点是现在很容易提供一个测试替身.
 #### Liskov 替换原则(LSP)
+基本上, 里式替换原则说的是这么一件事情: 你不能通过给一条狗增加四条假腿来创造一只章鱼.<br>
+正方形困境: 如果 Square 继承 Rectangle 的所有操作, 意味着可以通过 `Square.setHeight()` 违反 Square 的不变式(`{width == height}`). 有人希望将 `setEdge()/ setWidth()/ setHeight()` 声明为 virtual , 然后用其他实现覆盖这些成员函数, 这是非常糟糕的设计: **派生类不能删除器基类的继承属性** . Martin 阐述的 LSP 如下: **使用基类指针或者基类引用的函数, 必须在不知道派生类的情况下是用它**.于是这个原则有下面的要求:
+* 类的前置条件不能在派生类中增强
+* 类的后置条件不能在派生类中被削弱
+* 基类的所有不变量都不能通过派生子类更改或者违反
+* 历史约束: 对象内部的状态只能通过公共接口中的方法调用来改变, 派生类可能允许新的方法更改基类中那些不允许改变的状态, 这个历史约束就是禁止这一点
+
+使用者必须知道他正在使用的是哪一种类型, 这可以通过运行时类型信息(RTTI, C++中有`typeid/dynamic_cast<T>`)来完成.<br>
+这个正方形困境可以通过**使用组合而不是继承** 在很大程度上缓解:<br>
+![](figure/6.1.jpg)<br>
+这样的话, 我们在没有违背 DRY 和 LSP 原则的情况下, 实现了 Square 类, 这时候下面的错误就能被编译器检出:
+```C++
+std::unique_ptr<Rectangle> rectangle = std::make_unique<Square>(); // Compiler error!
+```
+**通过组合/委托复用 替代继承复用, 可以降低类之间的耦合程度**.
+#### 接口隔离原则(ISP)
+接口就像是一种契约, 通过契约请求服务, 服务由实现该契约的类提供. 当契约变得更加广泛的时候, 就会带来严重的问题. 如我们定义了鸟类的接口:
+```C++
+class Bird {
+public:
+    virtual ~Bird() = default;
+    virtual void fly() = 0;
+    virtual void eat() = 0;
+    virtual void run() = 0;
+    virtual void tweet() = 0;
+};
+// 而一个企鹅试图实现这个接口的时候就会出现问题
+class Penguin : public Bird {
+public:
+    virtual void fly() override {
+    // ??? A Penguin cannot fly
+    }
+//...
+};
+```
+接口隔离原则要求:**接口不应该包含那些与实现类无关的成员函数, 或者这些类不能以有意义方式做到的实现**. 我们这时候应该将宽接口分离成小而内聚的接口:
+```C++
+class Lifeform {
+public:
+    virtual void eat() = 0;
+    virtual void move() = 0;
+};
+class Flyable {
+public:
+    virtual void fly() = 0;
+};
+class Audible {
+public:
+    virtual void makeSound() = 0;
+};
+class Sparrow : public Lifeform, public Flyable, public Audible {
+//...
+};
+class Penguin : public Lifeform, public Audible {
+//...
+};
+```
+#### 无环依赖原则
+如果需要两个类互相认识, 例如 顾客和账户, 可能就会出现相互依赖的问题, 例如下面的例子就无法通过编译:
+```C++
+// in file Customer.h
+#ifndef CUSTOMER_H_
+#define CUSTOMER_H_
+#include "Account.h"
+class Customer {
+    // ...
+private:
+    Account customerAccount;
+};
+#endif
+// in file Account.h
+#ifndef ACCOUNT_H_
+#define ACCOUNT_H_
+#include "Customer.h"
+class Account {
+private:
+    Customer owner;
+};
+#endif
+```
+![](figure/6.2.jpg)<br>
+当然我们在前面放前置声明, 并且将类中存放的类的实例用一个指针替代. 但是 **前置声明用来处理循环依赖是一个非常糟糕的问题**: 这意味着两个类相互依赖, 不能独立使用, 也不能彼此独立地测试. 环依赖关系总是可以打破, 下面是一些可以使用的原则.
+
+#### 依赖倒置原则(DIP)
