@@ -11,13 +11,13 @@ Java 规范中没有依赖具体实现的地方, 基本数据类型的大小以�
 
 ## Chap 02 : Java 编程环境
 
-| Name | 简称 |   解释      | 
+| Name | 简称 |   解释      |
 | ---- | ---- |  --------- |
-| Java Development Kit| JDK | 编写 Java 的程序员使用的软件| 
+| Java Development Kit| JDK | 编写 Java 的程序员使用的软件|
 | Java Runtime Environment | JRE | 运行 Java 程序的用户使用的软件|
 | Standard Edition | Java SE | The Java platform for use on desktops and simple server applications |
 | Enterprise Edition| Java EE | The Java platform for complex server applications |
-| Micro Edition| Java ME | 用于微型手机和其他小型设备的Java平台| 
+| Micro Edition| Java ME | 用于微型手机和其他小型设备的Java平台|
 
 安装 Java 开发工具箱
 * 下载 JDK
@@ -91,7 +91,7 @@ Java 语言是完全面向对象的, 每个对象包含对用户公开的特定�
 ### 使用现有类
 #### 对象与对象变量
 想要使用对象, 首先需要构造对象并且指定其初始状态, 然后对 对象施加方法. <br>
-Java 中使用构造器(constructor) 构造对象的实例, 它是一种特殊的方法, 用于构造并且初始化对象. 一个对象变量 如 `Data deadline;` 中的deadline 并没有实际包含一个对象, 而仅仅是 初始化之后引用一个对象. 可以显式将对象变量设置为 null, 表明它目前没有引用任何对象. 这种引用和 C++ 中的引用有很大的区别, 比如 C++ 中没有空引用, 而且引用不能被赋值引用其他对象, 行为上, **Java 中的引用变量更像是 C++ 中的对象指针**. Java 中所有对象都是存储在堆中, 不用担心内存管理问题, 垃圾回收器会处理相关的事宜. <br>
+Java 中使用构造器(constructor) 构造对象的实例, 它是一种特殊的方法, 用于构造并且初始化对象. 一个对象变量 如 `Data deadline`; 中的deadline 并没有实际包含一个对象, 而仅仅是 初始化之后引用一个对象. 可以显式将对象变量设置为 null, 表明它目前没有引用任何对象. 这种引用和 C++ 中的引用有很大的区别, 比如 C++ 中没有空引用, 而且引用不能被赋值引用其他对象, 行为上, **Java 中的引用变量更像是 C++ 中的对象指针**. Java 中所有对象都是存储在堆中, 不用担心内存管理问题, 垃圾回收器会处理相关的事宜. <br>
 
 #### 更改器方法和访问器方法
 需要查询类的信息应该使用类的 get 方法(访问器方法), set/add 方法是对对象的状态进行修改(更改器方法), 在 C++ 中往往会给访问器方法加 const 修饰符(不改变对象的状态), 但是 **Java 并无明显的区分**. 
@@ -688,7 +688,7 @@ Java 运行时系统始终为对象维护一个被称为运行时的类型标识
 
 ```Java
 Employee e;
-. . .
+// ...
 Class cl = e.getClass();
 System.out.println(e.getClass().getName() + " " + e.getName());
 ```
@@ -713,7 +713,7 @@ e.getClass().newInstance() ; // 调用默认构造函数, 得到一个与 e 同�
 // 可以配合 forName 使用
 String s = "java.util.Random";
 Object m = Class.forName(s).newInstance(); 
-``` 
+```
 
 #### 捕获异常
 
