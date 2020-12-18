@@ -847,3 +847,140 @@ private:
 当然我们在前面放前置声明, 并且将类中存放的类的实例用一个指针替代. 但是 **前置声明用来处理循环依赖是一个非常糟糕的问题**: 这意味着两个类相互依赖, 不能独立使用, 也不能彼此独立地测试. 环依赖关系总是可以打破, 下面是一些可以使用的原则.
 
 #### 依赖倒置原则(DIP)
+**接口是我们处理环依赖问题的好帮手**. 解决这个问题的第一步就是 不再允许两个类的其中一个直接访问另一个类, 只允许通过接口访问. 例如在这里我们引入 Owner 接口:<br>
+![](figure/6.3.jpg)<br>
+![](figure/6.4.jpg)<br>
+这时候, Account 类已经对 Customer 类一无所知, 但是组件之间的环依赖尚未被打破,两个组件关联关系还是一个组件中的元素到另一个组件中的元素. 这个解决办法也十分简单: 只需将 Owner 接口重新定位到另一个组件中:<br>
+![](figure/6.5.jpg)<br>
+这时候实际上的依赖关系并没有完全被颠覆, 我们引入接口实际上在类的级别上甚至多了一层依赖关系, **我们真正做的就是在颠倒这种依赖性**. Robert C. Martin 制订了如下规则:
+* 高级模块不应该依赖于低级模块, 两者都应该依赖于抽象
+* 抽象不应该依赖于细节, 而细节应该依赖于抽象
+
+高级和低级不一定指的是分层结构中的概念, 高级模块是需要来自其他模块提供外部服务的软件模块, 提供服务的就是所谓的低级模块.或者说高级模块是调用操作的模块, 低级模块是其内部功能被高级模块调用执行的模块. 
+
+#### 最少知识原则(Demeter 原则)
+如果一个汽车驾驶员在驾驶的时候直接操作骑车的底层部分(打开燃油泵/打开点火系统/让马达转起来), 这个过程将十分复杂难以应对变化, 如内燃机被店里系统取代:<br>
+![](figure/6.6.jpg)<br>
+本质上说上面这种软件设计违反了最少知识原则, 这个原则可以认为是像不要和陌生人说话, 这种法则假定以下规则:
+* 允许成员函数直接调用其所在类作用域中的其他成员函数
+* 允许成员函数调用其所在类作用域中成员变量的成员函数
+* 如果成员函数有参数, 允许成员函数直接调用这些参数的成员函数
+* 如果函数创建了局部对象, 则允许成员函数调用这些局部对象的成员函数
+
+**如果上述函数中的一种返回了一个结构上比该类的直接相邻元素更远的对象, 应该禁止调用这些对象的成员函数**.<br>
+这种情况下驾驶员对于汽车零件烦人的依赖性就消失了, 无论汽车内部的结构如何, 他都能启动汽车.<br>
+![](figure/6.7.jpg)<br>
+可能有一些例外但是合理的情况, 但是开发人员必须给出非常好的理由才有改变这一规则.<br>
+#### 避免贫血症
+有的类很傻, 只代表软件系统中的客户不包含任何逻辑, 逻辑在其他的位置, 写这个类的程序员将对象看成是一堆数据的包装, 相应的 setter/ getter 都特别傻, 实际上只需要用一个简单的结构体就能取代, 这种类称为贫血类,应该不惜一切代价避免写这样的类, 因为面向对象思想要求将 **数据和操作数据的功能组合成有凝聚力的单元**. 下面是一个贫血类例子:
+```C++
+class Customer {
+public:
+    void setId(const unsigned int id);
+    unsigned int getId() const;
+    void setForename(const std::string& forename);
+    std::string getForename() const;
+    void setSurname(const std::string& surname);
+    std::string getSurname() const;
+    //...more setters/getters here...
+private:
+    unsigned int id;
+    std::string forename;
+    std::string surname;
+    // ...more attributes here...
+};
+```
+#### 只说不问
+这是对那些 get-methods 的 “declaration of war”, 该原则加强了类的封装和信息隐藏, 首要的作用还是增加了类的内聚性. 下面是在此原则指导下对于引擎启动的改进, 原来的 start 方法从各个部分查询信息并且做出相应, 分支数量众多, 圈复杂度非常高, 改进之后,零件可以自己决定如何执行这些命令:
+```C++
+// 原来的实现
+class Engine {
+public:
+    // ...
+    void start() {
+        if (! fuelPump.isRunning()) {
+            fuelPump.powerUp();
+            if (fuelPump.getFuelPressure() < NORMAL_FUEL_PRESSURE) {
+                fuelPump.setFuelPressure(NORMAL_FUEL_PRESSURE);
+            }
+        }
+        if (! ignition.isPoweredUp()) {
+            ignition.powerUp();
+        }
+        if (! starter.isRotating()) {
+            starter.revolve();
+        }
+        if (engine.hasStarted()) {
+            starter.openClutchToEngine();
+            starter.stop();
+        }
+    }
+    // ...
+private:
+    FuelPump fuelPump;
+    Ignition ignition;
+    Starter starter;
+    static const unsigned int NORMAL_FUEL_PRESSURE { 120 };
+};
+class Engine {
+public:
+    // ...
+    void start() {
+        fuelPump.pump();
+        ignition.powerUp();
+        starter.revolve();
+    }
+// ...
+private:
+    FuelPump fuelPump;
+    Ignition ignition;
+    Starter starter;
+};
+class FuelPump {
+public:
+    // ...
+    void pump() {
+        if (! isRunning) {
+            powerUp();
+            setNormalFuelPressure();
+        }
+    }
+// ...
+private:
+    void powerUp() {
+    //...
+    }
+    void setNormalFuelPressure() {
+        if (pressure != NORMAL_FUEL_PRESSURE) {
+            pressure = NORMAL_FUEL_PRESSURE;
+        }
+    }
+    bool isRunning;
+    unsigned int pressure;
+    static const unsigned int NORMAL_FUEL_PRESSURE { 120 };
+};
+```
+这个原则告诉我们, **如果对象能够自行决定, 那我们不应该要求对象提供关于其内部状态的信息, 并在此对象之外决定应该做什么**.并非所有的 getter 本质上都是不好的, 优时需要从对象获取信息, 就应该有 getter.
+#### 避免类的静态成员
+工具类常常是巨大的"上帝类", 我们为什么要强制工具类创建它的实例, 为不同的目的提供各种各样的功能:这其实是低内聚的标志, 我们称这种东西为 **垃圾商店反模式**. 
+```C++
+class JunkShop {
+public:
+    // ...many public utility functions...
+    static int oneOfManyUtilityFunctions(int param);
+    // ...more public utility functions...
+};
+// In the Client File
+#include "JunkShop.h"
+class Client {
+    // ...
+    void doSomething() {
+        // ...
+        y = JunkShop::oneOfManyUtilityFunctions(x);
+        // ...
+    }
+};
+```
+这让客户和垃圾商店中所有静态工具建立了硬连接, 很难用其他东西替换这个函数调用, 这是单元测试所不希望的. 另外在所有类的实例中共享相同的状态本质上不是 OOP, 它破坏了封装, 使得对象不再完全控制器状态. 因此我们**建议避免使用静态的成员变量和静态成员函数**. 这有两个常见的例外:
+* 私有常量成员
+* 工厂方法(创建对象实例的静态成员函数)
