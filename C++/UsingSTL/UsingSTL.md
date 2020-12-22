@@ -62,3 +62,129 @@ std::cout << "\nThe sum of the values you entered is "
 * 插入迭代器: 用于向任何有 `insert()` 函数的容器插入一个新的元素
 
 ##### 移动迭代器
+移动迭代器是从普通迭代器创建的, 指向一定范围内的元素, 可用于将某个范围内类的对象移动到目标范围, 而不需要拷贝去移动. 
+
+### 迭代器上的运算
+迭代器头文件中定义了四个迭代器的运算模板
+* `advance(iter, n)`, n 可以为负数
+* `distance(iter1, iter2)`, 返回两个迭代器之间元素个数
+* `next(iter,n)` `perv(iter, n)`, n 的默认值为1, iter 必须有双向迭代器功能
+
+### 智能指针
+智能指针是模仿原生指针的模板类, 大多情况下没有差别, 只有下面的两点:
+* 只能保存堆上分配的内存的地址
+* 不能做自增或者自减运算
+
+#### 使用`unique_ptr<T>`
+指定一个对象并且独享所有权, 一般使用 `std::make_unique<T>()` 更高效地生成. 
+```C++
+size_t arrLen{10};
+std::unique_ptr<int[]> ptrArr = std::make_unique<int[]>(arrLen);
+// 这里可以使用 auto 做自动类型推导
+```
+使用时候需要注意, **不能以传值的方式将 `unique_ptr` 对象传入函数中**. 因为他们不支持拷贝, 必须用引用传递的方式, 同时, 作为函数的返回值, 必须以隐式移动运算的方式返回. 
+##### 重置 `unique_ptr` 对象
+当这种智能指针生命周期结束析构时, 所指向的对象也会被析构. 有一些方式可以改变这种行为
+* `reset()` 可以析构它原来指向的对象, `unique_ptr<T>` 对象中的指针会被替换成为空指针或者指向新的对象, 不要将原来指向的一个对象的地址传给 reset,或者在已经包含`unique_ptr<T>`的地址创建一个新的智能指针`unique_ptr`, 这可以通过编译但是一定会让程序崩溃:
+    ```C++
+    auto pname = std::make_unique<std::string>("Algernon");
+    pname.reset(new std::string{"Fred"});
+    ```
+* `release()`: 在不释放对象内存的情况下将 `unique_ptr<T>` 的内部原生指针设为空
+* 可以使用 swap, 通过交换连个指针的方式交换对象:
+    ```C++
+    auto pn1 = std::make_unique<std::string>("Jack");
+    auto pn2 = std::make_unique<std::string>("Jill");
+    pn1.swap(pn2);
+    ```
+
+##### 比较和检查 `unique_ptr` 对象
+
+STL 中的非成员模板函数定义了全套的比较运算符用于比较两个`unique_ptr<T>`对象或者 `unique_ptr<T>` 和空指针. 具体就是 `.get()` 得到的裸指针之间的比较. 此外, `unique_ptr<T>` 还能隐式类型转换成 boolean 类型.
+
+#### 使用 `shared_ptr<T>`
+这种指针用引用计数的方式共享对象, 我们可以使用 `std::make_shared<T>` 更加高效地创建 `shared_ptr<T>` 对象, 也可以用一个定义好的指针来初始化另一个 `shared_ptr<T>` 指针(通过由其他指针 get() 的裸指针得到 `shared_ptr<T>` 可能导致程序的崩溃):
+```C++
+auto pdata = std::make_shared<double>(999.0); // Points to a double variable
+std::shared_ptr<double> pdata2 {pdata};
+```
+**不能使用 `shared_ptr<T>` 保存一个默认生成的数组, 但是可以用于保存自己生成的 `array<T>` 或者 `vector<T>` 对象**:
+```C++
+auto shareArr = std::make_shared<int[]>(10);
+//Process finished with exit code -1073740940 (0xC0000374)
+```
+##### 重置 `shared_ptr<T>`
+将 `shared_ptr<T>` 对象设置为空指针, 地址设为空的同时, 引用计数也将 -1. 调用 `reset()` 也可以得到同样的效果, 同时可以让指针指向别的对象:
+```C++
+auto pname = std::make_shared<std::string>("Charles Dickens");
+pname.reset(new std::string{"Jane Austen"});
+```
+##### 比较和检查 `shared_ptr<T>` 对象
+同样的, 这个指针可以一作比较和转为 bool 指针, 此外还有两个新的成员函数:
+* `unique()` , 如果指向对象的实例数目为 1, 返回 true
+* `use_count()` 返回指向对象的实例的个数
+
+#### 使用 `weak_ptr<T>` 指针
+`weak_ptr<T>` 对象只能从 `shared_ptr<T>` 或者已有的 `weak_ptr<T>` 对象创建,能做的事情优先, 不能用解引用的方式去访问其指向的对象, 但是可以有一些场景可以使用:
+* 判断对象是否依然存在
+    ```C++
+    if(pwData.expired())
+        std::cout << "Object no longer exists.\n";
+    ```
+* 可以使用`weak_ptr<T>` 对象创建一个 `shared_ptr<T>对象`: `std::shared_ptr<X> pNew {pwData.lock()};`
+
+### 算法
+提供一些可以用于计算和分析的函数, 运用于一些由一对迭代器指定的对象.**可以将算法运用到任何序列上, 只要能够提供特定的迭代器去访问**. 
+* 非可变序列运算(Non-mutating sequence operations): 不改变值和顺序
+* 可变序列运算(Mutating sequence operations): 改变序列元素中的值
+* 排序/合并/关联运算: 使用时候改变序列中的顺序
+
+### 将函数作为实参传入
+有三种方式将一个函数作为实参传入另一个函数:
+* 使用一个函数指针
+* 传入一个函数对象
+* 传入一个 lambda 表达式
+  
+#### 函数对象
+这被称为仿函数, 是一个重载了函数调用操作符`operator()(parameter list)` 的类对象, 提供一个比使用原生函数更高效将函数作为实参传入另一个函数的方式:
+```C++
+class Volume{
+public:
+    double operator()(double x, double y, double z) {return x*y*z; }
+    double operator()(const Box& box){ 
+        return box.getLength() * box.getWidth() * box.getHeight(); 
+    }
+};
+Volume volume; // Create a functor
+double room { volume(16, 12, 8.5) };
+Box box{1.0, 2.0, 3.0};
+double roomOfBox{ volume(box)};
+```
+#### Lambda 表达式
+用于定义匿名函数, 可以捕获他们作用域内的变量,然后使用他们, 函数的返回值为默认返回类型, 当然也可用在 return_type 中定义. <br>
+![](figure/1.1.jpg)<br>
+我们常常使用自动类型推导命名 lambda 表达式, 例如 `auto cube = [](double length)->double {return length* length * length; };`.
+##### 将 lambda 表达式传给函数
+对于编程人员,一个十分困难的问题就是**如何确定 lambda 表达式的类型**, 然后写入函数的参数列表, 简单的回答是定义一个函数模板, 让编译器特话后处理不同的 lambda 表达式:
+```C++
+template <typename ForwardIter, typename F>
+void change(ForwardIter first, ForwardIter last, F fun){
+    for(auto iter = first; iter != last; ++iter) // For each element in the range...
+    *iter = fun(*iter); // ...apply the function to the object
+}
+int data[] {1, 2, 3, 4};
+change(std::begin(data), std::end(data), [] (int value){ return value*value; });
+```
+在这种情况下, `fun` 就是一个函数模板,可以接受一个函数对象/一个函数指针或者一个 lambda 表达式. <br>
+标准库中有一个模板类型`std::function<>` 对任意类型的函数指针的封装, 包含了参数类型和返回值, 这也就包含了 lambda 表达式, 可以写成一个:
+```C++
+std::function<double(double)> op { [] (double value) { return value*value*value; } };
+std::function<double(double,double)> sizeOfRectangle 
+        {[](double length, double width)->double {return length* width; }};
+```
+##### 捕获子句
+lambda 的引入符不一定为空, 可以有捕获子句, 指定一些封闭范围内的变量, 使得他们可以在 lambda 表达式主体中使用, 如果这里没有任何参数的话, 那么只能去引用lambda 内部的变量, 这被称为无状态的 lambda 表达式.
+* 方括号中加入 `=` , 表示用值的方式访问所有封闭范围内的自动变量, 只有加入 `mutable` 之后才能改变这些量副本的值
+* 方括号中加入 `&`, 用引用的方式使用封闭范围中的变量, 都能改变且不需要 `mutable` 关键字
+  
+不能将 auto 用于任何使用了正在定义变量的变量的 lambda 表达式, auto 不能用于自引用. 为了捕获指定变量,只要在捕获子句中列出他们的名称, 用 `&` 的话是引用传递,如`[&, factor]` 表示其他所有变量都是按引用传递, factor 使用值, 而且要加 `mutable` 才能改变 lambda 表达式中 factor 的值.<br>
