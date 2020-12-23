@@ -329,4 +329,44 @@ words.emplace_back(str, 2, 3); // Create string object corresponding to "leg" in
 是模板的特例化, 通常一个 bool 只需要一个 Bit, 如果不特例化的化需要一个 Byte. 这个没有成员函数 `.data()`, 一些成员函数的行为也和一般模板的实例不同.在要用布尔值而且知道用多少的时候, 使用`bitset<N>` 相对是个好的选择.
 
 ### 使用 `deque<T>` 容器
-当
+当应用包含先入先出的事务处理时, 都应该使用 deque, 这种容器可以在头部和尾部高效地添加或者删除对象. <br>
+![](figure/2.2.png)<br>
+#### 生成 deque 容器
+* 默认构造生成 `deque<T>` 容器没有任何元素, 添加第一个元素之后才会导致内存的分配, 这点和 vector 是一样的. 
+* 也可以指定元素个数生成容器(`std::deque<int> my_deque(10);`,这种定义之下每个元素保存的都是默认值0)
+* 之外可以用初始化列表来生成容器: `std::deque<std::string> words { "one", "none", "some", "all", "none", "most", "many" };`
+* 或者从其他deque容器生成一个新的副本
+  * 从已经有的容器中调用构造器:`std::deque<std::string> words_copy { words };` 
+  * 接受两个迭代器生成新的 deque: `std::deque<std::string> words_part { std::begin(words), std::begin(words) + 5 };`
+
+#### 访问元素
+* 可以使用下标运算符访问元素, 同时这种操作没有做边界检查
+* 同样可以使用带有边界检查并且可以抛出异常的`.at()`成员函数
+* 组织元素的方式导致大小和容量总是一样的, 因此没有 capacity 成员函数
+* 元素并不是存放在一个数组中故没有返回 T* 的 `.data()` 成员函数
+* resize() 三种重载版本基本和vector 相同
+  
+#### 添加和移出元素
+
+* push/pop/emplace 除了 back 之外, 还有 front 版本, 在序列头部执行类似的操作
+* insert/emplace 同样也可以在 deque 中使用, erase/ clear 也一样
+* 由于内部实现不同, 除了在头部的操作效率比vector 高, 其他过程都要相对慢一些
+
+#### 替换 deque 中的内容
+`.assign()` 成员函数可以替换现有的所有函数, 有三个重载的版本:
+* 可以由初始化列表指定的元素
+* 可以是迭代器指定的一段元素
+* 可以是特定对象的多个副本
+
+```C++
+//case 1:
+std::deque<std::string> words {"one", "two", "three", "four"};
+auto init_list = {std::string{"seven"}, std::string{"eight"}, std::string{"nine"}};
+words.assign(init_list);
+// case 2: 
+std::vector<std::string> wordset {"this", "that", "these", "those"};
+words.assign(std::begin(wordset)+1, --std::end(wordset)); // Assigns "that" and "these"
+// case 3:
+words.assign(8, "eight"); // Assign eight instances of string("eight")
+```
+值得注意的是 case 1 中需要用 `std::string` 生成 string 对象, init_list 被推导为 `initializer_list<const char*>` 后面assign 就会报错, 当然可以不单独定义 init_list 直接将初始化列表放入参数中(`words.assign({"seven", "eight", "nine"});`). 
