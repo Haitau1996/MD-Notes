@@ -208,7 +208,7 @@ lambda 的引入符不一定为空, 可以有捕获子句, 指定一些封闭范
 * 可以使用`opetator[]`访问, 这种实现没有做边界检查, 性能要好一些. 
 * 使用 `at()` 访问, 当越界的时候抛出 `std::out_of_range` 异常
 * 为了保持和其他容器的一致性操作, 也有成员函数 `empty()`(意义不大).<br>
-* 函数模板 `std::get<n>()` 的实参必须是一个在编译期能确定的常量表达式, 提供了一个不需要在运行时检查, 但是能安全访问元素的方式(编译期检查)
+* 函数模板 `std::get<n>()` 的实参必须是一个在编译期能确定的常量表达式, 提供了一个不需要在运行时检查, 但是能安全访问元素的方式(编译期检查, 别的容器无法编译期间检查大小, 故无法这么做)
 
 #### 使用数组容器的迭代器
 模板定义了成员函数 `begin()` 和 `end()`, 分别返回首元素和最后元素后一个位置的迭代器. 我们一般使用 auto 做自动类型推导, 实际上迭代器被定义在容器类型种, 类型类似于这种: `std::array<unsigned int, 19>::iterator`. 最好不用成员函数, 而是用全局的 `std::begin()`, 因为它们是通用的,例如普通的数组无法使用成员函数, 但是可以使用全局的非成员函数获取迭代器.<br>
@@ -345,6 +345,7 @@ words.emplace_back(str, 2, 3); // Create string object corresponding to "leg" in
 * 组织元素的方式导致大小和容量总是一样的, 因此没有 capacity 成员函数
 * 元素并不是存放在一个数组中故没有返回 T* 的 `.data()` 成员函数
 * resize() 三种重载版本基本和vector 相同
+* front/back 用法也相同, 返回一个头/尾巴的引用
   
 #### 添加和移出元素
 
@@ -370,3 +371,50 @@ words.assign(std::begin(wordset)+1, --std::end(wordset)); // Assigns "that" and 
 words.assign(8, "eight"); // Assign eight instances of string("eight")
 ```
 值得注意的是 case 1 中需要用 `std::string` 生成 string 对象, init_list 被推导为 `initializer_list<const char*>` 后面assign 就会报错, 当然可以不单独定义 init_list 直接将初始化列表放入参数中(`words.assign({"seven", "eight", "nine"});`). 
+
+### 使用 `list<T>` 容器
+这是一个包含 T 类型对象的双向链表, 可以在常规时间内在序列已知的任何位置插入或者删除元素, 但是**不能索引元素**, 如果需要访问内部的一个元素, 必须从头/尾 开始遍历:<br>
+![](figure/2.3.png)<br>
+可以和其他容器一样获得list的迭代器, 但是**无法随机访问list中的元素,故获取的都是双向迭代器**.
+#### 生成 list 容器
+list的构造函数用法类似于 vector 或者 deque. 
+* `std::list<std::string> words;` 生成空的list
+* `std::list<std::string> sayings (20,"hello");` 生成给定数量个默认对象的列表
+* `std::list<double> save_values {values};` 复制 value
+* `std::list<double> samples {++cbegin(values), --cend(values)};` 从两个迭代器指定的一段元素生成
+
+当然这个是双向迭代器而不是随机访问迭代器, 只能自增/减而不能加减一个整数.
+
+#### 添加元素
+同样可以使用成员函数 `push_front()`/`push_back()`, 这两个函数都有右值引用版本, 而相对而言成员函数`emplace_front()`/`emplace_back()`可以做得更好(它们是在容器中之间构造元素, 而不是构造完之后拷贝/搬移过去):
+```C++
+std::list<std::string> names {"Jane", "Jim", "Jules", "Janet"};
+names.emplace_front("Ian"); // Create string("Ian") in place at the front of the list
+```
+同样的insert有三个版本:
+* 在指定迭代器的位置插入一个元素
+* 在给定的位置插入几个相同的元素
+* 由给定的两个迭代器, 往指定位置插入一段元素
+
+#### 删除元素
+* clear() 和 erase() 这两个成员函数的作用和前面两种容器相当.
+* 有成员函数 `remove()` 移除和参数相匹配的元素
+  ```C++
+  std::list<int> numbers { 2, 5, 2, 3, 6, 7, 8, 2, 9};
+  numbers.remove(2); // List is now 5 3 6 7 8 9
+  ```
+* `remove_if()` 引入一个一元断言为参数, 接受一个和元素同类型的参数或者引用, 返回一个布尔值
+  ```C++
+  numbers.remove_if([](int n){return n%2 == 0;}); // Remove even numbers. Result 5 3 7 9
+  ```
+* 成员函数 `unique()` 移除连续的重复元素, 只留下其中的一个
+  
+#### 排序和合并元素
+全局的sort() 函数模板位于 algorithm 中, 要求使用随机访问迭代器, 但是 list 并不支持. **list模板定义了自己的 sort() 函数**, 它有两个版本:
+* 无参版本按照升序排列所有元素
+* 接受一个参数(函数对象或者 lambda 表达式) , 用参数定义的断言来比较两个元素
+  
+```C++
+names.sort(std::greater<>()); // Function object uses perfect forwarding
+```
+`merge()`成员函数接受另一个相同类型的 list 作为参数, 两个容器中所有的元素都必须为升序, 参数 List 中所有元素会被合并到当前的 list 中. 
