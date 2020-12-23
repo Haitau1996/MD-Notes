@@ -268,16 +268,65 @@ std::copy(std::begin(data), std::end(data), std::ostream_iterator<double>(std::c
 这里我们做的就是两个事情, 第一个是从输入流中将数据写到 data, 然后再将 data 的数据写到 输出流中.<br>
 
 #### 向 vector 容器中添加元素
+向容器中添加元素的唯一方式是使用它的成员函数.
 ##### 增加元素
 可以使用`push_back()` 成员函数, 向末尾添加一个元素, 需要注意的是这个函数也可以使用右值引用参数, 通过转移语义来添加元素:
 ```C++
 std::vector<std::string> words;
 words.push_back(string("adiabatic")); // Move string("adiabatic") into the vector
 ```
-还有一种更好的方式: `emplace_back()`, <font color=red>直接使用 vector 中的元素构造函数所需要的参数构造对象,然后添加到最后</font>:
+还有一种更好的方式: `emplace_back()`, <font color=red>直接使用 vector 中的元素构造函数所需要的参数直接在容器中构造对象</font>:
 ```C++
-words.emplace_back("abstemious");
+words.emplace_back("abstemious"); 
 std::string str {"alleged"};
 words.emplace_back(str, 2, 3); // Create string object corresponding to "leg" in place
 ```
 ##### 插入元素
+* `emplace()` 这个成员函数接受的第一个参数是迭代器, 指定对象生成的位置, 新对象会插入到迭代器之后. 后面的参数都是作为插入元素构造函数的需要. 
+    ```C++
+    std::vector<std::string> words {"first", "second"};
+    // Inserts string(5, 'A') as 2nd element
+    auto iter = words.emplace(++std::begin(words), 5, 'A');
+    ```
+* `insert()` 可以在 vector 中插入一个或者多个元素, 元素会被插入到第一个参数所指定的迭代器的前面(如果是反向迭代器则是后面)
+  * 插入第二个参数指定的单个元素, 新元素会在迭代器指定的位置插入, 相应的所有其他元素向后移动一位:
+    ```C++
+    std::vector<std::string> words {"one", "three", "eight"}; // Vector with 3 elements
+    auto iter = words.insert(++std::begin(words), "two");
+    ```
+  * 插入第二个参数和第三个参数指定的序列:
+    ```C++
+    std::string more[] {"five", "six", "seven"}; // Array elements to be inserted
+    iter = words.insert(--std::end(words), std::begin(more), std::end(more));
+    ```
+  * 在vector 的末尾插入元素, `iter = words.insert(std::end(words), "ten");`
+  * 在插入点插入多个元素, 第二个参数指的是第三个参数插入的次数`iter = words.insert(std::cend(words)-1, 2, "nine");`
+  * 在插入点插入初始化列表指定的元素:`iter = words.insert(std::end(words), { std::string {"twelve"},std::string {"thirteen"}});`
+
+#### 删除元素
+同样的, 我们也只能通过容器的成员函数来删除元素.
+* 通过 `clear()` 删除又有的元素
+  ```C++
+  std::vector<int> data(100, 99);
+  data.clear();
+  ```
+* 通过成员函数`pop_back()` 删除最后一个元素
+* 如果需要删除多余的容量, 使用 `shrink_to_fit()`, 如果生效之后, 现有的迭代器全部失效, 需要重新获取迭代器
+* 使用`.erase()` 删除一个或者多个元素, 需要传入一个迭代器(删除一个)或者序列两端的迭代器(删除多个元素):`auto iter = data.erase(std::begin(data)+1, std::begin(data)+3);`意思就是删除 data+1 和 data+2 两个元素
+* remove() 算法是由 algorithm 头文件中的模板生成, 可以删除匹配特定值得一段元素, **remove 是一个全局的函数, 因此严格说不能删除容器中的元素, 这里的做法是采用匹配元素的右边覆盖匹配元素的方式移除元素**:
+  ```C++
+  std::vector<std::string> words { "one", "none", "some", "all", "none", "most", "many"};
+  auto iter = std::remove(std::begin(words), std::end(words), "none");
+  ```
+  ![](figure/2.1.png)<br>
+  如果需要删除剩下空的位置, 还是需要调用上面的.erase():
+  ```C++
+  words.erase(iter, std::end(words)); // Remove surplus elements, 两部合起来相当于下面一句
+  words.erase(std::remove(std::begin(words), std::end(words), "none"), std::end(words));
+  ```
+
+#### `vector<bool>` 容器
+是模板的特例化, 通常一个 bool 只需要一个 Bit, 如果不特例化的化需要一个 Byte. 这个没有成员函数 `.data()`, 一些成员函数的行为也和一般模板的实例不同.在要用布尔值而且知道用多少的时候, 使用`bitset<N>` 相对是个好的选择.
+
+### 使用 `deque<T>` 容器
+当
