@@ -226,3 +226,31 @@ if (them > those) std::cout << "them are greater than those." << std::endl;
 ```
 
 ### 使用 `vector<T>` 容器
+`vectory<T>` 大小可以自动增长, 从而可以包含任意数量的元素, 因此只需要类型信息一个参数.
+#### 创建 `vector<T>`容器
+一般情况下, 可以这样生成一个存放元素类型的vector容器: `std::vector<double> weightOfPeople;`,这时候没有元素也就没有分配空间, 我们可以使用成员函数 `reserve(n)`来指定内存分配保证至少可以容纳 n 个元素.<br>
+当然也可以用初始化列表指定初值和元素个数:`std::vector<int> idOfStudents{ 1, 3, 4,5,6};`. <br>
+还可以使用其构造函数来创建 vector 对象: `std::vector<double> vecOfZeros(10. 0.0);`. 这里需要注意的是, **使用小括号创建 vector 对象和使用大括号指定的初始化列表出来的结果是完全不同的**.<br>
+使用元素类型相同的容器也可以初始化 vector 对象:
+```C++
+std::array<std::string, 5> words {"one", "two", "three", "four", "five"};
+std::vector<std::string> words_copy {std::begin(words), std::end(words)};
+// 如果使用移动的话, 原来的数组就会变成空的
+std::vector<std::string> words_copy {std::make_move_iterator(std::begin(words)),
+                                     std::make_move_iterator(std::end(words))};
+```
+#### 容量和大小
+vector 对象可以通过调用 `.size()`/`.capacity()` 来获取相应的大小和容量. 显然其大小不能超过容量, 当两者相等的时候, 向 vector 中插入元素就会导致更多的内存分配(例如 gcc 的实现是容量翻倍). `vector<T>` 对象的容量和大小的数据类型是`vector<T>::size_type`, 需要用变量保存的大小的时候最好使用自动类型推导. <br>
+此外可以调用 `resize()` 来改变容量的大小,区别在于使用这个成员函数的话会导致元素个数的变化:
+```C++
+std::vector<int> values {1,2,3}; // 1 2 3 : size is 3
+values.resize(5); // 1 2 3 0 0 : size is 5
+values.resize(7, 99); // 1 2 3 0 0 99 99 : size is 7
+values.resize(6); // 1 2 3 0 0 99 : size is 6
+```
+
+#### 访问元素
+* 使用方括号加索引为现有的元素设定值, 或者使用现有的值 :`vec[10] = 9u`;
+* 上面的做法不能用于生成新的元素, 同时可能越界的时候通过 `.at()` 使用元素, 越界时候抛出`std::out_of_range` 异常
+* `.front()`/`.back()` 返回一个引用, 可以出现在赋值运算符的左边
+* `.data()` 返回一个指向数组的指针
