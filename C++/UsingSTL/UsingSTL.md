@@ -254,3 +254,30 @@ values.resize(6); // 1 2 3 0 0 99 : size is 6
 * 上面的做法不能用于生成新的元素, 同时可能越界的时候通过 `.at()` 使用元素, 越界时候抛出`std::out_of_range` 异常
 * `.front()`/`.back()` 返回一个引用, 可以出现在赋值运算符的左边
 * `.data()` 返回一个指向数组的指针
+
+#### 使用 vector 容器的迭代器
+vector 实现了所有可以返回迭代器的成员函数, 也可以调用全局的 `back_inserter()` 获取一个向后插入的迭代器, 因为没有实现 `push_front()`, 无法使用 front_insert_iterator:
+```C++
+std::vector<double> data {32.5, 30.1, 36.3, 40.0, 39.2};
+// template< class InputIt, class OutputIt >
+// OutputIt copy( InputIt first, InputIt last, OutputIt d_first );
+std::copy(std::istream_iterator<double>(std::cin), std::istream_iterator<double>(),
+          std::back_inserter(data)); // 将流迭代器中的数据通过back_insert_iterator 写入 data
+std::copy(std::begin(data), std::end(data), std::ostream_iterator<double>(std::cout, " "));
+```
+这里我们做的就是两个事情, 第一个是从输入流中将数据写到 data, 然后再将 data 的数据写到 输出流中.<br>
+
+#### 向 vector 容器中添加元素
+##### 增加元素
+可以使用`push_back()` 成员函数, 向末尾添加一个元素, 需要注意的是这个函数也可以使用右值引用参数, 通过转移语义来添加元素:
+```C++
+std::vector<std::string> words;
+words.push_back(string("adiabatic")); // Move string("adiabatic") into the vector
+```
+还有一种更好的方式: `emplace_back()`, <font color=red>直接使用 vector 中的元素构造函数所需要的参数构造对象,然后添加到最后</font>:
+```C++
+words.emplace_back("abstemious");
+std::string str {"alleged"};
+words.emplace_back(str, 2, 3); // Create string object corresponding to "leg" in place
+```
+##### 插入元素
