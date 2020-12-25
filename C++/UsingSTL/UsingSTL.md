@@ -419,4 +419,6 @@ names.emplace_front("Ian"); // Create string("Ian") in place at the front of the
 names.sort(std::greater<>()); // Function object uses perfect forwarding
 ```
 `merge()`成员函数接受另一个相同类型的 list 作为参数, 两个容器中所有的元素都必须为升序, 参数 List 中所有元素会被合并到当前的 list 中. 这种操作之后 List 节点在内存中的位置不变, 但是操作他们的指针变了. <br>
-list 容器的 `splice()` 有几个版本, 可以移动单个元素/一段元素或者源容器的全部元素. 
+list 容器的 `splice()` 有几个版本, 将参数 list 容器中的元素移动到当前容器中指定元素的前面.它可以移动单个元素/一段元素或者源容器的全部元素. 
+
+#### 访问元素

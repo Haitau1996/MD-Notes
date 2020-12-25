@@ -211,27 +211,23 @@ System.arraycopy(sourceArray, 0, targetArray, 0, sourceArray.length);
 __可变长参数列表__ : 具有同样类型的数目可变的参数可以传递给方法, 并作为数组对待:
 ```Java
 // 形式如 : typeName... parameterName
-1 public class VarArgsDemo {
-2 public static void main(String[] args) {
-3 printMax(34, 3, 3, 2, 56.5);
-4 printMax(new double[]{1, 2, 3});
-5 }
-6
-7 public static void printMax(double... numbers) {
-8 if (numbers.length == 0) {
-9 System.out.println("No argument passed");
-10 return;
-11 }
-12
-13 double result = numbers[0];
-14
-15 for (int i = 1; i < numbers.length; i++)
-16 if (numbers[i] > result)
-17 result = numbers[i];
-18
-19 System.out.println("The max value is " + result);
-20 }
-21 }
+public class VarArgsDemo {
+  public static void main(String[] args) {
+     printMax(34, 3, 3, 2, 56.5);
+     printMax(new double[]{1, 2, 3});
+  }
+  public static void printMax(double... numbers) {
+  if (numbers.length == 0) {
+      System.out.println("No argument passed");
+      return;
+  }
+  double result = numbers[0];
+  for (int i = 1; i < numbers.length; i++)
+   if (numbers[i] > result)
+	 result = numbers[i];
+	 System.out.println("The max value is " + result);
+	}
+}
 ```
 
 Arrays类 : 在 `java.util.Arrays` 中包含了一些用于数组的常见方法, 如排序和查找:
@@ -418,6 +414,7 @@ public Circle(double radius, String color, boolean filled) {
 在任何情况下, 构造一个类的实例的时候都会沿着继承链调用所有父类的构造方法, 这就是构造方法链( _constructor chainning_),因此**设计一个可以被继承的类时, 最好提供一个无参构造方法**, 以避免这个链调用时候出错.<br>
 ![chainning](figure/11.3.png)<br>
 此外,super可以引用父类的其他方法:
+
 ```Java
 super.method(arguments);
 //一个简单的例子:
@@ -547,7 +544,7 @@ public class QuotientWithException {
             int result = quotient(number1, number2); 
             System.out.println(number1 + " / " + number2 + " is "         + result); 
         }
-       catch (ArithmeticException ex) { // 如果出现异常ArithmeticException
+        catch (ArithmeticException ex) { // 如果出现异常ArithmeticException
             System.out.println("Exception: an integer " +
            "cannot be divided by zero ");
         }
@@ -797,6 +794,7 @@ System.out.println(list2 instanceof ArrayList);
 
 ### 集合
 `Collection` 接口为 线性表,向量,栈,队列,优先队列以及规则集定义了通用的操作, Java 集合框架支持以下两种类型的容器:
+
 * 存储一个元素的集合, 被称为集合
 * 存储 key-value 对, 称为映射
 
