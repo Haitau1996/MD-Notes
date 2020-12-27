@@ -1,3 +1,8 @@
+---
+tags: []
+created: 2020-12-21T01:59:46.882Z
+modified: 2020-12-27T10:13:30.160Z
+---
 # Thinking in Java
 author [Bruce Eckel](https://www.bruceeckel.com)
 ## Chap 1: 对象导论
