@@ -725,12 +725,12 @@ Object m = Class.forName(s).newInstance();
 
 程序的运行过程中发生错误的时候, 就会 "抛出异常", 如果没有提供异常处理器, 程序就会终止. 将可能抛出已检查异常的一个或者多个方法的调用放在 try 语句块中, 然后再 catch 语句中提供处理代码:
 ```java
-    try{  
-         Class cl = Class.forName(className);
-    }
-    catch(Exception e){
-        e.printStackTrace();
-    }
+try{  
+    Class cl = Class.forName(className);
+}
+catch(Exception e){
+    e.printStackTrace();
+}
 ```
 
 #### 利用反射分析类的能力
