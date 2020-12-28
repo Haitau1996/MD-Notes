@@ -160,4 +160,6 @@ def <name> (<formal parameters>):
 
   ![](figure/3.1.png)<br>
 
-  
+#### 自定义函数的生命周期
+
+// TODO: Lec3video3
