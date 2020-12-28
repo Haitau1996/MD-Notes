@@ -1,7 +1,7 @@
 ---
 tags: []
 created: 2020-12-27T09:58:27.546Z
-modified: 2020-12-27T10:44:14.760Z
+modified: 2020-12-27T11:16:51.216Z
 ---
 # Go 程序设计语言
 ## Chap 1: 入门
@@ -16,4 +16,4 @@ $ go build helloworld.go
 $ ./helloworld
 Hello, 世界
 ```
-**Go 原生支持 Unicode**, 故可以处理所有国家的语言, 需要$
+**Go 原生支持 Unicode**, 故可以处理所有国家的语言, 需要

@@ -1,3 +1,8 @@
+---
+tags: []
+created: 2020-12-25T08:56:10.465Z
+modified: 2020-12-28T01:56:49.268Z
+---
 # Using The C++ Standard Template Libraries
 <font size=4>**Ivor Hortan**</font>
 ***
