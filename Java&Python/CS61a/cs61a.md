@@ -160,6 +160,50 @@ def <name> (<formal parameters>):
 
   ![](figure/3.1.png)<br>
 
-#### 自定义函数的生命周期
+### Environment
+* Def statement: 执行后创建一个新的函数, 在当前frame 中将 function name 和 Body 绑定在一起
+* Call expression: evaluate Operator 和 Operand(函数以 operand 为参数调用)
+* Calling/Applying: 创建一个新的 frame, 参数绑定到 arguments 中, 在新的 frame 中执行函数体
 
-// TODO: Lec3video3
+An Environment 是 sequence of frames:
+* The global frame alone
+* Function calls introduce multi-frame environment, a local frame , then a global frame
+
+Names 在不同的 environment 中可能有不同的含义:
+```python
+from operator import mul
+def square(square):
+    return mul(square,square)
+square(4)
+```
+![](figure/3.2.png)<br>
+### 一些python 特性
+#### Operators
+我们可以认为这是一种 Built-In functions, 值得注意的是有两种除法:
+```python
+from operator import truediv, floordiv,mod
+2013 / 10 # result is 201.3, truediv(2013,10)
+2013 // 10 # result is 201, floordiv(2013,10)
+2013 % 10 # result is 2, mod(2013, 10)
+```
+#### 多个返回值
+我们可以在一个语句中给多个 Names 赋值, 同样的一个函数也可以有多个返回值
+```python
+
+def divide_exact(n, d=10):
+  """ return the quotient and remainder 
+  >>> q,r = divide_exact(2013,10)
+  >>> q
+  201
+  >>> r
+  3
+  """
+    return n//d, n%d
+quotient,remainder = divide_exact(2013,10)
+```
+
+#### 运行 python 文件中的代码
+```zsh
+$ python -i someFile.py # 交互模式运行
+$ python someFile.py    # 直接运行
+```

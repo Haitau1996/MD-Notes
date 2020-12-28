@@ -427,3 +427,26 @@ names.sort(std::greater<>()); // Function object uses perfect forwarding
 list 容器的 `splice()` 有几个版本, 将参数 list 容器中的元素移动到当前容器中指定元素的前面.它可以移动单个元素/一段元素或者源容器的全部元素. 
 
 #### 访问元素
+
+list 的成员函数 `front()`/`back()` 可以返回第一个元素和最后一个元素的引用, 同时可以通过第迭代器的自增/减来访问list 内部的元素. 获取迭代器的方式也是相同的, `begin()/end()/rbegin()/rend()`. 
+
+
+
+### 使用`forward_list<T>` 容器
+
+这种容器是以单向链表的形式存储元素, 和 `list` 的主要区别在于 **它不能反向遍历元素, 只能从头到尾遍历**. 这意味着有很多东西无法使用:
+
+* 首先无法使用反向迭代器 
+
+* 无法使用 `back()`, 只有成员函数 `begin()`
+
+* `push/pop/emplace_back()` 也无法使用
+
+* 没有成员函数 `size()`,无法用一个向前迭代器减去另一个, 但是可以通过定义在头文件 iterator 中的 `distance()` 得到元素的个数
+
+  ```c++
+  std::forward_list<std::string> my_words {"three", "six", "eight"};
+  auto count = std::distance(std::begin(my_words), std::end(my_words));
+  ```
+
+* 
