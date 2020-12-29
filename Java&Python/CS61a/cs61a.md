@@ -144,7 +144,7 @@ def <name> (<formal parameters>):
 
 
 
-## Lecture 3: 
+## Lecture 3: Control
 
 #### `print` 和 evaluate 的区别
 
@@ -231,3 +231,55 @@ A statement is executed by the interpreter to **perform an action**. <br>
 * True values in Python: Anything Else
 
 ### 迭代
+#### While Statement 的执行规则
+1. evaluate header 表达式
+2. 如果它为 True, 执行整个 suite, 然后回到 step 1.
+
+## Lecture 4: High-Order Functions
+### Designing Functions
+函数的特点:
+* 函数的 Domain 是 set of possible arguments
+* 函数的 Range 是 set of possible return value
+* pure 函数的行为是输入和输出的关系
+
+函数设计的 Guide:
+* 单一职责: 给每个函数 exactly 一个 Job
+* Don't Repeat Youself
+* 定义更加通用的 函数
+
+### High-Order functions
+我们可以让一个函数更加 general, 如对于不同的数列求和 从 1 到 k, 可以先写出不同数列的通项公式, 然后再调用求和函数:
+```python
+def identity(k):
+  return k
+
+def cube(k):
+  return pow(k,3)
+
+def summation(n, func):
+  """ sum the first N terms of a sequence 
+
+  >>> summation(5,cube)
+  225
+  """
+  total, k = 0, 1
+  while k <= n:
+    total, k = total + func(k), k+1
+  return total
+
+def sum_cubes(n)
+  summation(n, cube)
+```
+这实际上就是引入了 High-Order function: **a function that take another function as argument**. 同样的, 函数除了作为参数还可以作为返回值:
+```python
+def make_adder(n):
+	def adder(k):
+		return k + n
+	return adder
+
+adder_three = make_adder(3)
+adder_three(4) 
+# return 7
+```
+![](figure/4.1.png)<br>
+#### The Purpose of High-Order Functions
