@@ -192,6 +192,7 @@ from operator import truediv, floordiv,mod
 
 def divide_exact(n, d=10):
   """ return the quotient and remainder 
+
   >>> q,r = divide_exact(2013,10)
   >>> q
   201
@@ -206,4 +207,27 @@ quotient,remainder = divide_exact(2013,10)
 ```zsh
 $ python -i someFile.py # 交互模式运行
 $ python someFile.py    # 直接运行
+$ python -m doctest -v lecture01.py 
+Trying:
+    q,r = divide_exact(2013,10)
+Expecting nothing
+ok
+Trying:
+    q
+Expecting:
+    201
+ok
+Trying:
+    r
+Expecting:
+    3
+ok
 ```
+#### statements
+A statement is executed by the interpreter to **perform an action**. <br>
+![](figure/3.3.png)<br>
+布尔表达式:
+* false in python: False , 0, '', None (more to come)
+* True values in Python: Anything Else
+
+### 迭代
