@@ -270,7 +270,7 @@ def summation(n, func):
 def sum_cubes(n)
   summation(n, cube)
 ```
-这实际上就是引入了 High-Order function: **a function that take another function as argument**. 同样的, 函数除了作为参数还可以作为返回值:
+这实际上就是引入了 High-Order function: **a function that take another function as argument or return a function as a return value**. 同样的, 函数除了作为参数还可以作为返回值:
 ```python
 def make_adder(n):
 	def adder(k):
@@ -283,3 +283,21 @@ adder_three(4)
 ```
 ![](figure/4.1.png)<br>
 #### The Purpose of High-Order Functions
+* Functions are first-class: 函数可以像值一样使用
+  * 可以像计算一样表达 general methods
+  * 减少程序中的重复
+  * 减少functions 之间的影响
+
+### lambda 表达式
+可以使用lamnda 表达式定义一个很简单的函数:
+```python
+>>> square = lambda x: x * x
+>>> square(10)
+100
+```
+这里lambda 参数可以有多个, 和其他的语言中的不同, 这里的 lambda 没有 return 关键词, 而且只能是一个简单的表达式, 和赋值不同, 这个表达式返回的是一个函数而不是值. 
+#### lambda 表达式 和 def 语句的比较
+![](figure/4.2.png)<br>
+区别不是很明显, lambda 先创建一个匿名函数然后通过赋值语句绑定到上面, 而 def 则没有这种先后顺序.<br>
+
+## Lecture 5: 环境
