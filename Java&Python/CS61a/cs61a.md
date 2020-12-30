@@ -295,9 +295,34 @@ adder_three(4)
 >>> square(10)
 100
 ```
-这里lambda 参数可以有多个, 和其他的语言中的不同, 这里的 lambda 没有 return 关键词, 而且只能是一个简单的表达式, 和赋值不同, 这个表达式返回的是一个函数而不是值. 
+这里lambda 参数可以有多个, 和其他的语言中的不同, 这里的 lambda 没有 return 关键词, 而且只能是一个简单的表达式, 和赋值不同, 这个表达式返回的是一个函数而不是值.
+```C++
+auto f = [](double x)->double {return x * x;}
+``` 
 #### lambda 表达式 和 def 语句的比较
 ![](figure/4.2.png)<br>
 区别不是很明显, lambda 先创建一个匿名函数然后通过赋值语句绑定到上面, 而 def 则没有这种先后顺序.<br>
 
 ## Lecture 5: 环境
+### High-Order Functions 的调用环境
+调用一个的 user-defined 函数:
+* 创建一个新的 frame
+* 将 formal parameter (f和x) 绑定到参数上
+* 执行函数体, 返回 f(f(x))
+  * 在执行高阶函数内的函数的时候, 也会创建一个新的 frame, 将参数绑定, 然后执行函数体
+
+### Nested defination 的环境
+![](figure/5.1.png)<br>
+可以看到, 在没有返回的时候, global frame 是无法 refer to Loacl frame 中新建的 adder 函数. adder 函数调用的时候, 它的 parent frame 实际上是 make_adder. 需要在 adder 中 Look up for names 时, 现在 adder 的 frame 中查找, 然后在 make_adder 中, 然后才是 Global frame:
+* 每个用户自定义的函数都有一个perent frame, 通常是 global
+* 它的 parent frame 就是定义函数所在的 frame
+* 每个 local frame 也都有一个 parent frame
+* 它的 parent frame 就是 function call 所在的 frame
+
+### Loacl Names
+Local Name 在其他非嵌套的函数中是不可见的:<br>
+![](figure/5.2.png)<br>
+上面的例子中, f 函数 locally 将 y 绑定为 2, 但是 g 中需要查找 y 的时候, g local frame 中没有, global 中也没有, 就会报错. 而之前的 Make_adder 中生成的 adder 函数就可以找到 make_adder local frame 的 names, 因为他们是 nested.
+
+### Function Composition
+![](figure/5.3.png)<br>
