@@ -391,3 +391,20 @@ def sum_of_digits_iter(n):
   return partial_sum
 ```
 在每次的迭代中, 更新需要维护的 status. 
+
+## Letcure 8: 树递归
+### 递归调用的顺序
+在一个递归函数的函数体中调用函数本身, 首先执行被调用的函数返回结果, 之后才会往后运行. 这意味着被调用的函数先执行完. 
+![](figure/8.1.png)<br>
+这个结果就是上面的输出短的序列被长的夹在中间. 在实现的时候, 我们还可以写成更简单的形式:
+```python
+def cascade(n):
+  print(n)
+  if n >= 10:
+    cascade(n // 10)
+    print(n)
+```
+![](figure/8.2.png)<br>
+这代码的意思, 就是 grow 函数要求先 n 变小, 然后 print, 而 srink 要求 print 发生在 n 减小之前, 这个名字 grow 可能带来一些误解. <br>
+
+### 数递归
