@@ -346,3 +346,48 @@ def printSums(x):
 printSums(1)(2)(3)
 ```
 ![](figure/6.1.png)<br>
+
+## Lecture 7: Recursion
+### 递归函数
+递归函数是在函数体中调用函数自身的函数, 这种调用可以是直接的也可以是间接的. 它的具体结构有下面几个特点:
+* def 声明语句和其他函数一样
+* 条件语句先检查 base cases 直接求值
+* 递归的 case 使用递归调用求值
+
+```python
+def split(n):
+	return n // 10, n % 10
+
+def sum_of_digits(n):
+	if n < 10:
+		return n 
+	else:
+		all_but_last, last = split(n)
+		return sum_of_digits(all_but_last) + last 
+```
+#### 递归函数的环境图解
+![](figure/7.1.png)<br>
+* 同一个函数被多次调用
+* 在不同的frame 中 track 每次调用中的 argument
+* n 的值取决于具体所在的调用环境
+
+递归和迭代的比较:<br>
+![](figure/7.2.png)<br>
+
+#### 递归函数正确性的检查
+* 检查 base case 的 正确性
+* 将 函数看成是一个 functional 抽象
+* 假设 n-1 是正确的
+* 在此基础上检查 n 的case 是否正确
+
+### 将递归转为迭代
+Iteration is a special case of recursion. 转换的核心在于找出哪个 state 一定要在 iterative 函数中维护.例如在 sum_of_digits(n) 的例子中, 我们需要维护的量实际上是 partial_sum, 即 sum_of_digits(all_but_last):
+```python
+def sum_of_digits_iter(n):
+  partial_sum = 0
+  while n > 0:
+    n, last = split(n)
+    partial_sum = partial_sum + last
+  return partial_sum
+```
+在每次的迭代中, 更新需要维护的 status. 
