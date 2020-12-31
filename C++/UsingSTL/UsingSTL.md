@@ -491,7 +491,8 @@ std::stack< std::string, std::list<std::string>> fruit;
 
 ```C++
 std::list<double> values {1.414, 3.14159265, 2.71828};
-std::stack<double, std::list<double>> my_stack (values);// 适配器的底层的容器 list<double> 和用于构造的对象容器类型一致
+std::stack<double, std::list<double>> my_stack (values);
+// 适配器的底层的容器 list<double> 和用于构造的对象容器类型一致
 ```
 
 `stack<T>` 模板定义了拷贝构造函数, 使用的时候可以用圆括号和初始化列表.
@@ -511,8 +512,10 @@ std::stack<double, std::list<double>> copy_stack(my_stack);
 
 此外, stack 对象有一套比较运算符, 通过字典的方式来比较. 
 
-
-
 ### 创建和使用 `queue<T>`容器适配器
 
-只能访问`queue<T>`容器适配器的第一个和最后一个元素. **只能在头部添加元素, 在尾部移除元素**. 
+只能访问`queue<T>`容器适配器的第一个和最后一个元素. **只能在头部添加元素, 在尾部移除元素**. <br>
+![](figure/3.2.png)<br>
+同样的, 我们也可以通过第二个参数指定底层的容器类型, 只要它能提供以下类型的操作:`front(), back(), push_back(), pop_front, empty() , size()`. 
+#### queue 的操作
+* `front()`
