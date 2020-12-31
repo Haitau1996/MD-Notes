@@ -329,3 +329,20 @@ Local Name 在其他非嵌套的函数中是不可见的:<br>
 
 ## Lecture 06: Iteration
 ### Return statement
+一个返回语句完成call 语句的求值返回需要的值:
+  * f(x) 对于用户自定义的函数 f 做了一下事情: 转到新的环境中, 执行函数体
+  * f 中 return 语句做的事情: 回到之前的环境, f(x) 现在有了一个新的值 
+
+在执行语句的时候只有其中一个 return 语句会被执行, 执行完就退出了.
+
+### Self-Reference
+```python
+def printSums(x):
+	print(x)
+  def printSum(y):
+    return printSums(x+y)
+	return printSum
+
+printSums(1)(2)(3)
+```
+![](figure/6.1.png)<br>
