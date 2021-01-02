@@ -445,5 +445,75 @@ def count_partitions(n,m):
         return with_m + without_m
 ```
 
+## Lecture 9: Function Examples
 
+### 函数抽象
+函数抽象使得我们在调用的时候只需要知道函数的参数和行为, 而不用关注其具体的内部实现.在选择函数参数名称的时候有下面几个建议:
+* names 应该表达他们绑定值的 meaning
+* 绑定到 Name 中的值类型最好在函数的 docstring 中记录
+* 函数名应该表达其effect(print)/行为(triple) 或者返回值 (abs)
+* 如果长的函数名可以帮助 document your code, 那么就应该这么做
+* 如果是用来表达 generic quantities,如 数目/任意的函数/ 数学操作的参数, 那么就可以取一个短的名字
 
+### TDD
+测试驱动开发(TDD) 要求我们在实现函数前先写出函数的 test:
+* 可以明确函数的 domain/range/ behavior
+* 可以帮助确认复杂的 edge cases
+
+增量开发, 在继续新工作前测试每个 piece:
+* 我们不能依靠没有测试过的代码
+* 如果更改了代码, 重新运行老的测试
+
+交互式地运行程序:
+* 不要害怕写完程序后的 experiment
+* 交互式的session 可以拷贝称为 docstring 的一部分
+
+```python
+def gcd(m,n):
+    """Returns the largest k that devides both m and n
+    
+    k, m, n are all possitive interger
+    >>> gcd(25,10)
+    10
+    >>> gcd(8, 16)
+    8
+    >>> gcd(5,5)
+    5
+    """
+
+```
+
+### 函数科里化(currying)
+```python
+def make_adder(k)
+  return lambda n : n + k
+
+>>> make_adder(2)(3)
+5
+>> add(2,3)
+5
+```
+这两个调用之间的区别在于: 一个是调用两次函数, 一次调用返回一个函数然后再通过函数调用返回值. 另一个是直接调用带有两个参数的函数直接返回值. 
+```python
+def curry2(f):
+	def g(x):
+		def h(y):
+			return f(x,y)
+		return h 
+	return g 
+
+curruy2 = lambda f: lambda x : lambda y : f(x,y)
+```
+科里化: **将一个多参数的函数转化为一个单参数, 高阶的函数**.在理论计算机科学中，柯里化提供了在简单的理论模型中，比如：只接受一个单一参数的lambda演算中，研究带有多个参数的函数的方式。
+
+### 函数修饰器(decorateor)
+```python
+@trace1
+def triple(x):
+  return 3 * x
+# 和下面的语句等价
+def triple(x):
+  return 3 * x
+triple = trace1(triple)
+```
+简单地说：他们是修改其他函数的功能的函数, 有助于让我们的代码更简短，也更Pythonic. 
