@@ -298,7 +298,7 @@ adder_three(4)
 这里lambda 参数可以有多个, 和其他的语言中的不同, 这里的 lambda 没有 return 关键词, 而且只能是一个简单的表达式, 和赋值不同, 这个表达式返回的是一个函数而不是值.
 ```C++
 auto f = [](double x)->double {return x * x;}
-``` 
+```
 #### lambda 表达式 和 def 语句的比较
 ![](figure/4.2.png)<br>
 区别不是很明显, lambda 先创建一个匿名函数然后通过赋值语句绑定到上面, 而 def 则没有这种先后顺序.<br>
@@ -419,4 +419,31 @@ def fib(n):
 ![](figure/8.3.png)<br>
 函数的调用过程有点像树的后序遍历, 要先知道两个子数调用的结果才能知道自己的值, 函数执行效率低的原因是数中有很多重复的函数调用.<br>
 
-### 例: co
+### 例: counting partitions
+
+![](figure/8.4.png)<br>
+
+* 首先找到一个能够递归分解问题的方式, 将复杂的问题用该问题的一个更简单的实例替代
+* 在这里我们就用讨论两种可能性:
+  - 使用至少一次 4 
+  - 不使用任何4 
+* 于是 `count_partitions(6,4)` 就简化成两个更简单的问题:
+  * `count_partition(2,4)`
+  * `count_partition(6,3)`
+
+```python
+def count_partitions(n,m):
+    if n == 0:
+        return 1
+    elif n < 0:
+        return 0
+    elif m == 0:
+        return 0
+    else:
+        with_m = count_partitions(n-m, m)
+        without_m = count_partitions(n-1, m)
+        return with_m + without_m
+```
+
+
+
