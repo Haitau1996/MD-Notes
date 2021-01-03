@@ -583,3 +583,129 @@ def denom(x):
 ```
 改变实现后, 加减乘除之类的运算不需要做任何改变即可正确运行. <br>
 ![](figure/10.2.png)<br>
+
+## Lecture 11: Containers
+### List
+list 在 python 是使用 `[]` 括起来表示, 序列中的每个元素都分配一个数字 - 它的位置，或索引. 
+```python
+>>> odds = [41, 43, 47]
+>>> odds[0]
+41
+>>> len(odds)
+3
+>>> [2,7] + odds * 2
+[2, 7, 41, 43, 47, 41, 43, 47]
+```
+从上面的例子中可以看到, python 的 list 支持下面的操作:
+* 得到 list 中元素的个数 `len(odds)`
+* 使用 index 访问元素 `odds[0]`/`getitem(odds, 0)`
+* 同时可以concatenation(串接) 和 重复(`[2, 7] + odds * 2`/ `add([2,7], mul(odds,2))`)
+* list 同时可以嵌套`pairs[[19,20], [21,22]]`
+
+### Containers
+list 这种容器支持 in operator:
+```python
+>>> 1 in [1, 2, 3]
+True
+>>> [1, 2] in [1, 2, 3]
+False
+>>> [1, 2] in [[1,2], 3]
+True
+```
+这个操作实际上就是将 list 中的每个元素单独拿出来对比, 看查找的元素在不在其中. 
+
+### For Statement
+```python
+for <name> in <expression>:
+  <suite>
+```
+1. 对 \<expression> 求值, 对方必须是一个 iterable value(a sequence)
+2. 对于 sequence 中的每个元素:
+   1. 在 current frame 中将 element 和 <name> 绑定在一起
+   2. 执行 \<suite>
+
+在 for 语句中甚至可以将 element unpack(要求sequence中每个元素等长), 这个过程有点像 mutiple assignment:
+```python
+pairs = [[1,2],[1,1],[2,3],[3,3]]
+same_count = 0
+for x,y in pairs:
+  if x == y:
+    same_count = same_count +1
+print(same_count)
+```
+
+### Ranges
+The range type: 一个连续的整数组成的 sequence.<br>
+![](figure/11.1.png)<br>
+* length : 就是 ending 值 - 初始值
+* 选择的element: starting value + index
+
+同时我们可以调用list constructor 将 range 转化为 list
+```python
+>>> list(range(-2,2))
+[-2,-1, 0, 1]
+>>> list(range(4))
+[0, 1, 2, 3]
+
+```
+### List Comprehensions
+![](figure/11.2.png)<br>
+我们可以在 list 中做很多操作, 下面是个例子:
+```shell
+>>> odds = [1,3,5,7,9]
+>>> [x for x in odds if 25%x==0]
+[1, 5]
+```
+### String
+String 是一种抽象, 可以代表 data/ language/ programs:
+```python
+>>> 'curry = lambda f: lambda x: lambda y: f(x,y)'
+'curry = lambda f: lambda x: lambda y: f(x,y)'
+>>> exec('curry = lambda f: lambda x: lambda y: f(x,y)')
+>>> curry
+<function <lambda> at 0x000001C5303271F0>
+```
+它可以用三种方式表示:<br>
+![](figure/11.3.png)<br>
+此外, String 也是 sequence, 可以用 `len(str)`, 也可以用 index 得到其中一个元素(也是 String), 值得注意的是 **String 的 in opetator 和 list 不同**:
+```python
+>>> 'hell' in 'hello world'
+True
+```
+
+### 字典
+这个容器让我们能够将 key 和 value 关联起来, 之后我们可以用 Key 来查找元素(它们是无序的), 但是不能用value去查找:
+```python
+>>> {'I': 1, 'V': 5, 'X':10}
+{'I': 1, 'V': 5, 'X': 10}
+>>> num = {'I': 1, 'V': 5, 'X':10}
+>>> num['I']
+1
+>>> 'I' in num
+True
+>>> 10 in num
+False
+>>> num.values()
+dict_values([1, 5, 10])
+>>> num.keys()
+dict_keys(['I', 'V', 'X'])
+>>> num.items()
+dict_items([('I', 1), ('V', 5), ('X', 10)])
+```
+字典提供了很多操作方便我们使用, 同样的也有 Comprehensions:
+```python
+>>> {x:x**2 for x in range(4)}
+{0: 0, 1: 1, 2: 4, 3: 9}
+```
+我们不能有两个 key, 这会被认为是重写 Key 对应的 value:
+```python
+>>> {1:2, 1:3}
+{1: 3}
+```
+同时 Key 不能是list/dictionary 这种 unhashable 的对象:
+```shell
+>>> {[1]:"hello"}
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unhashable type: 'list'
+```
