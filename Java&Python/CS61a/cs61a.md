@@ -517,3 +517,69 @@ def triple(x):
 triple = trace1(triple)
 ```
 简单地说：他们是修改其他函数的功能的函数, 有助于让我们的代码更简短，也更Pythonic. 
+
+## Lecture 10: Data Abstraction
+复合(compound)对象将不同的对象组合在一起, 抽象数据类型让我们能够像一个单元那样操纵复合对象, 将两个部分分开:
+* 我们怎样去表示数据
+* 我们怎样操作/使用数据
+
+### Pair
+可以使用list 表示pair:
+```python
+>>> pair = [1, 2]
+>>> x, y = pair
+>>> x
+1
+>>> from operator import getitem
+>>> getitem(pair, 0)
+1
+```
+这时候我们可以定义出表示有理数ADT 的构造函数, 在构造函数中加入约分的性质之后就无需在加减乘除中做这种变化了:
+```python
+from fractions import gcd
+
+def rational(n,d)
+  g = gcd(n,d)
+  return [n//g,d//g]
+
+def numer(x):
+  return x[0]
+def denom(x):
+  return x[1]
+```
+
+### Abstraction Barriers
+![](figure/10.1.png)<br>
+下面的操作就违反了 abstraction Barriers:
+```python
+add_rational([1,2],[1,4])
+def add_rational(x,y):
+  return [x[0]*y[1], x[1]*y[0]]
+```
+上面的一段代码违反了很多东西:
+* 定义有理数直接用 list 而不是使用构造函数
+* 假定rational 内部用 list 实现而直接使用下标取分子分母
+* 返回时候也没有使用构造函数
+
+### Data Representations
+* 我们需要构造函数和 selector 函数合作实现正确的行为
+* 数据抽象使用 selector 和 constructor 去定义行为
+* 如果行为的条件被满足, 那么 repersentation 就是对的
+
+我们可以根据它的行为去辨别出数据抽象. 我们可以改变有理数背后的实现, 之前使用一个list, 现在完全可以使用函数:
+```python
+def rational(n,d):
+  def selector(name):
+    if name == 'n':
+      return n
+    elif name == 'd':
+      return d
+  return selector
+def numer(x):
+  return x('n')
+
+def denom(x):
+  return x('d')
+```
+改变实现后, 加减乘除之类的运算不需要做任何改变即可正确运行. <br>
+![](figure/10.2.png)<br>
