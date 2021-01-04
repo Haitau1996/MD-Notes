@@ -518,4 +518,12 @@ std::stack<double, std::list<double>> copy_stack(my_stack);
 ![](figure/3.2.png)<br>
 同样的, 我们也可以通过第二个参数指定底层的容器类型, 只要它能提供以下类型的操作:`front(), back(), push_back(), pop_front, empty() , size()`. 
 #### queue 的操作
-* `front()`
+* `front()`/`back()` 同样的返回第一个元素最后一个元素的引用, 如果 queue 是常量则返回常引用
+* `push(const T&Obj)`/`push(T && Obj)` 在队尾添加一个元素(通过调用底层容器的 `push_back()` 实现)
+* `pop()`/`size()`/`empty()` 这些操作就是按照字面理解
+* `emplace()` 用传给的参数调用 T 的构造函数, 在尾部生成对象
+* `swap(queue<T> &otherQueue)` 交换两者的元素, 同样的可以使用全局的 swap. 
+* 和 stack 一样, 有一套比较运算符.
+
+### 使用优先队列
+`priority_queue<T>` 容器适配器定义了一个元素有序排列的队列, 默认**队列头部的元素优先级最高**. 
