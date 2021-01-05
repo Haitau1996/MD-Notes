@@ -837,3 +837,63 @@ def print_tree(t,indent = 0):
 
 ### Mutation 操作
 
+```python
+>>> suits = ['coin','string','mariad']
+>>> original_suits = suits
+>>> suits.remove('string')
+>>> original_suits
+['coin', 'mariad']
+>>> numerials = {'I':1, 'V': 5, 'X': 10}
+>>> numerials['L'] = 50
+```
+
+两者在前面 binding together, 修改其中一个会影响另一个的值:
+
+* 同一个对象可以在计算中改变其 value
+
+* 所有指向同一个对象的 names 都会被这种 mutation 影响
+
+* 只有 **mutable types** 可以改变: _lists_ & _dictionaries_
+
+* function call 可以改变它 Scope 中的任何对象
+
+  ```python
+  def mystery(s):
+      s.pop()
+      s.pop()
+  four = [1, 2, 3, 4]
+  mystery(four) # four is now [1,2]
+  ```
+
+### Tuples (immutable sequences)
+
+**tuple 的特性导致它可以作为 dictionary 的key**:
+
+```python
+{(1,2):3}
+```
+
+immutable values are protected from mutation
+
+* 但是和 Name Changes 并不矛盾, 它可以发生在指向 mutable/immutable 的 Names 上, 将 Name refer to 其他的东西. 但是 Object mutation 智能发生在 mutable 对象上.
+
+* 一个 immutable sequence 可能是可以变化的(**如果它的某个元素是 _mutable_ 的话**)
+
+  ```python
+  >>> s = ([1,2],3)
+  >>> s[0][0] = 0
+  >>> s
+  ([0, 2], 3)
+  ```
+
+于是, 我们有两种判断:
+
+* **Identity**: \<exp0> is \<exp1> , 只有两个表达式 evaluate 到同一个对象时候才为 true
+* **Equality**: \<exp0> == \<exp1>, 两个表达式 evaluate 到同一个 value 时候为 true
+
+也就是, 如果两个 Name Identity 为 `False`, 改变其中一个不影响另一个. 这引申出一个问题, **Mutable 的默认值是非常危险的**:<br>
+
+![](figure/13.1.png)<br>
+
+## Lecture 14: Mutable Functions
+
