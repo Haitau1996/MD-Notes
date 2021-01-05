@@ -15,7 +15,7 @@ f(expr);
 一般我们认为T 和 _ParamType_ 是一个类型, 但是可能有三种情况:
 * _ParamType_ 是一个 pointer或者reference, 但是不是一个 Universal reference.
 * _ParamType_ 是一个 universal reference
-* _ParamType_ 既不是pointer又不是reference
+* _ParamType_ 既不是 pointer 又不是 reference
 
 #### _ParamType_ 是一个引用或指针, 但不是通用引用
 这种情况最简单, 类型推导方式如下:
@@ -320,6 +320,7 @@ w1 = w2;	// an assignment; calls copy operator=
         int y = 0;	//	also fine
         int z(0);	//	error!
     };
+    ```
 3. 对于uncopyable的对象, 可以使用 小括号和一致初始化, 但是不能用`=`
     ```C++
     std::atomic<int> ai1{ 0 };	// fine

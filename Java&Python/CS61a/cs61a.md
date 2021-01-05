@@ -750,7 +750,7 @@ TypeError: unhashable type: 'list'
 
 ### 处理容器的值
 
-偶很多 built-in 函数处理一个 Iterable 参数汇总成一个值:
+偶很多 built-in 函数处理一个可迭代的参数汇总成一个值:
 
 * `sum(iterable[, start])`->value [,start] 中的方括号表示一个可选参数
 
@@ -836,6 +836,4 @@ def print_tree(t,indent = 0):
   * 函数只做一件事情, 对象可以做很多相关的事情
 
 ### Mutation 操作
-
-
 
