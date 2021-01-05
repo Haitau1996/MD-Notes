@@ -12,22 +12,24 @@ void f(ParamType param);
 ...
 f(expr);  
 ```
-一般我们认为T 和 _ParamType_ 是一个类型, 但是可能有三种情况:
+一般我们认为T的类型就是 _ParamType_ 的型别, 如 传入一个 `int` 类型的变量 `x`, `ParamType` 自然就是int, 但是实际上我们要分情况讨论:
 * _ParamType_ 是一个 pointer或者reference, 但是不是一个 Universal reference.
 * _ParamType_ 是一个 universal reference
 * _ParamType_ 既不是 pointer 又不是 reference
 
-#### _ParamType_ 是一个引用或指针, 但不是通用引用
+#### _ParamType_ 是一个引用或指针, 但不是万能引用
 这种情况最简单, 类型推导方式如下:
 1. _expr_ 的类型是引用的话, 忽略 reference的部分
 2. 用 _expr_ 的pattern和 _ParamType_ 对比决定 T 的类型
 
 重要的是如果传入一个`const` object 到一个 reference参数中, 他们是希望传入的对象 remain unmodifiable. 
 ```C++
+template<typename T>
+void f(T& param); 		  // param is a reference
 const int& rx = x;       // as before
 f(rx);                   // T is int, param's type is const int&
 ```
-从这个例子中可以看到, 传入一个 `const int&` 和 一个 `const int` 对于推导 T的类型都是一样的.
+从这个例子中可以看到, 传入一个 `const int&` 和 一个 `const int` 对于推导 T的类型都是一样的(忽略 reference 部分, **但是保留 constness**).
 
 #### _ParamType_ 是一个 Universal reference
 当template 带有 universal reference parameter,如参数被声明为右值引用时候,分两种情况讨论:
