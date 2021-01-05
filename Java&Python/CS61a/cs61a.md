@@ -295,7 +295,7 @@ adder_three(4)
 >>> square(10)
 100
 ```
-这里lambda 参数可以有多个, 和其他的语言中的不同, 这里的 lambda 没有 return 关键词, 而且只能是一个简单的表达式, 和赋值不同, 这个表达式返回的是一个函数而不是值.作为对比, C++ 中的 lambda 表达式就可有有过个语句
+这里lambda 参数可以有多个, 和其他的语言中的不同, 这里的 lambda 没有 return 关键词, 而且只能是一个简单的表达式, 和赋值不同, 这个表达式返回的是一个函数而不是值.作为对比, C++ 中的 lambda 表达式就可以有多个语句
 ```C++
 auto f = [](double x)->double {
     		auto temp = x -1;
@@ -314,15 +314,16 @@ auto f = [](double x)->double {
 * 执行函数体, 返回 f(f(x))
   * 在执行高阶函数内的函数的时候, 也会创建一个新的 frame, 将参数绑定, 然后执行函数体
 
-### Nested defination 的环境
+### Nested definition 的环境
 ![](figure/5.1.png)<br>
-可以看到, 在没有返回的时候, global frame 是无法 refer to Loacl frame 中新建的 adder 函数. adder 函数调用的时候, 它的 parent frame 实际上是 make_adder. 需要在 adder 中 Look up for names 时, 现在 adder 的 frame 中查找, 然后在 make_adder 中, 然后才是 Global frame:
-* 每个用户自定义的函数都有一个perent frame, 通常是 global
+可以看到, 在没有返回的时候, global frame 是无法 refer to Local frame 中新建的 adder 函数. adder 函数调用的时候, 它的 parent frame 实际上是 make_adder. 需要在 adder 中 Look up for names 时, 现在 adder 的 frame 中查找, 然后在 make_adder 中, 然后才是 Global frame:
+
+* 每个用户自定义的函数都有一个parent frame, 通常是 global
 * 它的 parent frame 就是定义函数所在的 frame
 * 每个 local frame 也都有一个 parent frame
 * 它的 parent frame 就是 function call 所在的 frame
 
-### Loacl Names
+### Local Names
 Local Name 在其他非嵌套的函数中是不可见的:<br>
 ![](figure/5.2.png)<br>
 上面的例子中, f 函数 locally 将 y 绑定为 2, 但是 g 中需要查找 y 的时候, g local frame 中没有, global 中也没有, 就会报错. 而之前的 Make_adder 中生成的 adder 函数就可以找到 make_adder local frame 的 names, 因为他们是 nested.
@@ -395,7 +396,7 @@ def sum_of_digits_iter(n):
 ```
 在每次的迭代中, 更新需要维护的 status. 
 
-## Letcure 8: 树递归
+## Lecture 8: 树递归
 ### 递归调用的顺序
 在一个递归函数的函数体中调用函数本身, 首先执行被调用的函数返回结果, 之后才会往后运行. 这意味着被调用的函数先执行完. 
 ![](figure/8.1.png)<br>
@@ -509,7 +510,7 @@ curruy2 = lambda f: lambda x : lambda y : f(x,y)
 ```
 科里化: **将一个多参数的函数转化为一个单参数, 高阶的函数**.在理论计算机科学中，柯里化提供了在简单的理论模型中，比如：只接受一个单一参数的lambda演算中，研究带有多个参数的函数的方式。
 
-### 函数修饰器(decorateor)
+### 函数修饰器(decorator)
 ```python
 @trace1
 def triple(x):
@@ -567,7 +568,7 @@ def add_rational(x,y):
 ### Data Representations
 * 我们需要构造函数和 selector 函数合作实现正确的行为
 * 数据抽象使用 selector 和 constructor 去定义行为
-* 如果行为的条件被满足, 那么 repersentation 就是对的
+* 如果行为的条件被满足, 那么 representation 就是对的
 
 我们可以根据它的行为去辨别出数据抽象. 我们可以改变有理数背后的实现, 之前使用一个list, 现在完全可以使用函数:
 ```python
@@ -627,7 +628,7 @@ for <name> in <expression>:
    1. 在 current frame 中将 element 和 <name> 绑定在一起
    2. 执行 \<suite>
 
-在 for 语句中甚至可以将 element unpack(要求sequence中每个元素等长), 这个过程有点像 mutiple assignment:
+在 for 语句中甚至可以将 element unpack(要求sequence中每个元素等长), 这个过程有点像 mutable assignment:
 ```python
 pairs = [[1,2],[1,1],[2,3],[3,3]]
 same_count = 0
@@ -670,7 +671,8 @@ String 是一种抽象, 可以代表 data/ language/ programs:
 ```
 它可以用三种方式表示:<br>
 ![](figure/11.3.png)<br>
-此外, String 也是 sequence, 可以用 `len(str)`, 也可以用 index 得到其中一个元素(也是 String), 值得注意的是 **String 的 in opetator 和 list 不同**:
+此外, String 也是 sequence, 可以用 `len(str)`, 也可以用 index 得到其中一个元素(也是 String), 值得注意的是 **String 的 in operator 和 list 不同**:
+
 ```python
 >>> 'hell' in 'hello world'
 True
