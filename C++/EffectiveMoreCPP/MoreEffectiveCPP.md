@@ -59,7 +59,7 @@ for (int i = the number of elements in the array - 1;i >= 0;--i){
     array[i].BST::~BST(); // call array[i]’s destructor
 } 
 ```
-而**通过base pointer删除一个derived classes object构成的数组, 其结果是未定义的** .
+而**通过base pointer删除一个derived classes object构成的数组, 其结果是未定义的**.
 
 ### Item 4 非必要不提供default constructor
 

@@ -207,7 +207,7 @@ quotient,remainder = divide_exact(2013,10)
 ```zsh
 $ python -i someFile.py # 交互模式运行
 $ python someFile.py    # 直接运行
-$ python -m doctest -v lecture01.py 
+$ python -m doctest -v lecture01.py # 运行的时候可以进行单元测试
 Trying:
     q,r = divide_exact(2013,10)
 Expecting nothing
@@ -295,9 +295,12 @@ adder_three(4)
 >>> square(10)
 100
 ```
-这里lambda 参数可以有多个, 和其他的语言中的不同, 这里的 lambda 没有 return 关键词, 而且只能是一个简单的表达式, 和赋值不同, 这个表达式返回的是一个函数而不是值.
+这里lambda 参数可以有多个, 和其他的语言中的不同, 这里的 lambda 没有 return 关键词, 而且只能是一个简单的表达式, 和赋值不同, 这个表达式返回的是一个函数而不是值.作为对比, C++ 中的 lambda 表达式就可有有过个语句
 ```C++
-auto f = [](double x)->double {return x * x;}
+auto f = [](double x)->double {
+    		auto temp = x -1;
+           return x * (temp+1);
+			}
 ```
 #### lambda 表达式 和 def 语句的比较
 ![](figure/4.2.png)<br>
@@ -709,3 +712,111 @@ Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
 TypeError: unhashable type: 'list'
 ```
+
+## Lecture 12: trees
+
+### Box and Pointer Notation
+
+环境的图示中加入了这个notation 是因为 Data Type 的 Closure 特性: **结果的组合本身可以用同样的 method 组合在一起**. 这个特性非常强大, 它允许我们创建 hierarchical(层次的)结构. 例如, list 可以包含一个list 对象作为一个元素:<br>
+
+![](figure/12.1.png)<br>
+
+### Slicing(切片)
+
+```python
+>>> odds = [3, 5, 7, 9, 11]
+>>> [odds[i] for i in range(1,4)]
+[5, 7, 9]
+>>> odds[1:4]
+[5, 7, 9]
+```
+
+切片用一种更简单的方式去实现上面两行代码实现的功能, 此外还可以更简单省略初始/结束/初始+结束的index:
+
+```python
+>>> odds[:4]
+[3, 5, 7, 9]
+>>> odds[2:]
+[7, 9, 11]
+>>> odds[:]
+[3, 5, 7, 9, 11]
+```
+
+**切片产生的是一个新的对象(values)**. 
+
+
+
+### 处理容器的值
+
+偶很多 built-in 函数处理一个 Iterable 参数汇总成一个值:
+
+* `sum(iterable[, start])`->value [,start] 中的方括号表示一个可选参数
+
+* `max(iterable [, key=func])`->value 返回最大元素
+
+  ```python
+  max(range(10), key = lambda x: 7 - (x-3)*x)
+  ```
+
+* `all(iterable)`-> bool 如果 其中的值都是 true, 返回 True, iterable 为空依旧返回 True.
+
+### Trees
+
+![](figure/12.2.png)<br>
+
+#### 实现一个树
+
+* 一个 tree 有 root label 和一个list 的 branch
+* 每个 branch 都是一棵树
+
+```python
+def tree(label, branches =[]):
+    for branch in branches:
+        assert is_tree(branch)
+    return [label] + list(branches)
+def label(tree):
+    return tree[0]
+def branches(tree):
+    return tree[1:]
+def is_tree(tree):
+    if type(tree)!= list or len(tree)<1:
+        return False
+    for branch in branches(tree):
+        if not is_tree(branch):
+        	return False
+    return True
+def is_leaf(tree):
+    return not branches(tree)
+```
+
+在这种实现种, tree 就有一个root label 和 branches 构成的 list.
+
+#### Tree Processing
+
+很多事后涉及树的处理我们都是使用递归来实现的, 例如想要生成一个斐波那契树:
+
+```Python
+def fib_tree(n):
+    if n <= 1:
+        return tree(n)
+    else:
+        left, right = fib_tree(n-2), fib_tree(n-1)
+        return tree(label(left)+label(right),[left, right])
+```
+
+一个从其他树中创建新的树的函数经常也是递归的,例如:
+
+```python
+def increment(t):
+    return tree(label(t)+1,[increment(b) for b in branches(t)])
+```
+
+当我们遇到叶节点的时候, 上面的for statement 产生一个空的list, 递归停止即可. 
+
+```python
+def print_tree(t,indent = 0):
+    print('*'* indent + str(label(t)))
+    for branch in branches(t):
+        print_tree(branch, indent +1)
+```
+
