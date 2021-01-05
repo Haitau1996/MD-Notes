@@ -820,3 +820,20 @@ def print_tree(t,indent = 0):
         print_tree(branch, indent +1)
 ```
 
+## Lecture 13: Mutable Values
+
+### Python 中的对象
+
+* 对象可以表示信息
+* 它们由data 和 behavior 组成, 绑定在一起形成抽象
+* 对象可以表示事务, 可以表示属性/进程/Interaction
+* 有种对象是被称为一个类, classes are first-class values in python
+* 在 python 中, 所有的值都是一个对象
+  * 所有对象都有属性
+  * 可以通过方法做很多数据操作
+  * 函数只做一件事情, 对象可以做很多相关的事情
+
+### Mutation 操作
+
+
+
