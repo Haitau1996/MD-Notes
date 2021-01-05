@@ -897,3 +897,4 @@ immutable values are protected from mutation
 
 ## Lecture 14: Mutable Functions
 
+mutable 函数是有与其关联的数据发生变化的函数, 例如我们来看一个在不同时间的行为有变化的函数:
