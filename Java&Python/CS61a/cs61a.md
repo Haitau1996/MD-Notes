@@ -817,7 +817,7 @@ def increment(t):
 
 ```python
 def print_tree(t,indent = 0):
-    print('*'* indent + str(label(t)))
+    print('  ' * indent + str(label(t)))
     for branch in branches(t):
         print_tree(branch, indent +1)
 ```
@@ -949,5 +949,73 @@ Mutation 操作违反了这种 transparency , 他们不止是返回一个值, **
 
 ![](figure/14.4.png)<br>
 
-## Lecture 16 : Objects
+## Lecture 15 : Objects
 
+### Object-Oriented Programming
+
+一个用于组织模块化程序的方法:
+
+* 抽象壁垒
+* 将信息和相关的定位绑定在一起
+
+### Classes
+
+一个类是其实例的模板, 它的声明方式如下:
+
+```python
+class <name>:
+    <suite>
+```
+
+当我们 Call 一个 Class 的时候:
+
+1. 该类的一个新的实例被创建
+
+2. `__init__` 方法被调用, 其第一个参数是新创建的那个实例(`self`), 同时也可以为该方法提供其他的调用参数
+
+   ```python
+   class Account(object):
+   	"""docstring for Account"""
+   	def __init__(self, account_holder):
+   		self.balance = 0
+   		self.holder = account_holder
+   ```
+
+
+
+#### Identity
+
+每个作为用户自定义类实例的对象都有自己独一无二的 identity,使用 assignment 方式将一个新的 name 绑定到对象上, 这个过程并不会创建新的对象. 
+
+#### Methods
+
+在 class suite 中定义的函数:
+
+```python
+class Account(object):
+	"""docstring for Account"""
+	def __init__(self, account_holder):
+		self.balance = 0
+		self.holder = account_holder
+	def deposit(self, amount):
+		self.balance = self.balance + amount
+		return self.balance
+	def withdraw(self, amount):
+		if amount > self.balance:
+			return 'Run out of money'
+		self.balance = self.balance - amount
+		return self.balance
+```
+
+调用方法的时候可以通过 `self` 参数访问对象自己, 所有他们可以访问和操作付I想的状态, 使用 Dot notation 可以自动提供方法的第一个参数. `<expression>.<name>` 
+
+#### Attributes
+
+存在对象实例/或者是类 中的数据, 通过 dot notation / `getattr(john,'balance')`访问. 
+
+此外类也可以调用函数, 这时候需要传入一个对象的实例, method 和 function的区别在于要不要显式传入第一参数:<br>
+
+![](figure/15.1.png)<br>
+Class Attributes: 可以理解为 java 中的静态实例域. 
+
+![](figure/15.2.png)<br>
