@@ -897,4 +897,57 @@ immutable values are protected from mutation
 
 ## Lecture 14: Mutable Functions
 
-mutable 函数是有与其关联的数据发生变化的函数, 例如我们来看一个在不同时间的行为有变化的函数:
+mutable 函数是有与其关联的数据发生变化的函数, 例如我们来看一个在不同时间的行为有变化的函数(银行存款程序).我们在 make_withdraw 函数中定义 withdraw(相当于balance 放在 parent 的frame 中), 这个时候我们需要 Persistent Local State.
+
+```python
+def make_withdraw(balance):
+	""" in this function, we will create a balance
+	"""
+	def withdraw(amount):
+		nonlocal balance # 在withdraw frame 中修改 balance 会影响到 make_withdraw frame
+		if amount > balance:
+			return 'out of money'
+		balance = balance - amount
+		return balance
+	return make_withdraw
+```
+
+![](figure/14.1.png)<br>
+
+从上面看到, 加入了 nonlocal 后, f2 frame 执行 `balance = balance - amount` 并没有产生新的 local balance, 而是找到了parent 的 balance 并且修改其值.(**如果不声明为 nonlocal 的话只能访问不能修改**)
+
+### Nonlocal 语句的影响
+
+![](figure/14.2.png)<br>
+
+这个要求是,给 non-local 的 x 赋值时候, **x一定要在 parents frame 中绑定, 但是在 local frame 中不能有**.
+
+python 在调用函数前会 pre-compute 每个 name 在那个 frame中, 在一个函数体内, 每个 name 一定要在同一个 frame中, 如去掉 non-local 后, 比较中的 balance 就是在 parent frame 中, 而 赋值时候的 balance 在 local frame 中, 于是就会报错. 
+
+对于 Mutable value 而言, 无需 nonlocal statement 就可以更改:
+
+```python
+def make_withdraw(balance):
+	""" in this function, we will create a balance
+	"""
+	b = [balance]
+	def withdraw(amount):
+		if amount > b[0]:
+			return 'out of money'
+		b[0] = b[0] - amount
+		return b[0]
+	return make_withdraw
+```
+
+### Multiple Mutable Functions
+
+把表达式的值和其value替换后不会改变程序的含义, 就称表达式是 referentially transparent. 
+
+![](figure/14.3.png)<br>
+
+Mutation 操作违反了这种 transparency , 他们不止是返回一个值, **they change the environment**,下面的例子中, 两个 `cal(2)` 返回的结果就不同.
+
+![](figure/14.4.png)<br>
+
+## Lecture 16 : Objects
+
