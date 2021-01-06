@@ -1019,3 +1019,8 @@ class Account(object):
 Class Attributes: 可以理解为 java 中的静态实例域. 
 
 ![](figure/15.2.png)<br>
+
+## Lecture 16: 继承
+首先我们明确一些术语: 所有的对象都有**属性**, 属性是一个 name-value 对, 类本身也是一个对象, 主语区分 _类的属性_ 和 _类实例的属性_. 
+
+![](figure/16.1.png)
