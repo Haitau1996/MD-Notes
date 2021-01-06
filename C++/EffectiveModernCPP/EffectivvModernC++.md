@@ -222,7 +222,7 @@ auto derefLess =	// C++14 comparison
     const auto& p2)	    // values pointed
     { return *p1 < *p2; };	// to by anything  pointer-like
 ```
-在C++中, `std::function` Objects 可以 refer to 任何 可调用的对象,i.e., 任何可以像函数一样使用的对象,正如我们使用函数指针的时候需要知道参数的类型, 上面的东西我们可以用`std::function`的template parameter写出, 
+在C++中, `std::function` Objects 可以 refer to 任何**可调用的对象**(函数指针, 函数对象, lambda 表达式), 任何可以像函数一样使用的对象,正如我们使用函数指针的时候需要知道参数的类型, 上面的东西我们可以用`std::function`的template parameter写出, 
 ```C++
 std::function<bool(const std::unique_ptr<Widget>&, 
                    const std::unique_ptr<Widget>&)>
@@ -230,8 +230,9 @@ std::function<bool(const std::unique_ptr<Widget>&,
                      const std::unique_ptr<Widget>& p2)
                   { return *p1 < *p2; };
 ```
-即便如此, 使用 `std::function`还是和auto不太一样, 使用auto的结果和封装的东西类型一样, 需要的内存也是一样的,但是使用 `std::function` 得到的closure是一个 `std::function`模板的实例,该实例对于任何的函数签名都有固定的size,这个size可能不够存放整个closure,_std::function_ 可能从堆中要内存存放这个closure, 因此会使用更多的内存: **the std::func tion approach is generally bigger and slower than the auto approach**, 并且可能爆出 _out-of-memory_ 异常.<br>
-此外, auto也会避免 "type shortcut" 问题:
+即便如此, 使用 `std::function`还是和auto不太一样, 使用auto的结果和封装的东西类型一样, 需要的内存也是一样的,但是使用 `std::function` 得到的closure是一个 `std::function`模板的实例,该实例对于任何的函数签名都有固定的size,这个size可能不够存放整个closure,_std::function_ 可能从堆中要内存存放这个closure, 因此会使用更多的内存: **the std::function approach is generally bigger and slower than the auto approach**, 并且可能爆出 _out-of-memory_ 异常.<br>
+此外, auto也会避免 "**type shortcut**" 问题:
+
 ```C++
 std::vector<int> v; 
 …
@@ -247,8 +248,7 @@ for (const std::pair<std::string, int>& p : m)
      // do something with p
  }
 ```
-但是, `std::unordered_map` 的key部分应该是 **_const_**,所以在hash table中其实是 `std::pair
-<const std::string, int>.` 结果就是编译器产生一个类型p临时对象然后将m中的每个对象拷贝给那个对象, 然后将p的引用和那个临时对象绑定.特别是将对象取地址的时候, 使用auto取得的地址是对的, 而用上面那种声明取得地址是临时变量的地址.auto并不完美, 前面item 1提到 initializing expressions相关的问题,但是因为auto的类型可以传播, 而且并没有过分减少程序的可读性.
+还有很多时候我们自己写的类型可能是错的, `std::unordered_map` 的key部分应该是 **_const_**,所以在hash table中其实是 `std::pair <const std::string, int>.` 结果就是编译器产生一个类型p临时对象然后将m中的每个对象拷贝给那个对象, 然后将p的引用和那个临时对象绑定.特别是将对象取地址的时候, 使用auto取得的地址是对的, 而用上面那种声明取得地址是临时变量的地址.auto并不完美, 前面item 1提到 initializing expressions相关的问题,但是因为auto的类型可以传播, 而且并没有过分减少程序的可读性.
 
 ### Item 6: 如果使用auto推导出不想要的type,使用显示的类型声明
 有的时候, auto的类型推导得到的结果是 _zags_ 而我们想要的是 _zag_, 这时候就需要手动写指定我们想要的类型.
