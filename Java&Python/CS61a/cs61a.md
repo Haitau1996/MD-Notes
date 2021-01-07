@@ -130,8 +130,6 @@ def <name> (<formal parameters>):
 
 函数的签名非常重要, 他们帮助形成函数调用需要的 local frame. 
 
-
-
 #### 在环境中查找 names
 
 理解这部分需要记住两个事情:
@@ -142,15 +140,11 @@ def <name> (<formal parameters>):
 
    ![](figure/2.2.png)<br>
 
-
-
 ## Lecture 3: Control
 
 #### `print` 和 evaluate 的区别
 
 `None` 是一个 special value, 在 python 中代表 nothing. 一个函数如果没有 **显式指定返回值, 那么就会返回`None`**.  但是在 interpreter 中是不会自动 display 的. 
-
-
 
 #### Pure Functions & Non-Pure Functions
 
