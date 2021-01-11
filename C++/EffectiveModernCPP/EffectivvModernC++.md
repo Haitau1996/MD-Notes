@@ -33,8 +33,9 @@ f(rx);                   // T is int, param's type is const int&
 
 #### _ParamType_ 是一个 Universal reference
 当template 带有 universal reference parameter,如参数被声明为右值引用时候,分两种情况讨论:
-1. _expr_ 是一个 lvalue, T 和 _ParamType_ 都被推导为左值引用
+1. _expr_ 是一个 lvalue, T 和 _ParamType_ <font color=red>都被推导为左值引用</font>
 2. 如果 _expr_ 是右值, 上一节的规则同样适用
+
 ```C++
 template<typename T>
 void f(T&& param);       // param is now a universal reference
@@ -110,7 +111,7 @@ auto x5 = { 1, 2, 3.0 };	// error! can't deduce T for
 处理这种花括号中的初始化器就是Template机制和auto推导的唯一区别:_auto_ assumes that a braced initializer represents a `std::initializer_list`, but template type deduction doesn’t.
 ```C++
 auto x = { 11, 23, 9 };	//	x's type is
-	                      //	std::initializer_list<int>
+	                    //	std::initializer_list<int>
 template<typename T>	//	template with parameter
 void f(T param);	//	declaration equivalent to
 	                //	x's declaration
@@ -258,7 +259,7 @@ Widget w;
 auto highPriority = features(w)[5];  // is w high priority? no, explained as followed
 processWidget(w, highPriority);      // undefined behavior!
 ```
-除了bool之外, opetator[] 返回的都是 T&, 但是 **C++不允许reference to bits**, 这个auto返回的是一个`std::vector<bool>::reference`,它的行为像是 `bool&`,此外, 它可以隐式转换成bool, 所以下面的做法是没有问题的:
+除了bool之外, opetator[] 返回的都是 T&, 但是 **<font color = red>C++不允许reference to bits</font>**, 这个auto返回的是一个`std::vector<bool>::reference`,它的行为像是 `bool&`,此外, 它可以隐式转换成bool, 所以下面的做法是没有问题的:
 ```C++
 bool highPriority = features(w)[5];  // declare highPriority's type explicitly
 ```
@@ -363,7 +364,7 @@ Widget w6{w4};	//	uses braces, calls
                 //	converts to long double)
 Widget w8{std::move(w4)};   // use braces, calls
                             //	std::initializer_list ctor
-                            //	(for	same reason as w6)
+                            //	(for same reason as w6)
 ```
 这时候如果**窄化类型转换之后可以匹配 `std::initializer_list`,就会报错**(如int /float　可以转成bool), 但是没有办法转换之后匹配的话, 就会吧控制权交回到其他的构造函数中. 值得注意的是,**you use an empty set of braces to construct an object that supports default construction and also supports `std::initializer_list` construction**.
 ```C++
@@ -510,4 +511,53 @@ if (static_cast<double>(c) < 14.5) { // odd code, but it's valid
 ```C++
 enum Color; // error!
 enum class Color; // fine
+```
+这背后的原因在于编译器在枚举类型使用以前就需要知道其尺寸, 而限定作用域的枚举类型底层的型别是已知的(默认是int, 如果不适应可以推翻), 而不限作用域的枚举类型底层型别,可以指定.
+
+在需要引用C++11 中的 `std::tuple` 型别中个各个域时, 不限制作用域的枚举还是有用的. 
+
+```C++
+using UserInfo = // type alias; see Item 9
+    std::tuple<std::string, //name
+    std::string, // email
+    std::size_t> ; // reputation
+UserInfo uInfo; // object of tuple type
+enum UserInfoFields { uiName, uiEmail, uiReputation };
+auto val = std::get<uiEmail>(uInfo); // ah, get value of  email field
+// 作为对比, 
+enum class UserInfoFields { uiName, uiEmail, uiReputation };
+auto val =
+    std::get<static_cast<std::size_t>(UserInfoFields::uiEmail)>(uInfo);
+```
+这样其实还是不够, **因为 `std::get<>` 中间的数必须在编译期计算出结果**, 这必须使用 `constexpr`, 如果做了函数模板, 其返回值也需要泛化, 不能返回 `std::size_t`, 需要返回底层型别(使用 `std::underlying_type` 得到):
+
+```C++
+template<typename E>
+constexpr typename std::underlying_type<E>::type
+    toUType(E enumerator) noexcept
+{
+return
+static_cast<typename
+std::underlying_type<E>::type>(enumerator);
+}
+// since C++ 14
+template<typename E> // C++14
+constexpr std::underlying_type_t<E>
+    toUType(E enumerator) noexcept
+{
+return static_cast<std::underlying_type_t<E>>(enumerator);
+}
+// 甚至直接使用返回值推导
+template<typename E> // C++14
+constexpr auto
+    toUType(E enumerator) noexcept
+{
+return static_cast<std::underlying_type_t<E>>(enumerator);
+}
+```
+
+在转化出底层类型的函数模板帮助之下, 我们就可以更加简单地在 `std::tuple` 中使用限定作用域的枚举类型:
+
+```C++
+auto val = std::get<toUType(UserInfoFields::uiEmail)>(uInfo);
 ```
