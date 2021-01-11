@@ -629,3 +629,54 @@ template<>
 void Widget::processPointer<void>(void*) = delete; // still public, but deleted
 ```
 总的来说, 前者只是 delete 的一种模拟动作, 自然不如后者好用.
+
+### Item 12: 为意在改写的函数添加 override 声明
+虚函数的改写使得通过基类接口调用派生类的函数称为了可能, 要使得多态发生, 有一系列的要求必须被满足:
+1. 基类中的函数必须是虚函数
+2. 基类和派生类的函数名字必须完全相同(析构函数除外)
+3. 基类和派生类的函数形参型别必须完全相同
+4. 基类和派生类中函数的常量性必须相同
+5. 基类和派生类中的函数返回值和异常规格必须 **兼容**
+
+在 C++ 11 中又添加了一条:
+1. 基类和派生类中的函数引用修饰词必须完全相同
+
+改写有这么多的要求, 意味着小的错误可以造成大的偏差. C++ 11 中提供了一种方法显式标明派生类中的函数是为了改写基类的版本, 这时候有错误就无法通过编译. 
+
+成员函数引用修饰词的作用是针对发起成员函数调用的对象(this指针指向的对象), 加一些区分度. 例如我们想要对 Widget 类中的某个 `std::vector` 型别的数据成员提供访问函数:
+```C++
+class Widget {
+public:
+    using DataType = std::vector<double>; 
+    DataType& data() { return values; }
+    …
+private:
+    DataType values;
+};
+Widget w;
+…
+auto vals1 = w.data(); // copy w.values into vals1
+```
+
+现在如果有一个创建 `Widget` 型别对象的工厂函数, 从返回对象里面的 vector 来初始一变量:
+```C++
+Widget makeWidget();
+auto vals2 = makeWidget().data();
+```
+
+这一次, makeWidget() 返回的是一个右值(临时对象), 复制其中的 vector 是纯属浪费时间, 我们更应该做的是移动而不是复制, 于是我们对这个类做一些改进:
+```C++
+class Widget {
+public:
+    using DataType = std::vector<double>;
+    …
+    DataType& data() & // for lvalue Widgets,
+    { return values; } // return lvalue
+    DataType data() && // for rvalue Widgets,
+    { return std::move(values); } // return rvalue
+    …
+private:
+    DataType values;
+};
+auto vals2 = makeWidget().data(); // calls rvalue overload forWidget::data, move-constructs vals2
+```
