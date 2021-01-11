@@ -561,3 +561,71 @@ return static_cast<std::underlying_type_t<E>>(enumerator);
 ```C++
 auto val = std::get<toUType(UserInfoFields::uiEmail)>(uInfo);
 ```
+### Item 11: 优先选用删除函数, 而非 private 未定义函数
+C++ 98 中为了阻止一些类的成员函数(构造器/拷贝赋值运算符...)被使用, 采用的做法是声明其为 private ,并且不提供定义. C++ 11 中有了更好的途径达成相同的效果, **使用 `=delete` 将他们标识为删除函数**:
+
+```C++
+template <class charT, class traits = char_traits<charT> >
+class basic_ios : public ios_base {
+public:
+    …
+    basic_ios(const basic_ios& ) = delete;
+    basic_ios& operator=(const basic_ios&) = delete;
+    …
+};
+```
+
+这个好处在于, 删除函数无法通过任何方法使用, 即使是成员和友元函数中的代码想要复制`basic_ios` 也会无法工作, 这种不当使用在 C++98 中直到链接阶段才能诊断出来.同时删除函数习惯声明为 public, 而非 private, 客户使用某个成员函数的时候, C++ 会先校验其可访问性,然后才是校验删除状态, 声明为 public 会得到较好的错误信息. 
+
+还有一个优点是**任何的函数都可以成为删除函数, 但是只有成员函数可以被声明为 private**,这个特性常常用于为我们想要滤掉的型别创建删除重载版本.
+
+```C++
+bool isLucky(int number); // original function
+bool isLucky(char) = delete; // reject chars
+bool isLucky(bool) = delete; // reject bools
+bool isLucky(double) = delete; // reject doubles and floats
+
+if (isLucky('a')) … // error! call to deleted function
+if (isLucky(true)) … // error!
+if (isLucky(3.5f)) … // error!
+```
+
+还有一个用法就是 **阻止那些不应该进行的模板具现**.
+```C++
+template<typename T>
+void processPointer(T* ptr);
+template<>
+void processPointer<void>(void*) = delete;
+template<>
+void processPointer<char>(char*) = delete;
+template<>
+void processPointer<const void>(const void*) = delete;
+template<>
+void processPointer<const char>(const char*) = delete;
+```
+
+如果是类内部的函数模板,想要通过private 声明来禁用某些具现是做不到的.
+```C++
+class Widget {
+public:
+    …
+    template<typename T>
+    void processPointer(T* ptr)
+    { … }
+private:
+    template<> // error!
+    void processPointer<void>(void*);
+};
+// 但是它可以在类外被删除
+class Widget {
+public:
+    …
+    template<typename T>
+    void processPointer(T* ptr)
+    { … }
+    …
+    };
+template<> 
+void Widget::processPointer<void>(void*) = delete; // still public, but deleted
+```
+总的来说, 前者只是 delete 的一种模拟动作, 自然不如后者好用.
