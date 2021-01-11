@@ -681,5 +681,49 @@ private:
 auto vals2 = makeWidget().data(); // calls rvalue overload for Widget::data, move-constructs vals2
 ```
 
-### Item 13: 优先调用 `const_iterator`, 而非 `iterator`
-_const\_iterator_ 相当于指向 const 的指针的等价物, 指向不可修改的值. 任何时候需要一个迭代器而且其指向的内容没有修改必要, 都应该使用 _const\_iterator_.
+### Item 13: 优先调用 _const\_iterator_, 而非 _iterator_
+_const\_iterator_ 相当于指向 const 的指针的等价物, 指向不可修改的值. 任何时候需要一个迭代器而且其指向的内容没有修改必要, 都应该使用 _const\_iterator_.过去的C++98 对这种迭代器支持不够全面, 例如我们想要在一个向量中找到 1983, 然后在此位置插入 1998:
+```C++
+typedef std::vector<int>::iterator IterT;
+typedef std::vector<int>::const_iterator ConstIterT;
+std::vector<int> values;
+ConstIterT ci =
+    std::find(static_cast<ConstIterT>(values.begin()), // cast
+              static_cast<ConstIterT>(values.end()), // cast
+              1983);
+values.insert(static_cast<IterT>(ci), 1998);  // 可能无法编译
+```
+
+最后一行并没有想象中那么简单, 因为没有什么简单的办法能从一个非const容器得到气象的const 容器, 一旦得到了 const_iterator, 结果就变得更糟糕, 因为 C++ 98 中插入位置只能由 iterator 指定, 而不接受 const_iterator, **const_iterator 就是无法完成到 iterator 类型的型别转换, 无论这种转换看起来是多么理所当然**. 
+
+C++11 中获取和使用 _const\_iterator_ 都变得容易(cbegin()/cend()返回 _const\_iterator_ 型别, 对于非 const 的容器也可以这么做),STL 成员函数要取用指示位置的迭代器(如插入删除之用),也要求使用 _const\_iterator_ 型别:
+```C++
+auto it = std::find(values.cbegin(),values.cend(), 1983);
+values.insert(it, 1998);
+```
+
+如果想要撰写最通用化的库代码时, 需要考虑到某些容器或者类似容器的数据结构会以非成员函数的方式提供 begin/end/cbegin/cend. 
+```C++
+template<typename C, typename V>
+void findAndInsert( C& container, // in container, find
+                    const V& targetVal, // first occurrence of targetVal,
+                    const V& insertVal) //  then insert insertVal
+{ 
+    using std::cbegin; // there
+    using std::cend;
+    auto it = std::find(cbegin(container), // non-member cbegin
+    cend(container), // non-member cend
+    targetVal);
+    container.insert(it, insertVal);
+}
+```
+
+上面的代码在 C++14 之后可以使用, 但是 C++11 中没有引入全局版本的 cbegin/cend/rbegin/rend/crbegin/crend, 这个时候需要我们自己提供它的实现:
+```C++
+template <class C>
+auto cbegin(const C& container)->decltype(std::begin(container))
+{
+    return std::begin(container); // see explanation below
+}
+```
+这种情况下如果 C 是一个传统的容器型别(如 `std::vector<int>`), container 就是对应的 const reference, 调用全局的 begin 传入一个 `const std::vector<int>&`就会产生一个 _const\_iterator_. 这个函数模板对于内建的数组类型也适用, 非成员函数的 begin 特化版本返回的就是指向首元素的指针.
