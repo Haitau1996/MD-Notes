@@ -678,5 +678,8 @@ public:
 private:
     DataType values;
 };
-auto vals2 = makeWidget().data(); // calls rvalue overload forWidget::data, move-constructs vals2
+auto vals2 = makeWidget().data(); // calls rvalue overload for Widget::data, move-constructs vals2
 ```
+
+### Item 13: 优先调用 `const_iterator`, 而非 `iterator`
+_const\_iterator_ 相当于指向 const 的指针的等价物, 指向不可修改的值. 任何时候需要一个迭代器而且其指向的内容没有修改必要, 都应该使用 _const\_iterator_.
