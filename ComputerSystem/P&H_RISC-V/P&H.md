@@ -247,3 +247,42 @@ Exit: ...
 ```
 
 #### 循环
+决策指令在两个场景很重要(分支和循环), 在 这两种苍井下汇编指令是相同的. 我们举一个简单的循环程序例子:
+```C
+while(save[i] == k)
+    i = i + 1;
+__asm{
+    Loop: slli x10, x22, 3 // 临时寄存器 x 10 = i * 8
+          add x10, x10, x25 // x25为save[0] 地址, x10 为 save[i] 地址
+          ld x9, 0(x10)
+          neq x9, x24, Exit // 如果不想等的话直接退出
+          addi x22, x22, 1 // i= i +1
+          beq x0, x0, Loop // while 语句
+    Exit:
+        ...
+}
+```
+基本块: 没有分支(可能出现在末尾的除外)并且没有分支目标/分支标签(可能出现在开始的除外) 的指令序列. 以分支指令结束的这类指令序列对于编译非常重要, 因此有这个专用的术语进行描述. 
+
+除了相等的判别, 有时候判断其他的关系(例如大于`>`小于`<`不小于`>=`不大于`<=`...)也非常重要,而这种 Bit pattern 的大小对比分为 signed 和 unsigned 两种情况:
+* `blt reg1, reg2, Label`: branch less than, 如果 reg1 更小的话则跳转(补码)
+* `bge reg1, reg2, Label`: branch greater or equal (补码) 
+* `bltu/bgeu` 对应 Unsigned 数字的比较
+
+MIPS 指令集和 ARM 指令集用了其他的方式来处理:
+* 使用一个临时的寄存器,其中的结果基于比较, 然后用 `beq/bnq` 来跳转: 使得 datapath 更加简单, 但是需要更多指令来执行`slt` (set on less than) 和`slti`(set on less than immediate) 指令用于处理有符号整数，而`sltu` (set on less than unsigned)和 `sltiu` (set on less than immediate unsigned) 指令则用于处理无符号整数)
+* ARM 使用 condition code, 记录算术操作的结果是负数/0/溢出
+  * negative (N) – the result that set the condition code had a 1 in the mostsignificant bit;
+  * zero (Z) – the result that set the condition code was 0;
+  * overflow (V) – the result that set the condition code overflowed;
+  * carry (C) – the result that set the condition code had a carry out of the most significant bit or a borrow into the most significant bit.
+
+#### 边界检查捷径
+对于一个经常用于 array 边界检查的语句`0 <= x < y`, 而负数的补数是一个很大的数, unsigned 检查 `x<y` 就可以cover 上面两个检查.
+```C
+bgeu x20, x11, IndexOutOfBounds // if x20 >= x11 or x20 < 0, goto IndexOutOfBounds
+```
+#### Case/Switch 语句
+实现switch 语句的最简单方法是借助一系列的条件判断，将switch 语句转化为 if-then-else 语句嵌套。有时候另一种更有效的方法是将多个指令序列分支的地址编码为一张表，即**转移地址表**(或者转移表 Jump Table), 转移地址表是一个由代码中标签所对应地址构成的数组。程序需要跳转的时候首先将转移地址表中适当的项加载到寄存器中，然后使用寄存器中的地址值进行跳转。这需要使用寄存器中的地址做branch, RISC-V 中使用一个 Inirect Jump 指令, 执行一个到寄存器地址处的 无条件分支, jump-and-link 寄存器指令(`jalr`) 就是用于这个目的. 
+
+### 计算机硬件对过程的支持
