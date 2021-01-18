@@ -780,3 +780,66 @@ _constexpr_ 对象十分简单, 他们真实具备 const 属性, 而且**在编�
 _constexpr_ 函数的行为正确地理解方式如下:
 * 可以用于要求编译期间求值得语境中, 传给它的实参值是在编译期间已知的, 则结果也会在编译期间计算出来
 * 如果传入的值有一个或者多个在编译期间未知, 它的运作方式和普通函数无异
+
+例如我们需要使用一个在编译期间可以得到 size 的array:
+```C++
+constexpr int pow(int base, int exp) noexcept{
+    return (exp == 0 ? 1 : base * pow(base, exp - 1));
+} // C++ 11 实现, 函数体内不得多于一个可执行语句(即一条return 语句)
+constexpr int pow(int base, int exp) noexcept{} // C++14
+    auto result = 1;
+    for (int i = 0; i < exp; ++i) result *= base;
+    return result;
+}
+constexpr auto numConds = 5;
+std::array<int, pow(3, numConds)> results;
+```
+这种 constexpr 函数仅限传入和返回字面型别(literal type, 所有的内建型别, 除了void 都符合这个条件), 当然我们也可以有用户自定义的字面型别(构造函数和其他成员函数也可能是`constexpr`函数):
+```C++
+class Point {
+public:
+    constexpr Point(double xVal = 0, double yVal = 0) noexcept
+        : x(xVal), y(yVal){}
+    constexpr double xValue() const noexcept { return x; }
+    constexpr double yValue() const noexcept { return y; }
+    void setX(double newX) noexcept { x = newX; }
+    void setY(double newY) noexcept { y = newY; }
+private:
+    double x, y;
+};
+constexpr Point p1(9.4, 27.7); // fine, "runs" constexpr ctor during compilation
+
+constexpr
+Point midpoint(const Point& p1, const Point& p2) noexcept{
+    return { (p1.xValue() + p2.xValue()) / 2, // call constexpr
+             (p1.yValue() + p2.yValue()) / 2 }; // member funcs
+}
+constexpr auto mid = midpoint(p1, p2); // init constexpr object w/result of constexpr function
+```
+
+这意味着初始化过程中涉及的构造函数, 访问器还有非成员函数的调用, 却依旧可以在只读内存中得到创建. 这时候`mid.xValue()*10` 这种表达式可以运用到模板形参中, 或是用于指定枚举常量表达式中. 上面 C++ 11 中修改了对象的两个成员函数无法变成 `constexpr`(他们修改了操作对象,constexpr 隐式声明为 const成员函数, 无法修改对象; 其次他们的返回型别为 void,不是字面型别), 但是 C++ 14 中解除了这种限制, 就可以写出类似的代码:
+```C++
+class Point {
+public:
+    …
+    constexpr void setX(double newX) noexcept // C++14
+    { x = newX; }
+    constexpr void setY(double newY) noexcept // C++14
+    { y = newY; }
+    …
+};
+// return reflection of p with respect to the origin (C++14)
+constexpr Point reflection(const Point& p) noexcept
+{
+    Point result; // create non-const Point
+    result.setX(-p.xValue()); // set its x and y values
+    result.setY(-p.yValue());
+    return result; // return copy of it
+}
+constexpr Point p1(9.4, 27.7);
+constexpr Point p2(28.8, 5.3);
+constexpr auto mid = midpoint(p1, p2);
+// C++ 14:
+constexpr auto reflectedMid = reflection(mid); 
+```
+到现在, 我们可以说, **只要有可能使用 _constexpr_, 就应该使用它**. 当然还是有一些场合无法使用, 例如通常 _constexpr_ 函数里是不能够有 I/O 操作的. 
