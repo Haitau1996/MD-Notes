@@ -231,8 +231,8 @@ RISC-V 可以推断是用的 `addi/add`, 故不强制要求, 只是为了方便�
 ### 决策指令
 计算机与简单计算器的区别在于决策能力, RISC-V 中有两个和 if/goto 功能类似的指令, 分别是
 ```C++
-beq register1, register2, L2 // branch if equal
-bne rs1, rs2, L1             // branch if not equal
+beq register1, register2, L2  // branch if equal
+bne register1, register2, L2  // branch if not equal
 ```
 这个语句被称为是条件分支, 分别代表如果两个寄存器中值相等(beq)/不相等(bnq) 则跳转到标签为 L1 的语句执行. 在if 语句的结尾部分，需要引入另一种分支指令，通常叫作无条件分支指令,一个表示无条件分支的指令是设置恒为 true 的条件分支:
 ```C
