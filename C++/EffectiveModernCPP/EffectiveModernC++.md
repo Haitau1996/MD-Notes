@@ -843,3 +843,104 @@ constexpr auto mid = midpoint(p1, p2);
 constexpr auto reflectedMid = reflection(mid); 
 ```
 到现在, 我们可以说, **只要有可能使用 _constexpr_, 就应该使用它**. 当然还是有一些场合无法使用, 例如通常 _constexpr_ 函数里是不能够有 I/O 操作的. 
+
+### Item 16: 保证 const 成员函数的线程安全性
+计算多项式的成本非常高, 因此我们设计一个多项式类的时候常常会使用 lazy-evaluation 的方法:
+```C++
+class Polynomial {
+public:
+    using RootsType = std::vector<double>;
+    RootsType roots() const{
+        if (!rootsAreValid) { // if cache not valid
+            … // 计算结果, 将结果存入 roorVals 中
+            rootsAreValid = true;
+            }
+        return rootVals;
+    }
+private:
+    mutable bool rootsAreValid{ false }; // see Item 7 for info
+    mutable RootsType rootVals{}; // on initializers
+};
+```
+在多线程下, 这个设计就变得不再安全, 这些线程中的一个或者两个可能都在试图改变私有的数据成员, 这就是数据竞险(data race), **问题就在于 roots 这个成员函数声明为 const, 但实际上不是线程安全的**. 一个解决的简单方法是引入互斥量(mutex, mutual exclusion):
+```C++
+class Polynomial {
+public:
+    using RootsType = std::vector<double>;
+    RootsType roots() const
+    {
+        std::lock_guard<std::mutex> g(m); // 加上互斥量
+        if (!rootsAreValid) { 
+            … 
+            rootsAreValid = true;
+        }
+        return rootVals;
+    } // 解除互斥量
+private:
+    mutable std::mutex m;
+    mutable bool rootsAreValid{ false };
+    mutable RootsType rootVals{};
+};
+```
+
+`std::mutex` 是只移型别, 加上m之后的副作用是 `class Polynomial` 失去了可复制性. 当然, 很多时候引入互斥量代价高昂且没有比较, 在计算一个成员函数被调用次数的场景中, 就可以使用 `std::atomic` 型别的计数器(**确保其他线程可以以不加分割的方式观察到操作的发生**), 这种型别的操作和 加上与解除互斥量对比, **开销往往比较小**:
+```C++
+class Point { // 2D point
+public:
+    …
+    double distanceFromOrigin() const noexcept 
+    { 
+        ++callCount; // atomic increment
+        return std::sqrt((x * x) + (y * y));
+    }
+private:
+    mutable std::atomic<unsigned> callCount{ 0 };
+    double x, y;
+}
+```
+
+但是涉及两个或者多个变量或者内存区域需要作为一整个单位进行操作的时候, 就要用互斥量了:
+```C++
+class Widget {
+public:
+    …
+    int magicValue() const
+    {
+        std::lock_guard<std::mutex> guard(m); // lock m
+        if (cacheValid) return cachedValue;
+        else {
+            auto val1 = expensiveComputation1();
+            auto val2 = expensiveComputation2();
+            cachedValue = val1 + val2;
+            cacheValid = true;
+            return cachedValue;
+        }
+    } // unlock m
+    …
+private:
+    mutable std::mutex m;
+    mutable int cachedValue; // no longer atomic
+    mutable bool cacheValid{ false }; // no longer atomic
+};
+// 使用原子类型操作的错误示例:
+class Widget {
+public:
+    …
+    int magicValue() const
+    {
+        if (cacheValid) return cachedValue;
+        else {
+            auto val1 = expensiveComputation1();
+            auto val2 = expensiveComputation2();
+            cachedValue = val1 + val2;  // uh oh, part 1
+            cacheValid = true;          // uh oh, part 2
+            return cachedValue;
+        }
+    }
+private:
+    mutable std::atomic<bool> cacheValid{ false };
+    mutable std::atomic<int> cachedValue;
+};
+```
+
+这时候按照上面这种顺序放置两个原子数据, 可能在两个线程中都观察到 bool 为 false 然后计算两次, 这就违背了使用缓存的初衷. 如果将设置值和设置 bool 的顺序反过来, 则可能是 bool 类型设置成 true,但是计算没有完成, 造成返回值不正确的结果.
