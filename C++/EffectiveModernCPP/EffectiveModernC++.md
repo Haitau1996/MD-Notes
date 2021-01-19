@@ -997,7 +997,8 @@ std::unique_ptr<Point2D, decltype(delP)> ptrWithCustomDel;
 
 ### Item 19: 使用 `std::shared_ptr` 管理具备共享所有权的资源
 std::shared_ptr 通过访问资源的引用计数来确定是否自己是最后一个指向某个资源的智能指针, 引用计数带来了一些性能上的影响:
-* `std::shared_ptr` 的尺寸是裸指针的两倍, 因为还包含一个指向该资源控制块的的裸指针, 该控制块包含了很多信息(引用计数/弱计数/自定义删除器or分配器...)
+* `std::shared_ptr` 的尺寸是裸指针的两倍, 因为还包含一个指向该资源控制块的的裸指针, 该控制块包含了很多信息(引用计数/弱计数/自定义删除器or分配器...)<br>
+  ![](figure/19.1.png)
 * 引用计数内存必须动态分配, 该计数和对象向关联, 但是对象却对它一无所知, 无论是否使用`std::make_shared`引用计数都会作为动态分配数据来存储
 * 引用计数的递增和递减必须是原子操作, 比一般的操作要慢
 
@@ -1005,3 +1006,58 @@ std::shared_ptr 通过访问资源的引用计数来确定是否自己是最后�
 * `make_shared` 会产生一个用于指向的新对象, 并且**总是创建一个控制块**
 * 从具备专属所有权的指针(`unique_ptr`或者`auto_ptr`)出发构建的时候, 会创建一个控制块, 并且那个专属所有权的智能指针会被置空
 * 使用裸指针调用构造函数的时候, 也会创建一个控制块, 如果从已经有控制块的对象出发创建`shared_ptr`, 应该传递一个只能指针而非裸指针构建, 否则可能的后果是**多重控制块导致的未定义行为**
+  * 因此我们要**尽可能避免将裸指针传递给 `shared_ptr` 的构造函数, 常用的方式就是使用`make_shared`
+  * 使用了自定义的析构器无法使用 `make_shared` 时候直接在构造函数中写 new 语句
+
+还有一种令人惊讶的方式是涉及到 this 指针的多重控制块:
+```C++
+std::vector<std::shared_ptr<Widget>> processedWidgets;
+class Widget {
+public:
+    …
+    void process();
+    …
+};
+void Widget::process()
+{
+    …
+    processedWidgets.emplace_back(this);
+    ...
+}
+```
+
+这看起来没什么问题, 但是如果成员函数外再套一层 `std::shared_ptr` 肯定会引发未定义行为. 这时候一个解决的办法就是继承一个类模板, 它提供了一个成员函数:
+```C++
+class Widget: public std::enable_shared_from_this<Widget> {
+public:
+    …
+    void process();
+    …
+}
+void Widget::process()
+{
+    …
+    // add std::shared_ptr to current object to processedWidgets
+    processedWidgets.emplace_back(shared_from_this());
+}
+```
+需要注意的是**要有指向当前对象的控制块之后才能`share_from_this`**, 为了避免在有`shared_ptr`指向对先前就调用引发 `shared_from_this` 的成员函数, 通常将此类对象的构造构造函数声明为私有, 并且只允许用户通过返回`shared_ptr` 的工厂函数创建对象:
+```C++
+class Widget: public std::enable_shared_from_this<Widget> {
+public:
+    // factory function that perfect-forwards args
+    // to a private ctor
+    template<typename... Ts>
+    static std::shared_ptr<Widget> create(Ts&&... params);
+    …
+    void process(); // as before
+    …
+private:
+    … // ctors
+};
+```
+另外还有三点需要注意:
+* 资源和指向它的 `shared_ptr` 的规约是至死方休的, 不能离异,不能废止,不能免除.
+* 它不能用于处理数组
+* `std::unique_ptr/shared_ptr` 支持从派生类到基类的型别转换, 但是后者不支持数组, 前者用于数组的情形也不能这么做, 它会在型别系统上开天窗
+
