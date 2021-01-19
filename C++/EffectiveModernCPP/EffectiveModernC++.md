@@ -1061,3 +1061,21 @@ private:
 * 它不能用于处理数组
 * `std::unique_ptr/shared_ptr` 支持从派生类到基类的型别转换, 但是后者不支持数组, 前者用于数组的情形也不能这么做, 它会在型别系统上开天窗
 
+### Item 20: 当`std::shard_ptr`可能悬空时使⽤`std::weak_ptr`
+引入 `weak_ptr` 的一个原因是希望能够通过跟踪指针合适空悬, 即判断指向的对象已经不复存在, 来处理这个问题. 这种指针不是一种独立的智能指针, 而是`shared_ptr` 的一种扩充, 这种从属关系在指针生成的时候就已经存在, `weak_ptr` 一般是通过 `shared_ptr` 来创建的, 但是不会影响后者所指涉对象的引用计数. 
+```C++
+auto spw =  std::make_shared<Widget>(); 
+std::weak_ptr<Widget> wpw(spw);
+spw = nullptr;     // 会析构所指向的对象
+if (wpw.expired()) …
+```
+在`weak_ptr`未失效的情况下可以提供所指向的对象的访问, 如果失效的话这么做返回的智能指针也是空的:
+```C++
+std::shared_ptr<Widget> spw1 = wpw.lock();
+auto spw2 = wpw.lock(); // same as above,
+```
+我们常常在两个场景下使用这种`weak_ptr`:
+* 缓存/观察者列表等
+* 避免 `shared_ptr` 指针环路
+
+
