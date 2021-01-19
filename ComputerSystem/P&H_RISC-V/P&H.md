@@ -297,3 +297,8 @@ bgeu x20, x11, IndexOutOfBounds // if x20 >= x11 or x20 < 0, goto IndexOutOfBoun
 计算机中存放数据最快的位置是寄存器, 我们希望尽可能更多地使用寄存器, RISC-V 遵循下面的一些寄存器使用约定:
 1. `x10 ~ x17` 用于传递参数或者返回值
 2. `x1` 用千返回起始点的返回地址寄存器
+
+除了分配这些寄存器之外， RISC-V 汇编语言还包括一条过程调用指令：跳转到某个地址的同时将下一条指令的地址保存在寄存器(jump-and-link instruction)`jal`:
+```C
+jal x1, ProcedureAddress // jump to ProcedureAddress and write return address to x1
+```
