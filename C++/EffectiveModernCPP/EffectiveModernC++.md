@@ -1108,3 +1108,53 @@ processWidget(std::move(spw), computePriority());
 // 单独声明之后再使用的智能指针是一个左值
 // 为了接口的统一, 我们使用 move 做类似的强制转换将 spw 变成一个右值
 ```
+
+### Item 22: 使用 Pimpl 习惯用法时, 将特殊成员函数的定义放到实现文件中
+
+一个已经声明但是没有定义的型别被称为非完成型别, 对它能做的事情很少, 但是可以**声明一个指向它的指针**. 对于非完整型别, 使用的时候不能对它做 sizeof 或者 delete 这样的事情, 使用 `std::unique_ptr` 来实现 Pimpl 常常会导致客户端的代码无法通过编译, 这个问题就是一个包含 Pimpl 的`std::unique_ptr`指针的类Widget, 声明一个对象 w , 当 w 被析构的时候, 默认的析构器在 `std::unique_ptr` 内部使用 delete 运算符来针对裸指针来实施析构的函数, **典型的实现会使用 C++11 中的 _static\_assert_ 来确保裸指针没有指向一个非完整的型别**.因此, 解决的办法就是到析构函数实现的地方看 指向的对象已经是一个完整的型别即可, 可以看到在下面的实现种, 析构函数已经可以看到指向的 Impl 对象的完整定义: 
+```C++
+// in the Widget.h header file
+class Widget { // as before, in "widget.h"
+public:
+    Widget();
+    ~Widget(); // 
+    Widget(Widget&& rhs); // declarations
+    Widget& operator=(Widget&& rhs); // only
+    Widget(const Widget& rhs); // declarations
+    Widget& operator=(const Widget& rhs); // only
+    …
+private: // as before
+    struct Impl;
+    std::unique_ptr<Impl> pImpl;
+};
+// in the Widget.cpp impl file
+#include "widget.h" // as before, in "widget.cpp"
+#include "gadget.h"
+#include <string>
+#include <vector>
+struct Widget::Impl {
+    std::string name; // Widget::Impl
+    std::vector<double> data;
+    Gadget g1, g2, g3;
+};
+Widget::Widget() // as before
+: pImpl(std::make_unique<Impl>())
+{}
+Widget::~Widget() // ~Widget definition
+{}
+Widget::Widget(Widget&& rhs) = default; 
+Widget& Widget::operator=(Widget&& rhs) = default; 
+Widget::Widget(const Widget& rhs) 
+: pImpl(std::make_unique<Impl>(*rhs.pImpl))
+{}
+Widget& Widget::operator=(const Widget& rhs) 
+{
+    *pImpl = *rhs.pImpl;
+    return *this;
+}
+```
+
+同样的, 针对 `std::unique_ptr` 执行移动赋值操作, 需要析构当前 Impl 指向的对象, 解决的办法也是将实现放在定义的文件中. 如果我们想要在自己定义的拷贝构造器和拷贝赋值运算符中实现深拷贝的操作, 也是需要这样做的.
+
+这些要求仅仅是针对独享所有权的智能指针, 对于`shared_ptr` 析构器的型别不是指针型别的一部分, 需要更大尺寸的数据结构以及更慢一些的可执行文件, 使用编译器生成的特种函数的时候, 指涉的型别并不要求是完整型别. 
+
