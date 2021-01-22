@@ -1158,3 +1158,69 @@ Widget& Widget::operator=(const Widget& rhs)
 
 这些要求仅仅是针对独享所有权的智能指针, 对于`shared_ptr` 析构器的型别不是指针型别的一部分, 需要更大尺寸的数据结构以及更慢一些的可执行文件, 使用编译器生成的特种函数的时候, 指涉的型别并不要求是完整型别. 
 
+## Chap 5: 右值引用, 移动语义和完美转发
+* 移动语义使得编译器可以使用不那么昂贵的移动操作, 来替代昂贵的复制操作
+* 完美转发可以使得人们撰写接受任何实参的函数模板, 并且将其转发到其他函数, 目标函数会接受到与转发函数所接受的完全相同的实参
+
+深入了解后发现实际上 `std::move` 并没有移动任何东西, 完美转发并不完美, `type&&` 也不总是表示右值引用. 有一个事实常常被人忘记: **形参总是左值, 即使其型别是右值引用**. 如`void f(Widget&& w)` 中的 w 是一个左值, 它的型别是指涉到 Widget 型别对象的右值引用.
+
+### Item 23: 理解 `std::move` 和 `std::forward`
+`std::move` 和 `std::forward` 都是**仅仅执行强制类型转换的函数(函数模板),前者无条件将实参转换为右值, 后者仅在某个特定条件满足的时候才执行同一强制类型转换**.
+```C++
+template<typename T> // in namespace std
+typename remove_reference<T>::type&&
+move(T&& param)
+{
+    using ReturnType = typename remove_reference<T>::type&&; 
+    return static_cast<ReturnType>(param);
+}
+// C++ 14 实现
+template<typename T> // C++14; still in
+decltype(auto) move(T&& param) // namespace std
+{
+    using ReturnType = remove_reference_t<T>&&;
+    return static_cast<ReturnType>(param);
+}
+```
+上面这个函数非常接近 `std::move` 的实现, 它将传入的 param 强制转换成为了右值
+* 如果传入是左值, T和param被推导为左值引用, 萃取出型别加上右值引用, ReturnType 就是对应型别的右值引用
+* 如果是右值, 按照类型推导, 结果依旧是右值
+
+这样实施后的结果就是告诉编译器**该对象具备可以移动的条件**, 而非实际去移动该对象. 使用的时候需要注意, **如果想要取得某个对象执行移动操作的能力, 则不要将它声明为常量**.
+```C++
+class Annotation {
+public:
+    explicit Annotation(const std::string text)
+    : value(std::move(text)) 
+    { … } 
+    …
+private:
+    std::string value;
+};
+class string { // std::string is actually a
+public: // typedef for std::basic_string<char>
+    …
+    string(const string& rhs); // copy ctor
+    string(string&& rhs); // move ctor
+    …
+};
+```
+在上面的结果中, `std::move(text)` 的值是一个 `const std::string ` 型别的右值, 而这个右值无法传递给移动构造函数(只接受非常量的 `std::string` 型别的右值), 最终调用的还是复制构造函数. 这种行为背后的原因是移出的对象通常会改动改对象, 所以语言不允许常量对象传到有可能改动他们的函数中. 
+
+`std::forward` 是一个有条件强制型别转换, 最常见的使用场景就是某个函数取用了万能引用型别作为形参, 随后传递给了另一个函数:
+```C++
+void process(const Widget& lvalArg); // process lvalues
+void process(Widget&& rvalArg); // process rvalues
+template<typename T> 
+void logAndProcess(T&& param) 
+{
+    auto now = std::chrono::system_clock::now();
+    makeLogEntry("Calling 'process'", now);
+    process(std::forward<T>(param));
+}
+Widget w;
+logAndProcess(w); // call with lvalue
+logAndProcess(std::move(w)); // call with rvalue
+```
+
+所有的函数形参都是左值, param 也不例外, 如果不做这样的处理, process 永远调用的就是左值型别的那个重载版本, 因此 forward 的意思是 **当且仅当用来初始化 param 的实参是右值得条件下, 才把 param 强制类型转换为右值**.  
