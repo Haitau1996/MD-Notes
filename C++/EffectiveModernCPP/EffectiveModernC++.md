@@ -1098,3 +1098,13 @@ processWidget(std::make_shared<Widget>(),computePriority());
 但是在两种情况下无法使用make系列函数:
 * 使用自定义的析构器
 * 需要使用大括号初始化所指向的对象
+* 为有自定义版本的 operator new / operator delete 类创建对象
+
+`make_shared` 比 new 之后放入智能指针在尺寸和速度上有优势, 是因为**前者将控制块和托管对象在同一内存块上分配**, 而控制块还包含了弱引用计数, 这样带来的问题就是如果`weak_ptr`还存在, 那么控制块肯定会持续存在, 包含它的内存也会持续存在:**最后`shared_ptr` 和最后一个`weak_ptr`析构时间间隔不能忽略的时候, 对象析构和内存释放之间就会有延迟**.如果是直接使用 new 表达式然后放入只能指针中, 对象内存可以在指向它的最后一个`shard_ptr`没析构前就被释放.在这种情况下即不能使用 `make_shard` 又要预防异常下内存泄漏的问题, 最好使用单独的语句将 new 的对象放入智能指针中:
+```C++
+std::shared_ptr<Widget> spw(new Widget, cusDel);
+processWidget(std::move(spw), computePriority());
+// 非异常安全的版本 processWidget 接受的智能指针是一个右值
+// 单独声明之后再使用的智能指针是一个左值
+// 为了接口的统一, 我们使用 move 做类似的强制转换将 spw 变成一个右值
+```
