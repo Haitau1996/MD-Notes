@@ -38,7 +38,7 @@ QA是安全体系的第二道防线, 他们会检查以前的质量保证措施�
     void CustomerCacheTest::cacheIsEmpty_addElement_sizeIsOne();
     void CustomerCacheTest::cacheContainsOneElement_removeElement_sizeIsZero();
     void ComplexNumberCalculatorTest::givenTwoComplexNumbers_add_Works();
-    void MoneyTest:: givenTwoMoneyObjectsWithDifferentBalance_theInequalityComparison_Works();
+    void MoneyTest::givenTwoMoneyObjectsWithDifferentBalance_theInequalityComparison_Works();
     void MoneyTest::createMoneyObjectWithParameter_getBalanceAsString_returnsCorrectString();
     void InvoiceTest::invoiceIsReadyForAccounting_getInvoiceDate_returnsToday();
     ```

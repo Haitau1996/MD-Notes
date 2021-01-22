@@ -1223,4 +1223,33 @@ logAndProcess(w); // call with lvalue
 logAndProcess(std::move(w)); // call with rvalue
 ```
 
-所有的函数形参都是左值, param 也不例外, 如果不做这样的处理, process 永远调用的就是左值型别的那个重载版本, 因此 forward 的意思是 **当且仅当用来初始化 param 的实参是右值得条件下, 才把 param 强制类型转换为右值**.  
+所有的函数形参都是左值, param 也不例外, 如果不做这样的处理, process 永远调用的就是左值型别的那个重载版本, 因此 forward 的意思是 **当且仅当用来初始化 param 的实参是右值得条件下, 才把 param 强制类型转换为右值**. 
+
+### Item 24: 区分万能引用和右值引用
+万能引用一般会在两个场景出现, 它们都涉及类型推导:
+* 函数模板的形参
+* auto 声明
+
+不涉及类型推导或者形式不是 `T&&` 的都不是万能引用:
+```C++
+void f(Widget&& param); // param 是一个右值引用, 没有类型推导
+template<typename T>
+void f(std::vector<T>&& param); // 形式不是 T&& , 是右值引用不是万能引用
+template<class T, class Allocator = allocator<T>> 
+class vector { 
+public:
+    void push_back(T&& x);
+    …
+}; // 模板具现化之后就决定了类型, 不是在 push_back 中推导出来的, 因此是一个右值引用不是万能引用
+```
+
+下面这个例子 Args 必须在每次调用 `emplate_back` 的时候都要进行推导, 因此它是一个万能引用:
+```C++
+template<class T, class Allocator = allocator<T>> // still from
+class vector { // C++
+public: // Standards
+    template <class... Args>
+    void emplace_back(Args&&... args);
+    …
+};
+```
