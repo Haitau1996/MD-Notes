@@ -1078,4 +1078,23 @@ auto spw2 = wpw.lock(); // same as above,
 * 缓存/观察者列表等
 * 避免 `shared_ptr` 指针环路
 
+### Item 21: 优先选用 `std::make_unique`/`std::make_shared` 而非直接使用 new 
 
+C++11 中引入了 `make_shared`, C++ 14 中才引入 `make_uinque`, 但是在 C++11 中写一个基础
+```C++
+template<typename T, typename... Ts>
+std::unique_ptr<T> make_unique(Ts&&... params)
+{
+    return std::unique_ptr<T>(new T(std::forward<Ts>(params)...));
+}
+```
+这实际上就是像待创建对象的构造函数做了一次完美转发. 如果是使用 new , 需要写两遍对象的型别, 重复撰写型别违反了DRY原则. 还有一个使用 make 系列函数的原因是异常安全问题, 例如下面的例子:
+```C++
+processWidget(std::shared_ptr<Widget>(new Widget), computePriority());
+processWidget(std::make_shared<Widget>(),computePriority());
+```
+这种情况很可能是先 new 了对象, 然后计算优先级的函数抛出异常离开这个地方, 结果就是内存泄漏. 而下面使用 make 的版本就没有这个问题, 如果计算优先级的函数抛出异常, 智能指针会自己销毁指涉的对象. `make_shared`还有一个好处, new 之后再放入智能指针, 除了要为 `Widget` 对象分配一次内存, 还要为智能指针的控制块再进行一次内存分配. 
+
+但是在两种情况下无法使用make系列函数:
+* 使用自定义的析构器
+* 需要使用大括号初始化所指向的对象
