@@ -1243,7 +1243,7 @@ public:
 }; // 模板具现化之后就决定了类型, 不是在 push_back 中推导出来的, 因此是一个右值引用不是万能引用
 ```
 
-下面这个例子 Args 必须在每次调用 `emplate_back` 的时候都要进行推导, 因此它是一个万能引用:
+下面这个例子 Args 必须在每次调用 `emplace_back` 的时候都要进行推导, 因此它是一个万能引用:
 ```C++
 template<class T, class Allocator = allocator<T>> // still from
 class vector { // C++
@@ -1253,3 +1253,7 @@ public: // Standards
     …
 };
 ```
+
+### Item 25: 针对右值引用实施 `std::move`, 针对万能引用实施`std::forward`
+* 右值引用只会绑定到那些可以移动的型别上, 如果形参型别为右值引用, 应该清楚地了解它绑定的对象可供移动.
+* 万能引用仅仅在初始化时候使用右值才会强制转换成右值型别
