@@ -302,3 +302,7 @@ bgeu x20, x11, IndexOutOfBounds // if x20 >= x11 or x20 < 0, goto IndexOutOfBoun
 ```C
 jal x1, ProcedureAddress // jump to ProcedureAddress and write return address to x1
 ```
+几个名词解释:
+* 返回地址: 一个指向调用处的link, 使得procedure 调用完毕之后可以回到正确地地方, RISC-V 中用它存在寄存器 _x1_ 中
+* 调用者(caller): 调用 procedure 并且提供参数的程序
+* 

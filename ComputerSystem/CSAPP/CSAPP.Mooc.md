@@ -335,3 +335,34 @@ Stack Pointer(`%rsp`) 保存着最下面的stack 的地址(逻辑上是top eleme
 ### Calling Convension
 
 #### Procedure Control Flow
+使用栈来支持 procedure 的调用和返回
+* procedure call : call label
+  * 将返回地址压入stack
+  * 跳转到那个 label
+* 返回地址: 
+  * 函数调用完毕之后执行的下一条指令的地址
+* procedure return: ret
+  * 将地址从栈中 pop 出来
+  * 跳转到那个地址
+  
+![](figure/Mooc7.1.png)
+![](figure/Mooc7.2.png)
+
+#### Passing Data
+* 返回值存在寄存器 `%rax` 中
+* 六个参数分别存在 `%rdi, %rsi, %rdx, %rcx, %r8, %r9` 中
+* 如果还有更多参数, 则存在 stack 中
+
+![](figure/Mooc7.3.png)
+
+#### 管理 local data
+首先我们引入 stack Frame 的概念: 
+
+![](figure/Mooc7.4.png)
+
+一个 frame 中有 返回值信息, local 存储(如果需要的话) 和临时空间(如果需要的话).
+
+![](figure/Mooc7.5.png)
+
+需要注意的是,  调用函数的时候寄存器中的内容可能被覆写. 于是需要 caller saved 和 callee saved:
+* 
