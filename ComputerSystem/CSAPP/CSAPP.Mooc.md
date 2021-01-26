@@ -364,5 +364,25 @@ Stack Pointer(`%rsp`) 保存着最下面的stack 的地址(逻辑上是top eleme
 
 ![](figure/Mooc7.5.png)
 
-需要注意的是,  调用函数的时候寄存器中的内容可能被覆写. 于是需要 caller saved 和 callee saved:
-* 
+需要注意的是, 每个stack frame 需要管理自己的数据. 
+
+![](figure/Mooc7.6.png)
+
+我们在调用函数的时候, 首先就是在当前的frame 中将数据存储下来,后面接着的两行的意思就是将两个参数放到寄存器中, 调用函数结束之后, 将两个数字之和放到 `%rax`中, 然后再将stack pointer 加回去(这个简单的case, 一开始 %rep 减了多少后面就加回去):
+![](figure/Mooc7.7.png)
+
+调用函数的时候寄存器中的内容可能被覆写. 于是需要 caller saved 和 callee saved并且在其中维持一个保持数据的协议:
+* Caller Saved: 在调用之前, caller 将临时数据在自己的 frame 中管理
+* Callee Saved: Callee 在使用前将临时数据存在自己的 frame 中, 在返回前 restre them
+
+![](figure/Mooc7.8.png)
+![](figure/Mooc7.9.png)
+
+如果我们将返回值改为 x + v2, 就会有下面的结果:
+![](figure/Mooc7.10.png)
+
+区别在于使用了 `%rbx` 这个 callee saved 寄存器. 
+
+### 递归详解
+有了这些寄存器约定之后, 我们就可以在 callee saved 寄存器的帮助下实现一个递归
+![](figure/Mooc7.11.png)
