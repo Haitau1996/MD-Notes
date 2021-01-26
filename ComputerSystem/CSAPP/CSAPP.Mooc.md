@@ -423,3 +423,6 @@ Stack Pointer(`%rsp`) 保存着最下面的stack 的地址(逻辑上是top eleme
 我们可以使用 XMM Registers 来提高浮点运算的性能:
 ![](figure/Mooc8.10.png)
 ![](figure/Mooc8.11.png)
+
+## Lecture 9 : Machine-­‐Level Programming V - Advanced Topics
+### 内存布局
