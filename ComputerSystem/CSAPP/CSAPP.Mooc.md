@@ -386,3 +386,40 @@ Stack Pointer(`%rsp`) 保存着最下面的stack 的地址(逻辑上是top eleme
 ### 递归详解
 有了这些寄存器约定之后, 我们就可以在 callee saved 寄存器的帮助下实现一个递归
 ![](figure/Mooc7.11.png)
+
+## Lecture 8: Machine-­‐Level Programming IV Data
+### Arrays
+在 machine level, 没有复杂的数据结构(Array/Structure), 都是一个 byte 的 sequence. 因此 Array 内存分配的基本原理是 `T A[L]` 声明一个数据类型为 T, 长度为 L 的数组, 实际对应的是一个连续的长度为 $L \times sizeof(T)$ 的内存区域. 
+![](figure/Mooc8.1.png)
+#### 多维 Arrays
+多维的 array 使用 `T A[R][C];`声明, 一共有 R 行 C 列, 总的尺寸为 $R \times C \times sizeof(T)$ , 内存的 Arrangement 方式为 Row-­‐Major Ordering. 
+
+![](figure/Mooc8.2.png)
+
+其中的每一行也是一个含有 C 个元素的 Array, 开始的地址为 $A + i \times C \times K$(K 为每个元素的大小), 需要注意的是, 一个2D Array 和一个指针构成的数组, 肯能还是有略微的区别:
+
+![](figure/Mooc8.3.png)
+
+![](figure/Mooc8.4.png)
+
+![](figure/Mooc8.5.png)
+![](figure/Mooc8.6.png)
+
+### 结构体
+* 结构体代表一大块的内存, 足够放下所有的数据域
+* 结构体的域是按照声明的顺序排列(即使有更紧凑的排列方式)
+* 编译器决定域总体的 size 和 位置
+
+![](figure/Mooc8.7.png)
+
+#### 内存的排布原则
+* 需要排列的数据至少需要 K = sizeof(T) 个 byte, 地址一定是 K 的整数倍数
+* 我们访问的地址块最好是 4 个或者 8 个 byte
+* 编译器会在结构体重插入gap 保证 field 的正确排布
+
+![](figure/Mooc8.9.png)
+
+### 浮点数
+我们可以使用 XMM Registers 来提高浮点运算的性能:
+![](figure/Mooc8.10.png)
+![](figure/Mooc8.11.png)
