@@ -426,3 +426,51 @@ Stack Pointer(`%rsp`) 保存着最下面的stack 的地址(逻辑上是top eleme
 
 ## Lecture 9 : Machine-­‐Level Programming V - Advanced Topics
 ### 内存布局
+虚拟内存理论上是一个很大的array, 64bit 机器的实际上支持的最大的内存只有 47 bit.作为一个 array 它这样安排的:
+* Stack 在内存的最上面, 所以 stack 增加的话其 pointer 是减小的, 通过 linux 的limit 命令得到 stacksize 为 8 _Mb_, 一般用于 local 变量
+* Heap 是在需要的时候动态分配(C调用 `malloc()` / `calloc()`, C++ 调用 `new()`)
+* data 是静态分配的, 如全局的变量, 静态变量 和 string 常量
+* Text/ Shared Library: 执行机器指令, Read Only
+
+![](figure/Mooc9.1.png)
+
+实际测试中发现, 动态分配的内存小块的在上面而大块的在下面.
+
+### Buffer Overflow
+* 通常我们访问超过 array size 的元素的时候就会有造成 buffer overflow
+* 通常发生在下面的场景中
+  * 在 string 输入的时候没有检查 length, 其他的函数如 strcpy/strcat/scanf/fscanf/sscanf 也有类似的问题
+    ```C++
+    /* Get string from stdin */
+    char *gets(char *dest)
+    {
+        int c = getchar();
+        char *p = dest;
+        while (c != EOF && c != '\n') {
+            *p++ = c;
+            c = getchar();
+        }
+        *p = '\0';
+        return dest;
+    }
+    ```
+    ![](figure/Mooc9.2.png)
+    在输入超过 24 个字符时候, 就会 crash return address.下面就是一个代码注入攻击的例子, 我们将返回地址付下之后, Q 返回会跳转到 exploit code 处(Buffer overflow bugs can allow remote machines to execute arbitrary code on victim machines):<br>
+    ![](figure/Mooc9.3.png)
+
+避免 Buffer Overflow 的方法:
+* 在代码中避免 Overflow Vulnerabilities:
+  * 例如使用限制 string length 的库函数(gets -> fgets, strcpy -> strncpy, `%s` -> `%ns`)
+* 系统级的保护可能有作用
+  * Randomize stack offsets
+  * Nonexecutable code segments
+* Stack Canaries can help
+  * Place special value (“canary”) on stack just beyond buffer
+  * Check for corruption before exiting function
+  * gcc 选项 `-fstack-protector`(现在已经默认)
+
+## Union Allocation
+* 分配最大的 element 需要的内存
+* 一次只能使用一个 field
+
+对于 Big Endian 和 Little Endian , Byte 的 Ordering 可能有区别.
