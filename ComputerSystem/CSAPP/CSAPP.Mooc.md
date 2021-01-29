@@ -477,7 +477,7 @@ Stack Pointer(`%rsp`) 保存着最下面的stack 的地址(逻辑上是top eleme
 
 ## Lecture 10: 程序优化(Chap 5)
 
-#### Optimizing Compilers
+### Optimizing Compilers
 优化编译器需要做的事情和具体的编译器/处理器无关:
 * 移动代码, 将频繁需要做的事情提前计算好, 例如将代码移出循环体(实际上-O1 优化选项就会这么做)
   ![](figure/Mooc10.1.png)
@@ -498,4 +498,65 @@ Stack Pointer(`%rsp`) 保存着最下面的stack 的地址(逻辑上是top eleme
 
 因此, 编译器将函数调用看成是一个黑盒子, 相关的优化就比较弱. 
 
-此外, 编译器假定了可能存在内存的 aliasing(两个不同的指针指向同一块内存地址), 因此我们可能引入 local 变量, 我们可以使用自己的方式高速便起一不要检查
+此外, 编译器假定了可能存在内存的 aliasing(两个不同的指针指向同一块内存地址), 因此我们可能引入 local 变量, 我们可以使用自己的方式告诉编译器不要检查
+
+### 利用指令级并行
+引入 CPE(Cycles Per Element) 来评估在vector 或者 list 上操作的性能. 如果长度为 n 那么 时间就是 $n \times CPE + Overhead$.
+
+最基础的优化, 将取 vector length 的操作放到循环外面, 避免边界检查, 并且将累加放到临时变量中.
+
+超标量处理器(可以在一个时钟周期中分发执行多个指令):<br>
+![](figure/Mooc10.5.png)<br>
+流水线功能单元<br>
+![](figure/Mooc10.6.png)<br>
+
+Loop Unrolling(在其中的一个循环中, 每次步进多个step, 每个 step 做多个 OP):
+```C++
+void unroll2a_combine(vec_ptr v, data_t *dest)
+{
+    long length = vec_length(v);
+    long limit = length-1;
+    data_t *d = get_vec_start(v);
+    data_t x = IDENT;
+    long i;
+    /* Combine 2 elements at a time */
+    for (i = 0; i < limit; i+=2) {
+        x = (x OP d[i]) OP d[i+1];
+    }
+    /* Finish any remaining elements */
+    for (; i < length; i++) {
+        x = x OP d[i];
+    }
+    *dest = x;
+}
+```
+![](figure/Mooc10.7.png)<br>
+Loop Unrolling with Reassociation
+```C++
+void unroll2aa_combine(vec_ptr v, data_t *dest)
+{
+    long length = vec_length(v);
+    long limit = length-1;
+    data_t *d = get_vec_start(v);
+    data_t x = IDENT;
+    long i;
+    /* Combine 2 elements at a time */
+    for (i = 0; i < limit; i+=2) {
+        x = x OP (d[i] OP d[i+1]);
+    }
+    /* Finish any remaining elements */
+    for (; i < length; i++) {
+        x = x OP d[i];
+    }
+    *dest = x;
+}
+```
+![](figure/Mooc10.8.png)<br>
+
+#### 使用 AVX2 编程
+YMM 寄存器是 XMM 寄存器的升级, 它有16个, 每个为 32 byte.<br>
+![](figure/Mooc10.9.png)<br>
+
+#### 分支
+分支中可能会有预测, 如果预测正确则提前执行再 fetch 结果,错误的话就重置.<br>
+![](figure/Mooc10.10.png)
