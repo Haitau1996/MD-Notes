@@ -560,3 +560,42 @@ YMM 寄存器是 XMM 寄存器的升级, 它有16个, 每个为 32 byte.<br>
 #### 分支
 分支中可能会有预测, 如果预测正确则提前执行再 fetch 结果,错误的话就重置.<br>
 ![](figure/Mooc10.10.png)
+
+## Lecture 11: 内存层次结果
+### 存储器技术和发展趋势
+#### 随机访问存储器
+随机访问存储器, 有动态和静态 RAM, 传统上被打包成 chip, 多个 chip 形成一个内存. 他们都是易失性存储器(断电后会丢失信息),非易失性存储即使在断电后也能保持其值.  传统的CPU 和内存通过总线连接. <br>
+Memory 读取的过程有三步:
+* CPU places address A on the memory bus
+* Main memory reads A from the memory bus, retrieves word x, and places it on the bus.
+* CPU read word x from the bus and copies it into register `%rax`.
+  ![](figure/Mooc11.1.png)
+
+同样的写入过程也是三步:
+* CPU places address A on bus. Main memory reads it and waits for the corresponding data word to arrive.
+* CPU places data word y on the bus.
+* Main memory reads data word y from the bus and stores it at address A.
+
+#### 机械硬盘
+机械硬盘的几何结构:<br>
+![](figure/Mooc11.2.png)<br>
+![](figure/Mooc11.3.png)<br>
+上面是一个典型的读取过程, 我们从中得到盘的访问时间组成为 $T_{access} = T_{avg seek} + T_{avg rotation} + T_{avg transfer}$ :
+* Seek time (Tavg seek)
+  * Time to position heads over cylinder containing target sector.
+  * Typical Tavg seek is 3—9 ms
+* Rotational latency (Tavg rotation)
+  * Time waiting for first bit of target sector to pass under r/w head.
+  * Tavg rotation = 1/2 x 1/RPMs x 60 sec/1 min
+  * Typical Tavg rotation = 7200 RPMs
+* Transfer time (Tavg transfer)
+  * Time to read the bits in the target sector.
+  * Tavg transfer = 1/RPM x 1/(avg # sectors/track) x 60 secs/1 min.
+
+总的来说, access 时间是由 seek time 和旋转颜值决定的, 总速度比 DRAM 慢约 2500倍. <br>
+现在的disk 提供一个逻辑 Block 的抽象, 扇区被抽象成逻辑 blocks, 逻辑区块和扇区之间有一个 Mapping. 从一个 Disk 扇区读取数据的过程分三个部分: 
+* CPU initiates a disk read by writing a command, logical block number, and destination memory address to a port (address) associated with disk controller.
+* Disk controller reads the sector and performs a direct memory access (DMA) transfer into main memory.
+* When the DMA transfer completes,the disk controller notifies the CPU with an interrupt (i.e., asserts a special “interrupt” pin on the CPU)
+
+#### 固态硬盘
