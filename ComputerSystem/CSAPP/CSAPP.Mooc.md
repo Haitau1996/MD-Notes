@@ -596,6 +596,36 @@ Memory 读取的过程有三步:
 现在的disk 提供一个逻辑 Block 的抽象, 扇区被抽象成逻辑 blocks, 逻辑区块和扇区之间有一个 Mapping. 从一个 Disk 扇区读取数据的过程分三个部分: 
 * CPU initiates a disk read by writing a command, logical block number, and destination memory address to a port (address) associated with disk controller.
 * Disk controller reads the sector and performs a direct memory access (DMA) transfer into main memory.
-* When the DMA transfer completes,the disk controller notifies the CPU with an interrupt (i.e., asserts a special “interrupt” pin on the CPU)
+* When the DMA transfer completes,the disk controller notifies the CPU with an **interrupt** (i.e., asserts a special “interrupt” pin on the CPU)
 
 #### 固态硬盘
+对于CPU来说它和机械硬盘没有区别, 总线和 Flash Memory 之间有一个 Flash translation layer, 有个特性就是 Page can be writen only after its block has been erased, 超过一定读写次数后可能会损坏. 各种存储器的访问速度之间的区别如下:
+
+![](figure/Mooc11.4.png)
+
+可以看到内存和硬盘之间有很大的 gap.
+
+### Locality
+Locality 原则: 程序更倾向于使用他们最近使用过位置临近的指令或者地址. <br>
+![](figure/Mooc11.5.png)<br>
+**对 Locality 的量化评估**, 下面就是一个很不好的例子:<br>
+![](figure/Mooc11.6.png)<br>
+
+### 内存层次结构
+![](figure/Mooc11.7.png)<br>
+#### Caches
+* Cache: A smaller, faster storage device that acts as a staging area for a subset of the data in a larger, slower device.(有点像是背着书包去上学, 这样需要某个东西时候在包里找而不用直接回去拿)
+* The memory hierarchy creates a large pool of storage that costs as much as the cheap storage near the bottom, but that serves data to programs at the rate of the fast storage near the top.
+
+![](figure/Mooc11.8.png)<br>
+* Cold (compulsory) miss
+    * Cold misses occur because the cache is empty.
+* Conflict miss
+    * Most caches limit blocks at level k+1 to a small subset (sometimes a singleton) of the block positions at level k.
+        * E.g. Block i at level k+1 must be placed in block (i mod 4) at level k.
+    * Conflict misses occur when the level k cache is large enough, but multiple data objects all map to the same level k block.
+        * E.g. Referencing blocks 0, 8, 0, 8, 0, 8, ... would miss every time.
+* Capacity miss
+    * Occurs when the set of active cache blocks (working set) is larger than the cache.
+
+## Lecture 12: Cache Memories
