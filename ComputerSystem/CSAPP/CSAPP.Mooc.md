@@ -629,3 +629,87 @@ Locality 原则: 程序更倾向于使用他们最近使用过位置临近的指
     * Occurs when the set of active cache blocks (working set) is larger than the cache.
 
 ## Lecture 12: Cache Memories
+### Cache 组成和操作
+Cache Memory 是硬件自动管理的容量小\基于静态随机存储器的内存, CPU 首先在 cache 中查找资源, 然后才是在main memory中找, 典型的结构如下:
+![](figure/Mooc12.1.png)<br>
+其具体的缓存结构如下图所示, 每个 set 依旧可能有多行. 最低的几个位是在 block 中的偏移量, s 为 set 的下标, 剩下的几位为 tag:
+![](figure/Mooc12.2.png)<br>
+#### Example: Direct Mapped Cache(E=1)
+每个 set 只有一行, 在 Cache 模拟中发现 hit 的概率非常低. 
+#### E-­‐way Set Associative Cache(这里E=2)
+![](figure/Mooc12.3.png)<br>
+![](figure/Mooc12.4.png)<br>
+
+#### Cache 的 Write
+Data 在不同的层次中有多个拷贝, L1/L2/L3,主内存/硬盘..., 在 Hit 和 miss 的时候有不同的策略:
+* What to do on a write-­‐hit?
+  * Write-­‐through (write immediately to memory)
+  * Write-­‐back (defer write to memory un;l replacement of line)
+    * Need a dirty bit (line different from memory or not)
+* What to do on a write-­‐miss?
+  * Write-­‐allocate (load into cache, update line in cache)
+    * Good if more writes to the location follow
+  * No-­‐write-­‐allocate (writes straight to memory, does not load into cache)
+
+#### Cache 性能测量
+* Miss Rate
+  * Frac;on of memory references not found in cache (misses / accesses)= 1 – hit rate
+  * Typical numbers (in percentages):
+    * 3-­‐10% for L1
+    * can be quite small (e.g., < 1%) for L2, depending on size, etc.
+* Hit Time
+  * Time to deliver a line in the cache to the processor
+    * includes ;me to determine whether the line is in the cache
+  * Typical numbers:
+    * 4 clock cycle for L1
+    * 10 clock cycles for L2
+* Miss Penalty
+  * Addi;onal ;me required because of a miss
+    * typically 50-­‐200 cycles for main memory (Trend: increasing!)
+
+#### 编写 Cache 友好型代码
+* Make the common case go fast
+  * Focus on the inner loops of the core func;ons
+* Minimize the misses in the inner loops
+  * Repeated references to variables are good (temporal locality)
+  * Stride-­‐1 reference panerns are good (spatial locality)
+
+### cache对性能的影响
+#### The Memory Mountain
+![](figure/Mooc12.5.png)<br>
+#### Rearranging loops to improve spatial locality
+![](figure/Mooc12.6.png)<br>
+![](figure/Mooc12.7.png)<br>
+![](figure/Mooc12.8.png)<br>
+
+#### using bolcking to improve temporal locality
+```C++
+c = (double *) calloc(sizeof(double), n*n);
+/* Multiply n x n matrices a and b */
+void mmm(double *a, double *b, double *c, int n) {
+    int i, j, k;
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
+            for (k = 0; k < n; k++)
+                c[i*n + j] += a[i*n + k] * b[k*n + j];
+}
+c = (double *) calloc(sizeof(double), n*n);
+/* Multiply n x n matrices a and b */
+void mmm(double *a, double *b, double *c, int n) {
+int i, j, k;
+for (i = 0; i < n; i+=B)
+    for (j = 0; j < n; j+=B)
+        for (k = 0; k < n; k+=B)
+            /* B x B mini matrix multiplications */
+            for (i1 = i; i1 < i+B; i++)
+            for (j1 = j; j1 < j+B; j++)
+            for (k1 = k; k1 < k+B; k++)
+            c[i1*n+j1] += a[i1*n + k1]*b[k1*n + j1];
+}
+```
+![](figure/Mooc12.12.png)<br>
+![](figure/Mooc12.9.png)<br>
+![](figure/Mooc12.10.png)<br>
+![](figure/Mooc12.11.png)<br>
+
+## Lecture 13: Linking
