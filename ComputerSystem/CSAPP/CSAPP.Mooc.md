@@ -653,13 +653,13 @@ Data 在不同的层次中有多个拷贝, L1/L2/L3,主内存/硬盘..., 在 Hit
 
 #### Cache 性能测量
 * Miss Rate
-  * Frac;on of memory references not found in cache (misses / accesses)= 1 – hit rate
+  * Fraction of memory references not found in cache (misses / accesses)= 1 – hit rate
   * Typical numbers (in percentages):
     * 3-­‐10% for L1
     * can be quite small (e.g., < 1%) for L2, depending on size, etc.
 * Hit Time
   * Time to deliver a line in the cache to the processor
-    * includes ;me to determine whether the line is in the cache
+    * includes time to determine whether the line is in the cache
   * Typical numbers:
     * 4 clock cycle for L1
     * 10 clock cycles for L2
@@ -713,3 +713,28 @@ for (i = 0; i < n; i+=B)
 ![](figure/Mooc12.11.png)<br>
 
 ## Lecture 13: Linking
+![](figure/Mooc13.1.png)<br>
+翻译的过程其实是三步, 首先调用预处理器(cpp)然后调用编译器(cc1)然后调用汇编器(as), 生成目标文件 `*.o`, 我们为什么需要链接器:
+* 模块化: 将程序写成一系列的小源文件, 而不是一个巨无霸,同时可以构建库文件
+* 效率:
+  * 时间上, 分离编译更快
+  * 空间上, 公用库可以节约空间
+
+链接器做的事情:
+1. Symbol resolution
+   *  程序定义和引用 symbols(全局变量和函数)
+   *  symbol 定义存储在目标文件的 symbol table 中, 这种表示 struct 构成的 array, 每个入口有symbol 的 names size 和 location
+   *  在这个 resolution 的过程中, linker 将每个 symbol reference 和 它的定义关联起来
+2. Relocation 
+     *  Merges separate code and data sections into single sections
+     *  Relocates symbols from their relative locations in the .o files to their final absolute memory locations in the executable.
+     *  Updates all references to these symbols to reflect their new positions.
+
+三种目标文件:
+1. 可重定位目标文件(.o): 包含二进制代码和数据，其形式可以在编译时与其他可重定位目标文件合并起来，创建一个可执行目标文件 。
+2. 可执行目标文件(.out): 包含二进制代码和数据，其形式可以被直接复制到内存并执行 。
+3. 共享目标文件(.so): 一种特殊类型的可重定位目标文件，可以在加载或者运行时被动态地加载进内存并链接。
+
+可执行和可链接格式(ELF)对于上面的三种目标文件是一样的,其格式如下:
+![](figure/Mooc13.2.png)<br> 
+![](figure/Mooc13.3.png)<br>
