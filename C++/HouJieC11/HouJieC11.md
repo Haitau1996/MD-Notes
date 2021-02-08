@@ -167,7 +167,55 @@ using Vec = vector<T, allocator<T> >; // 不能在function body 中声明
 XCLs<MyString, Vec> c1; // OK
 ```
 编译器编译模板的时候只是检查基本语法, 实际上给模板传入参数的时候能否符合要求是不确定的
-//todo:v12
+## Type Alias(类似于 typedef)
+```c++
+//用法1
+//typedef void (*func)(int,int);
+using func = void(*)(int,int);
+// 用法 2
+// 在容器中有很多自己的 typedef
+template<typename T>
+struct Container{
+    using value_type = T;
+    // typedef T value_type;
+}
+template<typename Cntr>
+void fn2(const Cntr&c){
+    typename Cntr::value_type n;
+    ...
+}
+// 用法 3 
+// Alias template
+template<class CharT> using myStr = 
+    std::basic_string<CharT, std::char_traits<CharT>>;
+myStr<char> str;
+```
+### Using 关键字
+* using-directives(`using namespace std`) 或者 using-declarations for namespace members(`using std::cout`)
+* 对 class member 使用 using declaration 
+  ```C++
+  ...
+  protected:
+    using _Base::M_allocater;
+    using _Base::M_deallocater;
+  ...
+  ```
+* type alias 或者 alias template(since C++ 11) 
+
+### noexcept
+```C++
+void foo() noexcept;
+// void foo() noexcept(true);
+void swap(Type&x, Type&y) noexcept(noexcept(x.swap(y)))
+{
+    x.swap(y);
+}
+```
+这些被声明为不抛出异常的函数, 如果出现异常并且没有在内部处理, 程序就会终止(通过调用 `std::terminate()` , 这个函数默认调用 `std::abort()`). <br>
+一般而言`std::vector` 中有了 Move 版本后, 需要加上 noexcept 才能有强的安全保证, 否则 `std::vector` 不能调用它, 因为 grow 过程中搬移出现了异常之后就无法恢复现场了. 其他的容器如果熟悉其内存上的安排就知道不会有这种 size 翻倍成长的过程. 
+
+### override & final
+覆写, 用在虚函数上. final 可能用于虚函数声明和类声明中, 表示无法override 或者 无法继承. 具体可以参考 effective modern C++ 的说明. 
 ## decltype
 使用这个新的关键字, 可以让编译器找出表达式的type,这更像是我们对于gcc中非标准的`typeof`的需求, 在c++中有`typeid`, 但不好用, decltype的用法如下:
 1. 用于声明return type, 允许后置返回类型,和lambdas声明return type很像
