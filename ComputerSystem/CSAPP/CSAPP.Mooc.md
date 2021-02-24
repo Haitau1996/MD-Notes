@@ -738,3 +738,27 @@ for (i = 0; i < n; i+=B)
 可执行和可链接格式(ELF)对于上面的三种目标文件是一样的,其格式如下:
 ![](figure/Mooc13.2.png)<br> 
 ![](figure/Mooc13.3.png)<br>
+`.bss` 来表示未初始化的数据是很普遍的, `.data` 和`.bss` 节之间区别的简单方法是把"bss" 看成是”更好地节省空间(Better Save Space)"的缩写。<br>
+### Symbols
+#### Local Symbols 
+* local non-static 变量 和 local static 变量的区别
+  * 前者一般在栈中存储
+  * 后者在 `.bss` 或者`.data`中存储, 离开了 local 的作用域同样不能访问
+
+#### 编译器如何解决重复的 Symbol 定义
+* Program 符号可能是强的或者弱的
+  * Strong: procedure 或者已初始化的的 globals
+  * Weak: 未初始化的globals
+1. Rule 1: 多个 Strong Symbols 是不被允许的
+   * 每个 item 只能定义一次, 否则出现链接错误
+2. Rule 2: 给定一个强符号和若干弱符号, 选择强符号
+   1. 弱符号的references 也是弱符号
+3. Rule 3: 如果有多个弱符号, 选择任意一个(可以用 `gcc -fno-common` 覆盖)
+ ![](figure/Mooc13.4.png)<br>
+
+因此, 尽可能去避免全局变量, 如果实在无法避免:
+1. 尽可能使用 static
+2. 在定义的时候初始化全局变量
+3. 使用 `extern` 如果引用一个外部的全局变量
+
+### Relocation
