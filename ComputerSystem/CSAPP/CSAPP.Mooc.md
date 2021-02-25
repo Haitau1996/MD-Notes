@@ -762,3 +762,142 @@ for (i = 0; i < n; i+=B)
 3. 使用 `extern` 如果引用一个外部的全局变量
 
 ### Relocation
+callq 用的是一个绝对的地址表示函数, 链接的时候会更新 pc - relative 地址:`0x4004e8 = 0x4004e3 + 0x5`. <br>
+编译生成的二进制文件可以直接加载在内存中, `.init, .text , .rodata` 这些会加载在只读代码部分, `.data, .bss` 加载在读写数据部分, heap 向上增长, stack 向下增长.两者之间是 shared libraries. heap 之上是内核的虚拟内存,对于 code 是 invisible. 
+
+### Linking and Libraries
+目前有两个linker framework:
+* 选项一: 将所有的函数放在一个单独的文件中, 程序员这时候将大的目标文件链接到程序中, 空间可时间上都是 Ineffecient
+* 选项二: 将每个函数放到不同的source file中, 链接的时候只要链接合适的二进制文件, 更高效但是对程序员任务更重
+
+#### 静态库
+* `.a` archive 文件是其他可重定位目标合成带有 index 的单个文件
+* 如果archive 的某个文件被引用了, 只需要将对应的 .o 链接到可执行文件中
+
+![](figure/Mooc13.5.png)<br>
+
+它决定外部引用的算法如下:
+* 按照命令行的顺序扫描 .o 和 .a 文件
+* 扫描过程中, 持有一个记录当前未决定的引用
+* 进入新的 .o/.a 文件,用二进制文件中的符号表 试着解析每个未解析的符号
+* 如果扫描之后还有 unrasolved entry, 就会报错
+
+带来的问题就是命令行的顺序会影响结果, 好的做法是将库放在命令行的后面.
+
+#### 动态库
+动态库并不是在编译的时候链接到二进制文件中, 而是在程序加载甚至运行的时候动态链接到应用中. `.DLL(for Windoes) .so`<br>
+![](figure/Mooc13.6.png)<br>
+```C++
+#include <stdio.h>
+#include <stdlib.h>
+#include <dlfcn.h>
+
+int x[2] = {1, 2};
+int y[2] = {3, 4};
+int z[2];
+
+int main()
+{
+    void *handle;
+    void (*addvec)(int *, int *, int *, int);
+    char *error;
+
+    /* Dynamically load the shared library that contains addvec() */
+    handle = dlopen("./libvector.so", RTLD_LAZY);
+    if (!handle) {
+        fprintf(stderr, "%s\n", dlerror());
+        exit(1);
+    }
+    ...
+    /* Get a pointer to the addvec() function we just loaded */
+    addvec = dlsym(handle, "addvec");
+    if ((error = dlerror()) != NULL) {
+        fprintf(stderr, "%s\n", error);
+        exit(1);
+    }
+
+    /* Now we can call addvec() just like any other function */
+    addvec(x, y, z, 2);
+    printf("z = [%d %d]\n", z[0], z[1]);
+
+    /* Unload the shared library */
+    if (dlclose(handle) < 0) {
+        fprintf(stderr, "%s\n", dlerror());
+        exit(1);
+    }
+    return 0;
+}
+```
+
+#### Case Study: Library Interpositioning
+给函数中使用 wrapper 函数, 这样的话调用某函数的时候实际上是调用其wrapper<br>
+在 安全/测试/Monitoring 和 Profiling 中可以使用.
+* 编译期 Interpositioning
+  ![](figure/Mooc13.7.png)
+* 链接期 Interpositioning
+    ```C++
+    #ifdef LINKTIME
+    #include <stdio.h>
+    
+    void *__real_malloc(size_t size);
+    void __real_free(void *ptr);
+    
+    /* malloc wrapper function */
+    void *__wrap_malloc(size_t size)
+    {
+        void *ptr = __real_malloc(size); /* Call libc malloc */
+        printf("malloc(%d) = %p\n", (int)size, ptr);
+        return ptr;
+    }
+    
+    /* free wrapper function */
+    void __wrap_free(void *ptr)
+    {
+        __real_free(ptr); /* Call libc free */
+        printf("free(%p)\n", ptr);
+    }
+    #endif
+    ```
+    ![](figure/Mooc13.8.png)
+* 加载/运行期
+    ```C++
+    #ifdef RUNTIME
+    #define _GNU_SOURCE
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <dlfcn.h>
+    
+    /* malloc wrapper function */
+    void *malloc(size_t size)
+    {
+        void *(*mallocp)(size_t size);
+        char *error;
+        
+        mallocp = dlsym(RTLD_NEXT, "malloc"); /* Get addr of libc malloc */
+        if ((error = dlerror()) != NULL) {
+            fputs(error, stderr);
+            exit(1);
+        }
+        char *ptr = mallocp(size); /* Call libc malloc */
+        printf("malloc(%d) = %p\n", (int)size, ptr);
+        return ptr;
+    }
+    /* free wrapper function */
+    void free(void *ptr)
+    {
+        void (*freep)(void *) = NULL;
+        char *error;
+        if (!ptr)
+        return;
+        
+        freep = dlsym(RTLD_NEXT, "free"); /* Get address of libc free */
+        if ((error = dlerror()) != NULL) {
+            fputs(error, stderr);
+            exit(1);
+        }
+        freep(ptr); /* Call libc free */
+        printf("free(%p)\n", ptr);
+    }
+    #endif
+    ```
+    ![](figure/Mooc13.9.png)
