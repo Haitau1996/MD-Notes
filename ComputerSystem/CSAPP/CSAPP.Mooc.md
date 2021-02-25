@@ -45,9 +45,9 @@ shift Operations:<br>
 * 但是这个结果是reinterpreted(重新解释)
 * 于是会有意料之外的结果 (加上或者减去 $2^w$)
 
-```c
-for(unsigned i = n-1; i >= 0; --i){//error: i是unsigned的话, 无论如何做减法, 都是大于0的
-    // 在这里从后向前对array操作
+```C++
+for(unsigned i = n-1; i >= 0; --i){//error: i是unsigned的话, 
+                                   //无论如何做减法, 都是大于0的
 }
 ```
 
@@ -265,7 +265,7 @@ loop:
 ##### 第一种变化
 * Jump to middle translation(其他地方一般不用这个称呼)
 * used with -Og
-```C
+```C++
 while(Test)
     Body
 // goto version
@@ -279,7 +279,7 @@ done:
 ```
 ##### 第二种变化
 把 while -> do while, used with -O1
-```C
+```C++
 if(!Test)
     goto done;
 do 
@@ -829,7 +829,7 @@ int main()
 }
 ```
 
-#### Case Study: Library Interpositioning
+### Case Study: Library Interpositioning
 给函数中使用 wrapper 函数, 这样的话调用某函数的时候实际上是调用其wrapper<br>
 在 安全/测试/Monitoring 和 Profiling 中可以使用.
 * 编译期 Interpositioning
@@ -901,3 +901,16 @@ int main()
     #endif
     ```
     ![](figure/Mooc13.9.png)
+
+## Lecture 14: Exceptional Control Flow:Exceptions and Processes
+处理器只做一个事情, 就是读取和执行一系列的指令, 每次执行一条, 长记性的指令序列就被称为是 CPU 的控制流. 异常控制流存在于计算机系统的所有层次:
+* 底层机制
+  1. 异常(Exceptions)
+     * 对系统时间相应改变控制流
+     * 使用软硬件结合来实现
+* 高层机制
+    1. 处理上下文切换(OS 软件和硬件Timer 实现)
+    2. 信号(OS 软件实现)
+    3. NonLocal Jumps: `setjmp()` 和 `longjmp()`, 由 C 运行时库实现
+
+### Exceptions
