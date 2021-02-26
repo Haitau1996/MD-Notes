@@ -239,7 +239,7 @@ std::vector<int> v;
 …
 unsigned sz = v.size();
 ```
-实际上 `v.size()` 返回的是一个 `std::vector<int>::size_type`, 在32位系统中它的size和Unsigned相同, 但是在64-bit 的系统中, Unsigned 依旧是32 bits, while `std::vec tor<int>::size_type` is 64 bits.此外, 从下面的例子中也可以看出auto使用起来更加精确:<br>
+实际上 `v.size()` 返回的是一个 `std::vector<int>::size_type`, 在32位系统中它的size和Unsigned相同, 但是在64-bit 的系统中, Unsigned 依旧是32 bits, while `std::vector<int>::size_type` is 64 bits.此外, 从下面的例子中也可以看出auto使用起来更加精确:<br>
 ```C++
 std::unordered_map<std::string, int> m; 
 ...
@@ -351,7 +351,8 @@ Widget w3(10, 5.0);	    // uses parens and, as before, // calls second ctor
 Widget w4{10, 5.0};	    // uses braces, but now calls // std::initializer_list ctor 
                         // (10 and 5.0 convert to long double)
 ```
-这种情况下, copy / move 构造器也可能被 `std::initializer_list` 劫持, 如果Widget有operator float(), 那么下面就会出现一个诡异的行为:
+<font color=red>这种情况下, copy / move 构造器也可能被 `std::initializer_list` 劫持</font>, 如果Widget有operator float(), 那么下面就会出现一个诡异的行为:
+
 ```C++
 class Widget	{			
 public:				
@@ -1257,3 +1258,48 @@ public: // Standards
 ### Item 25: 针对右值引用实施 `std::move`, 针对万能引用实施`std::forward`
 * 右值引用只会绑定到那些可以移动的型别上, 如果形参型别为右值引用, 应该清楚地了解它绑定的对象可供移动.
 * 万能引用仅仅在初始化时候使用右值才会强制转换成右值型别
+
+// TODO:
+
+## Chap 8: 微调
+C++中的某一项技术或者特性,**都会在某些情况下适用, 而在另一些情况下则不适用**. 
+### Item 41: 针对可复制的形参, 在移动成本低并且一定会被复制的前提下, 考虑将其按值传递
+有些函数的形参本身就是打算拿来复制的, 为了效率考虑, 这种函数应该拷贝 lvalue参数,或者搬移右值参数:
+```C++
+class Widget {
+public:
+    void addName(const std::string& newName) // take lvalue;
+    { names.push_back(newName); } // copy it
+    void addName(std::string&& newName) // take rvalue;
+    { names.push_back(std::move(newName)); } 
+    ...
+private:
+    std::vector<std::string> names;
+}
+```
+
+上述做法会增加目标代码经常性占用空间的大小, 另一种方法是吧 addName 写成接受万能引用的函数模板:
+```C++
+class Widget {
+public:
+    template<typename T> 
+    void addName(T&& newName) {
+        names.push_back(std::forward<T>(newName));
+    }
+...
+}
+```
+
+这种做法针对 string 和可转型为 string 的类型产生不同实例的结果, 针对左值和右值也会有不同实例化的结果, 如果传入的不正确地实参类型, 编译器的报错将很难理解.<br>
+还有一种方法, 这需要我们放弃按引用传递参数的规则,按值传递:
+```C++
+class Widget {
+public:
+    void addName(std::string newName)        // take lvalue or
+    { names.push_back(std::move(newName)); } // rvalue; move it
+    …
+};
+```
+* 无论调用方传入左还是右值, theName 对它都没有依赖
+* 这次使用是最后一次使用, 对它实施移动也不会对函数其他部分有任何影响
+

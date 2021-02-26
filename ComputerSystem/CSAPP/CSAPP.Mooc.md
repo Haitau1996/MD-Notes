@@ -914,3 +914,169 @@ int main()
     3. NonLocal Jumps: `setjmp()` 和 `longjmp()`, 由 C 运行时库实现
 
 ### Exceptions
+- 异常是为了响应一些事件将控制权转给 OS 内核
+  - Kernel 是OS 的常驻内存部分
+  - 事件有很多种,例如 I/O 请求完成, 算术溢出, 分页错误等
+![](figure/Mooc14.1.png)
+
+对于不同的异常,它们放在 Exception Table 中, 每个元素执行一个 exception handler.下面是部分异常的分类:
+![](figure/Mooc14.2.png)<br>
+#### 异步异常
+* 由处理器外部的时间导致,具体类型由处理器中断pin的设置给出,Handler 返回到下一个指令
+* 例如: Timer 中断, 外设的I/O 中断
+
+#### 同步异常
+由执行执行结果导致, 典型的有下面几种:
+*  Traps
+   *  Intentional
+   *  Examples:system calls,breakpoint traps,special instructions
+   *  Returns control to “next” instruction
+*  Faults
+   *  Unintentional but possibly recoverable
+   *  Examples: page faults(recoverable), protection faults(unrecoverable),floating point exceptions
+   *  Either re-‐executes faulting(“current”) instruction or aborts
+*  Aborts
+   *  Unintentional and unrecoverable
+   *  Examples:illegal instruction, parity error, machine check
+   *  Aborts current program
+
+Fault Example: 错误的内存引用<br>
+![](figure/Mooc14.3.png)<br>
+
+### Processes(进程)
+定义: 进程是一个正在运行程序的实例(和程序或者处理器都不同).进程给程序提供两个抽象:
+* Logic control flow
+  * 每个程序似乎都是独自占有CPU
+  * 由内核的上下文切换机制提供
+* 提供私有的地址空间
+  * 每个程序似乎都独自使用主内存
+  * 由内核的虚拟内存机制提供
+
+#### 进程并发
+每个进程都是一个独立的逻辑控制流, 如果两个进程在时间上有重叠我们就称它为并发运行(这个定义是和处理器数无关, 多核同时运行也是并发). 如下面的 A&B, A&C 都是并发运行, 而 B&C 是顺序执行.
+![](figure/Mooc14.5.png)<br>
+进程是又驻留在shared chunk of memory 的 OS code (kernel) 管理. <br>
+
+### 进程控制
+#### 系统调用错误处理
+Unix 系统级函数出现错误的时候通常会返回 -1, 并且设置全局变量 `errno` 表示错误原因. 于是我们我们有下面两个规则
+* 我们必须检查每个系统级函数的返回值错误
+* 只有少数返回 void 的函数例外
+
+**使用错误处理包装函数可以进一步缩减代码**:
+```C++
+pid_t Fork(void)
+{
+    pid_t pid;
+    if ((pid = fork()) < 0)
+        unix_error("Fork error");
+    return pid;
+}
+```
+#### 创建和终止进程
+从程序员的角度看, 进程有三种状态: 运行/停止/终止. 
+
+Parent 进程可以通过调用 `fork` 创建一个新的进程:
+* 子进程得到与父进程用户级虚拟地址空间相同的（但是独立的）一份副本
+* 子进程还获得与父进程任何打开文件描述符相同的副本
+* frok 函数只调用一次, 但是却会返回两次(一次在父进程中, 一次在新撞见的子进程中, 前者返回子进程的PID, 后者返回0)
+```C++
+int main()
+{
+    pid_t pid;
+    int x = 1;
+
+    pid = Fork(); 
+    if (pid == 0) {  /* Child */
+        printf("child : x=%d\n", ++x); 
+	exit(0);
+    }
+
+    /* Parent */
+    printf("parent: x=%d\n", --x); 
+    exit(0);
+}
+```
+上面这段代码有几点需要注意:
+* 父进程子进程并发执行, 无法确定哪个先执行
+* 两者有复制的但是独立的地址空间
+* 两者分享相同的已经打开文件(如这里的 stdout)
+
+#### 使用进程图模拟 fork
+![](figure/Mooc14.6.png)<br>
+
+#### 回收子进程
+当进程终止时, 内核并不是立即把它从系统中清除。相反，进程被保持在一种已终止的状态中，直到被它的父进程回收(reaped) :
+* reaping 是父进程对已经终止的子进程的操作
+* 会给父进程退出状态信息
+* 此后内核删除子进程
+
+如果父进程没有reap 而父进程已经终止了, 那么内核会安排 init 进程成为它的孤儿进程的养父。 一般而言长时间运行的程序, 例如 shell , 总是应该回收它们的僵死子进程。因为**即使僵死子进程没有运行，它们仍然消耗系统的内存资源**。
+* 如果 child 没有被回收
+    ```C++
+    void fork7(){
+        if(fork() ==0){
+            printf("Terminating Chind PID= %d\n",getpid());
+            exit(0);
+        }
+        else {
+            printf("running Parent, PID = %d\n", getpid());
+        while(1)
+            ;
+        }
+    }
+    ```
+    ```shell
+    ❯ ./fork1&
+    [1] 1877
+    running Parent, PID = 1877
+    Terminating Chind PID= 1878
+    ❯ ps
+    PID TTY          TIME CMD
+    11 pts/0    00:00:02 zsh
+    45 pts/0    00:00:00 gitstatusd
+    1877 pts/0    00:00:01 fork1
+    1878 pts/0    00:00:00 fork1 <defunct>
+    1882 pts/0    00:00:00 ps
+    ```
+* `wait`: 和子进程同步
+    (父进程通过调用 `wait` 函数回收子进程)
+    ```C++
+    void fork9() {
+        int child_status;
+
+        if (fork() == 0) {
+            printf("HC: hello from child\n");
+            exit(0);
+        } else {
+            printf("HP: hello from parent\n");
+            wait(&child_status);
+            printf("CT: child has terminated\n");
+        }
+        printf("Bye\n");
+    }
+    ```
+    ![](figure/Mooc14.7.png)<br>
+* `waitpid`: 等待一个特定的进程 
+    ```C++
+    void fork11() {
+        pid_t pid[N];
+        int i;
+        int child_status;
+        
+        for (i = 0; i < N; i++)
+            if ((pid[i] = fork()) == 0)
+                exit(100+i); /* Child */
+        for (i = N-1; i >= 0; i--) {
+            pid_t wpid = waitpid(pid[i], &child_status, 0);
+            if (WIFEXITED(child_status))
+                printf("Child %d terminated with exit status %d\n",
+                wpid, WEXITSTATUS(child_status));
+            else
+                printf("Child %d terminate abnormally\n", wpid);
+            }
+    }
+    ```
+* `execve`加载运行程序`int execve(char *filename, char *argv[], char *envp[])`, 它 OverWrite code , data 和 stack, 保留 PID, 打开的文件和信号内容. 
+    ![](figure/Mooc14.8.png)
+
