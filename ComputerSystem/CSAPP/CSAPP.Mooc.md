@@ -1080,3 +1080,69 @@ int main()
 * `execve`加载运行程序`int execve(char *filename, char *argv[], char *envp[])`, 它 OverWrite code , data 和 stack, 保留 PID, 打开的文件和信号内容. 
     ![](figure/Mooc14.8.png)
 
+## Lecture 15: Excep&onal Control Flow: Signals and Nonlocal Jumps
+### Shell
+![](figure/Mooc15.1.png)<br>
+Shell 是一个应用程序, 它代表用户运行其他程序. 在实现 Shell 的时候我们发现简单的实现存在一个问题: 后台的 job 可能无法正常地回收, 解决的办法就被称为 signal.
+
+### Signal
+信号是一个小的信息, 通知一个进程系统中某类事情正在发生, 这将允许进程和内核中断其他进程. 
+* 发送信号: 内核给目标进程发送信号的方式是更新目标进程上下文的一些状态, 在谢丽尔原因下内核会发送一个信号
+    1. 内核发现了一个系统事件(如除以0或者某个子进程的终止)
+    2. 其他的进程调用了 kill 系统调用, 要求内核给目标进程发送一个信号以终止进程
+
+* 接收信号: 目标进程被内核强迫用某种方式回应信号, 有几种可能的处理方式
+    1. 忽略信号
+    2. 终止进程
+    3. 以调用用户级程序(信号处理程序)的方式捕获信号(和异常不同的是, 捕获异常是内核级行为)
+        ![](figure/Mooc15.2.png)
+
+#### 信号的等待和屏蔽
+* 信号在 pending 如果它已经发出但是没有被接收
+  * 某种特定的信号最多只能有一个, 无法 queued
+* 一个进程可以屏蔽(block)特定型号的接收
+  * Blocked 信号可以被发送, 但是在解除屏蔽之前不会被接收
+* Pending 的信号最多能被接收一次
+
+内核给每个进程的上下文维护 pending 和 blocking 的 bit vector. 
+
+#### 发送信号
+每个进程都从属于一个进程组, 在调用kill 的时候给 id 前面加入 - 表示是终止一个进程组:
+```shell
+> /bin/kill -9 24818 # 删除进程号为 24818 的进程
+> /bin/kill -9 -24817 # 删除进程组号为 24817 的一组进程
+```
+可以通过键盘来发送信号
+* ctrl-z : SIGTSTP – default action is to stop (suspend) each process
+* ctrl-c : SIGINT – default action is to terminate each process
+
+```C++
+void fork12()
+{
+    pid_t pid[N];
+    int i;
+    int child_status;
+
+    for (i = 0; i < N; i++)
+        if ((pid[i] = fork()) == 0) {
+            /* Child: Infinite Loop */
+            while(1)
+                ;
+        }
+    
+    for (i = 0; i < N; i++) {
+        printf("Killing process %d\n", pid[i]);
+        kill(pid[i], SIGINT);
+    }
+
+    for (i = 0; i < N; i++) {
+        pid_t wpid = wait(&child_status);
+        if (WIFEXITED(child_status))
+            printf("Child %d terminated with exit status %d\n",
+                   wpid, WEXITSTATUS(child_status));
+        else
+            printf("Child %d terminated abnormally\n", wpid);
+    }
+}
+```
+#### 接收信号
