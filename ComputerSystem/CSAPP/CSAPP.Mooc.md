@@ -1202,3 +1202,98 @@ Linux 有两种阻塞机制:
 * **同步流以避免讨厌的并发错误**,
 *  显式地等待信号(使用 `sigsuspend` 来替代一般的的循环检查等待)
 
+## Lecture 16: 系统级 I/O
+### Unix I/O
+一个 Linux 的文件是 m byte 的序列, 所有的 I/O 设备都用文件来表示(甚至包括内核). 各种I/O 都被简化成了很简单的接口:
+* 打开关闭文件: `open()` 和 `close()`
+* 读取写入文件: `read()` 和 `write()`
+* 改变当前文件位置(read / write 文件的一个 offset, `lseek()`)
+
+每个 Linux 文件都有一个类型来表明它在系统中的角色:
+* 普通文件包含任意数据, 应用程序区分文本和二进制文件(目标文件,JPEG图像...), 对于内核而言两者没有区别
+* 目录是包含一组链接的文件
+  * 其中有两个特殊的条目(`.`和`..`)
+  * Each link maps a filename to a file
+* 套接字(socket) 是用来与另一个进程进行跨网络通信的文件
+
+还有其他文件类型, 命名通道/符号链接/字符和块设备 不在此讨论. 
+
+#### 打开和关闭文件
+进程是通过调用`open()` 函数来打开一个已存在的文件或者创建一个新文件的：
+```C++
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+int open(char *filename, int flags, mode_t mode);
+```
+它的返回值是一个文件描述符, 如果是 -1 则表明有错误发生, 每个由 Linux Shell 创建的进程都有和终端关联的三个文件, 0(stdin),1(stdout),2(stderr).<br>
+关闭文件是使用`close()`和文件描述符fd:
+```C++
+#include <unistd.h>
+int close(int fd); // 若成功则为o, 若出错则为-1 。
+```
+
+#### 读和写文件
+应用程序是通过分别调用`read()` 和 `write()`函数来执行输入和输出的。
+```C++
+#include <unistd.h>
+ssize_t read(int fd, void *buf, size_t n);
+//若成功则为读的字节数，若EOF 则为o, 若出错为一1 。
+ssize_t write(int fd, const void *buf, size_t n);
+//返回：若成功则为写的字节数，若出错则为一1 。
+```
+read 和write 传送的字节比应用程序要求的要少。这些不足值(short count) 不表示有错误。如果你想创建健壮的,诸如Web 服务器这样的网络应用，就必须通过反复调用read 和write 处理不足值，直到所有需要的字节都传送完毕。
+* 读时遇到EOF
+* 从终端读文本行。
+* 读和写网络套接宇(socket)
+
+### RIO 包
+RIO 包提供了方便、健壮和高效的I/O, 它提供两类不同的函数:
+* 无缓冲的输入输出函数
+    ```C++
+    #include "csapp.h"
+    ssize_t rio_readn(int fd, void *usrbuf, size_t n);
+    ssize_t rio_writen(int fd, void *usrbuf, size_t n);
+    //若成功则为传送的宇节数，若EOF 则为0 ( 只对r io_readn 而言)，若出错则为— 1 。
+* 带缓冲的输入函数
+    ```C++
+    void rio_readinitb(rio_t *rp, int fd);
+
+    ssize_t rio_readlineb(rio_t *rp, void *usrbuf, size_t maxlen);
+    ssize_t rio_readnb(rio_t *rp, void *usrbuf, size_t n);
+    // 若成功则为读的字节数，若EOF 则为o, 若出错则为一1 。
+    ```
+    ![](figure/Mooc16.1.png)<br>
+
+### 读取文件元数据
+关千文件的信息也被称为文件的元数据(metadata), 可以通过调用 `stat` 和 `fstat` 函数得到. 
+```C++
+#include <unistd.h>
+#include <sys/stat.h>
+int stat(const char *filename, struct stat *buf);
+int fstat(int fd, struct stat *buf);
+//返回值: 若成功则为0, 若出错则为— l 。
+```
+**Unix 内核是如何表示 Open 的文件**?<br>
+![](figure/Mooc16.2.png)<br>
+如果有两个 Table Emtry 指向同一个文件:<br>
+![](figure/Mooc16.3.png)<br>
+更大的问题在于如果一个进程打开了两个文件, 子进程有一个父进程描述表的副本:<br>
+![](figure/Mooc16.4.png)<br>
+
+### IO 重定向
+实际上shell 的 I/O 重定向是通过调用 `dup2(oldfd,newfd)` 函数实现的, `dup2(4,1)`:
+![](figure/Mooc16.5.png)<br>
+
+### 标准 I/O 函数
+标准 I/O 库将一个打开的文件模型化为一个流。类型为FILE 的流是对文件描述符和流缓冲区的抽象。流缓冲区的目的和 RIO 读缓冲区的一样：**就是使开销较高的Linux I/O 系统调用的数量尽可能得小**.
+```C++
+#include <stdio.h>
+extern FILE *stdin; /* Standard input (descriptor 0) */
+extern FILE *stdout; /* Standard output (descriptor 1) */
+extern FILE *stderr; /* Standard error (descriptor 2) */
+```
+![](figure/Mooc16.6.png)<br>
+Standard I/O 和 RIO 是使用底层的 Unix I/O 实现的
+// TODO: 插入 选择不同IO 函数的场景
+
