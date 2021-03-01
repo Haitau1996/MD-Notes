@@ -147,7 +147,7 @@ Assembly 中的单个Operation只能做一个事情, 比如:
 对于已有的二进制代码, 我们也可以用Disassembler:<br>
     `objdump –d someObjectCode`<br>
 或者在GDB中使用(sumstore为可执行文件sum原码中的某个函数):<br>
-```
+```shell
 gdb sum 
 disassemble sumstore
 ```
@@ -561,7 +561,7 @@ YMM 寄存器是 XMM 寄存器的升级, 它有16个, 每个为 32 byte.<br>
 分支中可能会有预测, 如果预测正确则提前执行再 fetch 结果,错误的话就重置.<br>
 ![](figure/Mooc10.10.png)
 
-## Lecture 11: 内存层次结果
+## Lecture 11: 存储器层次结构
 ### 存储器技术和发展趋势
 #### 随机访问存储器
 随机访问存储器, 有动态和静态 RAM, 传统上被打包成 chip, 多个 chip 形成一个内存. 他们都是易失性存储器(断电后会丢失信息),非易失性存储即使在断电后也能保持其值.  传统的CPU 和内存通过总线连接. <br>
@@ -1146,3 +1146,59 @@ void fork12()
 }
 ```
 #### 接收信号
+每个类型的信号有又一个预先定义的默认行为, 它可能是终止程序/终止程序并转储内存/ 进程停止直到被 SIGCONT 信号重启/ 忽略信号. `signal` 函数可以改变和 `signum` 关联的默认行为, handler 可以是:
+* SIG_IGN: ignore signals of type signum
+* SIG_DFL: revert to the default ac;on on receipt of signals of type signum
+* 其他用户自定义的 signal handler
+
+```C++
+void sigint_handler(int sig) /* SIGINT handler */
+{
+    printf("So you think you can stop the bomb with ctrl-c, do you?\n");
+    sleep(2);
+    printf("Well...");
+    fflush(stdout);
+    sleep(1);
+    printf("OK. :-)\n");
+    exit(0);
+}
+
+int main()
+{
+    /* Install the SIGINT handler */
+    if (signal(SIGINT, sigint_handler) == SIG_ERR)
+        unix_error("signal error");
+
+    /* Wait for the receipt of a signal */
+    pause();
+
+    return 0;
+}
+```
+![](figure/Mooc15.3.png)<br>
+此外, Signal Handler 可以嵌套, 它可以被别的信号打断, 但是不能被同类型的信号打断. <br>
+
+#### 阻塞和解除阻塞信号
+Linux 有两种阻塞机制:
+* 内核默认阻塞任何当前处理程序正在处理信号类型的待处理的信号。
+* 应用程序可以使用sigprocmask 函数和它的辅助函数，明确地阻塞和解除阻塞选定的信号。
+
+编写安全的信号处理程序非常困难
+1)  处理程序与主程序并发运行，共享同样的全局变量，因此可能与主程序和其他处理程序互相干扰； 
+2)  如何以及何时接收信号的规则常常有违人的直觉；
+3)  不同的系统有不同的信号处理语义。
+
+这里给出一些避免错误的 Guideline:
+
+0. 处理程序要尽可能简单,例如简单设置一个全局标志位然后返回
+1. 在处理程序中只调用异步信号安全的函数(要么是可重入的,即访问的所有数据都在其自身的frame中, 要么不能呗信号处理程序中断)
+2. 保存和恢复errno
+3. 阻塞所有的信号，保护对共享全局数据结构的访问。
+4. 用volatile 声明全局变量(编译器不要缓存这个变量, 防止编译器将它放到寄存器中, 寄存器中的值在信号出现的时候可能不更新这个变量)
+5. 用sig_atomic_t 声明标志 
+
+* 正确地信号处理, 有一个非常重要的点是**未处理的信号是不排队的**。
+* 如果需要可移植性, 不同的系统有不同的信号处理语义, 需要用到 Posix 标准定义的 `sigaction` 函数. 
+* **同步流以避免讨厌的并发错误**,
+*  显式地等待信号(使用 `sigsuspend` 来替代一般的的循环检查等待)
+
