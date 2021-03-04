@@ -75,6 +75,34 @@ UNIX系统实现定义了很多幻数和常量, 其中有很多己被硬编码�
 
 #### ISO C 限制
 1SO C 定义的所有编译时限制都列在头文件`<limits.h>`中,这些限制常量在一个给定系统中并不会改变。<br>
-我们将会遇到的一个区别是系统是否提供带符号或无符号的的字符值, 另一个 ISO C常量是FOPEN_MAX.
+我们将会遇到的一个区别是系统是否提供带符号或无符号的的字符值, 另一个 ISO C常量是FOPEN_MAX(保证可同时打开的标准 I/0流 的最小个数).
 
 #### POSIX 限制
+POSIX.1 接口相关的限制被分成下面7类
+1. 数值限制
+2. 最小值：25个常量。
+3. 最大值：_POSIX_CLOCKRES_MIN
+4. 运行时可以增加的值：CHARCLASS_NAME_MAX, COLL WEIGHTS_MAX, LINE_MAX、 NGROUPS_MAX 和 RE _DUP_MAX
+5. 运行时不变值（可能不确定）
+6. 其他不变值：NL_ARGMAX、NL_MSGMAX、NL_SETMAX 和 NL_TEXTMAX
+7. 路径名可变值：FILESIZEBITS, LINK_MAX、MAX_CANON、MAX_INPUT, NAME_MAX, PATH_MAX、PIPE_BUF 和 SYMLINK_MAX。
+
+最小值是不变的(不随系统而改变)它们指定了这些特征最具约束性的值。个符合POSIX.1的实现应当提供至少这样大的值. 这25个不变最小值的每个都有一个相关的实现值，其名字是将名字删除前缀 `_POSIX_`后构成的。<br>
+如果没有在头文件中定义它们，则不能在编译时使用它们作为数组边界。所以.POSIX.I提供3个运行时函数以供调用, 数可以在运行时得到实际的实现值.
+
+#### 函数 `sysconf` `pathconf` 和 `fpathconf`
+某些限制值在编译时是可用的，而另外-些则必须在运行时确定, 
+```C++
+#include <unistd.h>
+long sysconf(int name);
+long pathconf(const char *pathname, int name);
+long fpathconf(int fd, int name);
+//返回值 corresponding value if OK, −1 on error
+```
+* 如果name参数并不是个合适的常域，这3个函数都返回 -1,并把errno置为EINVAL。
+* 有些name会返网一个变量值（返回值 >= 0）或者提示该值是不确定的。不确定的值通过 返回 -1来体现，而不改变errno的值.
+* _SC_CLK_TCK的返回值是每秒的时钟滴答数，用于times函数的返回值
+
+对于 pathconf 的参数 pathname 和 fpathconf 的参数 fd 有很多限制, 如果不满足这些限制那么结果就是未定义的. 
+
+#### 不确定的运行时限制

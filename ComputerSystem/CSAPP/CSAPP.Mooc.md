@@ -1310,13 +1310,82 @@ Standard I/O 和 RIO 是使用底层的 Unix I/O 实现的
 * 隔离地址空间
 
 ### VM as a Tool for Caching
-钙尿上, 虚拟内存被组织为一个由存放在磁盘上的 N 个连续的字节大小的单元组成的数组。<br>
+概念上, 虚拟内存被组织为一个由存放在磁盘上的 N 个连续的字节大小的单元组成的数组。从下面可以看到, 虚拟内存中的有三种状态<br>
 ![](figure/Mooc17.2.png)<br>
+* 未分配的： VM 系统还未分配（或者创建）的页。未分配的块没有任何数据和它们相关联，因此也就不占用任何磁盘空间。
+* 缓存的：当前已缓存在物理内存中的已分配页。
+* 未缓存的：未缓存在物理内存中的已分配页。
 #### DRAM 缓存的组织结构
-DRAM 比 SRAM 要慢大约10 倍，而磁盘要比 DRAM 慢大约 100 000 倍。因为大的不命中处罚和访问第一个字节的开销,
+DRAM 比 SRAM 要慢大约10 倍，而磁盘要比 DRAM 慢大约 100 000 倍。因此这种缓存的策略和我们之前提到的有很大区别, 因为大的不命中处罚和访问第一个字节的开销. 归根到底, DRAM 缓存的组织结构完全是由巨大的不命中开销驱动的。
 * 虚拟页往往很大.
 * DRAM 缓存是全相联的: 任何虚拟页都可以放置在任何的物理页中
 * 不命中时的替换策略也很重要, 操作系统对 DRAM 缓存使用了更复杂精密的替换算法
 * 对磁盘的访问时间很长， DRAM 缓存总是使用写回，而不是直写
-
 #### 页表
+页表是一个由 page table entries(PTEs) 构成的 array,将虚拟页映射到物理页, 虚拟地址空间中的每个页在页表中一个固定偏移量处都有一个PTE. 
+![](figure/Mooc17.3.png)<br>
+* Page hit(页命中): reference to VM word that is in physical memory(DRAM cache hit)
+* Page fault(缺页): reference to VM word that is not in physical memory (DRAM cache miss)
+  * Page miss causes page fault (an exception)
+  * Page fault handler 会选择一个牺牲页
+  * 如果牺牲页被更改则会复制回磁盘, 然后从磁盘中将未缓存的页放入物理内存中, 然后将新内容从磁盘复制到内存中更新 PTE
+
+#### 局部性
+了解了虚拟内存的概念之后, 我们的第一印象是它的效率应该很低, 但实际上虚拟内存工作得相当好，这主要归功于我们的老朋友局部性(locality)。<br>
+它保证了任意时刻, 程序将趋向于在一个较小的活动页面(active page) 集合上工作，这个集合叫做工作集, 将工作集页面调度到内存中之后，接下来对这个工作集的引用将导致命中，而不会产生额外的磁盘流量. <br>
+工作集的大小超出了物理内存的大小，那么程序将产生一种不幸的状态，叫做抖动(thrashing),这时页面将不断地换进换出。
+
+### 虚拟内存作为内存管理的工具
+这背后的关键思想是, 每个进程都有自己的虚拟地址空间, 这都可以看成是一个简单的线性array, 应该选择好的 Mapping 提升局部性. 
+
+#### 简化链接和加载
+* 简化链接: 独立的地址空间允许每个进程的内存映像使用相同的基本格式，而不管代码和数据实际存放在物理内存的何处。
+* 简化加载: 虚拟内存还使得容易向内存中加载可执行文件和共享对象文件
+* 简化共享
+
+### 虚拟内存作为内存保护的工具
+任何现代计算机系统必须为操作系统提供手段来控制对内存系统的访问。
+* 将 PTEs 拓展, 加入许可位
+* 缺页处理程序将在 remapping 前检查这些许可位
+  * 如果未返回, 给进程发送 SIGSEGV (segmentation fault)
+![](figure/Mooc17.4.png)
+
+### 地址翻译         
+|      **Symbol Description**  |   |     
+|:---------------------------------------|:-------------|
+| Basic parameters| 
+|N = $2^n$  | Number of addresses in virtual address space|
+|M = $2^m$  | Number of addresses in physical address space|
+|P = $2^p$  | Page size (bytes)|
+| |
+|Components of a virtual address (VA)|
+|VPO| Virtual page offset (bytes)
+|VPN| Virtual page number|
+|TLBI| TLB index|
+|TLBT| TLB tag|
+|       |
+|Components of a physical address (PA)|
+|PPO| Physical page offset (bytes)|
+|PPN| Physical page number|
+|CO|  Byte offset within cache block|
+|CI|  Cache index|
+|CT|  Cache tag |
+
+![](figure/Mooc17.5.png)<br>
+Page Hit 情况下的地址翻译:
+1. 处理器将虚拟地址发给 MMU
+2. MMU 生成PTE 地址，并从高速缓存／ 主存请求得到它
+3. 高速缓存／ 主存向MMU 返回PTE 
+4. MMU 构造物理地址，并把它传送给高速缓存／ 主存。
+5. 高速缓存／ 主存返回所请求的数据字给处理器。
+![](figure/Mooc17.7.png)
+
+如果是 Page Fault, 还需要多一些异常处理的过程:<br>
+![](figure/Mooc17.8.png)<br>
+
+#### 利用TLB 加速地址翻译
+很多系统在MMU 中包括了一个关于 PTE 的小的缓存，称为翻译后备缓冲器(Translation Lookaside Buffer, TLB) 。它是一个小的、虚拟寻址的缓存,每一行都保存着一个由单个PTE 组成的块. <br>
+![](figure/Mooc17.9.png)<br>
+
+#### 多级页表
+![](figure/Mooc17.10.png)<br>
