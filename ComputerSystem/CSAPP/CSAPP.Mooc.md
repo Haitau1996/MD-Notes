@@ -1392,3 +1392,57 @@ Page Hit 情况下的地址翻译:
 ![](figure/Mooc17.10.png)<br>
 
 ## Lecture 18: Virtual Memory - Systems
+// TODO: 这部分听不太懂
+
+## Lecture 19: Dynamic Memory Allocation - Basic Concepts
+程序员使用动态内存分配器(例如 C 中的 `malloc`) 在运行时请求虚拟内存, 动态内存分配器维护着一个进程的虚拟内存区域，称为堆(heap).<br>
+分配器将堆视为一组不同大小的块(block) 的集合来维护。每个块就是一个连续的虚拟内存片(chunk),要么是已分配的，要么是空闲的。分配器有两种类型, 都要求显式分配块, 区别在于谁负责释放已分配的块:
+* 显式分配器(explicit allocator) , 要求应用显式地释放任何已分配的块。
+* 隐式分配器(implicit allocator), 另一方面，要求分配器检测一个已分配块何时不再被程序所使用，那么就释放这个块。
+
+### malloc 和 free 函数
+```C++
+#include <stdlib.h>
+void *malloc(size_t size);
+//Returns: pointer to allocated block if OK, NULL on error
+```
+在 32 位模式中， malloc 返回的块的地址总是 8 的倍数。在 64 位模式中，该地址总是 16 的倍数。malloc 不初始化它返回的内存。那些想要已初始化的动态内存的应用程序可以使用calloc, calloc 是一个基千malloc 的瘦包装函数，它将分配的内存初始化为零。
+
+```C++
+#include <unistd.h>
+void *sbrk(intptr_t incr);
+//Returns: old brk pointer on success, −1 on error
+```
+sbrk 函数通过将内核的 brk 指针增加 incr 来扩展和收缩堆。
+
+```C++
+#include <stdlib.h>
+void free(void *ptr);
+```
+程序通过调用 free 函数来释放已经分配的堆块, ptr 参数必须指向一个从malloc 、calloc 或者 realloc 获得的巳分配块的起始位置。**如果不是，那么free 的行为就是未定义的, 同时 void 函数不反悔值, 无法告诉你应用出现了错误.**<br>
+malloc 对应用端以及分配器端的约束:
+* 应用端
+  * 可以随意提出一个 malloc 和 free 请求的序列
+  * 但是 free 的请求必须是一个 由 malloc等动态申请的块
+* 分配器端
+  * 无法控制分配得到块的大小
+  * 必须马上响应 malloc 请求
+  * 必须从空闲的内存分配块
+  * 必须对齐区块以符合系统的对齐要求
+  * 一旦分配之后无法再移动分配的块
+
+### 性能目标: throughput(吞吐量) 和 峰值利用率
+* 对于某个 malloc 和 free 请求的序列
+* 目标是最大化吞吐量 和 峰值利用率
+  * 这两个目标经常是互相矛盾的。分配器设计中一个有趣的挑战就是在两个目标之间找到一个适当的平衡。
+* 吞吐量: 每个单位使用完成的请求数量
+* 峰值利用率: 如果一个应用程序请求一个p 字节的块，那么得到的已分配块的有效栽荷(payload) 是p字节。在请求 $R_k$ 完成之后，聚集有效栽荷(aggregate payload) 表示为 $P_k$ 为当前已分配的块的有效载荷之和，而 $H_k$ 表示堆的当前的（单调非递减的）大小。那么 k+1 个请求的峰值利用率可以表示为
+  \[
+      U_k = \frac{\max_{i\leq k} P_i}{H_k}
+    \]
+
+### 碎片
+造成堆利用率很低的主要原因是一种称为碎片(fragmentation) 的现象
+* 内部碎片: 是在一个已分配块比有效载荷大时发生的,内部碎片的量化是简单明了的。它就是已分配块大小和它们的有效载荷大小之差的和。
+* 外部碎片是当空闲内存合计起来足够满足一个分配请求，但是没有一个单独的空闲块足够大可以来处理这个请求时发生的. 外部碎片比内部碎片的量化要困难得多，因为它不仅取决于以前请求的模式和分配器的实现方式，还取决于将来请求的模式。
+
