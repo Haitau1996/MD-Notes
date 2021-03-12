@@ -463,10 +463,82 @@ list 的成员函数 `front()`/`back()` 可以返回第一个元素和最后一�
 
 ### 自定义迭代器
 
-
-
-// TODO
-
+STL 对定义了迭代器类的类型有一些特定的要求, **这是为了保证所有接受这种迭代器的算法都能正常工作**.<br>
+使用迭代器模板的时候经常会出现一个问题, 就是我们通常不知道迭代器容器的数据类型, 于是我们就可以使用 `value_type` 的别名来指定类型:
+```C++
+template <typename Iter> void my_swap(Iter a, Iter b)
+{
+  typename Iter::value_type tmp = *a; // Better - but has limitations...
+  *a = *b;
+  *b = tmp;
+}
+```
+但是, 问题又出现了:**算法既可以使用指针, 也可以使用迭代器, 而指针不是类, 无法包含定义的别名**. 就是说上面的代码 Iter 为迭代器的时候能用, 传入一个指针的时候, `int*::value_type` 是没有意义的.  STL 用模板优雅地解决了这个问题.<br>
+`iterator_traits`模版的定义如下:
+```C++
+template<class Iterator>
+struct iterator_traits
+{
+    typedef typename Iterator::difference_type difference_type;
+    typedef typename Iterator::value_type value_type;
+    typedef typename Iterator::pointer pointer;
+    typedef typename Iterator::reference reference;
+    typedef typename Iterator::iterator_category iterator_category;
+};
+``` 
+上面的别名十分直观, 一个满足 STL 要求的迭代器必须全部定义这些别名, 但是对于输入迭代器, 除了 `iterator_category`,其他都可以定义为 void. 于是我们往其中传入一个迭代器, 如 `std::iterator_traits<MyIter>::value_type`, 就萃取出了元素的类型. 
+```C++
+template <typename Iter>
+void my_swap(Iter a, Iter b)
+{
+    typename std::iterator_traits<Iter>::value_type tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+std::vector<std::string> words {"one", "two", "three"};
+my_swap(std::begin(words), std::begin(words)+1); // Swap first two element
+```
+现在我们来看上面的代码发生了什么, 传入 word 的一个迭代器之后, 确定 tmp 的类型为 `iterator_traits<iterator<std::string>>::value_type`, 它实际上是 `iterator<std::string>::value_type` 的一个别名, `iterator<std::string>` 是从迭代器的模版产生的, 于是它包含了value_type 的定义:
+```C++
+typedef std::string value_type;
+```
+当传入的参数为指针 `T*` 的时候, 我们给出其特化的版本,这种专门针对指针类型的特化是符合语法的:
+```C++
+template<class T>
+struct iterator_traits<T*>
+{
+    typedef ptrdiff_t difference_type;
+    typedef T value_type;
+    typedef T* pointer;
+    typedef T& reference;
+    typedef random_access_iterator_tag iterator_category;
+};
+```
+STL 定义了迭代器模版, 于是我们可以从中生成我们自己的迭代器:
+```C++
+template<class Category, class T, class Difference = ptrdiff_t,
+        class Pointer = T*,class Reference = T&>
+struct iterator
+{
+typedef T value_type;
+typedef Difference difference_type;
+typedef Pointer pointer;
+typedef Reference reference;
+typedef Category iterator_category
+};
+class My_Iterator : public std::iterator<std::random_access_iterator_tag, int>
+{
+    // Members of the iterator class...
+};
+```
+此外自定义的迭代器有了上面这一套别名后, 还需要成员函数.
+* 根据经验,如果迭代器定义了一个Big-3 中的任意一个函数, 就需要显式定义一个析构函数
+* 对于随机访问迭代器类, 需要一整套关系运算符,当然可以使用utility 中的标准库头文件中的模版来完成这些定义, 如果我们实现的同时还包含了下面的代码, 那么我们的实现优先级更高, 这些操作符对搜索和比较操作很重要 
+  ```C++
+  #include <utility>
+  using namespace std::rel_ops;
+  ```
+* 迭代器的其他操作由它的类别决定
 
 
 ## Chapter 3: 容器适配器
