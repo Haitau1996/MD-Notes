@@ -20,9 +20,9 @@ Connect 具备的性质<br>
 * Symmetric
 
 #### Quick Find
-具体的数据结构： 
-- [x] 使用一个size为n的array，id[]
-- [x] 如果两者id一样的话，那么就认为是connected
+具体的数据结构：<br> 
+:arrow_forward: 使用一个size为n的array，id[]<br>
+:arrow_forward: 如果两者id一样的话，那么就认为是connected
 
 优缺点： find query非常快，但是union需要消耗太多资源。<br>
 具体实现过程中需要注意的地方：
@@ -187,4 +187,4 @@ Public class Date implements Comparable<Data>{ //尖括号说明只允许和Data
 
 在Java中可以增加很多断言, 可以帮助检测程序的逻辑错误, 同时更有利于文档的编写. <br>
 Merge sort最多使用 $N \log N$ 次 compare 和 $6 N \log N$次array acesses 去给size为N的array排序.<br>
-此外, 还有一个问题是Merge sort对于小的subarray来说效率并不高,可以 **在~ 7个item左右的时候换成insertion sort.
+此外, 还有一个问题是Merge sort对于小的subarray来说效率并不高,可以 **在~ 7个item左右的时候换成insertion sort**.
