@@ -1724,7 +1724,7 @@ template<typename T>
 class Rational {
 public:
     Rational(const T& numerator = 0, 
-    const T& denominator = 1); // para are now passed by reference
+             const T& denominator = 1); // para are now passed by reference
     const T numerator() const; // see Item28 for why return
     const T denominator() const; // values are still passed by value,
     ... // Item 3 for why they’re const
