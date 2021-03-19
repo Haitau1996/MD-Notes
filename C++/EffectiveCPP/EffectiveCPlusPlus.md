@@ -1942,10 +1942,10 @@ Factorial<n>::value ;
 
 ### Item 49 了解new-handler的行为
 
-operator new 无法满足内存分配需求的时候, 会抛出异常(以前是返回一个null指针), 在抛出异常之前, 会调用一个客户指定的错误处理函数(new-handler),为了指定这个函数, 用户必须调用<new>中的set_new_handler,`set_new_handler` 实际上参数和返回值都是一个函数指针, 参数指向 operator new 无法分配足够内存时候被调用的函数, 返回值指向 `set_new_handler` 被调用前正在执行的那个 new-handler 函数. 
+operator new 无法满足内存分配需求的时候, 会抛出异常(以前是返回一个null指针), **在抛出异常之前, 会调用一个客户指定的错误处理函数(new-handler)**,为了指定这个函数, 用户必须调用在`<new>`头文件中声明的的set_new_handler,`set_new_handler` 实际上参数和返回值都是一个函数指针, 参数指向 operator new 无法分配足够内存时候被调用的函数, 返回值指向 `set_new_handler` 被调用前正在执行的那个 new-handler 函数. 
 ```C++
 namespace std {
-typedef void (*new_handler)();
+typedef void ( *new_handler )();
     new_handler set_new_handler(new_handler p) throw();
 }
 // 具体的例子如下
@@ -1959,6 +1959,7 @@ int main(){
     ...
 }
 ```
+其中的 new_handler 是一个函数指针, 指向的函数没有参数也没有返回值, 而 `set_new_hander` 就是一个设置这种指针的函数.<br>
 设计良好的new-handler 函数特点:
 * **让更多内存可被使用**,如在程序运行开始就分配一大块内存, new-handler调用时候释放给程序使用
 * 安装另外一个new-handler, 无法取得更多内存的时候好调用更有能力的new-handler替换自己
@@ -1966,8 +1967,91 @@ int main(){
 * 抛出bad_alloc异常, 不被operator new捕捉, 从而能传到内存索引处
 * 不返回
 
-有时候我们希望用不同的方式处理内存分配失败的情况, C++ 不支持 class 专属的 new handler, 但是只需要为每一个 class 提供自己的set_new_handler, 指向 class 专属的 new handler(默认指向是 global new handler), 
-// todo: 这部分依旧看不懂
+有时候我们希望用不同的方式处理内存分配失败的情况,例如为不同的class 调用不同的handler, 但是**C++ 不支持 class 专属的 _new handler_ , 但是只需要为每一个 class 提供自己的set_new_handler**, 指向 class 专属的 new handler(默认指向是 global new handler), 于是在class 对象内存分配的过程中就会用 class 专属的 new-handler 替换全局的 new-handler:
+```C++
+class Widget {
+public:
+    static std::new_handler set_new_handler(std::new_handler p) throw();
+    static void* operator new(std::size_t size) throw(std::bad_alloc);
+private:
+    static std::new_handler currentHandler;
+};
+std::new_handler Widget::currentHandler = 0; // 在实现文件中将该指针初始化为空指针
+```
+static 类成员必须在 class 定义式外被定义,除非他们是const 而且是整数型. 然后 Widget 的 `set_new_handler` 行为如下:
+```C++
+std::new_handler Widget::set_new_handler(std::new_handler p) throw()
+{
+    std::new_handler oldHandler = currentHandler;
+    currentHandler = p;
+    return oldHandler;
+}
+```
+为了确保原来的 new-handler 总是能恢复原本的 new-handler, 我们使用一个资源管理类来防止资源泄漏, 然后重新设置 operator new:
+```C++
+class NewHandlerHolder {
+public:
+    explicit NewHandlerHolder(std::new_handler nh) // acquire current
+    : handler(nh) {} // new-handler
+    ~NewHandlerHolder() // release it
+    { std::set_new_handler(handler); }
+private:
+    std::new_handler handler; // remember it
+    NewHandlerHolder(const NewHandlerHolder&); // prevent copying
+    NewHandlerHolder& operator=(const NewHandlerHolder&);
+};
+void* Widget::operator new(std::size_t size) throw(std::bad_alloc)
+{
+    NewHandlerHolder // install Widget’s
+    h(std::set_new_handler(currentHandler)); // new-handler
+    return ::operator new(size); // allocate memory
+                                 // or throw
+} // restore global
+  // new-handler
+```
+然后在客户端就可以这样使用new-handling:
+```C++
+void outOfMem();  // 声明一个 new-handling 函数
+Widget::set_new_handler(outOfMem); // 调用成员函数, 设定 new-handling 函数
+Widget *pw1 = new Widget; // 如果内存分配失败的话, 就调用 outOfMen
+Widget::set_new_handler(0); // 设定专属的 new-handling 为 Null
+Widget *pw2 = new Widget;   // 如果内存分配失败, 立即抛出异常
+```
+我们可以将这种特定的能力卸载一个 base class 中, 然后让derived class继承这种能力, 下面是一个实现:
+```C++
+template<typename T>      // “mixin-style” base class for
+class NewHandlerSupport { // class-specific set_new_handler
+public: // support
+    static std::new_handler set_new_handler(std::new_handler p) throw();
+    static void* operator new(std::size_t size) throw(std::bad_alloc);
+    ... 
+private:
+    static std::new_handler currentHandler;
+};
+template<typename T>
+std::new_handler
+NewHandlerSupport<T>::set_new_handler(std::new_handler p) throw()
+{
+    std::new_handler oldHandler = currentHandler;
+    currentHandler = p;
+    return oldHandler;
+}
+template<typename T>
+void* NewHandlerSupport<T>::operator new(std::size_t size)
+throw(std::bad_alloc)
+{
+    NewHandlerHolder h(std::set_new_handler(currentHandler));
+    return ::operator new(size);
+}
+// this initializes each currentHandler to null
+template<typename T>
+std::new_handler NewHandlerSupport<T>::currentHandler = 0;
+class Widget: public NewHandlerSupport<Widget> {
+    ... // as before, but without declarations for
+};
+```
+Widget 继承自 `NewHandlerSupport<Widget>`, 实际上 T 并没有被使用, 只是希望每个 derived class 都有互异的 `NewHandlerSupport`(**更重要的是其中的static 成员变量**),
+
 
 ***
 ## 杂项讨论
