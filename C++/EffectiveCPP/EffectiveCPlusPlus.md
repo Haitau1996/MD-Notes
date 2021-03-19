@@ -2162,6 +2162,56 @@ void Base::operator delete(void *rawMemory, std::size_t size) throw()
 
 ### Item 52: 写了 placement new 也要写 placement delete
 
+一个new 表达式背后是两个函数被调用, 一个是用于分配内存的 operator new ,一个是 Widget 的构造函数, 如果第一个函数调用成功, 第二个函数却抛出异常, 那么步骤一分配的内存就必须取消并且恢复旧观.  对于正常形式的 new 和 delete, 运行时系统可以找出相应的 delete, 否则 "究竟哪一个delete 伴随着这个new" 的问题就出现了. <br>
+如果 operator new 接收的参数除了 size_t 还有其他的, 这就被称为 _**placement** new_, 其中一个典型就是接收一个指针指向对象应该被构造的地方(唯一额外实参是 `void*`):
+```C++
+void* operator new(std::size_t, void *pMemory) throw(); // “placement  new”
+```
+为了消灭这种代码中的内存泄漏, 我们就需要相应的 _placement delete_:
+```C++
+class Widget {
+public:
+    ...
+    static void* operator new(std::size_t size, std::ostream& logStream)throw(std::bad_alloc);
+    static void operator delete(void *pMemory) throw();
+    static void operator delete(void *pMemory, std::ostream& logStream) throw();
+...
+};
+```
+此外需要注意的是, 成员函数的名称会掩盖其外围作用域中相同的名称, 简单的做法是建立一个 base class, 包含所有正常形式的 new 和 delete, 然后使用继承机制和 using 声明:
+```C++
+class StandardNewDeleteForms {
+public:
+    // normal new/delete
+    static void* operator new(std::size_t size) throw(std::bad_alloc)
+    { return ::operator new(size); }
+    static void operator delete(void *pMemory) throw()
+    { ::operator delete(pMemory); }
+    // placement new/delete
+    static void* operator new(std::size_t size, void *ptr) throw()
+    { return ::operator new(size, ptr); }
+    static void operator delete(void *pMemory, void *ptr) throw()
+    { return ::operator delete(pMemory, ptr); }
+    // nothrow new/delete
+    static void* operator new(std::size_t size, const std::nothrow_t& nt) throw()
+    { return ::operator new(size, nt); }
+    static void operator delete(void *pMemory, const std::nothrow_t&) throw()
+    { ::operator delete(pMemory); }
+};
+class Widget: public StandardNewDeleteForms { // inherit std forms
+public:
+    using StandardNewDeleteForms::operator new; // make those
+    using StandardNewDeleteForms::operator delete; // forms visible
+    static void* operator new(std::size_t size, // add a custom
+    std::ostream& logStream) // placement new
+    throw(std::bad_alloc);
+    static void operator delete(void *pMemory, // add the corresstd::
+    ostream& logStream) // ponding placethrow();
+    // ment delete
+    ...
+};
+```
+
 ***
 ## 杂项讨论
 这一章只有三个条款并且文字内容不多,但是它们都很重要, 这些条款帮助写出高效的C++软件.
