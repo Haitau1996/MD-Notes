@@ -1939,7 +1939,6 @@ Factorial<n>::value ;
 
 多线程环境下的内存管理, 受到单线程系统不曾遇到过的挑战, heap 是一个可被改动的全局资源, 在多线程系统充斥着疯狂访问这类资源的 **race condition** ,如果没有适当的同步控制,一旦使用无锁算法或者精心防止并发访问时,  调用内存的例程很容易导致heap的数据结构内容损坏.此外, STL中使用的内存**是由容器所拥有的分配器对象(allocator objects)管理**, 而不是直接由new和delete管理.
 
-
 ### Item 49 了解new-handler的行为
 
 operator new 无法满足内存分配需求的时候, 会抛出异常(以前是返回一个null指针), **在抛出异常之前, 会调用一个客户指定的错误处理函数(new-handler)**,为了指定这个函数, 用户必须调用在`<new>`头文件中声明的的set_new_handler,`set_new_handler` 实际上参数和返回值都是一个函数指针, 参数指向 operator new 无法分配足够内存时候被调用的函数, 返回值指向 `set_new_handler` 被调用前正在执行的那个 new-handler 函数. 
@@ -2085,6 +2084,83 @@ void* operator new(std::size_t size) throw(std::bad_alloc)
 * 将相关的对象成蔟集中: 某个数据结构往往被一起使用, 为了使用的时候降低 page faults, 将它们集中在尽可能少的内存页上
 * 获得非传统的行为
 
+### Item 51: 编写 new 和 delete 时候需固守常规
+一致性要求 opetrator new 必须返回正确的值, 内存不足的时候必须调用 new-handling 函数, 必须有对付 0 内存需求的准备, 还需要避免不慎掩盖正常形式的 new.<br>
+实际上 operator new 并不止一次分配内存, 失败后 new-handling 也许能够做某些动作将某些内存释放出来供 opetator new 分配, 只有当 new-handling 函数指针是 Null 的时候才会抛出异常.<br>
+C++ 还规定即使客户要求 0 bytes, operator new 也要返回一个合法的指针:
+```C++
+void* operator new(std::size_t size) throw(std::bad_alloc)
+{ // your operator new might
+    using namespace std; // take additional params
+    if (size == 0) { // handle 0-byte requests
+        size = 1; // by treating them as
+    } // 1-byte requests
+    while (true) {
+        attempt to allocate size bytes;
+        if (the allocation was successful )
+            return (a pointer to the memory);
+        // allocation was unsuccessful; find out what the
+        // current new-handling function is (see below)
+        new_handler globalHandler = set_new_handler(0);
+        set_new_handler(globalHandler);
+        if (globalHandler) (*globalHandler)();
+        else throw std::bad_alloc();
+    }
+}
+```
+这里的trick 是将 0 byte 的申请变成 1 byte. 并且其中有一个无限循环, 退出的唯一办法是满足条款 49 要求做的事情. <br>
+这里的行为可能被派生类继承, 如果派生类没有声明operator new,如下面的情况:
+```C++
+class Base {
+public:
+    static void* operator new(std::size_t size) throw(std::bad_alloc);
+    ...
+};
+class Derived: public Base // Derived doesn’t declare
+{ ... }; // operator new
+Derived *p = new Derived; // calls Base::operator new!
+```
+如果没有专门的设计, 做好的做法是将内存申请量错误的调用改为标准的 operator new:
+```C++
+void* Base::operator new(std::size_t size) throw(std::bad_alloc)
+{
+    if (size != sizeof(Base))     // if size is “wrong,”
+    return ::operator new(size); // have standard operator  new handle the request
+    ... // otherwise handle the request here
+}
+```
+如果还需要为 class 专属的 "array 内存分配行为", 就需要实现 operator new 的兄弟版本 `opetator new[]`, 写这个 array new 唯一需要做的事情就是分配一块未加工的内存(raw memory).此外 derived 类往往比 base 类大, 于是我们不能假设 array 元素的对象就是 申请的byte/sizeof(base), 传递给 operator new[] 的 size_t 参数可能比将来填充的内存数量更多. <br>
+opetator delete 需要做的事情就简单得多, 我们只要保证**删除空指针永远安全**:
+```C++
+void operator delete(void *rawMemory) throw()
+{
+if (rawMemory == 0) return; // do nothing if the null
+// pointer is being deleted
+deallocate the memory pointed to by rawMemory;
+}
+```
+函数的 member 版本也简单, 只需要加了一个动作检查删除数量:
+```C++
+class Base { // same as before, but now
+public: // operator delete is declared
+    static void* operator new(std::size_t size) throw(std::bad_alloc);
+    static void operator delete(void *rawMemory, std::size_t size) throw();
+    ...
+};
+void Base::operator delete(void *rawMemory, std::size_t size) throw()
+{
+    if (rawMemory == 0) return; // check for null pointer
+    if (size != sizeof(Base)) { // if size is “wrong,”
+    ::operator delete(rawMemory); // have standard operator
+    return; // delete handle the request
+    }
+    deallocate the memory pointed to by rawMemory;
+    return;
+}
+```
+如果被删除的对象派生自哪个 base class 而且后者缺少 virtual 析构函数, 那么 C++ 传给 opetator delete 的 size_t 可能不正确.
+
+### Item 52: 写了 placement new 也要写 placement delete
 
 ***
 ## 杂项讨论
