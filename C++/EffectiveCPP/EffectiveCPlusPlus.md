@@ -2052,6 +2052,39 @@ class Widget: public NewHandlerSupport<Widget> {
 ```
 Widget 继承自 `NewHandlerSupport<Widget>`, 实际上 T 并没有被使用, 只是希望每个 derived class 都有互异的 `NewHandlerSupport`(**更重要的是其中的static 成员变量**),
 
+### Item 50: 了解 new 和 delete 的合理替换时机
+有三个常见的理由替换编译器提供的 operator new 和 operator delete:
+* __用来检测应用上的错误__: 我们自定义一个 operator new , 便可以超额分配内存, 用额外的空间放置特定的byte battern(签名), opetator delete 可以检测这些签名是否原封不动.
+* **为了强化效能**: 编译器所带的主要用于一般目的, 现实中不同场景对于内存管理器要求差别很大, 使得编译器自带的采取中庸之道.如果我们对于动态内存运用型态有很深的了解, 那么定制的版本可以在性能上超过默认的版本.
+* **为了方便收集使用上的统计数据**
+
+我们看下面一个定制的operator new, 它是往分配内存的头部和尾部加入了一个签名:
+```C++
+typedef unsigned char Byte;
+// this code has several flaws — see below
+void* operator new(std::size_t size) throw(std::bad_alloc)
+{
+    using namespace std;
+    size_t realSize = size + 2 * sizeof(int); // increase size of request so 2
+    // signatures will also fit inside
+    void *pMem = malloc(realSize); // call malloc to get the actual
+    if (!pMem) throw bad_alloc(); // memory
+    // write signature into first and last parts of the memory
+    *(static_cast<int*>(pMem)) = signature;
+    *(reinterpret_cast<int*>(static_cast<Byte*>(pMem)+realSize-sizeof(int))) =
+    signature;
+    // return a pointer to the memory just past the first signature
+    return static_cast<Byte*>(pMem) + sizeof(int);
+}
+```
+上面的代码有个很大的问题就是齐位: 有的计算机体系结构要求指针的地址必须是 4 的倍数或者 double 的地址必须是 8 的倍数, 上面的 operator new 返回的不是一个 malloc 得到的指针而是 malloc 再偏移一个 int 的指针, 没有人能保证它的安全. <br>
+我们对前面的强化效能做一定的拓展, 他具体可能是下面的情况
+* 增加分配和归还的速度:在此之前分析程序确定瓶颈的确发生在那些内存函数身上
+* 为了降低默认内存管理器带来的空间额外开销
+* 为了弥补默认分配器中的非最佳对齐位
+* 将相关的对象成蔟集中: 某个数据结构往往被一起使用, 为了使用的时候降低 page faults, 将它们集中在尽可能少的内存页上
+* 获得非传统的行为
+
 
 ***
 ## 杂项讨论
