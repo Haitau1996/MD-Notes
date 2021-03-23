@@ -139,7 +139,7 @@ C++11 permits return types for single-statement lambdas to be deduced, and C++14
 template<typename Container, typename Index>    // C++14; 
 auto authAndAccess(Container& c, Index i) {
     authenticateUser();
-    return c[i];  
+    return c[i]; 
 }
 std::deque<int> d; 
 …
@@ -470,7 +470,7 @@ std::add_lvalue_reference<T>::type // yields T& from T
 
 ```C++
 std::remove_const_t<T>::type 
-std::remove_reference_t<T>  
+std::remove_reference_t<T> 
 std::add_lvalue_reference_t<T> 
 
 template <class T>
@@ -1260,6 +1260,130 @@ public: // Standards
 * 万能引用仅仅在初始化时候使用右值才会强制转换成右值型别
 
 // TODO:
+## Chap 6: Lambda 表达式
+lambda 表达式并没有给语言注入新的表达能力, 但是作为一种创建函数对象的手段实在过于方便, 对于C++ 软件的开发产生极大的影响.下面就是一个例子:
+```C++
+std::find_if(container.begin(), 
+             container.end(),
+             [](int val){return 0< val && val < 10;});
+```
+* lambda 表达式是表达式的一种, 是源代码的组成部分
+* lambda 表达式创建的运行期对象被称为闭包, 根据不同的捕获模式, 闭包会持有数据的副本或者引用
+* 每个 lambda 式都会触发编译器生成一个独一无二的闭包类, 而闭包中的语句会变成他的闭包类成员函数的可执行指令.
+
+### Item 31: 避免默认捕获模式
+按引用传递会导致闭包指涉到局部变量的引用, 或者指涉到定义 lambda 表达式作用域内的形参的引用, 一旦越过该变量的生命周期, 那么闭包内的引用就会导致空悬. 
+```C++
+void addDivisorFilter()
+{
+    auto calc1 = computeSomeValue1();
+    auto calc2 = computeSomeValue2();
+    auto divisor = computeDivisor(calc1, calc2);
+    filters.emplace_back( 
+    [&](int value) { return value % divisor == 0; } 
+    ); // 危险, 引用到的divisor在函数返回就会消亡
+}
+```
+我们可以通过显式捕获`[&divisor]`, 提醒我们 divisor 至少和该lambda 闭包有一样长的生命周期. 如果我们知道 闭包会被立即使用而且不被复制, 那么引用比他持有的局部变量或者形参生命周期更长, 就不存在风险, 但是如果发现该 lambda 在其他语境有用然后被复制粘贴到其他闭包闭 divisor 生命周期更长的语境中的话, 又有可能拖回空悬的困境.<br>
+C++ 14 中提供了 lambda 形参声明中使用 auto 的能力, 于是可以使用
+```C++
+if (std::all_of(begin(container), end(container),
+                [&](const auto& value) // C++14
+                { return value % divisor == 0; }))
+```
+按值的默认捕获也不能避免空悬, **问题就是 lambda 按值捕获一个指针之后, 在 lambda 闭包中持有这个指针的副本, 并不能阻止以外的代码对指针实施delete导致指针空悬**. <br>
+有的时候我们真的在用裸指针, 只不过在源代码中难以发现其踪迹.
+```C++
+class Widget {
+public:
+    … // ctors, etc.
+    void addFilter() const; // add an entry to filters
+private:
+    int divisor; // used in Widget's filter
+};
+void Widget::addFilter() const
+{
+    filters.emplace_back(
+        [=](int value) { return value % divisor == 0; }
+    );
+}
+```
+lambda 对 divisor 有依赖, 但是 divisor 并不是局部变量, 它是 Widget类的成员变量, <font color=red> 它根本无法捕获 </font>, 如果上面的默认捕获模式被消除(去掉等号), 代码就无法通过编译. 
+```C++
+void Widget::addFilter() const
+{
+    filters.emplace_back( // error!
+    [](int value) { return value % divisor == 0; } 
+    ); // 没有可供捕获的 divisor
+}
+void Widget::addFilter() const
+{
+    filters.emplace_back(
+    [divisor](int value) // error! no local
+    { return value % divisor == 0; } // 局部没有可捕获的divisor
+    );
+}
+```
+这如何解释? 关键一点在于一个裸指针,`this`的隐式运用, 每个非静态的成员函数都持有一个this 指针, 于是前面能通过编译的捕获其实是这样:
+```C++
+void Widget::addFilter() const
+{
+    auto currentObjectPtr = this;
+    filters.emplace_back(
+        [currentObjectPtr](int value)
+        { return value % currentObjectPtr->divisor == 0;}
+    );
+}
+```
+于是, 这相当于闭包的存活和 this 指针副本的 Widget 对象生命周期是绑在一起的, 如果使用的是智能指针, 那么可能就filter中含有一个带有空悬指针的元素:
+```C++
+void doSomeWork()
+{
+    auto pw = // create Widget; see
+    std::make_unique<Widget>(); // Item 21 for
+    // std::make_unique
+    pw->addFilter(); // add filter that uses
+    // Widget::divisor
+    …
+}
+```
+这个问题有个决绝的方式, 将想要捕获的成员变量复制到局部变量中, 然后捕获该副本:
+```C++
+void Widget::addFilter() const
+{
+    auto divisorCopy = divisor; // copy data member
+    filters.emplace_back(
+        [divisorCopy](int value) // capture the copy
+        { return value % divisorCopy == 0; } // use the copy
+    );
+}
+```
+C++ 14 中更好的捕获成员变量的方式是广义的 lambda 捕获:
+```C++
+void Widget::addFilter() const
+{
+    filters.emplace_back( // C++14:
+        [divisor = divisor](int value) // copy divisor to closure
+        { return value % divisor == 0; } // use the copy
+    );
+}
+```
+使用默认值捕获的另一个缺点是它会带来误解, 让我们误以为闭包是自洽的, 与闭包外的数据变化绝缘. 但是实际上**lambda 式可能不仅依赖于局部变量和形参, 还会依赖静态存储期对象**.这样的对象可以在lambda式中使用, 但是不能被捕获:
+```C++
+void addDivisorFilter()
+{
+    static auto calc1 = computeSomeValue1(); // now static
+    static auto calc2 = computeSomeValue2(); // now static
+    static auto divisor = // now static
+    computeDivisor(calc1, calc2);
+    filters.emplace_back(
+        [=](int value) // captures nothing!
+        { return value % divisor == 0; } // refers to above static
+    );
+    ++divisor; // modify divisor
+}
+```
+每次调用 _divisor_ 都会增加, 每个lambda 式的行为都不一样, 效果看起来和按引用捕获一样.
 
 ## Chap 8: 微调
 C++中的某一项技术或者特性,**都会在某些情况下适用, 而在另一些情况下则不适用**. 
