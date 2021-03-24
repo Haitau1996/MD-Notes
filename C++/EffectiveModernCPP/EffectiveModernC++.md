@@ -1454,8 +1454,40 @@ auto func =std::bind([](std::vector<double>& data) mutable
 * C++11 中可以对不可能的事情做模拟: 先移动构造一个对象入绑定对象, 然后按引用传递把对象传给 lambda 式
 * 帮顶对象的生命周期和闭包类似, 针对绑定对象中的对象和闭包中的对象可以采用相同的手法加以处置
 
-### Item 33: 对 `auto&&` 型别的形参使用 decltype, 并 `std::forward` 它
- 
+### Item 33: Use `decltype` on `auto&&` parameters to `std::forward` them
+C++ 11 中最令人振奋的事情就是泛型lambda 式, 使用的时候, 闭包和闭包类的函数形式差不多如下:
+```C++
+auto f = [](auto x){ return func(normalize(x)); };
+class SomeCompilerGeneratedClassName {
+public:
+    template<typename T>
+    auto operator()(T x) const
+    { return func(normalize(x)); }
+    … // other closure class functionality
+};   
+```
+这时候, lambda 总是传递左值给 normalize, 即使传给 lambda 表达式的实参是右值, 正确的做法是将 x 完美转发给 normalize:
+```C++
+auto f = [](auto&& x)
+{ return func(normalize(std::forward<???>(x))); };
+```
+现在的关键问题就是 forward中的 ??? 填写什么, 在闭包类中确实有个型别 T, 但是实际上 lambda 表达式中不存在, 故无法指涉它.目前只有`decltype(x)`  提供了这种能力, 如果 x 为一个左值,产生左值引用型别, 提供右值产生右值引用型别.于是完美转发的lambda就有下面的形式:
+```C++
+auto f =
+        [](auto&& param)
+        {
+            return
+            func(normalize(std::forward<decltype(param)>(param)));
+        };
+// 可变长形参
+auto f =
+        [](auto&&... params)
+        {
+            return
+            func(normalize(std::forward<decltype(params)>(params)...));
+        };
+```
+
 ## Chap 8: 微调
 C++中的某一项技术或者特性,**都会在某些情况下适用, 而在另一些情况下则不适用**. 
 ### Item 41: 针对可复制的形参, 在移动成本低并且一定会被复制的前提下, 考虑将其按值传递
