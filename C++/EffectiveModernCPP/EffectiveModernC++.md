@@ -1385,6 +1385,77 @@ void addDivisorFilter()
 ```
 每次调用 _divisor_ 都会增加, 每个lambda 式的行为都不一样, 效果看起来和按引用捕获一样.
 
+### Item 32: 使用初始化捕获将对象移入闭包
+C++ 14 为对象移入闭包提供了直接支持, 而移动捕获属于一种更广大的捕获机制, 初始化捕获, 使用初始化捕获我们可以有机会指定:
+* 由lambda 表达式生成闭包类中的成员变量的名字
+* 一个表达式, 用于初始化该成员变量
+
+```C++
+class Widget { // some useful type
+public:
+    …
+    bool isValidated() const;
+    bool isProcessed() const;
+    bool isArchived() const;
+private:
+    …
+};
+auto pw = std::make_unique<Widget>();
+auto func = [pw = std::move(pw)]
+            { return pw->isValidated()
+                     && pw->isArchived(); };
+```
+值得注意的是, 上面的 lambda 表达式中`=`左右两侧属于不同的作用域, 左侧的 pw 属于闭包类的作用域, 右侧的作用域则与闭包式加以定义处相同. pw 定义和捕获之间可能会做某些修改, 如果不需要修改的话局部变量 pw 就非必要, 可以如此初始化:
+```C++
+auto func = [pw = std::make_unique<Widget>()]
+            { return pw->isValidated()
+                     && pw->isArchived(); };
+```
+初始化捕获还被称为广义 lambda 捕获, generalized lambda capture. 如果编译器不支持C++14 中的初始化捕获, 我们可以手动写一个函数对象实现类似的事情:
+```C++
+class IsValAndArch {
+public:
+    using DataType = std::unique_ptr<Widget>;
+    explicit IsValAndArch(DataType&& ptr)
+    : pw(std::move(ptr)) {}
+    bool operator()() const
+    { return pw->isValidated() && pw->isArchived(); }
+private:
+    DataType pw;
+};
+auto func = IsValAndArch(std::make_unique<Widget>());
+```
+可以看到仿函数确实繁琐很多, 如果使用 lambda 式, 按移动捕获可以用以下的方法模拟:
+1. 把需要捕获的对象移动到 `std::bind` 产生的函数对象中
+2. 给到 lambda 表达式一个指涉到想要捕获的对象的引用
+
+下面是C++ 14 实现和 C++11 实现一个相同的东西:
+```C++
+// C++ 14
+std::vector<double> data;
+auto func = [data = std::move(data)]// init capture
+            { /* uses of data */ };
+auto func =
+        std::bind( // C++11 emulation
+            [](const std::vector<double>& data) // of init capture
+            { /* uses of data */ },
+            std::move(data)
+        );
+```
+`std::bind`同样生成函数对象, 第一个实参是一个可调用对象(函数对象, 闭包, 函数指针...), 接下来是传给该对象的值.对于左值绑定和右值绑定有不同的处理, 正是 绕过 C++11 将右值移入闭包的做法.<br>
+默认情况下, lambda 闭包类中的 `operator()` 成员函数都会带有 const 修饰词, 结果就是闭包内所有成员变量在 lambda 式的函数体内都会带有 const 修饰词, 我们可以使用关键词 mutable 修饰, 这样就是在 lambda 式声明中略去 const:
+```C++
+auto func =std::bind([](std::vector<double>& data) mutable
+                     {/* use of data */},
+                     std::move(data)};
+```
+于是对于 C++11 中的移动闭包总结下面几点:
+* 移动构造对象入 C++11 闭包是不可能实现的, 但是移动构造一个对象入绑定对象是可以实现的
+* C++11 中可以对不可能的事情做模拟: 先移动构造一个对象入绑定对象, 然后按引用传递把对象传给 lambda 式
+* 帮顶对象的生命周期和闭包类似, 针对绑定对象中的对象和闭包中的对象可以采用相同的手法加以处置
+
+### Item 33: 对 `auto&&` 型别的形参使用 decltype, 并 `std::forward` 它
+ 
 ## Chap 8: 微调
 C++中的某一项技术或者特性,**都会在某些情况下适用, 而在另一些情况下则不适用**. 
 ### Item 41: 针对可复制的形参, 在移动成本低并且一定会被复制的前提下, 考虑将其按值传递
