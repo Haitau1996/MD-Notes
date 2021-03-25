@@ -33,17 +33,21 @@
 
 ## Chapter 8 bash & Chap 10 bash 程序设计
 **if - else statement** <br>
-if test-command<br>
-    then commands<br>     
-    elif test-commend<br>
-    then commands<br>               
-fi<br>
-**for statement** <br>
-for loop-index<br>
-do<br>
-    commends<br>
-endo<br>
+```shell
+if test-command
+    then commands    
+    elif test-commend
+    then commands              
+fi
+```
+**for statement** 
+```shell
+for loop-index
+do
+    commends
+endo
+```
 
 # 附加功能
-
+**ssh免密码**: 将自己的 id_rsa.pub 信息 拷贝到服务器的认证文件中
 cat ~/.ssh/id_rsa.pub | ssh user@hostname:port "cat >> ~/.ssh/authorized_keys"
