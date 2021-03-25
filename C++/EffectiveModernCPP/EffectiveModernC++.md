@@ -1487,7 +1487,8 @@ auto f =
             func(normalize(std::forward<decltype(params)>(params)...));
         };
 ```
-
+### Item 34: 优先使用 lambda 而非 `std::bind`
+// TODO: 这部分往后再看
 ## Chap 8: 微调
 C++中的某一项技术或者特性,**都会在某些情况下适用, 而在另一些情况下则不适用**. 
 ### Item 41: 针对可复制的形参, 在移动成本低并且一定会被复制的前提下, 考虑将其按值传递
