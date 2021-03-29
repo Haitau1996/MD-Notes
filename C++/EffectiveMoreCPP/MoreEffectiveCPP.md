@@ -714,3 +714,34 @@ inline const Rational operator*(const Rational& lhs,
                     lhs.denominator() * rhs.denominator());
 }
 ```
+
+### Item 21: 利用重载技术避免隐式类型转换
+如果我们有个用于无限精密的整数类:
+```C++
+class UPInt {
+public:
+    UPInt();
+    UPInt(int value);
+    ...
+}; 
+const UPInt operator+(const UPInt& lhs, const UPInt& rhs);
+upi3 = upi1 + 10;
+upi3 = 10 + upi2;
+```
+这些语句是可以成功的, 因为 10 会隐式类型转换产生一个临时对象, 但是我们很多时候不想付出这种成本, 这时候很自然的想法就是利用重载:
+```C++
+const UPInt operator+(const UPInt& lhs,
+                      int rhs); // and int
+const UPInt operator+(int lhs, // add int and UPInt
+                      const UPInt& rhs); 
+UPInt upi1, upi2;
+...
+UPInt upi3 = upi1 + upi2; // fine, no temporary for
+// upi1 or upi2
+upi3 = upi1 + 10; // fine, no temporary for
+// upi1 or 10
+upi3 = 10 + upi2; // fine, no temporary for
+// 10 or upi2
+```
+但是我们无法定义两个参数都是 int 的重载版本, 因为**C++ 要求重载操作符必须获得至少一个用户自定义的自变量**, 不然两个 Int 相加的结果既是 int 又是 UPInt, 会带来很大的混乱.<br>
+总的而言, 增加一大堆重载函数不见得是件好事, 要综合来看, 如果我们在瓶颈处使用重载函数后能整体提高效率, 那么重载是值得的.
