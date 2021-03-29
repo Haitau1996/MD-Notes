@@ -745,3 +745,70 @@ upi3 = 10 + upi2; // fine, no temporary for
 ```
 但是我们无法定义两个参数都是 int 的重载版本, 因为**C++ 要求重载操作符必须获得至少一个用户自定义的自变量**, 不然两个 Int 相加的结果既是 int 又是 UPInt, 会带来很大的混乱.<br>
 总的而言, 增加一大堆重载函数不见得是件好事, 要综合来看, 如果我们在瓶颈处使用重载函数后能整体提高效率, 那么重载是值得的.
+
+### Item 22: 考虑以操作符复合形式(`op=`)取代其独身形式(`op`)
+到目前为止C++并不考虑在 opetator+, operator= 和 opetator+= 之间设定任何互动形式, 如果希望有符合自身期望的互动关系, 我们必须自己实现. 一个好的方法就是以 `op=`为基础实现 `op`:
+```C++
+class Rational {
+public:
+    ...
+    Rational& operator+=(const Rational& rhs);
+    Rational& operator-=(const Rational& rhs);
+};
+// operator+ implemented in terms of operator+=; see
+// Item 6 for an explanation of why the return value is
+// const and page 109 for a warning about implementation
+const Rational operator+(const Rational& lhs,
+                         const Rational& rhs)
+{
+    return Rational(lhs) += rhs;
+}
+// operator- implemented in terms of operator -=
+const Rational operator-(const Rational& lhs,
+                         const Rational& rhs)
+{
+    return Rational(lhs) -= rhs;
+}
+```
+采用这种设计, 操作符中只有复合形式需要维护, 如果不介意独身形式放在全局范围内, 可以利用 template 完全消除独身形式操作符的撰写必要:
+```C++
+template<class T>
+const T operator+(const T& lhs, const T& rhs)
+{
+    return T(lhs) += rhs; // see discussion below
+}
+template<class T>
+const T operator-(const T& lhs, const T& rhs)
+{
+    return T(lhs) -= rhs; // see discussion below
+}
+...
+```
+接下来我们考虑相应的效率问题:
+* 一般而言复合版本的效率比独身版本高, 它不需要临时对象来放置返回值
+* 同时提供复合形式和独身形式, 可以方便客户在效率和便利性之间做取舍
+    ```C++
+    Rational a, b, c, d, result;
+    ...
+    result = a + b + c + d; // probably uses 3 temporary
+    // objects, one for each call
+    // to operator+
+    result = a; // no temporary needed
+    result += b; // no temporary needed
+    result += c; // no temporary needed
+    result += d; // no temporary needed
+    ```
+* 借助返回值优化, 可以写出效率高但是有点晦涩的代码
+    ```C++
+    template<class T>
+    const T operator+(const T& lhs, const T& rhs)
+    { return T(lhs) += rhs; }
+    // 下面版本有命名对象, 无法 RVO
+    template<class T>
+    const T operator+(const T& lhs, const T& rhs)
+    {
+        T result(lhs); // copy lhs into result
+        return result += rhs; // add rhs to it and return
+    }
+    ```
+`return T(lhs) += rhs`可能超出了很多编译器RVO 的能力范围,于是可能会带来函数中的 _temporary object_, 但是对比两个版本, 匿名对象总是比命名对象更容易消除, 于是我们最好选临时对象.
