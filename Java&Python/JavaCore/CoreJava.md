@@ -735,7 +735,7 @@ catch(Exception e){
 
 #### 利用反射分析类的能力
 
-<font color = red>在 java.lang.reflect 中有三个类 Field , Method 和 Constructor 分别描述类的域 \ 方法和构造器</font>, 他们都有一个叫做 getName 的方法，用来返回项目的名称。Field 类有一个 getType 方法，用来返回描述域所属类型的 Class 对象。Method 和 Constructor 类有能够报告参数类型的方法， Method 类还有一个可以报告返回类型的方法。这三个类还有一个叫做 getModifiers 的方法，它将返回一个整型数值，用不同的位升关描述public 和 static 这样的修饰符使用状况。我们需要做的全部工作就是调用Modifier 类的相应方法，并对返回的整型数值进行分析. <br>
+反射的概念是由 Smith 在 1982 年首次提出的，主要是指程序可以访问、检测和修改它本身状态或行为的一种能力。<font color = red>在 java.lang.reflect 中有三个类 Field , Method 和 Constructor 分别描述类的域 \ 方法和构造器</font>, 他们都有一个叫做 getName 的方法，用来返回项目的名称。Field 类有一个 getType 方法，用来返回描述域所属类型的 Class 对象。Method 和 Constructor 类有能够报告参数类型的方法， Method 类还有一个可以报告返回类型的方法。这三个类还有一个叫做 getModifiers 的方法，它将返回一个整型数值，用不同的位升关描述public 和 static 这样的修饰符使用状况。我们需要做的全部工作就是调用Modifier 类的相应方法，并对返回的整型数值进行分析. <br>
 值得注意的是, 他们可以分析 Java 解释器能够加载的任何类，而不仅仅是编译程序时可以使用的类。之后还将使用这个程序查看Java 编译器自动生成的内部类。<br>
 
 ![](figure/Core5.1.png)<br>
@@ -745,7 +745,7 @@ catch(Exception e){
 #### 在运行时使用反射分析对象
 
 知道想要查看域名和类型, 查看指定的域是很容易, **而利用反射机制可以查看在编译时候还不清楚的对象域**.
-// TODO: Page 191 ~ 203
+// TODO
 
 ## Chap 06: 接口与内部类
 接口技术, 主要用于描述类有怎样的功能, 而并不给出每个功能的具体实现. 
