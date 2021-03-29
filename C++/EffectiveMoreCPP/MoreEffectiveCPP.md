@@ -30,7 +30,7 @@ Pointer和reference的接口看起来差别巨大,(pointer使用*和-> operator,
 
 ### Item 2 最好使用C++的转型操作符
 
-新的cast形式十分容易被辨识出来,static_cast基本与C旧式转型有相同的威力和限制, 比如我们不能够用static_cast将一个struct转型为一个int,或者将一个double转型为一个指针, 不能移除表达式的constness.<br>
+新的cast形式十分容易被辨识出来, _static\_cast_ 基本与C旧式转型有相同的威力和限制, 比如我们不能够用 _static\_cast_ 将一个 _struct_ 转型为一个 _int_,或者将一个double转型为一个指针, 不能移除表达式的constness.<br>
 其他转型操作符更适用于范围狭窄的目的, 如const_cast最常见的目的就是将常量性移除,dynamic_cast用来执行继承体系下的安全向下转型或者是跨系转型动作.<br>
 我们可以用dynamic_cast将指向base class对象的pointer或者reference转型为指向derived或者sibling base的pointer和reference.它无法应用于缺乏虚函数的类型上,也不能改变类型的常量性.<br>
 reinterpret_cast最常见的用途是 **转换函数指针类型,函数指针的转型动作,并不具备可移植性**.<br>
@@ -130,7 +130,7 @@ public:
     double d = 0.5 * r; // r隐式转换成为double, 然后做乘法
     ```
 
-而提供这种函数的问题在于, 它将在你从未打算也从未预期的情况下被调用,得到的结果可能是不正确不直观的程序行为并且难以调试. 如我们在打印 r 的时候, 如果忘记给 _Rational_ 写一个 _operator <<_ , r将隐式转换成一个double并且被打印出来: **隐式类型转换的出现可能导致错误(非预期)的函数被调用**. 解决的办法也很简单, <font color=red>使用一个对等的函数取代类型转换操作符</font>. <br>
+而提供这种函数的问题在于, 它将在你从未打算也从未预期的情况下被调用,得到的结果可能是不正确不直观的程序行为并且难以调试. 如我们在打印 r 的时候, 如果忘记给 _Rational_ 写一个 _operator <<_ , r将隐式转换成一个double并且被打印出来: **隐式类型转换的出现可能导致错误(非预期)的函数被调用**. 解决的办法也很简单, **<font color=red>使用一个对等的函数取代类型转换操作符</font>**. <br>
 而通过单参数构造器完成的隐式类型转换, 则比较难以消除. 下面就是一个错误使用的例子:
 ```C++
 template<typename T> 
@@ -616,4 +616,20 @@ Matrix<int> m3 = m1 + m2; // add m1 and m2
     ```
     这背后的思想是将比较昂贵的数据库查询动作用比较廉价的内存上map查找取代.
 
-2. Prefetching 是另一种分摊预期计算成本的办法. 
+2. Prefetching 是另一种分摊预期计算成本的办法, 我们可以将它想象成购买大量物品时候的折扣,例如磁盘控制器从磁盘读取数据的时候, 读的是整个数据块或者 sectors, 因为一次读一大块数据比分成两三次每次读小块数据,速度上快得多. 还有一个例子是 _vector_ 的扩容, 在每次需要扩张的时候分配两倍内存:
+    ```C++
+    template<class T>
+    T& DynArray<T>::operator[](int index)
+    {
+        if (index < 0) throw an exception;
+        if (index > the current maximum index value) {
+            int diff = index - the current maximum index value;
+            call new to allocate enough additional memory so that
+            index+diff is valid;
+        }
+        return the indexth element of the array;
+    }
+    ```
+
+需要注意的是, 较佳的速度往往导致较大的内存成本.
+
