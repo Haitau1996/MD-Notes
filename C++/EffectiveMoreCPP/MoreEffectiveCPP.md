@@ -633,3 +633,39 @@ Matrix<int> m3 = m1 + m2; // add m1 and m2
 
 需要注意的是, 较佳的速度往往导致较大的内存成本.
 
+### Item 19: 了解临时对象的来源
+不同于临时变量, C++ 中真正所谓临时对象是不可见的, 只要产生一个 non-heap 对象并且没有给他命名, 便诞生了一个临时对象. 他们通常在下面两种场景中发生:
+* 当隐式类型转换实施以便函数调用能够成功
+* 函数返回对象的时候
+
+```C++
+// returns the number of occurrences of ch in str
+size_t countChar(const string& str, char ch);
+char buffer[MAX_STRING_LEN];
+char c;
+// read in a char and a string; use setw to avoid
+// overflowing buffer when reading the string
+cin >> c >> setw(MAX_STRING_LEN) >> buffer;
+cout << "There are " << countChar(buffer, c)
+     << " occurrences of the character " << c
+     << " in " << buffer << endl;
+```
+上面的 `countChar` 接收的第一个参数是 `const string&`, 而实际上传入的是 `char[]`, 于是实际上发生的事情就是`buffer`作为参数调用`string`的构造函数, str 绑定到这个新的 `string` 对象中, `countChar` 返回的时候临时对象自动销毁. 有两种做法解决:
+* 重新设计代码, 使得这种类型转换不会发生(一个表达式中不能出现两种类型转换)
+* 修改代码, 使得这类转换不再需要
+
+只有当对象以 by-value 方式传递, 或者是传递给一个 reference-to-const 参数时候, 这类转换才会发生, 如果传给一个 reference-to-non-const, 并不会发生这类转换.
+```C++
+void uppercasify(string& str);
+char subtleBookPlug[] = "Effective C++";
+uppercasify(subtleBookPlug); // error!
+```
+上面这个例子中, 不能产生临时对象以完成这个函数的调用, 因为在函数中对临时对象的修改并不会影响原来的 `char []`, 因此C++ 禁止产生这种临时对象.
+
+函数返回一个对象的时候, 也会产生临时对象, 例如返回一个对象表示其操作数的总和:
+```C++
+const Number operator+( const Number& lhs,
+                        const Number& rhs);
+```
+任何只要看到一个 reference-to-const 参数, 极有可能会有一个临时对象被产生出来绑定到该参数上. 任何时候看到函数返回一个对象, 就会产生临时对象(并稍后销毁).
+
