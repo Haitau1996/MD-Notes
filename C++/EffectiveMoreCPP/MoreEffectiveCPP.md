@@ -669,3 +669,48 @@ const Number operator+( const Number& lhs,
 ```
 任何只要看到一个 reference-to-const 参数, 极有可能会有一个临时对象被产生出来绑定到该参数上. 任何时候看到函数返回一个对象, 就会产生临时对象(并稍后销毁).
 
+### Item 20: 协助完成 RVO
+很多时候我们必须返回一个对象, 尽管我们努力寻找消除它的办法. 
+* 一个拙略的办法是返回指针,这种做法非常不自然
+    ```C++
+    class Rational {
+    public:
+        Rational(int numerator = 0, int denominator = 1);
+        ...
+        int numerator() const;
+        int denominator() const;
+    };
+    const Rational * operator*(const Rational& lhs,
+                               const Rational& rhs);
+    Rational a = 10;
+    Rational b(1, 2);
+    Rational c = *(a * b);
+    ```
+* 另一些程序员可能想要返回引用, 但是这是危险而且不正确的, 因为很可能返回一个reference, 指向一个不存活的对象
+
+如果一个函数一定要以by-value 的方式返回对象, 我们用的方法是 **返回 _constructor argument_ 以取代返回对象**:
+```C++
+// an efficient and correct way to implement a
+// function that returns an object
+const Rational operator*(const Rational& lhs,
+                         const Rational& rhs)
+{
+    return Rational(lhs.numerator() * rhs.numerator(),
+                    lhs.denominator() * rhs.denominator());
+}
+```
+这种返回一个产生的临时对象, C++ 允许编译器将临时对象优化, 使得它们不存在. 
+```C++
+Rational a = 10;
+Rational b(1, 2);
+Rational c = a * b;
+```
+一般而言, 这种时候编译器会直接将返回值表达式所定义的对象直接在变量 c 的内存上构造, C是一个命名独享, 命名是不能被消除的, 我们可以将上面的函数声明为内联:
+```C++
+inline const Rational operator*(const Rational& lhs,
+                                const Rational& rhs)
+{
+    return Rational(lhs.numerator() * rhs.numerator(),
+                    lhs.denominator() * rhs.denominator());
+}
+```
