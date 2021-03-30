@@ -818,3 +818,57 @@ const T operator-(const T& lhs, const T& rhs)
 
 ### Item 24: 了解虚函数/多继承/虚基类/运行时类型鉴定的成本
 当一个虚函数被调用, 执行的代码必须对应于调用者的动态类型, 对象为 pointer 或者 reference 时候, 其类型是无形的, 大部分编译器是使用所谓的 virtual tables 和 virtual table pointers 来提供这种行为.<br>
+vtbl 通常是一个由函数指针构成的数组(有的编译器会用链表), 每个 class 凡声明(或者继承)虚函数, 都会有自己的 vtbl, 而其中的条目(entries) 就是各个虚函数实现体的指针. 
+```C++
+class C1 {
+public:
+    C1();
+    virtual ~C1();
+    virtual void f1();
+    virtual int f2(char c) const;
+    virtual void f3(const string& s);
+    void f4() const;
+    ...
+};
+class C2: public C1 {
+public:
+    C2(); // nonvirtual function
+    virtual ~C2(); // redefined function
+    virtual void f1(); // redefined function
+    virtual void f5(char *str); // new virtual function
+    ...
+};
+```
+![](figure/24.1.png)<br>
+我们必须为美国拥有虚函数的 class 耗费一个 vtbl 空间, 大小和虚函数个数(包括继承而来的)有关. 这是对编译器有个问题, 应该将它放在哪里, 对此编译器厂商分成两个阵营: 有的在每个需要 vtbl 的目标文件中都有一个副本, 然后由链接器剥离重复的副本; 更常见的是用一种勘探式的做法, 决定哪个目标文件应该包含某个 class 的 vtbl, class's vtbl 被包含在其第一个 non-inline, non-pure 虚函数定义式的目标文件中. <br>
+虚表只是虚函数实现机制的一半, 我们还需要 **有某种方法指示每个对象相应于哪一个虚表**.但凡声明有虚函数的 class, 对象内都有一个隐藏的 data member, 用来指向该 calss 的 vtbl, 这个对象被称为虚指针(vptr). 如果我们的对象内含 4 byte 的data member, 增加虚函数导致其对象大小翻倍, 较大的对象难以塞入缓存分页和虚内存分页, 意味着换页活动可能增加, 带来性能降低.<br>
+![](figure/24.2.png)
+```C++
+void makeACall(C1 *pC1)
+{
+    pC1->f1();
+}
+```
+这时候pC1 可能指向 C1 或者 C2 的对象, 那么函数调用的时候就是完成下面的动作:
+1. 根据对象的 vptr 找出其 vtbl
+2. 找出被调用函数在 vtbl 对应的指针
+3. 调用上面步奏得到的函数
+
+于是产生出来的代码相当于 `(*pC1->vptr[i])(pC1)`(后面的 pC1 相当于 this 指针), 这样看的话效率几乎和调用一个非虚函数相当. **虚函数真正运行时成本发生在和 inline 互动的时候**, 因为inline 在编译期, 调用端调用动作被函数本体取代, virtual 是等待直到运行时才知道哪个函数被调用.于是虚函数事实上等于放弃了 inlining. <br>
+在多继承的情况下, 事情变得更加复杂, 这时候一个对象会有多个 vtbl(每个 base class 对应一个), 这时候往往导致 virtual base classes 的需求:
+```C++
+class A { ... };
+class B: virtual public A { ... };
+class C: virtual public A { ... };
+class D: public B, public C { ... };
+```
+这种菱形继承的情况下, D 的内存布局看起来可能是这样的:<br>
+![](figure/24.3.png)<br>
+如果 A 中有任何虚函数, D 对象的内存布局就更加复杂:<br>
+![](figure/24.4.png)<br>
+可以很轻易地发现, virtual base classes 可能导致对象内隐藏的指针增加.<br>
+最后我们考虑一下 运行时类型辨识(runtime type identification,RTTI). C++ 规范书中说明, 只有当某种类型拥有至少一个虚函数, 才能保证我们能够检测该类型对象的动态类型, RTTI 的设计理念是根据 class 的 vtbl 来实现.下面就是一个实现, 将虚指针的第一个元素(下标0)指向类型信息:<br>
+![](figure/24.5.png)<br>
+总体而言, 虚函数,多重继承,虚基类和 RTTI 的成本摘要如下:<br>
+![](figure/24.6.png)<br>
+如果我们要这些性质提供的机能, 我们就必须忍受相应成本.
