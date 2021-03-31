@@ -978,3 +978,33 @@ ostream& operator<<(ostream& s, const NLComponent& c)
     return c.print(s);
 }
 ```
+
+### Item 26: 限制某个 class 能产生的对象数量
+#### 允许零个或者一个对象
+阻止某个clsss产生的最简单方式是将 constructor 声明为 private(or public delete since C++11).<br>
+如果我们需要只能存在一台打印机, 这时候可以将打印机对象封装在一个函数中:
+```C++
+class PrintJob; // forward declaration
+class Printer {
+public:
+    void submitJob(const PrintJob& job);
+    void reset();
+    void performSelfTest();
+    ...
+    friend Printer& thePrinter();
+private:
+    Printer();
+    Printer(const Printer& rhs);
+    ...
+};
+Printer& thePrinter()
+{
+    static Printer p; // the single printer object
+    return p;
+}
+```
+需要强调这段代码中的三点:
+1. constructor 属性为私有, 可以压制对象的诞生
+2. 全局函数 `thePrinter()` 是class 的一个友元, 不受 private constructor 限制
+3. thePointer 中内含一个 static 对象, 只有一个 Printer 对象会被产生出来
+
