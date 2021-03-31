@@ -872,3 +872,109 @@ class D: public B, public C { ... };
 总体而言, 虚函数,多重继承,虚基类和 RTTI 的成本摘要如下:<br>
 ![](figure/24.6.png)<br>
 如果我们要这些性质提供的机能, 我们就必须忍受相应成本.
+
+## Techniques, Idioms, Patterns
+### Item 25: 将 constructor 和 non-member function 虚化
+_virtual constructor_ 似乎有点荒谬, 但是它们很有用.例如我们在下面的结构中, 如果想要根据 stream 的数据决定创建对象的种类, 就称为一个 virtual constructor.<br>
+![](figure/25.1.png)<br>
+还有一种特别的 virtual constructor, 所谓的 virtual copy constructor, 返回一个指针,指向其调用着的一个新副本:
+```C++
+class NLComponent {
+public:
+    // declaration of virtual copy constructor
+    virtual NLComponent * clone() const = 0;
+    ...
+};
+class TextBlock: public NLComponent {
+public:
+    virtual TextBlock * clone() const // virtual copy
+    { return new TextBlock(*this); } // constructor
+    ...
+};
+class Graphic: public NLComponent {
+public:
+    virtual Graphic * clone() const // virtual copy
+    { return new Graphic(*this); } // constructor
+    ...
+};
+```
+上面的实现手法利用一个虚函数的宽松点:**当 derived class 重新定义其 base class 的一个虚函数时, 不再需要一定得声明与原本相同的返回类型**. 如果返回类型是一个指针, 指向一个base class, 那么 derived class 函数同样可以返回一个指针, 指向该 base class 的一个 derived class.于是我们为 NewsLetter 实现一个 copy constructor:
+```C++
+class NewsLetter {
+public:
+    NewsLetter(const NewsLetter& rhs);
+    ...
+private:
+    list<NLComponent*> components;
+};
+NewsLetter::NewsLetter(const NewsLetter& rhs)
+{
+    // iterate over rhs’s list, using each element’s
+    // virtual copy constructor to copy the element into
+    // the components list for this object. For details on
+    // how the following code works, see Item 35.
+    for (list<NLComponent*>::const_iterator it =
+                            rhs.components.begin();
+        it != rhs.components.end();
+        ++it) {
+    // "it" points to the current element of rhs.components,
+    // so call that element’s clone function to get a copy
+    // of the element, and add that copy to the end of
+    // this object’s list of components
+    components.push_back((*it)->clone());
+    }
+}
+```
+
+#### 将 _Non-Member Functions_ 虚化
+就像我们可以为某个函数构造出不同类型的新对象一样, 我们也应该可以让 non-member 的行为视其参数的动态类型而不同.例如我们想要为上面的 textBlock 和 Graphic 实现不同的输出, 如果是使用in-class 的虚函数, 客户习惯将 stream 对象放在操作符 `<<` 的右手端, 和这种实现矛盾了:
+```C++
+class NLComponent {
+public:
+    // unconventional declaration of output operator
+    virtual ostream& operator<<(ostream& str) const = 0;
+    ...
+};
+class TextBlock: public NLComponent {
+public:
+    // virtual output operator (also unconventional)
+    virtual ostream& operator<<(ostream& str) const;
+};
+class Graphic: public NLComponent {
+public:
+    // virtual output operator (still unconventional)
+    virtual ostream& operator<<(ostream& str) const;
+};
+TextBlock t;
+Graphic g;
+...
+t << cout;  // print t on cout via
+            // virtual operator<<; note
+            // unconventional syntax
+g << cout; // print g on cout via
+           // virtual operator<<; note
+           // unconventional syntax
+```
+好的做法是需要non-menber function, 具体的实现是同时定义 `operator`<< 和print, 并用前者调用后者:
+```C++
+class NLComponent {
+public:
+    virtual ostream& print(ostream& s) const = 0;
+    ...
+};
+class TextBlock: public NLComponent {
+public:
+    virtual ostream& print(ostream& s) const;
+    ...
+};
+class Graphic: public NLComponent {
+public:
+    virtual ostream& print(ostream& s) const;
+    ...
+};
+inline
+ostream& operator<<(ostream& s, const NLComponent& c)
+{
+    return c.print(s);
+}
+```
