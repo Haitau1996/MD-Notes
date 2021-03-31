@@ -1002,9 +1002,99 @@ Printer& thePrinter()
     static Printer p; // the single printer object
     return p;
 }
+...
+thePrinter().reset();
+thePrinter().submitJob(buffer);
 ```
 需要强调这段代码中的三点:
 1. constructor 属性为私有, 可以压制对象的诞生
 2. 全局函数 `thePrinter()` 是class 的一个友元, 不受 private constructor 限制
 3. thePointer 中内含一个 static 对象, 只有一个 Printer 对象会被产生出来
 
+函数在全局的空间中, 这可能会污染全局的 namespace, 我们可以将它放到类中或者放到一个单独的 namespace 中:
+```C++
+//  static member function
+class Printer {
+public:
+    static Printer& thePrinter();
+    ...
+private:
+    Printer();
+    Printer(const Printer& rhs);
+    ...
+};
+Printer& Printer::thePrinter()
+{
+    static Printer p;
+    return p;
+}
+Printer::thePrinter().reset();
+Printer::thePrinter().submitJob(buffer);
+
+//  name space
+namespace PrintingStuff {
+    class Printer { // this class is in the
+    public: // PrintingStuff namespace
+        void submitJob(const PrintJob& job);
+        void reset();
+        void performSelfTest();
+        ...
+        friend Printer& thePrinter();
+    private:
+        Printer();
+        Printer(const Printer& rhs);
+            ...
+    };
+    Printer& thePrinter() // so is this function
+    {
+        static Printer p;
+        return p;
+    }
+}
+using PrintingStuff::thePrinter; // import the name
+thePrinter().reset();
+thePrinter().submitJob(buffer);
+```
+这里需要了解类的 static 和函数的 static 变量的区别:
+1. 函数中的 static 对象在函数第一次调用时候才产生,并且全局只有一份 
+2. 类的 static 对象即使没有用到也会构造
+
+我们可以明确的知道一个function static 的初始化时机(函数第一次被调用的时候, 在 static 的定义处),而一个 class static 则不一定在什么时候初始化. **C++ 中不同编译单元中的statics 初始化顺序是未定义的**.
+
+static 对象和 inline的互动也是一个问题, 一个对象声明为 static 就是只有一份, 而 inline 是每个调用用函数本身替代, 对于 non-member 的 inline, 还意味着函数有内部连接. 
+* 内部连接:如果一个编译单元(.cpp)内的名称对编译单元(.cpp)来说是局部的，在链接的时候其他的编译单元无法链接到它且不会与其它编译单元(.cpp)中的同样的名称相冲突。如被定义为inline的函数（关键字inline须与函数定义体放在一起才能使函数成为内联，仅将inline放在函数声明前不起作用），static函数（关键字static只要放在函数声明前就可以了），还有类(类中定义的函数一般会被处理成inline)。
+* 外部连接：如果一个编译单元(.cpp)内的名称对编译单元(.cpp)来说不是局部的，而在链接的时候其他的编译单元可以访问它，也就是说它可以和别的编译单元交互。如全局变量，全局函数等。
+
+如果函数有内部连接, 程序目标代码可能会对带有内部连接的函数复制一份以上的代码, 这种复制行为也包含 static 对象(1996年inline函数的默认连接从内部改为外部).所以**千万不要产生内含 local static 对象的 inline non-member functions**.
+
+如果我们用一个 numObject 记录存在多少个对象, 在 constructor 累加, 在 destructor 中递减, 则可以将最大对象数量设定为 1 以外的值:
+```C++
+class Printer {
+public:
+    class TooManyObjects{}; // exception class for use
+                            // when too many objects
+                            // are requested
+    Printer();
+    ~Printer();
+    ...
+private:
+    static size_t numObjects;
+    Printer(const Printer& rhs); // there is a limit of 1
+                                // printer, so never allow copying
+}
+// Obligatory definition of the class static
+size_t Printer::numObjects = 0;
+Printer::Printer()
+{
+    if (numObjects >= 1) {
+        throw TooManyObjects();
+    }
+    proceed with normal construction here;
+    ++numObjects;
+}
+Printer::~Printer()
+{
+    perform normal destruction here;
+    --numObjects;
+}
+```
