@@ -8,3 +8,5 @@ C 语言中, 数据和处理数据的操作(函数)是分开声明的, 语言没
 
 ### C++ 对象模式
 C++ 中有两种class data members: _static_ 和 _nonstatic_ . 同时有三种 class member functions: _static_, _nonstatic_ 和 _virtual_. 
+#### 简单对象模型
+![](https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210331123916.jpg)
