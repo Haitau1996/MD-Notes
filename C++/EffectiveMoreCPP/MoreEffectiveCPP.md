@@ -1213,3 +1213,34 @@ const size_t Counted<Printer>::maxObjects = 10;
 const size_t Counted<FileDescriptor>::maxObjects = 16;
 ```
 如果这些用户没有这么做, 就会得到一个链接错误, maxObjects 未定义.
+
+### Item 27: 要求/禁止 对象产生于堆中
+#### Heap Based Object
+这个要求是不得使用 new 以外的方法产生对象, 只要那些被隐式调用的构造动作和析构动作不合法就行了,比较好的做法是 **让 destructor 称为 private, constructor 为 public 并且导入一个 pseudo destructor**:
+```C++
+class UPNumber {
+public:
+    UPNumber();
+    UPNumber(int initValue);
+    UPNumber(double initValue);
+    UPNumber(const UPNumber& rhs);
+    // pseudo-destructor (a const member function, because
+    // even const objects may be destroyed)
+    void destroy() const { delete this; }
+    ...
+private:
+    ~UPNumber();
+};
+UPNumber n; // Error, 这里是合法的, 但是如果这样的话
+            // 将来隐式调用析构函数无法通过
+UPNumber *p = new UPNumber;
+delete p; // error! attempt to call
+          // private destructor
+p->destroy(); // fine
+```
+还有一种做法是将destructor声明为 public 但是 constructor 声明为 private, 这样就要声明好多个 private, 而如果编译器自动生成的函数, 它总是 public 的.<br>
+但是这种做法妨碍了 继承和内含, 通过两种方法解决:
+* 领 UPNumber 的析构函数成为 protected , 解决继承问题
+* 内含对象转为内含指针
+  
+#### 判断某个对象是否位于 Heap 中
