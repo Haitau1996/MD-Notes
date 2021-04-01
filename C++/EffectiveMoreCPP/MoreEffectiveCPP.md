@@ -1098,3 +1098,118 @@ Printer::~Printer()
     --numObjects;
 }
 ```
+#### 不同的对象构造状态
+Printer对象可以在三种状态下生存, 它自己, 派生出来的 base class 成分 或者 内嵌于较大的对象之中. 这些状态把前面的追踪弄浑了. <br>
+如果没有声明任何 friend 的话, 带有 private constructor 的 class 不能被继承, 也不能内嵌于其他的对象中. 如果我们希望允许任意数量的 FSA 对象产生, 但确保没有对象继承自 FSA, 就可以用伪构造器加私有构造器的方式:
+```C++
+class FSA {
+public:
+    // pseudo-constructors
+    static FSA * makeFSA();
+    static FSA * makeFSA(const FSA& rhs);
+    ...
+private:
+    FSA();
+    FSA(const FSA& rhs);
+    ...
+};
+FSA * FSA::makeFSA()
+{ return std::make_unique<FSA>(); }
+FSA * FSA::makeFSA(const FSA& rhs)
+{ return std::make_unique<FSA>(rhs); }
+```
+这里的每个 makeFSA 都返回一个指针, 区别于之前返回一个唯一对象的 reference.而且使用智能指针防止资源泄漏.
+
+#### 允许对象生生灭灭
+我们的最后一项观察是, 如果如果程序在不同时间使用不同的 Printer 对象并且及时销毁, 并未违反只有一个打印机的条件, 如何让这种行为也违法? **将对象计数 和 伪构造函数结合起来**:
+```C++
+class Printer {
+public:
+    class TooManyObjects{};
+    // pseudo-constructor
+    static Printer * makePrinter();
+    ~Printer();
+    void submitJob(const PrintJob& job);
+    void reset();
+    void performSelfTest();
+    ...
+    private:
+    static size_t numObjects;
+    Printer();
+    Printer(const Printer& rhs); // we don’t define this function
+};                               // we don't allow copying
+size_t Printer::numObjects = 0;
+Printer::Printer()
+{
+    if (numObjects >= 1) {
+    throw TooManyObjects();
+    }
+    //proceed with normal object construction here;
+    ++numObjects;
+}
+Printer * Printer::makePrinter()
+{ return new Printer; }
+```
+在调用的时候, 需要使用伪构造函数取代真正的构造器(有需要的话也可以用 `std::make_unique<Printer>() ` 取代 new 语句):
+```C++
+Printer p1; // error! default ctor is private
+Printer *p2 =
+Printer::makePrinter(); // fine, indirectly calls default ctor
+```
+如果需要将最大的数量改为其他数值, 可以用一个 static const size_t 取代 1, 编译器不支持的话就用 enum hack.
+
+#### 一个用于计算对象个数的 Base Class
+有很多对象都有计数的需求, 我们可以将它封装在一个 class 中, 然后让需要的累继承它.
+```C++
+template<class BeingCounted>
+class Counted {
+public:
+    class TooManyObjects{}; // for throwing exceptions
+    static size_t objectCount() { return numObjects; }
+protected:
+    Counted();
+    Counted(const Counted& rhs);
+    ~Counted() { --numObjects; }
+private:
+    static size_t numObjects;
+    static const size_t maxObjects;
+    void init(); // to avoid ctor code duplication
+};              
+template<class BeingCounted>
+Counted<BeingCounted>::Counted()
+{ init(); }
+template<class BeingCounted>
+Counted<BeingCounted>::Counted(const Counted<BeingCounted>&)
+{ init(); }
+template<class BeingCounted>
+void Counted<BeingCounted>::init()
+{
+    if (numObjects >= maxObjects) throw TooManyObjects();
+    ++numObjects;
+}
+// 重新实现 Printer 类
+class Printer: private Counted<Printer> {
+public:
+    // pseudo-constructors
+    static Printer * makePrinter();
+    static Printer * makePrinter(const Printer& rhs);
+    ~Printer();
+    void submitJob(const PrintJob& job);
+    void reset();
+    void performSelfTest();
+    ...
+    using Counted<Printer>::objectCount; // see below
+    using Counted<Printer>::TooManyObjects; // see below
+private:
+    Printer();
+    Printer(const Printer& rhs);
+};
+```
+值得注意的是, 这个 template 用于作为 base class, 于是构造函数析构函数都用 protected. 而私有继承是说明除了 printer 的作者, 任何人都不关心 Counted 的实现.如果用 public  inheritance, 就有可能用一个 `Counted<Printer>*` 删除一个 `Printer` 对象, 这时候需要写虚的析构函数,影响内存布局. 为了恢复访问层级, 需要用 using declaration, 或者旧式的`Counted<Printer>::objectCount;`(C++ 新规范不支持这种做法).<br>
+还有一个剩下的尾巴,maxObjects 的初始化. 我们不为它提供初值, 取代的做法是要求 class 用户提供适当的初始行为:
+```C++
+const size_t Counted<Printer>::maxObjects = 10;
+// 对于 FileDescriptor
+const size_t Counted<FileDescriptor>::maxObjects = 16;
+```
+如果这些用户没有这么做, 就会得到一个链接错误, maxObjects 未定义.
