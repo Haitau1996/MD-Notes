@@ -17,7 +17,7 @@ Java 规范中没有依赖具体实现的地方, 基本数据类型的大小以�
 ## Chap 02 : Java 编程环境
 
 | Name | 简称 |   解释      |
-| ---- | ---- |  --------- |
+| ---- | --------------- |  --------- |
 | Java Development Kit| JDK | 编写 Java 的程序员使用的软件|
 | Java Runtime Environment | JRE | 运行 Java 程序的用户使用的软件|
 | Standard Edition | Java SE | The Java platform for use on desktops and simple server applications |

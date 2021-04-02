@@ -327,6 +327,50 @@ public:
     }
 };
 ```
+
+## 面试题 16: 数值的整数次方
+题目描述: 实现函数double Power(double base, int exponent) ，求base 的
+exponent 次方。不得使用库函数，同时不需要考虑大数问题。<br>
+* 首先我们考察几个容易出问题的地方
+   1. 底数绝对值十分接近0的时候(floating point 无法判等), 指数正为0, 指数负未定义
+   2. 如果指数是INT_MIN, 那么我们对它取反则超出了 int 的取值范围, 我们这里给出的解决方法是, 在 bit level 将负的 Int 转为 Unsigned(先用转为 Unsigned, 然后按位取反再加一)
+* 剩下的就相对简单, 考虑 n-> n/2
+```C++
+class Solution {
+public:
+    double UnsignedPower(double x, unsigned n);
+    double myPow(double x, int n) {
+        const double EPS = 1.0E-6;
+        if(abs(x - 0.0) < EPS)
+            return 0.0;
+        unsigned un;
+        if(n < 0){
+            un = (unsigned)n;
+            un = ~un + 1;
+            return 1/UnsignedPower(x, un);
+        }
+        else{
+            un = (unsigned)n;
+            return UnsignedPower(x, un);
+        }
+    }
+
+};
+double Solution::UnsignedPower(double x, unsigned n){
+    // base case n = 1 
+    if(n == 0)
+        return 1;
+    if(n == 1)
+        return x;
+    else {
+        double result = UnsignedPower(x, n>>1);
+        if((n & 0x1) == 1)
+            return result * result * x;
+        else 
+            return result * result;  
+    }
+}
+```
 ## KMP 模式匹配算法
 
 假设有 Source 字符串 S("abcababca") 和 Target 字符串 T("abcabx"), T 的首字母"a" 与第二位 "b" 以及第三位 "c" 都是不想等的, 可以忽略朴素匹配算法的某些判断. i 值不回溯, 就是不能表笑, 需要考虑的变化就是 j 值了, **j 值得大小取决于当前字符之前的串的前后缀相似程度**:
