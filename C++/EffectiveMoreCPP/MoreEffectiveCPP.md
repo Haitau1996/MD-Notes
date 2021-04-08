@@ -1244,3 +1244,139 @@ p->destroy(); // fine
 * 内含对象转为内含指针
   
 #### 判断某个对象是否位于 Heap 中
+没有任何办法可以让编译器检测下面的两种状态有什么不同:
+```C++
+NonNegativeUPNumber *n1 =
+    new NonNegativeUPNumber; // on heap
+NonNegativeUPNumber n2; // not on heap
+```
+在 new operator ,operator new 以及 new operator 所调用的 ctor 三方互动上下手, 但是它是不可行的, 例如
+```C++
+UPNumber *numberArray = new UPNumber[100];
+```
+这又100次 ctor 调用动作, 但是只有一次内存分配动作. 即使不涉及数组, 考虑下面的代码:
+```C++
+UPNumber *pn = new UPNumber(*new UPNumber);
+```
+程序员希望的两对 operator new/ ctor 的调用顺序可能和编译器给出的并不一样, 实际中可能是
+1. 调用第一个对象的 operator new
+2. 调用第二个对象的 operator new
+3. 为第一个对象调用 ctor
+4. 为第二个对象调用 ctor
+   
+如此依赖, 前两个对象所设立的标志 bit 在 3 中被清除, 于是 第二个对象认为自己不在 heap 中, 实际上是在的.<br>
+当然有人利用操作系统堆在下stack在上的特点, 写一些判断. 但是对于 static 对象(包括声明为 static 的对象和 global scope 和 namespace scope的对象) 安置在哪里是依赖操作系统和编译器具体实现的:<br>
+![](https://i.loli.net/2021/04/08/WFZQh3ksDT6ptqe.png)<br>
+于是这段代码并无法区分 Heap-Based 对象和 static 对象:
+```C++
+// incorrect attempt to determine whether an address
+// is on the heap
+bool onHeap(const void *address)
+{
+    char onTheStack; // local stack variable
+    return address < &onTheStack;
+}
+```
+虽然上面的事情无法做到, 但是判断指针是否指向 heap 内的对象这个事情是可以实现的. 可以自行写一个 operator new:
+```C++
+void *operator new(size_t size)
+{
+    void *p = getMemory(size); // call some function to
+    // allocate memory and
+    // handle out-of-memory
+    // conditions
+    add p to the collection of allocated addresses;
+    return p;
+}
+void operator delete(void *ptr)
+{
+    releaseMemory(ptr); // return memory to
+    // free store
+    remove ptr from the collection of allocated addresses;
+}
+bool isSafeToDelete(const void *address)
+{
+    return whether address is in collection of allocated addresses;
+}
+```
+这个 opetator new 将一些条目(entries)加到一个"由动态分配得到地址" 构成的集合中, opetator delete 负责将它删除. 如果觉得这个放在全局的空间中不够好, 可以使用 abstract mixin base class 满足我们的需求:
+```C++
+class HeapTracked { // mixin class; keeps track of
+public:             // ptrs returned from op. new
+    class MissingAddress{}; // exception class; see below
+    virtual ~HeapTracked() = 0;
+    static void *operator new(size_t size);
+    static void operator delete(void *ptr);
+    bool isOnHeap() const;
+private:
+    typedef const void* RawAddress;
+    static list<RawAddress> addresses;
+};
+// mandatory definition of static class member
+list<RawAddress> HeapTracked::addresses;
+// HeapTracked’s destructor is pure virtual to make the
+// class abstract. The destructor must still be
+// defined, however, so we provide this empty definition.
+HeapTracked::~HeapTracked() {}
+void * HeapTracked::operator new(size_t size)
+{
+    void *memPtr = ::operator new(size);// get the memory
+    addresses.push_front(memPtr);   // put its address at
+                                    // the front of the list
+    return memPtr;
+}
+void HeapTracked::operator delete(void *ptr)
+{
+    // gracefully hande null pointers
+    if (ptr == 0) return;
+    // get an "iterator" that identifies the list
+    // entry containing ptr; see Item 35 for details
+    list<RawAddress>::iterator it =
+        find(addresses.begin(), addresses.end(), ptr);
+    if (it != addresses.end()) { // if an entry was found
+        addresses.erase(it); // remove the entry
+        ::operator delete(ptr); // deallocate the memory
+    } else { // otherwise
+        throw MissingAddress(); // ptr wasn’t allocated by
+    } // op. new, so throw an
+} // exception
+bool HeapTracked::isOnHeap() const
+{
+    // get a pointer to the beginning of the memory
+    // occupied by *this; see below for details
+    const void *rawAddress = dynamic_cast<const void*>(this);
+    // look up the pointer in the list of addresses
+    // returned by operator new
+    list<RawAddress>::iterator it =
+        find(addresses.begin(), addresses.end(), rawAddress);
+    return it != addresses.end(); // return whether it was
+}
+```
+其中的`const void *rawAddress = dynamic_cast<const void*>(this)` 需要额外说明一下, 因为多种继承或者虚拟基类的对象, 会拥有多个地址, 我们需要用`dynamic_cast` 来消除这个问题.
+
+#### 禁止对象产生于 Heap 中
+new operator 总是调用 operator new, 我们可以将 operator new 声明为 private:
+```C++
+class UPNumber {
+private:
+    static void *operator new(size_t size);
+    static void operator delete(void *ptr);
+    ...
+};
+UPNumber n1; // okay
+static UPNumber n2; // also okay
+UPNumber *p = new UPNumber; // error! attempt to call private operator new
+```
+这时候如果 derived class 想要一个属于自己的 public operator new, 那么这个 public operator new 可以被调用, 如果用的是组合的方式, 也是允许的:
+```C++
+class Asset {
+public:
+Asset(int initValue);
+...
+private:
+UPNumber value;
+};
+Asset *pa = new Asset(100); 
+// fine, calls Asset::operator new or
+// ::operator new, not UPNumber::operator new
+```
