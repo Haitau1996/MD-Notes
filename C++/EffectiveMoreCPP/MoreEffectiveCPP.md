@@ -1380,3 +1380,39 @@ Asset *pa = new Asset(100);
 // fine, calls Asset::operator new or
 // ::operator new, not UPNumber::operator new
 ```
+
+### Item 28: smart pointers
+smart pointer 由template 产生出来, 并且有强烈的类型性, 它内含一个 dump pointer-to-T ,看起来是这样的:
+```C++
+template<class T> // template for smart
+class SmartPtr { // pointer objects
+public:
+    SmartPtr(T* realPtr = 0); 
+    // create a smart ptr to an obj given a dumb ptr to
+    // it; uninitialized ptrs  default to 0 (null)
+    SmartPtr(const SmartPtr& rhs); // copy a smart ptr
+    ~SmartPtr(); // destroy a smart ptr make an assignment to a smart ptr
+    SmartPtr& operator=(const SmartPtr& rhs);
+    T* operator->() const; 
+    // dereference a smart ptr to get at a member of what it points to
+    T& operator*() const; // dereference a smart ptr
+private:
+    T *pointee; // what the smart ptr points to
+};
+```
+使用 smart pointer 和使用 dumb pointer 两者没有太大差别. 
+#### Smart Pointer 的构造\赋值\析构
+* 构造行为非常好理解: 确定一个目标物, 然后让内部的 dumb pointer 指向它, 如果没有决定目标物, 就将内部指针设为 0
+* 拷贝构造/拷贝赋值和析构的实现因为所有权而变得复杂: 如果只是复制 dump pointer, 可能导致 double delete; 如果产生一个新的副本, 这中新对象的诞生形成无法接受的性能冲击
+
+如果我们禁止 `auto_ptr` 被复制和赋值, 问题就消除了, 实际上采用的是更加灵活的方案: **`auto_ptr` 被复制或者赋值, 其对象拥有权会被转移**.<br>
+这意味 pass-by-value 并不适用, 离开local 的生命周期的,时候可能会删除指向的对象, pass-by-reference-to-const 才是适当的途径. 
+```C++
+template<class T>
+SmartPtr<T>::~SmartPtr()
+{
+    if (*this owns *pointee) {
+        delete pointee;
+    }
+}
+```
