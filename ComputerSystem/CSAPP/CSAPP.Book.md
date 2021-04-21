@@ -238,7 +238,7 @@ IEEE 浮点标准用 $ V = (-1)^s \times M \times 2^E $ 表示一个数:
 GCC先将代码用汇编的形式产生输出, 然后调用汇编器和链接器, 根据汇编生成可执行的机器代码. 阅读编译器产生的代码, 我们就可以理解编译器的优化能力, 分析其中隐藏的inefficiencies. 此外, 高级语言提供抽象层隐藏了我们想要理解程序运行时的行为.在此我们从数据的表示和处理以及控制的实现开始,了解如何实现C语言中的控制结构, 讲到过程的实现(程序如何维护一个运行栈来支持过程间数据和控制的传递，以及局部变量的存储), 接下来考虑如何在机器级实现像数组/结构和联合这样的数据结构.
 
 #### 程序编码
-```
+```shell
 gcc -Og -o p p1.c p2.c
 ```
 使用这种方式调用编译器, 让优化代码可以follow C源代码的整体的结构,使用高级别的优化产生的代码会严重变形, 使得产生的机器码和初始源代码之间的关系难以理解.
@@ -317,8 +317,7 @@ long exchange(long *xp, long y)
     return x;
 }
 ```
-
-```x86asm
+```assembly
 exchange:
 	movq	(%rdi), %rax   # Get x at xp.  Set as return value # line:asm:exchange:getx
 	movq	%rsi, (%rdi)   # Store y at xp. # line:asm:exchange:storey
@@ -345,4 +344,28 @@ addq $8, %rsp
 因为栈和程序代码以及其他形式的程序数据都是放在同一内存中，所以程序可以用标准的内存寻址方法访问栈内的任意位置。
 
 #### 算术和逻辑操作
+大多数操作都分成了指令类, 对不同的操作数有不同的变种(b for byte, w for word, l for double words, q for quad words).<br>
+![](https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210421150524.png)<br>
 ##### 加载有效地址
+加载有效地址(load effective address, `leaq`) 实际上就是 `movq` 指令的变形.  它的指令形式是从内存读数据到寄存器，但实际上它根本就没有引用内存. 指令将有效地址写入目标的操作数中,实际上就是为后面内存引用产生指针.此外, **`leaq` 指令能执行加法和有限形式的乘法**. 我们用下面做一个简单得例子:，如果寄存器 `%rdx` 的值为x, 那么指令`leaq 7 (%rdx, %rdx , 4), %rax` 将设置寄存器`%rax` 的值为 5x+7. 
+```C++
+long scale(long x, long y, long z) {
+    long t = x + 4 * y + 12 * z;
+    return t;
+}
+```
+```x86asm
+scale:
+.LFB0:
+	.cfi_startproc
+	leaq	(%rdi,%rsi,4), %rax # %rax = %rdi + %rsi * 4, rax = x + 4 * y
+	leaq	(%rdx,%rdx,2), %rdx # z + 2*z = 3*z
+	leaq	(%rax,%rdx,4), %rax # %rax = %rax + 4 * %rdx
+	ret
+	.cfi_endproc
+```
+
+##### 一元和二元操作
+一元操作只有一个操作数, 既是源又是目的地. 而二元操作, 第二个操作数既是源又是操作数. 注意，当第二个操作数为内存地址时，处理器必须从内存读出值，执行操作，再把结果写回内存。
+
+##### 移位操作
