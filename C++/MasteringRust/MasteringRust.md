@@ -23,7 +23,7 @@ Rust 中的基元类型有下面几种：
 * `[T； N]`: 固定大小的数组， T 表示元素类型， N 表示数目
 * `[T]`: 动态大小的连续序列视图， T 表示任意类型
 * str:字符串切片， 主要做引用
-* （T,U,..）：有限序列， 其中 T,U可以是不同的类型
+* (T,U,..)：有限序列， 其中 T,U可以是不同的类型
 * fn(i32)-> i32 : 定义了接收类型和返回值的函数
 
 #### 变量声明和不可变性
@@ -338,12 +338,120 @@ fruits.insert("apple", 3);
 ```Rust
 let mut numbers: [u8; 4] = [1, 2, 3, 4];
 {
-        let first_two: &mut [u8] = &mut numbers[0..2];
-        first_two[0] = 100;
-        first_two[1] = 99;
+    let first_two: &mut [u8] = &mut numbers[0..2];
+    first_two[0] = 100;
+    first_two[1] = 99;
 }
 ```
 值得注意的是`&str`也属于切片类型.
 
 #### 迭代器
 提供了一种高效访问集合类型元素的方法, 并且尽在需要时对集合中的元素进行求职或者访问, 可以与多个转换操作链接. 
+
+## Chap 2 : 使用 Cargo 管理项目
+在大型项目中,编译所有的源文件并且将它们链接到一起变成了一个复杂的过程, 而软件包管理器就可以自动构建大型软件项目. <br>
+实际的软件包代码通常被组织成多个文件, 并且有许多依赖项目, 需要用专门的工具来管理, 它们完成了诸如项目分析, 下载正确版本的依赖项, 检查版本冲突, 编译和链接文件等所有繁琐工作.<br>
+
+### 模块
+每个 Rust 程序都以 root 模块开头, 程序库文件root 模块是 lib.rs, 可执行文件通常是 main.rs, 代码越来越多时候允许拆分成模块, 并且有多种方式可以创建它:
+#### 嵌套模块
+在现有代码中用 mod 代码块创建嵌套模块, 在main前使用 use 语句添加到代码中,同时用到的要使用关键字 Pub 作为前缀使得其为共有:
+```Rust
+mod food {
+    pub struct Cake;
+    struct Smoothie;
+    struct Pizza;
+}
+use food::Cake;
+fn main() {
+    let eatable = Cake;
+}
+```
+#### 文件用作模块
+我们有下面的文件结构:
+<div align=center><img src="https://i.loli.net/2021/04/22/OQRYf5NP3zUq9oZ.png"/></div>
+这时候如果要在 main 中使用 foo模块, 有三点要注意
+* 在 main 中添加 `mod foo;` 引入文件
+* 使用 use 语句添加使用的结构体
+* 使用的函数/结构体 要有前缀 pub
+
+导入的方式也有好几种:
+* creat:绝对导入前缀
+* self:相对导入前缀
+* super: 同样是相对导入前缀, 可以从父模块导入元素
+
+#### 将目录用作模块
+可以创建一个目录来表示模块, 允许我们将模块中的子模块作为文件和目录的层次结构.如下面一个目录结构:
+<div align=center><img src="https://i.loli.net/2021/04/22/dhyDWYj1Q4KPbpf.png"/></div>
+
+```Rust
+// my_program/foo/bar.rs
+pub struct Bar;
+impl Bar {
+    pub fn hello() {
+        println!("Hello from Bar !");
+    }
+}
+
+// my_program/foo.rs
+mod bar;
+pub use self::bar::Bar;
+pub fn do_foo() {
+    println!("Hi from foo!");
+}
+
+// my_program/main.rs
+mod foo;
+use foo::Bar;
+fn main() {
+    foo::do_foo();
+    Bar::hello();
+}
+```
+
+### Cargo 和程序库
+#### 新建一个 Cargo 项目
+`cargo new [options] name` 新建一个项目, name 用于项目目录名(cargo help new 看帮助)
+* 默认是创建一个可执行程序项目
+* 创建库项目时候传入 `--lib` 作为参数
+* 传入`--vcs` 更改默认的版本控制系统,可以为 hg, none 等
+* 使用 TOML 配置文件格式
+
+#### Cargo 与依赖项
+软件包管理器不仅是帮用户解决依赖性的工具, 还应该确保项目的可预测和可重复地构建. Cargo 通过两个文件管理 Rust 项目:
+* Cargo.toml 编写依赖管理及其所需版本
+* Cargo.lock 锁文件, 包含所有直接依赖项和任何间接依赖项的绝对版本
+
+程序库以 `major.minor.patch` 格式指定
+
+#### 使用 cargo 执行测试
+测试函数附有 `#[test]` 注释, 可以使用 cargo test 命令运行测试并且查看其结果. 
+
+#### 使用 cargo 运行示例
+使用 `cargo run [options] [--args]` 来运行代码
+
+#### Cargo 工作区
+Cargo 工作区可以帮我们将代码通用部分拆分成单独的程序库, 以便管理复杂性. 
+
+### Cargo 工具扩展
+Cargo 可以通过集成外部工具进行功能扩展, 从而改善开发体验.
+#### 子命令和 Cargo 安装
+cargo 自定义的子命令通常来自于 Github 或者本地项目目录下的二进制文件, 通过 `cargo install <binary crate name>` 或者在项目目录下执行 `cargo install` 安装. 
+* cargo-watch: 用户代码发生变动后自动构建项目
+* cargo-edit: 用户自动将依赖项添加到 Cargo.toml 文件中
+* cargo-deb: 可以创建 .deb 包(Debian 系Linux中发布)
+* cargo-outdated: 显示过时的依赖项
+
+#### clippy 格式化代码
+为我们代码检查一系列的问题, 从而确保生成高质量的 Rust 代码, 通过 `rustup component add clippy` 安装, 使用时直接 `cargo clippy`
+
+#### Cargo.toml 文件介绍
+略
+
+### 搭建 Rust 开发环境
+Rust 生态中有很多工具能够增强开发体验:
+* rustfmt: 根据 Rust 代码样式指南中提及的约定格式化代码
+* clippy: 对常见的错误和潜在的问题发出警告
+* racer: 卡哇伊查找标准程序库, 并且提供代码自动化完成和实现工具的提醒功能
+
+vscode 中有官方的插件可以下载.
