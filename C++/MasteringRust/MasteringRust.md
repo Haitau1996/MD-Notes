@@ -578,3 +578,79 @@ Rust 中的操作得益于两件事:
 
 #### 稳定版 Rust 上的基准测试
 社区开发的基准测试软件包能够兼容稳定版本的 Rust, 以 _criterion-rs_ 为例, 使用的时候先需要在 Cargo.toml 中将包作为依赖项引入.
+
+## Chap 4: 类型/泛型 和特征
+类型是一组具名的可能值(named set of possible values),它提供了一种方法来弥合我们创建实体的底层表示与心理模型之间的差距, 为了我们提供了表示实体的意图/行为和约束的方法. Rust 的类型系统介于 C 和 Haskell 之间, 试图在这两种极端中找一个平衡:
+* 类型系统是作为强类型系统存在的, 因此编译时候执行更多类型检查而不是在运行时抛出异常
+* 类型系统是静态的, 绑定到整数值的变量无法又指向字符串
+
+### 泛型
+泛型是语言设计特性的一部分, 可以实现代码的复用并且遵循 DRY 原则, 在其支持下可以使用类型占位符来编写算法/函数/方法以及类型,当我们实例化任何泛型元素时, 他们会被替换成诸如 u32 这样的具体类型. 
+
+#### 创建泛型
+Rust 允许我们将多种元素声明为泛型(结构体/枚举/函数/特征/方法以及代码实现块)
+1. 泛型函数: 我们需要将泛型参数放在函数名之后方括号之前:
+    ```Rust
+    fn give_me<T>(value: T) {
+        let _ = value;
+    }
+
+    fn main() {
+        let a = "generics";
+        let b = 1024;
+        give_me(a);
+        give_me(b);
+    }
+    ```
+    泛型其实是一种提供多态代码错觉的简易方法, 说它是错觉是因为其实编译之后是存在包含具体类型参数的重复代码.
+2. 泛型结构体和枚举
+    ```Rust
+    enum Transmission<T> {
+        Signal(T),
+        NoSignal
+    }
+
+    fn main() {
+        // stuff
+    }
+    ```
+
+#### 泛型实现
+我们可以为泛型编写impl代码块, 但是由于额外的参数, 它会变得冗长:
+```Rust
+// generic_struct_impl.rs
+struct Container<T> {
+    item: T
+}
+impl<T> Container<T> {
+    fn new(item: T) -> Self {
+        Container { item }
+    }
+}
+```
+如果是针对某个具体的类型特特化, 则 impl 后面的尖括号块可以不要:
+```Rust
+impl Container<u32> {
+    fn sum(item: u32) -> Self {
+        Container { item }
+    }
+}
+```
+
+#### 泛型应用
+当我们进行实例化的时候, 编译器需要知道 T 的具体类型以进行替换, 有三种提示编译器的办法
+1. 显式给编译器提供一种类型
+2. 对泛型函数调用某些方法来接收具体类型
+3. 使用 turbofish 运算符输入具体类型
+
+```Rust
+    // providing a type
+    let v1: Vec<u8> = Vec::new();
+    // or calling method
+    let mut v2 = Vec::new();
+    v2.push(2);    // v2 is now Vec<i32>
+    // or using turbofish
+    let v3 = Vec::<u8>::new();    // not so readable
+```
+
+### 用特征抽象行为
