@@ -452,6 +452,129 @@ cargo 自定义的子命令通常来自于 Github 或者本地项目目录下的
 Rust 生态中有很多工具能够增强开发体验:
 * rustfmt: 根据 Rust 代码样式指南中提及的约定格式化代码
 * clippy: 对常见的错误和潜在的问题发出警告
-* racer: 卡哇伊查找标准程序库, 并且提供代码自动化完成和实现工具的提醒功能
+* racer: 可以查找标准程序库, 并且提供代码自动化完成和实现工具的提醒功能
 
 vscode 中有官方的插件可以下载.
+
+## Chap 3: 测试/文档化和基准评估
+### 单元测试的目的
+软件系统中的各个组件的功能测试是保证代码高质量\有效并且实用的方法, 有助于建立开发人员将代码部署到生产环境中的信心, 并且在项目长期维护时保持代码的健壮性.<br>
+单元测试是大规模重构的基础, 同时鼓励程序言编写主要依赖输入参数的模块化代码(无状态函数).
+
+### 组织测试
+我们通常有两种测试, 单元测试和集成测试.
+* 单元测试: 编写在包含被测试代码的同一模块中
+* 集成测试: 在程序库根目录下的`test/`目录中单独编写, 添加一个 use 声明来引入需要测试的公共API
+
+几个相关的术语:
+* **属性**: 指元素的注释, 通常是编译器内置的, 也可以由用户通过编译器插件创建
+  * `#[name]`:适用于每个元素, 通常显示在他们定义的上方, 如 `#[test]` 注释表示函数被视为测试工具的一部分
+  * `#![name]` 适用于每个软件包, 通常位于软件包根目录的最顶端部分
+* 断言宏
+  * `assert!`: 如果值为 false 就测试失败,可以添加格式化字符串提供自定义异常消息
+  * `assert_eq!`: 接收两个值
+  * `assert_ne!`: 同上, 刚好相反
+  * `debug_assert!`: 仅仅在调试版本中有效, 帮助在调试模式下运行代码时捕获断言异常
+
+### 单元测试
+通常一个单元测试就是一个函数, 下面编写一个简单得单元测试:
+```Rust
+// first_unit_test.rs
+#[test]
+fn basic_test() {
+    assert!(true);
+}
+```
+可以使用 `rustc --test first_unit_test.r` 来编译, 而默认所有测试都是并行运行的, 除非设置环境变量`RUST_TEST_THREADS=1`. 现在 Cargo 可以支持运行测试, `cargo test` 用起来方便很多.
+#### 隔离测试代码
+辅助测试的方法智能在测试代码的上下文使用, 我们将所有测试相关的代码封装在模块中, 并在上面放置`#[cfg(test)]` 注释来实现这个目的. 
+```Rust
+// unit_test/src/lib.rs
+
+// function we want to test
+fn sum(a: i8, b: i8) -> i8 {
+    a + b
+}
+
+#[cfg(test)]
+mod tests {
+    fn sum_inputs_outputs() -> Vec<((i8, i8), i8)> {
+        vec![((1, 1), 2), ((0, 0), 0), ((2, -2), 0)]
+    }
+
+    #[test]
+    fn test_sums() {
+        for (input, output) in sum_inputs_outputs() {
+            assert_eq!(crate::sum(input.0, input.1), output);
+        }
+    }
+}
+```
+有两点说明:
+* sum 是在 test 模块之外声明的, 会包含在正式发布的编译版本中
+* 模块的单元测试还允许用户测试私有的函数和方法
+
+#### 故障测试
+`#[should_panic]` 和 `#[test]` 属性搭配使用, 表示函数将导致不可恢复的故障, 这种异常被称为 panic
+#### 忽略测试
+`#[ignore]` 表示在运行 `cargo test` 时候将忽略此类测试功能, 然后可以向命令传递 `--ignore` 参数来单独运行这些测试. 
+
+### 集成测试
+有点类似于黑盒测试, 从消费者的角度测试软件包公共接口的端到端使用, 和单元测试的区别在于目录结构和其中的项目需要公开. 例如我们给库`lib.rs` 进行测试, 其文件结构如下:
+<div align=center><img src="https://i.loli.net/2021/04/22/Ej1H4KvtDPMoB3c.png"/></div>
+
+```Rust
+use integration_test::sum;
+#[test]
+fn sum_test() { 
+    assert_eq!(sum(6, 8), 14); 
+}
+```
+#### 共享通用代码
+在测试之前我们可能需要一些 setup / teardown-related 代码(大概率由 test 目录下文件共享), 我们可以创建为共享通用代码的文件和目录模块, 或者使用模块 foo.rs 在集成测试中使用 mod 关键字来声明和引用它. 
+```Rust
+// integration_test/tests/common.rs
+pub fn setup() {
+    println!("Setting up fixtures");
+}
+pub fn teardown() {
+    println!("Tearing down");
+}
+use integration_test::sum;
+mod common;
+use common::{setup, teardown};
+#[test]
+fn test_with_fixture() {
+    setup();
+    assert_eq!(sum(7, 14), 21);
+    teardown();
+}
+```
+
+### 文档
+Rust 有名为 rustdoc 的专用工具将 markdown 的文档注释撰文 html. 文档解释分成两个层级:
+* 元素级: 适用于模块中的元素, 如结构体, 单行以 `///` 开头,对于多行以 `/*`开头, 以`*/` 结尾
+* 模块级: 出现在根层级的注释, 如 `main.rs`/`lib.rs`, `//!`表示单行注释的开始, 使用`/*!` 表示多行注释的开始, 并且将`*/`作为结尾标记
+
+#### 文档属性
+还有其他可以用于调整已经生成的文档界面,写成 `#[doc(key=value)]`这样的形式
+
+#### 文档化测试
+将代码示例放到软件包公共API 的所有文档通常是一种很好的做法, 维护时注意我们的代码可能发生变化而却忘记了去改这些示例. Rust 允许我们在文档中使用类似于 Markdown 的 "`"来嵌入代码, 并且将视为 但单元测试的一部分
+```Rust
+/// ```
+/// assert_eq!(doctest_demo::sum(1, 1), 2);
+/// ```
+pub fn sum(a: i8, b: i8) -> i8 {
+    a + b
+}
+```
+### 基准
+Rust 为我们提供了一个微观基准框架, 可以单独对代码各个部分进行基准测试, 而不受外界因素的影响. 
+#### 内置微观基准工具
+Rust 中的操作得益于两件事:
+* 函数上方的 `#[bench]` 注释, 表示函数是一个基准测试
+* 内部编译软件包 libtest 中包含一个 Bencher 类型, 基准函数通过它在多次迭代中运行相同的代码
+
+#### 稳定版 Rust 上的基准测试
+社区开发的基准测试软件包能够兼容稳定版本的 Rust, 以 _criterion-rs_ 为例, 使用的时候先需要在 Cargo.toml 中将包作为依赖项引入.
