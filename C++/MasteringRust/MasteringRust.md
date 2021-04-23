@@ -654,3 +654,71 @@ impl Container<u32> {
 ```
 
 ### 用特征抽象行为
+从多态和代码复用的角度看, 在代码中将类型的共享行为和公共属性与其自身个来开是一个好主意, 并且能拥有专属于自己的方法. 在面向对象编程语言中, 接口表达了这样的理念, 我们在其中定义了多种类型能够实现的共享行为. Rust 中也有类似而且功能抢的的结构, 被称为特征(traits).
+#### 特征
+我们使用关键字 trait 创建一个特征, 之后是名称和一对花括号, 其中还可以提供零个或者多个方法供实现该特征的类型去具体提供. 
+```Rust
+pub trait Playable {
+    fn play(&self);
+    fn pause() {
+        println!("Paused");
+    }
+}
+```
+我们在特征中提供两种方法:
+* 关联方法: 可以直接在实现特征的类型中使用, 并不需要通过类型的实例来调用. (在主流编程语言中被称为静态方法)
+* 实例方法: 需要将 `self` 作为其第一个参数, 同样有三种方式`self`、`&self` 和 `&mut self`
+
+此外需要注意的是, 需要将 traits 添加 Pub 关键字才能被其他的结构体实现:
+```Rust
+mod media;
+use media::Playable;
+
+struct Audio(String);
+struct Video(String);
+impl Playable for Audio {
+    fn play(&self) {
+        println!("🎵 Now playing: {}", self.0);
+    }
+}
+impl Playable for Video {
+    fn play(&self) {
+        println!("🎵 Now playing: {}", self.0);
+    }
+}
+```
+此外, 可以在声明中表明它们依赖于其他特性(被称为特征继承):
+```Rust
+trait Vehicle {
+    fn get_price(&self) -> u64;
+}
+trait Car: Vehicle {
+    fn model(&self) -> String;
+}
+struct TeslaRoadster {
+    model: String,
+    release_date: u16
+}
+impl TeslaRoadster {
+    fn new(model: &str, release_date: u16) -> Self {
+        Self { model: model.to_string(), release_date }
+    }
+}
+impl Car for TeslaRoadster {
+    fn model(&self) -> String {
+        "Tesla Roadster I".to_string()
+    }
+}
+impl Vehicle for TeslaRoadster {
+    fn get_price(&self) -> u64 {
+        200_000
+    }
+}
+```
+尽管如此, 特征和接口还是有很多差异:
+* Rust 中的类型本身并没有任何继承, 因此采用的是类型组合而不是对象继承, **依赖于特征继承为代码中的任何实际的实体建模**
+* 可以在任何地方编写特征实现的代码块, 而无需访问实际类型
+* 可以基于内置的基元类型到泛型之间的任何类型实现自定义特征
+* 不能隐式将返回类型作为特征, 必须返回一个被称为特征对象的东西, 并且声明是显式的
+
+#### 特征的多种形式
