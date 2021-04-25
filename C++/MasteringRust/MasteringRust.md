@@ -672,7 +672,7 @@ pub trait Playable {
 此外需要注意的是, 需要将 traits 添加 Pub 关键字才能被其他的结构体实现:
 ```Rust
 mod media;
-use media::Playable;
+use media::Playable;/// 我们需在在这里导入 Playble, 否则无法使用
 
 struct Audio(String);
 struct Video(String);
@@ -722,3 +722,112 @@ impl Vehicle for TeslaRoadster {
 * 不能隐式将返回类型作为特征, 必须返回一个被称为特征对象的东西, 并且声明是显式的
 
 #### 特征的多种形式
+1. 标记特征: 在 std::marker 模块中定义的特征, 不包含任何方法, 声明时只是提供特征的名称和空的函数体
+2. 简单特征: 特征定义的最简单形式
+3. 泛型特征: 特征也可以是泛型, 用户希望为多种类型实现特征的情况下非常有用
+4. 关联类型特征: 比泛型更好的选择, 能够在特征类型中声明相关类型
+    ```Rust
+    trait Foo {
+        type Out;
+        fn get_value(self) -> Self::Out;
+    }
+    ```
+5. 继承特征:和类型不同, 特征可以有继承关系
+    ```Rust
+    trait Bar {
+        fn bar();
+    }
+    trait Foo: Bar {
+        fn foo();
+    }
+    ```
+
+### 使用包含泛型的特征: 特征区间
+一般而言, 我们在类型为 T 的泛型中无法知道或者默认假定某个方法存在于 T 中, 而有一种被称为 **特征区间** 的方法能让编译器确定这一点:
+```Rust
+impl Game {
+    fn load<T>(&self, entity: T) {
+        entity.init();
+    }
+}
+fn main() {
+    let game = Game;
+    game.load(Enemy);
+    game.load(Hero);
+}
+/// Error: No nethods name init found for type T in the current scope
+struct Game;
+struct Enemy;
+struct Hero;
+trait Loadable {
+    fn init(&self);
+}
+impl Loadable for Enemy {
+    fn init(&self) {
+        println!("Enemy loaded");
+    }
+}
+impl Loadable for Hero {
+    fn init(&self) {
+        println!("Hero loaded");
+    }
+}
+impl Game {
+    fn load<T: Loadable>(&self, entity: T) {
+        entity.init();
+    }
+}
+/// ...
+```
+在下面这个, 在泛型声明旁边防止几个符号来指定特征(特征区间).<br>
+特征区间允许我们限制泛型 API 可以接收的参数范围, 指定的方式类似于为变量指定类型(`T:SomeTrait`),如果定义泛型函数中的T 不包含任何特征区间, 那么我们就不能通过任何方法调用.区间的使用有两种语法:
+1. 区间内泛型(最常见的语法)
+    ```Rust
+    fn show_me<T: Display>(val: T) {
+        // can use {} format string now, because of Display bound
+        println!("{}", val);
+    }
+    ```
+2. where 语句: 泛型元素的类型签名变得太长而无法在一行上显示的时候, 可以用这种语法, where 语句将特征区间和函数签名解耦,使其可读
+    ```Rust
+    pub fn parse<F>(&self) -> Result<F, <F as FromStr>::Err>
+    where F: FromStr { ... }
+    ```
+
+#### 类型上的特征区间
+我们也可以在类型上指定特征区间, 但是不鼓励这么用, 它对类型自身施加了限制:
+```Rust
+struct Foo<T: Display> {
+    bar: T
+}
+// or
+struct Bar<F> where F: Display {
+    inner: F
+}
+```
+#### 泛型函数和 impl 代码块上的特征区间
+我们可以在函数和泛型实现上指定特征区间(有点类似于 C++ 中模板的特化), 这是用到特征区间最常见的地方:
+```Rust
+use std::fmt::Debug;
+trait Eatable {
+    fn eat(&self);
+}
+#[derive(Debug)]
+struct Food<T>(T);
+#[derive(Debug)]
+struct Apple;
+impl<T> Eatable for Food<T> where T: Debug {
+    fn eat(&self) {
+        println!("Eating {:?}", self);
+    }
+}
+fn eat<T>(val: T) where T: Eatable {
+    val.eat();
+}
+```
+
+#### 使用 "+" 将特征组合为区间
+我们可以使用符号 "+" 为泛型指定多个特征区间, 例如`impl<K: Hash + Eq, V> HashMap<K, V, RandomState>` 表示 HashMap 键类型必须实现 Hash 特征和 Eq 特征.
+
+#### 特征区间与 impl 特征语法
+// TODO: 
