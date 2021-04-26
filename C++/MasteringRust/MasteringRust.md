@@ -830,7 +830,83 @@ fn eat<T>(val: T) where T: Eatable {
 我们可以使用符号 "+" 为泛型指定多个特征区间, 例如`impl<K: Hash + Eq, V> HashMap<K, V, RandomState>` 表示 HashMap 键类型必须实现 Hash 特征和 Eq 特征.
 
 #### 特征区间与 impl 特征语法
-// TODO: 
+特征区间的另一种语法是 impl 特征语法, 直接使用 _impl SomeTraits_ 而不是指定 _T:SomeTraits_, 这为我们返回复杂或者不方便表示的类型(如函数、闭包)提供了便利:
+```Rust
+fn lazy_adder(a:u32, b: u32) -> impl Fn() -> u32 {
+    move || a + b
+}
+fn main() {
+    let add_later = lazy_adder(1024, 2048);
+    println!("{:?}", add_later());
+}
+```
+### 标准库特征简介
+标准库有很多内置的特性, 为开发者提供了一个良好的基线, 帮助为程序库提供常见的接口. 例如:
+```Rust
+use std::ops::Add;
+#[derive(Default, Debug, PartialEq, Copy, Clone)]
+struct Complex<T> {
+    // Real part
+    re: T,
+    // Complex part
+    im: T
+}
+impl<T> Complex<T> {
+    fn new(re: T, im: T) -> Self {
+        Complex { re, im }
+    }
+}
+```
+上面使用过程宏`#[derive()]`, 要求自定义类型本身必须实现相应的特征, 而 new 函数并不是一个特殊的构造函数, 只是社区常采用的一个名称. <br>
+接下来看是如何为 Complex 结构体实现加法:
+```Rust
+impl<T: Add<T, Output=T>> Add for Complex<T> { 
+    type Output = Complex<T>; 
+    fn add(self, rhs: Complex<T>) -> Self::Output { 
+        Complex { re: self.re + rhs.re, im: self.im + rhs.im } 
+    } 
+}
+```
+Add 这种特征可以在别的地方声明, 其中实现 add 方法这个 Add 特征提供的核心方法, 也是我们在两种实现类型之间使用 "+" 时候调用的方法.此外还有 From/Display 等分别对应进行转换和打印.
+
+### 使用特征对象来实现真正的多态性
+Rust 语言通过特征类型实现的特殊形式实现真正的多态性. 
+
+#### 分发
+多态的上下文解析过程被称为分发, 分发可以通过以下任意一种方式进行:
+* 静态分发: 编译期决定要调用的方法, 也被称为早起绑定. 
+* 动态分发: 直到运行时才能确定调用的方法, 具体类型被吟唱, 只用接口方法可用于调用该方法
+
+#### 特征对象
+在前面我们接触的都是静态分发上下文中特性的应用, 具体说就是**在泛型 API 中设置特征区间**. 还有一种创建多态的API和方法, 可以**将参数指定为实现某个特征的东西, 而不是泛型或者具体类型**, 这时候我们没有实际类型的具体信息, 通过跳转到 vtable 并且调用适当的方法完成解析. 
+```Rust
+use std::fmt::Debug;
+
+#[derive(Debug)]
+struct Square(f32);
+#[derive(Debug)]
+struct Rectangle(f32, f32);
+trait Area: Debug {
+    fn get_area(&self) -> f32; 
+}
+impl Area for Square {
+    fn get_area(&self) -> f32 {
+        self.0 * self.0
+    }
+}
+impl Area for Rectangle {
+    fn get_area(&self) -> f32 {
+        self.0 * self.1
+    }
+}
+fn main() {
+    let shapes: Vec<&dyn Area> = vec![&Square(3f32), &Rectangle(4f32, 2f32)];
+    for s in shapes {
+        println!("{:?}", s);
+    }
+}
+```
+其中使用的是 `&Square`, 意思是它是指向 Area 特征的某些实现的指针.一般而言我们更倾向于使用静态分发, 除非系统对二进制文件的大小存在严格的限制.
 
 ## Chap 5: 内存管理和安全性
 底层语言没有类似内置 GC 的自动内存回收解决方案, 程序员需要负责管理程序使用的内存. C和 C++ 中内存管理为构造的软件带来大量内存漏洞报告, 而 Rust 为内存管理提供了更好的编译期解决方案, 其中安全的三大要素是 **所有权、借用及生命周期**. <br>
