@@ -178,7 +178,7 @@ square(4)
 from operator import truediv, floordiv,mod
 2013 / 10 # result is 201.3, truediv(2013,10)
 2013 // 10 # result is 201, floordiv(2013,10)
-2013 % 10 # result is 2, mod(2013, 10)
+2013 % 10 # result is 3, mod(2013, 10)
 ```
 #### 多个返回值
 我们可以在一个语句中给多个 Names 赋值, 同样的一个函数也可以有多个返回值
@@ -294,7 +294,7 @@ adder_three(4)
 auto f = [](double x)->double {
     		auto temp = x -1;
            return x * (temp+1);
-			}
+         }
 ```
 #### lambda 表达式 和 def 语句的比较
 ![](figure/4.2.png)<br>
@@ -1018,3 +1018,53 @@ Class Attributes: 可以理解为 java 中的静态实例域.
 首先我们明确一些术语: 所有的对象都有**属性**, 属性是一个 name-value 对, 类本身也是一个对象, 主语区分 _类的属性_ 和 _类实例的属性_. 
 
 ![](figure/16.1.png)
+
+可以看到, looking Up Attributes By Name (`<expression>.<name>`)的顺序是这样的:
+1. 首先对dot左边的`<expression>` 求职, 得到调用 dot表达式的对象
+2. `<name>` 去被这个 instance 的属性匹配, 如果存在的话就返回值
+3. 如果不存在, 在 类的属性去找, 结果就是类属性的值
+4. 除非是函数, 否则返回一个值, 而函数的话就返回一个 bound method(bound 的意思是调用者 self 已经被绑定到了函数中称为第一个参数)
+
+Assignment to Attributes: 使用 dot 表达式可以给属性赋值
+* 如果对象是一个实例, 就是设置实例的 attributes
+* 如果对象是一个类, 就是给类的 arrrbutes 赋值
+
+```Python
+class Account:
+    interest = 0.02
+    def __init__(self,holder) -> None:
+        self.holder = holder
+        self.balance = 0
+    
+tom_account = Account("Tom")
+print(tom_account.interest) # 结果是0.02
+Account.interest = 0.04
+print(tom_account.interest) # 结果是0.04
+tom_account.interest = 0.08
+print(tom_account.interest) # 结果是0.08
+```
+上面这个例子中我们可以发现, 如果实例中没有 interest 的这个属性, 那么实例可以使用类的这个属性, 然而如果实例中自己定义了这个属性之后, 就会覆盖类的属性
+
+### 继承
+继承是一种将类关联起来的一种方式, sub class 共享base class 的属性, 它可能会重写(override)某些继承的属性, 但是没有重写的就和基类一样:
+```Python
+class <namme>(<base class>):
+    <suite>
+```
+Base Class 的 attribute 并没有拷贝到 subclasses 中
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428113839.png"/></div>
+
+### 面向对象设计
+继承设计的几点原则:
+1. DRY, 使用现有的 implementation
+2. 已经被 overridden 的属性依旧可以通过类对象来access
+3. look up attributes on instance whenever bossible
+
+#### 继承和组合
+* 继承最好对应于 is-a 关系(里氏替换原则)
+* 组合最好用于表达 has-a 关系
+
+### 多继承
+在 python 中是可以有多继承的(C++ 中可以, 但是 Java 中只能用单继承+实现多个接口).可能在这种情况下会有歧义, 我们只需要记住先从subclass 查找再从 base class 查找.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428142311.png"/></div>
+

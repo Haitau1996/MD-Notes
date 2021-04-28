@@ -1,5 +1,6 @@
-# Introduction to Computer Systems, from Bits and Gates to C and Beyond
-<font size = 4>[Yale N. Patt](http://users.ece.utexas.edu/~patt/) & [Sanjay Patel](https://ece.illinois.edu/about/directory/faculty/sjp) <font>
+# 计算机系统概论
+
+<font size = 5>[Yale N. Patt](http://users.ece.utexas.edu/~patt/) & [Sanjay Patel](https://ece.illinois.edu/about/directory/faculty/sjp) </font>
 
 ## Chap 1: Intro
 计算机不过是一个电子设备, 它由许多电子部件构成, 这些部件又通过导线相连. 在这本书中, 我们将会了解 怎样用晶体管构建现代微处理器(加法器和存储信息的记忆部件),冯诺依曼机, LC-3机器以及如何编程.<br>
