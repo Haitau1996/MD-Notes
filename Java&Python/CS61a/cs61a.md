@@ -1141,3 +1141,48 @@ A method for bounding the resources used by a function by the "size" of a proble
 * 对于 nesting, 将内外层的 order 相乘
 
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428162451.png"/></div>
+
+## Lecture 19 : Composition
+### 链表
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428163012.png"/></div>
+
+```Python
+class Link:
+
+    empty = ()
+    def __init__(self, first, rest=empty):
+        assert rest is Link.empty or isinstance(rest, Link)
+        self.first = first
+        self.rest = rest
+```
+### Property Methods
+有的时候, 我们希望某个 instance attribute 的值只在需要的时候计算.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428163758.png"/></div>
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428163928.png"/></div>
+
+### Tree
+树中的一些定义如下:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428164202.png"/></div>
+
+```Python
+class Tree:
+    def __init__(self, label, branches=[]):
+        self.label = label
+        for branch in branches:
+            assert isinstance(branch, Tree)
+        self.branches = list(branches)
+```
+
+### 树的操作
+树的操作往往是使用递归来实现的, 如我们想要将一个斐波那契树的重复分支剪掉, 可以用下面的做法:
+```Python
+def prune_repeats(t, seen):
+    t.branches = [b for b in t.branches if b not in seen]
+    seen.append(t)
+    for b in t.branches:
+        prune_repeats(b,seen)
+
+t = fib_tree(10)
+prune_repeats(t, [])
+``` 
