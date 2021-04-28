@@ -1068,3 +1068,29 @@ Base Class 的 attribute 并没有拷贝到 subclasses 中
 在 python 中是可以有多继承的(C++ 中可以, 但是 Java 中只能用单继承+实现多个接口).可能在这种情况下会有歧义, 我们只需要记住先从subclass 查找再从 base class 查找.
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428142311.png"/></div>
 
+## Lecture 17: Representation
+### String Representation
+在 python 中, 所有的对象都产生两种 string representations:
+* str is legible to human
+* repr is legible to the Python interpreter
+
+很多时候两者是一样的, 但不完全是.使用 `repr`函数可以返回一个 string , 大多数时候就是这个对象的经典表示, 对于大多数对象类型, `eval(repr(object)) == object`, 也是在命令行中输入后显示的样子<br>
+而使用`str` 函数返回的一般就是 print 出来的样子, 更加有利于我们去理解
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428144913.png"/></div>
+
+### polymorphic(多态的) Functions
+多态的含税值得是一个函数可以应用于多个(ploy)不同形式(morph)类型.上面的 `str` 和 `repr` 就是这样的, 他们两可以应用于任何对象身上.其中的 `repr` 就是调用它参数的一个零参数方法 `__repr__`.<br>
+这给我们一个很重要的启发, 我们可以写一个函数, 自身并不做什么事情, 只是调用参数的方法.而 `repr` 的实现就是一个实例调用 `__repr__` 被忽略, 只有class attribute:
+```Python
+def repr(x):
+    return type(x).__repr__(x)
+```
+`str` 要稍微复杂一点, 同样使用实例的调用被忽略, 同时如果没有 `__str__` 属性, 使用 `repr` string.
+
+#### interface
+是一系列的 shared messages, along with a specification of what they mean. 例如实现 `__str__` 方法就是实现产生string representation 的 interface.
+
+### 特殊的方法
+有个 Name 很特别, 因为他们有 built-in 行为, 一般用两个下划线开头和结束.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428151105.png"/></div>
+
