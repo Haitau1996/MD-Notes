@@ -1094,3 +1094,50 @@ def repr(x):
 有个 Name 很特别, 因为他们有 built-in 行为, 一般用两个下划线开头和结束.
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428151105.png"/></div>
 
+## Lecture 18: Growth
+### Measuring Efficiency
+我们给斐波那契函数加一个装饰器:
+```Python
+def fib(n):
+    if n == 0 or n == 1:
+        return n
+    else:
+        return fib(n-1)  + fib(n-2)
+
+def count(f):
+    def counted(n):
+        counted.call_count += 1
+        feturn f(n)
+    counted.call_count = 0
+    return counted
+```
+
+### Memoizaiton
+一个加速软间运行的办法, 具体想法是, 记住之前已经计算过的结果.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428153807.png"/></div>
+
+### Space
+The Comsumption of Space: 在任何时候都有一系列的 active environment, Value 和 Frames in active environment 都要消耗内存, 而被其他 value 和 frame 利用的内存可以被回收.<br>
+##### Active environments
+* 任何现在在被求值的函数调用的环境
+* 当前 active environment 的 parent environment
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428155924.png"/></div>
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428160028.png"/></div>
+
+从中可以发现, 实际上用内存最多的是调用 Tree 中最常的一个 chain.
+
+### Time
+一个函数抽象的不同实现可能需要不同的运行时间.
+
+### Order Of Growth
+A method for bounding the resources used by a function by the "size" of a problem.<br>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428161349.png"/></div>
+
+### 不同增长率的比较
+* 常数项不影响
+* log 的底数项也不影响
+* 对于 nesting, 将内外层的 order 相乘
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428162451.png"/></div>
