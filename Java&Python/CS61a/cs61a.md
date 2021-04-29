@@ -1242,3 +1242,22 @@ BST 是满足下面条件的二叉树:
 * 如果 element 不在 root, 那么它要么在左边要么在右边
 * 根据大小我们可以每次舍弃一个子树
 
+## Lecture 24: Scheme
+### Scheme
+Scheme 是 Lisp 的一种方言, Scheme 程序由表达式构成, 它们可能是:
+* primitive expressions: 2, 3.3, true, +, quotient
+* 组合:(quotient 10, 2), (not true)
+
+数字是 self-evaluating, 符号 are bound to values, 调用表达式包含括号内的一个符号加上零个或者多个参数.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429153852.png"/></div>
+
+### Special Forms
+A combination that is not a call expression is a **special form**.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429154552.png"/></div>
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429154850.png"/></div>
+
+### lambda 表达式
+Lambda 表达式是一个匿名函数
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429155053.png"/></div>
+
