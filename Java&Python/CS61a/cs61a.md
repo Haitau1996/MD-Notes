@@ -1186,3 +1186,59 @@ def prune_repeats(t, seen):
 t = fib_tree(10)
 prune_repeats(t, [])
 ``` 
+
+## Lecture 20 : Ordered Sets
+Set 是一种内建的容器类型:
+* 使用大括号包起来的元素
+* 在创建的时重复元素被删除了
+* 元素的顺序是任意的
+
+可以有下面几个操作:
+1. 对两个 set 求 union(并) 和 intersection(较)
+2. 可以添加或者移除元素. 可以测试某元素是否在 set 中
+
+同样 set 元素不能是 list(不能被 hash).
+
+### Set as Linked List
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429093505.png"/></div>
+
+### Set Operations
+我们如果使用已经排序的 LinkList, 很多操作可能更加简单.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429093852.png"/></div>
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429094054.png"/></div>
+
+上面这两个操作的时间复杂度都是 $\Theta(n)$.
+
+### Set Mutation
+例如往其中添加元素的操作:
+```Python
+def add(s, v):
+    if s.first > v :
+        s.first, s.rest = v, Link(s.first,s.rest)
+    elif s.first < v and empty(s.rest):
+        s.rest = Link(v, s.rest)
+    elif s.first < v:
+        add(s.rest,v)
+    return s
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429094810.png"/></div>
+
+## Lecture 21: Tree Sets
+### 二叉树
+一个二叉树是只有两个分支的树, 因此
+* 我们要用 empty 将missing left branch 填好.
+* 对于 leaf, 我们也要讲它的两个子树填上 empty
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429095915.png"/></div>
+
+### 二叉搜索树
+这个做法来自于在sorted list 中的查找, 检查中间的元素然后消除一半的元素.($\Theta(\log N)$)<br>
+BST 是满足下面条件的二叉树:
+* 左子树所有节点的值都比根节点小
+* 右子树所有节点的值都比根节点大
+
+### BST 中的查找
+* 如果 element 不在 root, 那么它要么在左边要么在右边
+* 根据大小我们可以每次舍弃一个子树
+
