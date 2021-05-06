@@ -1306,3 +1306,50 @@ except ZeroDivisionError as e:
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506110904.png"/></div>
 
 ## Lecture 26: Calculator
+### 解释器
+Scheme 的解释器首先要求我们使用递归将读入的数据解释为我们希望的形状:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506112437.png"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506112747.png"/></div>
+
+### 语法分析
+一个语义分析器将 text 转化为表达式:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506113220.png"/></div>
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506113646.png"/></div>
+
+### Calculator
+我们之前的工作依赖于一个 pair 类, 它用于表示 Scheme 中的 pairs 和 lists:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506114141.png"/></div>
+
+Calaulator Syntax: 这个计算语言有基本表达式和call语句
+* A Primitive expression is a number
+* a call expression is a combination that begins with an operator followed by 0 or more expressions
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506114651.png"/></div>
+
+### The eval function
+The eval function computes the value of an expression, which is always a number. 它是一个和表达式类型无关的通用函数.
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506133415.png"/></div>
+
+接下来我们要实现 `cala_apply`:
+```python
+def calc_apply(operator, args):
+    if opearator=='+':
+        return reduce(add, args, 0)
+    elif ...
+    else:
+        raise TypeError
+```
+
+### Iteractive Interpreters
+很多解释型语言的 user interface 就是所谓的 Read-Eval-Print Loop:
+* Print a prompt
+* Read text input from the user
+* Prase the text input into an expression
+* evaluate the expression
+* if any errors occur, report thoese errors.
+* otherwise print the value of the expression and repeat
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506134330.png"/></div>
+
