@@ -73,7 +73,7 @@ Java在Math类中提供了很多实用的方法,用来计算常用的数学函�
     char ch = (char)0xAB0041; // 只保留了最后符合utf-8的那些位,显示为A
     char ch2 = (char)65.25; // float cast 成了 int 然后cast成char 'A'
     ```
-    0 ~ FFFF中的任何一个十六进制正整数都可以隐式转为字符型数据, 而不在此范围内的任何其他数值都 __必须显示转为`char`__
+    0 ~ FFFF中的任何一个十六进制正整数都可以隐式转为字符型数据, 而不在此范围内的任何其他数值都 __必须显式转为`char`__
 5. java 的character类提供了很多方法用于字符测试
 
 ### String类型
@@ -575,7 +575,7 @@ runtime exception ,error以及他们的子类都被称为免检异常, 反映出
 3. 当抛出一个异常时, Java跳过剩余的语句, 然后处理这个异常代码, 从当前的方法开始, 沿着方法调用链, 按照异常的反向传播方向找到这个处理器.
     ```Java
     try {
-    statements; // Statements that may throw exceptions
+        statements; // Statements that may throw exceptions
     }
     catch (Exception1 exVar1) { handler for exception1; }
     catch (Exception2 exVar2) { handler for exception2; }
