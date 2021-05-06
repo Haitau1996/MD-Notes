@@ -374,3 +374,26 @@ scale:
 
 ##### 特殊的算术操作
 ![](https://i.loli.net/2021/04/22/1keFJKy9nbMxcBL.png)<br>
+
+x86-64 指令集可以计算两个 64 bit 值的 full 128-bit 乘积(`imulq` for signed, `mulq` for unsigned), 结果分别存在 `%rdx`(高64位)`%rax`(低 64 位)中.其中一个参数一定要放在`%rax`中:
+```C++
+#include <inttypes.h>
+typedef unsigned __int128 uint128_t;
+void store_uprod(uint128_t *dest, uint64_t x, uint64_t y){
+    *dest = x * (uint128_t)y;
+}
+```
+
+```assembly
+store_uprod:
+	.seh_endprologue
+	movq	%rdx, %rax 
+	mulq	%r8
+	movq	%rax, (%rcx) 
+	movq	%rdx, 8(%rcx)
+	ret
+	.seh_endproc
+	.ident	"GCC: (GNU) 10.2.0"
+```
+上面的结果, 其中的 第一步将 x 写入 `%rax`, 与 `%r8` 中的 x 相乘, 然后再将结果写入`%rcx`指向的位置.<br>
+除法操作是由单操作数指令提供, 例如`idivl` 128位的被除数分别放在 `%rdx` 和 `%rax`中, 除数就是那个操作数, 这个除法将商放在 `%rax` 中将余数放在 `%rdx` 中. 
