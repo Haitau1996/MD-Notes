@@ -1261,3 +1261,48 @@ A combination that is not a call expression is a **special form**.
 Lambda 表达式是一个匿名函数
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429155053.png"/></div>
 
+## Lecture 25: Exceptions
+Handling Errors:Sometimes, Computer programs behave in non-standard ways.
+* 函数接收的参数可能类型不匹配
+* 有的资源(文件/内存/数据库)可能不可得
+* 在数据传输中可能丢失网络连接
+  
+在 python 中用来处理错误这些行为的机制是 Exceptions:
+* 无论什么error 出现, python raise 一个异常
+* 异常可以被程序处理, 避免解释器停止运行
+* 没有被处理的异常会导致 Python Halt Execution 并且打印一个 stack trace
+
+面对异常的时候需要记住下面两点:
+1. 异常是对象, They have classes with constructors
+2. They enable non-local continuations of control
+   1. 例如 f call g, g call h, 异常可以将控制流在没有等待 g 返回的情况下直接从 h 转移到 f 
+3. 我们不要在 standard 行为中使用异常, 而是专门用于 非标准行为
+
+### Raise Exception(抛出异常)
+最简单得方式是使用 assert 语句:
+```Python
+assert <expression>,<string>
+```
+这时候使用 `-O`(optimized) 可以忽略.<br>
+更多时候是使用 Raise 语句, `raise <expression>`, 需要注意的是, 其中的表达式求指后必须是一个 subclass of BaseException 或者一个它的实例.下面是内置的一些异常类型:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506105625.png"/></div>
+
+### 异常处理
+使用 try 局域处理异常, 其基本的形式如下:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506105904.png"/></div>
+
+1. 首先运行 try 语句, 如果没有异常的话就略过异常处理语句
+2. 如果有异常, 异常是 exception class 的子类或者子类实例, 就会执行对应的 except 语句, 执行的时候异常绑定到 name 上
+
+```Python
+try:
+    x = 1/0
+except ZeroDivisionError as e:
+    print('handaling a', type(e))
+    x = 0
+```
+此外, 我们可以有 mutiple nested try statements:**控制流会跳转到最近那个可以 handle 这种类型的 except suite 中**. 
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506110904.png"/></div>
+
+## Lecture 26: Calculator
