@@ -1392,3 +1392,46 @@ Define binds a symbol to a value in the first frame of the current environment.
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507095903.png"/></div>
 
 ## Lecture 28 : Tail Call
+### Dynamic Scope
+我们需要注意 lexical scope 和 Dynamic Scope 的区别:
+* 在lexical scope 中 the parent of a frame is the environment in which a procedure was **defined**
+* 在 Dynamic scope 中, the parent of a frame is the environment in which a procedure was **called**
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507104008.png"/></div>
+
+### Tail Recursion
+函数式编程基于下面的假设, 并且在很多方面有着自己的优势:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507104305.png"/></div>
+
+在 Python 中, 递归调用总是创建一个新的活动帧.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507104521.png"/></div>
+但是 Scheme 对这个有要求:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507104757.png"/></div>
+
+### Tail Call
+A tail call is a call expression in a tail context:
+* The last body sub-expression in a lambda expression
+* Sub-expressions 2&3 in a tail context if expression
+    ```Scheme
+    (define (factorial n k)
+        (if (= n 0) k
+            (factorial (- n  1)
+                       (* k n))))
+    ```
+* All non-predicate(非谓语) sub-expression in a tail context _cond_
+* the last sub-expression in a tail context _and_ or _or_ 
+* the last sub-expression in a tail context _begin_
+
+在调用中依旧要做更多计算的 Call expression 不是 Tail Call, 例如:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507110034.png"/></div>
+
+但是我们通常可以重写以变成 tail call:
+```Scheme
+(define (length-tail s)
+    (define (length-iter s n)
+        (if (null? s) n
+            (length-iter (cdr s)(+ 1 n))))
+    (length-iter s 0))
+```
+Tail Call 的返回值就是当前过程的返回值, 因此Tail Call 不应该增加环境的 size.
+
