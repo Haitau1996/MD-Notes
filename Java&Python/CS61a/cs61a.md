@@ -1359,3 +1359,36 @@ def calc_apply(operator, args):
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506135429.png"/></div>
 
 ### Special Form
+scheme_eval 函数 dispatches on expression form:
+* Symbol are bound to values in the current environment
+* Self-evaluating expressions are returned
+* all other legal expressions are represented as Scheme lists, called combinations
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507093550.png"/></div>
+
+### Logical Special Forms
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507094327.png"/></div>
+需要注意的是这些逻辑表达式不一定会全部 evaluate, 如果 if 是 true , alternative 那里就算有异常也不会被抛出.
+
+### Quotation
+quote special form evaluates to the quoted expression , which is not evaluated.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507094719.png"/></div>
+
+可以使用 `'<expression>` 作为缩写.
+
+### lambda 表达式
+lambda expressions evaluate to user-defined procedures.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507095129.png"/></div>
+
+### Define Expression
+Define binds a symbol to a value in the first frame of the current environment.
+1. evaluate the expression
+2. Bind name to its value in the current frame
+
+过程定义和 lambda 表达式定义带来的结果是一样的:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507095549.png"/></div>
+
+我们接下来考虑下面一个调用的 frame:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507095903.png"/></div>
+
+## Lecture 28 : Tail Call
