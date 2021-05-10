@@ -1435,3 +1435,21 @@ A tail call is a call expression in a tail context:
 ```
 Tail Call 的返回值就是当前过程的返回值, 因此Tail Call 不应该增加环境的 size.
 
+### Map and Reduce
+```Scheme
+(define (deduce procedure s start)
+    (if (null? s) start
+        (reduce procedure
+                (cdr s)
+                (procedure start (cars)))))
+```
+例如, `(reduce * '( 3 4 5) 2) -> (reduce * '(4 5) 6) -> (reduce * '(5) 24)-> 120`.需要注意的是, 最后一行 `procedure ...` 并不一定是 Tail Call, 取决于它的过程具体是什么.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210510155121.png"/></div>
+
+Map 是对一个过程和list操作, 结果是过程对 list 中的每个结果分别做一遍, 返回.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210510155326.png"/></div>
+
+下面是一个尾递归的实现:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210510155705.png"/></div>
+
+## Lecture 29: Macros
