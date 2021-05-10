@@ -1453,3 +1453,16 @@ Map 是对一个过程和list操作, 结果是过程对 list 中的每个结果�
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210510155705.png"/></div>
 
 ## Lecture 29: Macros
+### Program as Data
+Scheme 的内置 list 数据结构(实际上是一个链表) 可以表示 combinations.在 Scheme 中可以很方便写出生成程序的程序.
+```Scheme
+(list '+ 1 2)
+(define (fac-expression n)
+    (if (= n 0) 1
+        (list '* n (fac-expression(- n 1)))))
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210510161212.png"/></div>
+
+上面就是一个程序生成了程序, eval 之后才是一个值. 
+
+### Macro
