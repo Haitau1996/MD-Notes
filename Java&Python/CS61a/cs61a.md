@@ -1466,3 +1466,36 @@ Scheme 的内置 list 数据结构(实际上是一个链表) 可以表示 combin
 上面就是一个程序生成了程序, eval 之后才是一个值. 
 
 ### Macro
+Macro 是 Scheme 中的一个特性, 它允许你在语言中定义新的 special form, Lisp 中这么做很方便的原因是我们可以将 code 看成是 data.
+#### Macros Perform Code Transformations
+A macro is an operation preformed on the source code of a program before evaluation. Scheme 中就是用 `define-macro` 这个 special form 来定义一个 source code transformation.
+```Scheme
+(define-macro (twice expr)
+    (list 'begin expr expr))
+```
+Evaluation macro call expression 的步骤:
+1. 首先 evaluate operator sub-expression, 结果就是宏
+2. 然后对 operand 表达式调用宏 procedure , **without evaluating them first**
+3. Evaluate 宏过程返回的表达式
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511095818.png"/></div>
+
+实际上, 我们使用 define 也可以实现类似的效果, 但是要十分注意引号的使用.使用 macro 的一个好处就是 quotation 和 evaluation 自动帮我们做好了.
+```Scheme
+(define-macro (check expr)
+              (list 'if expr ''passed
+                (list 'quote(list 'failed:expr))))
+```
+
+### For Macro
+我们可以定义一种展开后表达式作用于 sequence 中每个值的宏. 
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511100910.png"/></div>
+
+### Quasi-Quotaition
+Quasi-Quotation 相对 Quotation 而言, 它意味着 part of the expression can be evaluated.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511101453.png"/></div>
+
+有了这个工具后, 我们可以将之前的check 简化:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511101704.png"/></div>
+
+## Lecture 30 Iterator
