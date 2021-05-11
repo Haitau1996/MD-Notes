@@ -1499,3 +1499,44 @@ Quasi-Quotation 相对 Quotation 而言, 它意味着 part of the expression can
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511101704.png"/></div>
 
 ## Lecture 30 Iterator
+### 数据处理
+有很多 data sets 可以被 sequetially processed, 然而,我们之前用的 sequence interface 并不总是好用. 在 big data processing 中, 有下面这些重要的 ideas:
+* implicit representations of streams of sequential data(我们可能无法同时获得整个数据)
+* declarative programming languages to manipulate and transform data
+
+### 迭代器
+A container can provide an iterator that provides access to its element in some order.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511144006.png"/></div>
+
+迭代器总是 ordered, 即使产生他们的容器不是 ordered container. 但是它实际上是一个 non-random 的顺序, 具体和 Python 的实现有关, 并且如果在两次使用时候分别用 key 和 value 去遍历字典且没有修改 dictionary, 其 order 应该是一致的.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511144550.png"/></div>
+
+在到达容器末尾之后, 使用会抛出 `StopIteration` 异常, 同时在修改了容器之后, 需要重新获取迭代器.
+
+### For statement
+在我们执行一个 for 语句的时候,实际结果和使用 iter 和 next 实现相同:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511145246.png"/></div>
+
+for 语句配合迭代器可以很方便地使用:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511145609.png"/></div>
+
+### Built-In Iterator Functions
+很多内置的 Python 序列操作返回一个 lazy-evaluation 的迭代器:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511145925.png"/></div>
+
+为了看迭代器的内容, 可以将元素放到一个容器中:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511150010.png"/></div>
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511150338.png"/></div>
+此外我们需要注意, 不要将一个 Interator 对象和一个 list 做对比, 这会返回一个 false.
+
+### Generator
+Generator 是一种特殊的 iterator.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511150842.png"/></div>
+
+### Generators & Iterators
+* Generators and Yield from iterators
+  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511151216.png"/></div>
+  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511151334.png"/></div>
+
+## Lecture 31 : Streams
