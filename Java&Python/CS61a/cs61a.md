@@ -1540,3 +1540,96 @@ Generator 是一种特殊的 iterator.
   <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511151334.png"/></div>
 
 ## Lecture 31 : Streams
+### Sequence Operation
+Map, filter and reduce express sequence manipulation using compact expressions.
+<div align=center><img src="https://i.loli.net/2021/05/12/BCYjL4nVfDXpQl7.png"/></div>
+
+<div align=center><img src="https://i.loli.net/2021/05/12/4g1zYR9OfwTpXds.png"/></div>
+
+### Stream
+A stream is a list, but the rest of the list is computed only when needed.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210512092426.png"/></div>
+
+只有在表达式求值的时候才会 raise exception.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210512092837.png"/></div>
+这时候就相当于我们将一个 list 分解成为了 first + rest, 等同于 python 中的 iterator.
+
+### Integer Stream
+An interger stream is a stream of consecutive integers, the rest of the stream is not yet computed when the stream is created.
+```Scheme
+(define (int-stream start)
+    (cons-stream start (int-stream (+1 start))))
+```
+
+### Stream Processing
+同样的我们可以编写处理 stream 的过程:
+```Scheme
+(define (square-stream s)
+    (cons-stream (* (car s)(car s)
+                 (square-stream (cdr-stream s)))))
+```
+于是, 我们可以递归地定义 stream
+* The rest of a constant stream is the constant stream.
+    ```Scheme
+    (define ones (cons-stream 1 ones))
+    ```
+* Combine two streams by separating each into car and cdr:
+    ```Scheme
+    (define (add-stream s t)
+        (cons-stream (+ (car s)(car t))
+        (add-stream (cdr-stream s)
+                    (cdr-stream t))))
+    (define ints (cons-stream 1 (add-stream ones ints)))
+    ```
+### Higher-Order Functions
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210512100535.png"/></div>
+同样的我们可以定义 stream 的高阶函数:
+```Scheme
+;; Map f over s.
+(define (map-stream f s)
+  (if (null? s) 
+      nil
+      (cons-stream (f (car s))
+            (map-stream f 
+                 (cdr-stream s)))))
+  
+;; Filter s by f.
+(define (filter-stream f s)
+  (if (null? s)
+      nil
+      (if (f (car s))
+          (cons-stream (car s) 
+                (filter-stream f (cdr-stream s)))
+          (filter-stream f (cdr-stream s)))))
+
+;; Reduce s using f and start value.
+(define (reduce-stream f s start)
+  (if (null? s) 
+      start
+      (reduce-stream f
+              (cdr-stream s)
+              (f start (car s)))))
+```
+下面是求解质数序列的一种做法:
+```Scheme
+(define (sum-stream s)
+  (reduce-stream + s 0))
+
+(define (sum-primes-stream a b)
+  (sum-stream (filter-stream prime? (range-stream a b))))
+
+(define (sieve s)
+  (cons-stream 
+   (car s) 
+   (sieve (filter-stream
+           (lambda (x) (< 0 (remainder x (car s))))
+           (cdr-stream s)))))
+
+(define primes (sieve (int-stream 2)))
+```
+### 使用 Delay 和 Force 实现stream
+A promise is an expression, along with an environment in which to evaluate it:
+* Delaying an expression creates a promise to evaluate it later in the current environment
+* Forcing a promise returns its value in the environment in which it was defined
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210512101106.png"/></div>
