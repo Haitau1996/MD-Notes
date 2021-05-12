@@ -1633,3 +1633,20 @@ A promise is an expression, along with an environment in which to evaluate it:
 * Forcing a promise returns its value in the environment in which it was defined
 
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210512101106.png"/></div>
+
+## Lecture 32: Declarative Languages
+### Database Management Systems
+A table is a collection of records, which are rows that have a value for each column.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210512104907.png"/></div>
+
+数据库中使用的 SQL 语言是一种 declarative(声明式) languages:
+* A program is description of the desired result
+* the interperter figures out how to generate the result
+
+相对于我们目前学习的 imperative(指令式) languages:
+* A "program" is a description of computational processes
+* The interpreter carries out execution/evaluation rules
+
+相对而言, 前者的解释器有更多的自由度, 可以根据需要选择不同的实现.
+
+### Structured Query Language (SQL)
