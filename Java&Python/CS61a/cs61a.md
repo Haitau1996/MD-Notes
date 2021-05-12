@@ -1650,3 +1650,8 @@ A table is a collection of records, which are rows that have a value for each co
 相对而言, 前者的解释器有更多的自由度, 可以根据需要选择不同的实现.
 
 ### Structured Query Language (SQL)
+SQL 语言有 ANSI 和 ISO 标准, 但是不同的实现有他们自己的 features.
+* A `select` statement creates a new table, either from scratch or by projecting a table
+* A `create` table statement gives a global name to a table
+* Lots of other statements exist: `analyze, delete, explain, insert, replace, update`, etc.But Most of the important action is in the select statement
+  
