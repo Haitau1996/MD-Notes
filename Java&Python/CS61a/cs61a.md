@@ -1679,3 +1679,67 @@ SQL 经常是一种 interactive(交互式) 语言, 使用 `select` 语句的结�
 
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513142913.png"/></div>
 
+## Lecture 33: Table
+### Joining Tables
+两个Table, A 和 B 使用逗号 Join 意味着 所有的 A 的 row & B 的 row 混合:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513151042.png"/></div>
+
+### Aliases and Dot Expressions
+两个 table 可能有相同的 column 名字, dot 表达式和别名可以解除 column 的歧义, 例如下面语句中选 siblings pair:
+```SQL
+select a.child as first, b.child as second
+  from parents as a, parents as b
+    where a.parent = b.parent and a.child < b.child;
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513152048.png"/></div>
+
+同样地, 我们可以 Joining 多个表,例如我们 join 多个表:
+```SQL
+create table grabdparents as 
+    select a.parent as grandog,  b.child as granpup
+        from parents as a, parents as b
+            where b.parent = a.child
+
+select grandog from grandparents, dogs as c,  dogs as d
+    where grandog = c.name and
+          grandup = d.name and
+          c.fur = d.fur;
+```
+
+### Numerical Expressions
+SQL 中的表达式可以包含函数调用和算术运算符:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513152957.png"/></div>
+
+```SQL
+CREATE TABLE cities AS
+  SELECT 38 AS latitude, 122 AS longitude, "Berkeley" AS name UNION
+  SELECT 42,              71,              "Cambridge"        UNION
+  SELECT 45,              93,              "Minneapolis"      UNION
+  SELECT 33,             117,              "San Diego"        UNION
+  SELECT 26,              80,              "Miami"            UNION
+  SELECT 90,               0,              "North Pole";
+
+CREATE TABLE distances AS
+  SELECT a.name AS first, b.name AS second,
+         60*(a.latitude-b.latitude) AS distance
+         FROM cities AS a, cities AS b
+         WHERE a.name != b.name
+         ORDER BY a.longitude;
+
+SELECT second FROM distances WHERE first="Minneapolis" ORDER BY -distance;
+```
+
+### String Expressions
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513153511.png"/></div>
+
+```SQL
+CREATE TABLE nouns AS
+  SELECT "the dog" AS phrase UNION
+  SELECT "the cat"           UNION
+  SELECT "the bird";
+
+SELECT subject.phrase || " chased " || object.phrase
+       FROM nouns AS subject, nouns AS object
+       WHERE subject.phrase != object.phrase;
+```
