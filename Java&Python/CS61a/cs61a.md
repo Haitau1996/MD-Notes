@@ -1743,3 +1743,72 @@ SELECT subject.phrase || " chased " || object.phrase
        FROM nouns AS subject, nouns AS object
        WHERE subject.phrase != object.phrase;
 ```
+
+## Lecture 34 : Aggregation(聚合操作)
+//TODO:
+
+## Lecture 36 : Distributed Data
+### Computer Systems
+Systems research enables application development by defining and implementing abstractions:
+* **Operating systems** provide a stable, consistent interface to unreliable, inconsistent hardware
+* **Networks** provide a robust data transfer interface to constantly evolving communications infrastructure
+* **Databases** provide a declarative interface to complex software that stores and retrieves information efficiently
+* **Distributed systems** provide a unified interface to a cluster of multiple machines
+
+上面的这些东西都有一个共同的作用:**隐藏复杂性的同时保持很好的灵活性**.
+
+#### 例: Unix 操作系统
+Essential features of the Unix operating system (and variants):
+* Portability: The same operating system on different hardware
+* Multi-Tasking: Many processes run concurrently on a machine
+* Plain Text: Data is stored and shared in text format
+* Modularity: Small tools are composed flexibly via pipes
+
+其中的 pipes 有点像 python 中的函数, 其中的标准流有点像 python 中的迭代器:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513155026.png"/></div>
+
+```Shell
+ls *.pdf | cut -f 1 -d - | sort -r | uniq -c
+```
+
+Python 就是 Unix 系统中的一个程序, 我们可以使用 `sys.stdin` 和 `sys.stdout` 来访问标准的输入输入流.
+
+### Apache Spark
+Apache Spark is a data processing system that provides a simple interface for large data
+* A Resilient Distributed Dataset (RDD) is a collection of values or key-value pairs
+* Supports common UNIX operations: `sort, distinct` (uniq in UNIX), `count, pipe`
+* Supports common sequence operations: `map, filter, reduce`
+* Supports common database operations: `join, union, intersect`
+
+这些所有的操作都可以在 RDD that are partitioned across machines 上操作. 
+
+#### Apache Spark 执行模型
+Processing is defined centrally but executed remotely:
+* A Resilient Distributed Dataset (RDD) is distributed in partitions to worker nodes
+* A driver program defines transformations and actions on an RDD
+* A cluster manager assigns tasks to individual worker nodes to carry them out
+* Worker nodes perform computation & communicate values to each other
+* Final results are communicated back to the driver program
+
+<div align=center><img src="https://i.loli.net/2021/05/13/FgZUnaPyD5MoTJv.png"/></div>
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513163350.png"/></div>
+
+Spark 提供下面的服务:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513163522.png"/></div>
+
+### MapReduce
+An important early distributed processing system was MapReduce, developed at Google, 用通用的应用结构 capture 很多共同的 data processing tasks:
+* Step 1: Each element in an input collection produces zero or more key-value pairs (map)
+* Step 2: All key-value pairs that share a key are aggregated together (shuffle)
+* Step 3: The values for a key are processed as a sequence (reduce)
+
+#### MapReduce Evaluation Model
+**Map phase**: Apply a mapper function to all inputs, emitting intermediate key-value pairs
+* The mapper yields zero or more key-value pairs for each input
+  
+**Reduce phase**: For each intermediate key, apply a reducer function to accumulate all values associated with that key
+* All key-value pairs with the same key are processed together
+* The reducer yields zero or more values, each associated with that intermediate key
+
+## Lecture 37: NLP
