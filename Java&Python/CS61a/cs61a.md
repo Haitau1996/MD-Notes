@@ -1650,8 +1650,32 @@ A table is a collection of records, which are rows that have a value for each co
 相对而言, 前者的解释器有更多的自由度, 可以根据需要选择不同的实现.
 
 ### Structured Query Language (SQL)
-SQL 语言有 ANSI 和 ISO 标准, 但是不同的实现有他们自己的 features.
+SQL 语言有 ANSI 和 ISO 标准, 但有不同的变种, DBMS 有他们自己的 features.
 * A `select` statement creates a new table, either from scratch or by projecting a table
 * A `create` table statement gives a global name to a table
-* Lots of other statements exist: `analyze, delete, explain, insert, replace, update`, etc.But Most of the important action is in the select statement
+* Lots of other statements exist: `analyze, delete, explain, insert, replace, update`, etc.But Most of the important action is **in the `select` statement**
   
+#### Select Value
+一个 select 语句总是包含用逗号分割的 colum 描述列表, column 藐视是一个表达式, 可以跟着一个 as 语句:
+```SQL
+select [expression] as [name], [expression2] as [name2];
+```
+Selecting literals creates a one-row table, The union of two select statements is a table containing the rows of both of their results:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513141303.png"/></div>
+
+SQL 经常是一种 interactive(交互式) 语言, 使用 `select` 语句的结果向用户显示, 但是没有存储, 使用 `create table` 语句给结果赋予一个值:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513141629.png"/></div>
+
+### Projecting Tables
+* Select 语句可以使用 `from` 子句来自定义一个 Input Table,
+* 可以使用 `where` 子句来选择 input table rows 的一个子集.  
+* 可以使用 `order by` 子句来对剩余的 row 排序
+* 列描述确定每个输入行如何投影到结果行
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513142432.png"/></div>
+
+### Arithmetic
+* 在 select 语句中, colum names 求值得到 row values
+* 算术表达式可以作用于  row values 和常量
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513142913.png"/></div>
+
