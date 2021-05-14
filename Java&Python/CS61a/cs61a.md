@@ -1761,6 +1761,19 @@ Rows in a table can be grouped, and aggregation is performed on each group.
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514143257.png"/></div>
 
 ## Lecture 35 : Data Base
+我们可以 create / drop table.
+### Modifying Tables
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514143959.png"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514144050.png"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514144123.png"/></div>
+
+### Python and SQL
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514144435.png"/></div>
+
+### SQL 注入攻击
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514144646.png"/></div>
+
+
 ## Lecture 36 : Distributed Data
 ### Computer Systems
 Systems research enables application development by defining and implementing abstractions:
