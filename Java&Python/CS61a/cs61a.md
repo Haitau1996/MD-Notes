@@ -1812,3 +1812,4 @@ An important early distributed processing system was MapReduce, developed at Goo
 * The reducer yields zero or more values, each associated with that intermediate key
 
 ## Lecture 37: NLP
+大致听了下, 太浅了, 先跳过吧.
