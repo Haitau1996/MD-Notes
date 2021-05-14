@@ -1745,8 +1745,22 @@ SELECT subject.phrase || " chased " || object.phrase
 ```
 
 ## Lecture 34 : Aggregation(聚合操作)
-//TODO:
+在之前的语句中, 我们都是使用一个 single row 的数据, 而 An aggregate function in the [columns] clause computes a value from **a group of rows**.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514141850.png"/></div>
 
+可以看到, 上面的 max 就是一个聚合操作. 此外, 可以有 `min`,`weight`,`count`等操作.此外, 聚合操作同样 selects a row in the table, which may be meaningful(也可能没有意义, 如`avg`):
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514142341.png"/></div>
+
+### Group
+Rows in a table can be grouped, and aggregation is performed on each group.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514142716.png"/></div>
+
+#### selecting Groups
+此外, 我们可以使用 having 从句选择一个 group:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514143101.png"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514143257.png"/></div>
+
+## Lecture 35 : Data Base
 ## Lecture 36 : Distributed Data
 ### Computer Systems
 Systems research enables application development by defining and implementing abstractions:
