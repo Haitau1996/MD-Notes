@@ -1773,7 +1773,6 @@ Rows in a table can be grouped, and aggregation is performed on each group.
 ### SQL 注入攻击
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514144646.png"/></div>
 
-
 ## Lecture 36 : Distributed Data
 ### Computer Systems
 Systems research enables application development by defining and implementing abstractions:
