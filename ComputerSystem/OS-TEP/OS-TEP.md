@@ -66,3 +66,58 @@ concurrency 指代一系列的问题, 他们在同时处理很多事情时出现
 
 #### 数据结构
 操作系统也有一些关键的数据结构来跟踪各种相关的信息. 例如 xv6 使用一个 context 的结构体来保存寄存器的内容, 用于上下文切换. 
+
+### Chap 5: 进程 API
+UNIX 提供了创建新进程的方式, 通过系统调用 `fork()` 和 `exec()`, 还有一个系统调用 `wait()` 等待其创建的子进程执行完成. 
+#### `fork()` 系统调用
+下面的代码展示了 fork 是如何使用的:
+```C++
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int main(int argc, char* argv[]){
+    printf("hello world form pid %d \n", (int)getpid());
+    int rc = fork();// 从这里开始有两个进程
+    if(rc < 0){
+        fprintf(stderr, "fork failed\n");
+        exit(0);
+    }else if(rc == 0){ // 子进程则进入这个代码块
+        printf("hello I am a child %d\n", (int)getpid());
+    }else {    // 父进程进入这个代码块
+        printf("hello I am parent of %d with pid %d\n",rc, (int)getpid());
+    }
+    return 0;
+}
+```
+```Shell
+hello world form pid 992 
+hello I am parent of 993 with pid 992
+hello I am a child 993
+```
+在 UNIX 系统中, 如果要操作某个进程, 就需要使用 `PID` 来指明. 使用 `fork()` 调用新创建的进程几乎与调用进程完全一样, 它拥有自己的地址空间,寄存器,程序计数器, 但是从 `fork()` 返回的值是不同的, 父进程获得的是子进程的 PID, 而子进程获得的是 0. 可以容易地理解, 两者的输出顺序是不确定的. 
+
+#### `wait()` 系统调用
+我们可以对上面的代码稍加修改, 加入 `<sys/wait.h>` 头文件, 在父进程执行的块中加入一行:
+```C++
+else{
+    int wc = wait(NULL);
+    printf("hello from parent of %d with %d \n",rc, (int)getpid());
+}
+```
+这是父进程就会等到子进程运行完成之后再运行, 这时候 `wait()` 返回, 接着父进程才输出自己的信息.
+
+#### `exec()` 系统调用
+`exec()` 系统调用是创建进程 API 的一个重要部分, 可以让父进程与子进程执行执行不同的程序. 例如我们修改子进程的代码:
+```C++
+        char* myArgs[3];
+        myArgs[0] = strdup("wc");
+        myArgs[1] = strdup("wait.c");
+        myArgs[2] = NULL;
+        execvp(myArgs[0],myArgs);//调用成功就不再返回
+        printf("this line will never come out\n");
+```
+结果就是在子进程中调用字符计数器 wc, 对文件 wait.c 做计数. `exec()` 从可执行程序中加载代码和静态数据, 并且覆盖自己的代码段, 堆/栈 以及其他内存空间也会被重新初始化, 操作系统会执行唉程序, 对 `exec` 的调用永远不会返回.
+
+#### 为何如此设计 API
+事实证明, 分离 fork 和 exec 的做法在构建 UNIX Shell 的时候非常有用, 给了 shell 在执行 fork 之后 exec 之前的运行代码的机会, 这些代码可以在运行新程序之前改变环境, 从而实现一系列有趣的功能. 例如 UNIX 中管道的实现, 用的是 `pipe()` 系统调用, 一个进程的输出被链接到一个内核管道上(队列), 另一个进程的输入也被链接到同一个管道上. 
