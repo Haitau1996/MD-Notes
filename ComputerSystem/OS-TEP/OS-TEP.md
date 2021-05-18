@@ -110,12 +110,12 @@ else{
 #### `exec()` 系统调用
 `exec()` 系统调用是创建进程 API 的一个重要部分, 可以让父进程与子进程执行执行不同的程序. 例如我们修改子进程的代码:
 ```C++
-        char* myArgs[3];
-        myArgs[0] = strdup("wc");
-        myArgs[1] = strdup("wait.c");
-        myArgs[2] = NULL;
-        execvp(myArgs[0],myArgs);//调用成功就不再返回
-        printf("this line will never come out\n");
+    char* myArgs[3];
+    myArgs[0] = strdup("wc");
+    myArgs[1] = strdup("wait.c");
+    myArgs[2] = NULL;
+    execvp(myArgs[0],myArgs);//调用成功就不再返回
+    printf("this line will never come out\n");
 ```
 结果就是在子进程中调用字符计数器 wc, 对文件 wait.c 做计数. `exec()` 从可执行程序中加载代码和静态数据, 并且覆盖自己的代码段, 堆/栈 以及其他内存空间也会被重新初始化, 操作系统会执行唉程序, 对 `exec` 的调用永远不会返回.
 
