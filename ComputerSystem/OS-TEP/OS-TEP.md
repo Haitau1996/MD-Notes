@@ -197,3 +197,52 @@ ret	# finally return into new ctxt
 
 #### 小结
 实现 CPU 虚拟化的关键底层机制, 受限直接执行, 基本思路很简单: 就让你想运行的程序在 CPU 上运行, 但首先确保设置好硬件, 一遍没有操作系统帮助的情况下限制进程可以执行的操作. 下一个问题就是: 在特定的时间, 我们应该运行哪个进程.
+
+### Chap 7: 进程调度 - intro
+我们应该如何考虑调度策略的基本框架?
+* 什么是关键假设
+* 哪些指标非常重要
+* 哪些基本方法已经在早起系统中使用
+#### 调度指标
+我们在这里考虑任务周转时间: 任务完成的时间减去任务到达的时间.即
+\[
+    T_{turnaround} = T_{completion} - T_{arrival}
+\]
+另一个有趣的指标是公平(fairness), 性能和公平在调用系统中往往是矛盾的. 
+
+#### FIFO
+最基本的算法被称为先进先出调度,有时候也称为先到先服务. 这容易引起护航效应, 即一些耗时较少的潜在资源消费者被排在重量级的资源消费者后.
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210519113514.png"/></div>
+
+#### 最短任务优先(Shortest Job First)
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210519132857.png"/></div>
+
+SJF 策略很简单: 先运行最短的任务, 然后是次短的, 如此下去. 如果假设所有工作同时到达, 那么可以证明 SJF 是一个最优的调度算法. 但是我们的放宽这条假设, 那么就得到下图的调度:
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210519132932.png"/></div>
+
+在过去的批处理计算中, 开发了一些非抢占式(non-preemptive)的调度程序, 这样的系统会等每项工作做完再考虑是否运行新工作. 现代化的调度可以进行上下文切换, 几乎都是抢占式的(preemptive).
+
+#### 最短完成时间优先(STCF)
+基于时钟中断和上下文切换的讨论, 当 B/C 到达时, 调度程序可以抢占(preempt) 工作A, 这被称为 最短完成时间优先/抢占式最短作业优先 调度. 每当新工作进入系统时, 它会先确定剩余工作和新工作中, 谁的剩余时间最少, 然后调度该工作. SJF 是最优的, 那么 STCF 的最优性也是复合直觉的. 
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210519142501.png"/></div>
+
+#### 新的度量指标: 响应时间
+在批处理中 STCF 是一个很好的策略, 引入分时系统后, 用户将会坐到终端面前, 同时也要求系统的交互性要好. 响应时间为从任务到达系统到首次运行的时间:
+\[
+    T_{response} = T_{firstrun} - T_{arrival}
+\]
+下面的问题就是如何构建对响应时间敏感的调度程序.
+
+#### Round Robin(轮转)
+Round Robin 的基本思路非常简单, RR 在一个时间片内运行一个工作, 然后切换到队列中的下一个任务, 而不是运行一个任务直接到结束.时间切片必须是时钟中断周期的倍数, 我们看一个例子:
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210519150900.png"/></div>
+
+时间片太短是有问题的: 突然上下文切换的成本将影响整体性能(不仅来自于保存和恢复少量寄存器的操作, **在 CPU 高速缓存/TLB/分支预测和其他片上硬件中建立的大量状态刷新和引入**), 系统设计者需要权衡时间片的长度, 使其足够长以便摊销(amortize)上下文切换的成本.<br>
+更一般地说, 任何公平的政策(如 RR), 即在小规模时间将 CPU 均匀分配到各个活动进程之间的策略, 在周转时间这类指标上表现不佳. 接下来我们要放宽两个假设: 作业没有 IO 和 每个作业的运行时间是已知的.
+
+#### 结合 IO
+当前正在运行的作业在 I/O 期间不会使用 CPU, 它将被阻塞等待 I/O 完成. 调度程序在 I/O 完成时做出决定, 会产生中断, 并发出 I/O 进程从阻塞状态移回就绪状态. 我们通过将每个 CPU 突发作为一项工作, 调度程序确保交互的进程经常运行, 当这些交互式作业在执行 I/O 时, 其他 CPU密集型作业将进行, 这种重叠可以更好地使用资源.
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210519153059.png"/></div>
+
+#### 无法预知
+事实上, 在一个通用的操作系统中, 他们对每个作业的长度知之甚少, 我们将在后面介绍没有先验知识的 SJF/STCF, 进一步与 RR 调度程序结合起来.
