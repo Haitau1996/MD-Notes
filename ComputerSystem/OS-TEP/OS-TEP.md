@@ -170,7 +170,7 @@ else{
 swtch:
 # Sav e old regi s ter s
 movl 4(%esp), %eax # put old ptr into eax
-popl 0 (%eax)	# save the old IP
+popl 0 (%eax)   # save the old IP
 movl %esp, 4 (:%eax) # and stack
 movl %ebx, 8 (:%eax) # and other registers
 movl %ecx, 12 (%eax)
@@ -188,8 +188,8 @@ movl 16(%eax), %edx
 movl 12(%eax), %ecx
 movl 8(%eax), %ebx
 movl 4 (%eax), %esp # stack is switched here
-pushl 0 (%e = z)	# return addr put in place
-ret	# finally return into new ctxt
+pushl 0 (%e = z)   # return addr put in place
+ret   # finally return into new ctxt
 ```
 
 #### 担心并发吗
@@ -300,3 +300,60 @@ IO 操作会使得任务在时间片完成之前放弃 CPU, 这时候不处罚�
 #### MLFQ 调优及其他问题
 很多细节的问题, 如配置多少队列, 每个队列时间片多大等, 只有利用对工作负载的经验,以及后续对调度程序的调优, 才会导致令人满意的平衡.  
 大多数 MLFQ 都支持不同队列可变的时间长度, 一般高优先队列只有较短的时间片, 可以快速切换, 低优先队列配置较长的时间片. 
+
+### Chap 9: 调度 -- 比例份额
+比例份额调度程序又是被称为公平份额调度程序, 基于一个简单得想法: **调度程序的最终目标, 是确保每个工作获得一定比例的 CPU 时间,而不是优化周转时间和响应时间**.其中一个例子就是彩票调度: 每隔一段时间就会举行一次彩票抽奖决定接下来运行哪个进程, 越是应该频繁运行的进程, 越要有更多赢得彩票的机会.  
+#### 基本概念: 彩票数表示份额
+彩票数(ticket) 代表了进程占有某个资源的份额, 随机方法相对于传统方法有几个优势:
+1. 随机方法常常可以避免奇怪的边角情况
+2. 随机方法轻量, 几乎不需要记录任何状态
+3. 随机方法很快
+
+#### 彩票机制
+彩票调度提供了一些机制, 用不同且有效的方式来调度彩票.
+1. 利用彩票货币(ticket currency), 允许拥有一组彩票的用户以他们喜欢的某种货币将彩票分配给自己的不同工作, 操作系统自动将这种货币兑换为正确的全局彩票
+   <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210520112309.png"/></div>
+2. 彩票转让: 一个进程可以临时将自己的彩票交给另一个进程
+3. 彩票通胀: 进程之间相互不信任就没有意义, 在信任的环境中, 如果一个进程知道它需要更多的 CPU 时间, 就可以增加自己的彩票, 将此告知操作系统而无需与其他进程通信
+
+#### 实现
+最简单的实现需要一个随机数生成器和一个记录所有进程的数据结构:
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210520112732.png"/></div>
+
+```C++
+ // counter: used to track if we’ve found the winner yet
+ int counter = 0;
+ // winner: use some call to a random number generator to
+ // get a value, between 0 and the total # of tickets
+ int winner = getrandom(0, totaltickets);
+ // current: use this to walk through the list of jobs
+ node_t *current = head;
+ while (current) {
+    counter = counter + current->tickets;
+    if (counter > winner)
+    break; // found the winner
+    current = current->next;
+ }
+ // ’current’ is the winner: schedule it...
+ ```
+
+#### 实例
+我们引入两个互相竞争的工作, 有相同的彩票和运行时间, 而公平指标定义为两个工作的完成时刻:
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210520113247.png"/></div>
+
+轻易发现只有当工作执行非常多的时间片时, 彩票调度算法才能得到预期的结果.此外对于给定的一组工作, 彩票分配的问题依然没有最佳答案.
+
+#### 为什么不是确定的
+
+前面看到了, 随机方式可以使得调度程序实现简单且大致正确, 但偶尔不能产生正确的比例, 尤其是工作的运行时间很短的情况下.   
+步长调度的实现很简单, 每个工作都有自己的步长, 这个值和票数成反比. 我们得到进程的步长(stride)后, 每次运行都会让它的计数器(pass value, 行程值) 增加步长值, 记录整体进展.  
+调度器使用进程步长以及行程值确定调用哪个进程: **需要进行调度的时候, 选择目前拥有最小行程值的进程, 并在结束后增加一个步长**.  
+```C++
+curr = remove_min(queue);   // pick client with min pass
+s chedule(curr);   // run for quantum
+curr->pass += curr->stride;   // update pass using stride
+insert(queue, curr);   // return curr to queue
+```
+
+#### 小结
+总之, 两种调度都没作为 CPU 调度广泛使用, 他们都能很好地适应 IO, 同时无法知道具体应该拥有多少ticket. 只有在相对容易解决这两个问题的领域更好用, 如在虚拟化的数据中心中.
