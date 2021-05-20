@@ -196,7 +196,7 @@ ret   # finally return into new ctxt
 操作系统可能简单决定, 在中断处理时禁用中断, 但是这可能丢失中断, 在技术上是不好的. 操作系统开发了很多复杂的家锁方案, 以保护内部数据结构的并发访问, 使得多个活动可以同时在内核中进行. 这可能导致各种有趣并且难以发现的错误. 
 
 #### 小结
-实现 CPU 虚拟化的关键底层机制, 受限直接执行, 基本思路很简单: **<font color=red>就让你想运行的程序在 CPU 上运行, 但首先确保设置好硬件, 以便没有操作系统帮助的情况下限制进程可以执行的操作</font>**. 下一个问题就是: 在特定的时间, 我们应该运行哪个进程.
+实现 CPU 虚拟化的关键底层机制, 受限直接执行, 基本思路很简单: <font color=red>就让你想运行的程序在 CPU 上运行, 但首先确保设置好硬件, 以便没有操作系统帮助的情况下限制进程可以执行的操作</font>. 下一个问题就是: 在特定的时间, 我们应该运行哪个进程.
 
 ### Chap 7: 进程调度 - intro
 我们应该如何考虑调度策略的基本框架?
@@ -339,6 +339,7 @@ IO 操作会使得任务在时间片完成之前放弃 CPU, 这时候不处罚�
 
 #### 实例
 我们引入两个互相竞争的工作, 有相同的彩票和运行时间, 而公平指标定义为两个工作的完成时刻:
+
 <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210520113247.png"/></div>
 
 轻易发现只有当工作执行非常多的时间片时, 彩票调度算法才能得到预期的结果.此外对于给定的一组工作, 彩票分配的问题依然没有最佳答案.
@@ -353,7 +354,57 @@ curr = remove_min(queue);   // pick client with min pass
 s chedule(curr);   // run for quantum
 curr->pass += curr->stride;   // update pass using stride
 insert(queue, curr);   // return curr to queue
-```
+ ```
 
 #### 小结
 总之, 两种调度都没作为 CPU 调度广泛使用, 他们都能很好地适应 IO, 同时无法知道具体应该拥有多少ticket. 只有在相对容易解决这两个问题的领域更好用, 如在虚拟化的数据中心中.
+
+### Chap 10: 多处理器调度
+随着多处理器系统的普及, 操作系统遇到的一个新问题就是多处理器调度. 我们接下来考虑如何将前面的调度原则的想法应用到多处理器上, 同时会出现什么新的问题, 应该如何解决.
+
+#### Background: 多处理器架构
+多处理器引入的区别核心在于**对于硬件缓存的使用**, 以及**多处理器之间共享数据的方式**.  
+在单 CPU 系统中, 存在多级的硬件缓存, 程序第一次读取数据时, 数据在内存中, 需要花费较长的时间, **处理器判断该数据很可能被再次使用, 因此将其放入 CPU 缓存中**. 缓存系统基于局部性(locality)的概念:
+* 时间的局部性: 一个数据被访问后, 很可能在不久的将来被再次访问
+* 空间的局部性: 程序访问地址为 x 的数据后, 很可能会紧接着访问 x 周围的数据
+
+如果多个处理器并且共享一个内存, 结果如何?
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210520145558.png"/></div>
+
+最普遍的问题就是缓存一致性: 某位置的内存数据D, A 将其修改后没有写回数据D', 而B 去访问的时候没有更新数据得到了旧值 D. 硬件提供了这个问题的基本解决方案: 通过监控内存访问, 硬件可以保证获得正确的数据, 并且保证共享内存的唯一性. 在基于总线的系统中, 一种方式是使用总线窥探.
+
+#### 别忘了同步
+跨 CPU 访问(尤其是写入)共享数据或者数据结构时, 需要使用互斥原语(mutual exclusion primitives) 才能保证正确性. 例子下面的代码中:
+```C++
+typedef struct ____Node_t {
+    int    value;
+    struct ___Node_t *next;
+} Node_t;
+int List_Pop() {
+    Node_t *tmp =    head;    //    remember old head ...
+    int value   =    head->value;    //    ... and its value
+    head        =    head->next;    //    advance head to next pointer
+    free(tmp);    //    free old head
+    return value;    //    return value at head
+}
+```
+两个 CPU 同时进入函数, 想要各删除一个节点, 如果不加锁可能就是对 head 做 double free, 这是非常危险的. 这就需要在函数开始前调用 `lock(&m)` 结束后调用 `unlock(&m)`, 确保代码按照预期执行. 但是加锁**会有性能问题**, 随着 CPU 数量的增加, 访问同步共享的数据结构就会变得很慢.   
+#### 缓存亲和度
+一个进程在某个 CPU 上运行, 会在缓存中维护很多状态, 该进程在相同 CPU 运行的时候, 由于缓存数据而执行的更快. 因此 **尽可能将进程保持在同一个 CPU 上**.
+
+#### 单对列调度
+这是对单处理器调度基本架构的简单复用, 将所有需要调度的工作放在一个单独的队列中, 被称为单队列多处理器调度(**single-queue multiprocessor scheduling**, SQMS).它有两个尖锐的问题:
+1. 缺乏可扩展性: 调度程序开发者需要通过加锁来保证原子性, 当 CPU 增加时, 系统花费了越来越多的时间在锁的开销上
+2. 缓存亲和性问题: 大多数 SQMS 引入了一些亲和机制
+    <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210520152829.png"/></div>
+    <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210520152853.png"/></div>
+    引入后只有工作E 在不同的 CPU 上来回迁移. 为了公平还可以选择不同的工作来迁移, 只是其实现要复杂一些.
+
+#### 多队列调度
+SQMS 基本调度框架**包括了多个调度队列, 每个队列可以使用不同的调度规则**, 比如轮转或者其他任何可能的算法. 工作进入系统后, 会依照一些启发性的规则将其放入某个调度队列, 这样每个 CPU 的调度之间相互独立, 避免了单队列方式中由于数据共享以及同步带来的问题.   
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210520153309.png"/></div>
+
+但是这就带来一个新的问题: **负载不均衡**. 
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210520153357.png"/></div>
+
+最明显的解决办法是让工作移动, 这被称为迁移. 而不同的迁移模式确实最棘手的部分. 一种基本的方法被成为 工作窃取(**work stealing**): 工作量较少的(源)队列不定期偷看其他队列是不是比自己的工作多, 如果显著地工作更慢, 就从目标队列窃取一个或者多个工作, 实现负载均衡. 这种方法频率的确定又是一种黑魔法.
