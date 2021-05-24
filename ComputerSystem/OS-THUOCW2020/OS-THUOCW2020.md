@@ -425,3 +425,145 @@ SLAB 分配器源于 Solaris 2.4 的分配算法, 工作于内存的物理页分
 
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/Single_Slub.jpg"/></div>
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/slub_data_structure.jpg"/></div>
+
+## 第 5 讲: 物理内存管理 非连续内存分配
+### 需求背景
+连续分配的缺点:
+* 分配给程序员的内存地址必须连续
+* 存在外碎片和内碎片
+* 内存分配的动态修改困难
+* 内存利用率比较低
+
+非连续内存分配的设计目标:**提高内存利用效率** & **管理灵活性**.
+* 允许一个程序使用非连续地物理地址空间
+* 允许共享代码与数据
+* 支持动态加载和动态链接
+
+需要解决的问题:
+* 虚拟地址和物理地址的转换
+  * 软件实现: 灵活, 开销大
+  * 硬件实现: 够用, 开销小
+* 非连续分配的硬件辅助机制
+  * 如何选择非连续分配中的内存分块大小
+    * 段式存储管理(segmentation)
+    * 页式存储管理(paging)
+  
+### 段式存储管理
+进程的段地址空间可以看成由多个段组成:
+* 主代码段
+* 子模块代码段
+* 公用库代码段
+* ...
+
+这样就可以用**更细粒度和灵活**的方式分离与共享.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524143118.png"/></div>
+
+#### 段的访问机制
+段的概念
+* 段表示访问方式和存储数据等属性相同的一段地址空间
+* 对应一个连续地内存 "块"
+* 若干个段组成进程逻辑地址空间
+
+段访问: 逻辑地址由二元组表示
+* s - 段号
+* addr - 段内偏移
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524143512.png"/></div>
+
+段访问的硬件实现:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524143656.png"/></div>
+
+### 页式存储管理
+* 页帧(Frame,物理页面)
+  * 把物理地址空间划分为大小相同的基本分配单位
+  * 2 的 n 次方  
+* 页面(page, 逻辑页面)
+  * 把逻辑地址空间也划分为相同大小的基本分配单位
+  * 帧和页的大小必须是相同的
+* 页面到页帧之间转换
+  * 页表
+  * MMU/TLB
+
+#### Frame
+物理内存被划分成大小相同的帧, 地址使用二元组(f,o) 表示
+* f - 帧号, F 位的话共有 $2^F$ 个帧
+* o - 偏移量, S 位表示每帧有 $2^S$ 个字节
+
+于是物理地址 $ = f \times 2^s + o$
+
+#### Page
+进程的逻辑地址空间被划分称为大小相等的页
+* 页内偏移 = 帧内偏移
+* 通常情况下 页号大小 $\neq$ 帧号大小
+
+进程的逻辑地址也是用二元组(p,o) 表示
+
+#### 地址映射
+* 逻辑地址中的页号是连续的
+* 物理地址中的帧号是不连续的
+* 不是所有的页都有对应的帧
+
+#### 页表
+页表保存了逻辑地址 - 物理地址之间的映射关系. 
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524145458.png"/></div>
+
+### 页表
+#### 结构
+每个进程都有一个页表
+* 每个也变对应一个也表项
+* 随着进程运行状态而动态变化
+* 叶表基址寄存器(Page Table Base Register, PTBR)
+  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524151705.png"/></div>
+
+#### 页式存储管理机制的问题
+* 内存访问性能问题
+  * 访问一个内存需要两次内存访问
+    * 第一次访问:获取页表项
+    * 第二次访问: 访问数据 
+* 页表大小问题
+  * 页表可能非常大
+
+解决的两种做法:
+* 缓存(快表)
+* 间接访问(多级页表)
+
+### 快表和多级页表
+快表(Translation Look-aside Buffer, TLB), 缓存近期访问的页表项
+* TLB 使用关联存储实现, 具备快速访问性能
+* 如果 TLB 命中, 物理页号可以很快被获取
+* 如果 TLB 不命中, 对应的表项可被更新到 TLB 中
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524152957.png"/></div>
+
+多级页表: 通过间接引用将页号分成 K 级:
+* 建立页表树
+* 减小每一级页表的长度
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524153245.png"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524153439.png"/></div>
+
+### RISC-V 的页映射机制
+RISC-V 对页表的硬件支持
+* 64 的 Sv39 虚地址与物理地址(虚地址比物理地址短)
+  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524154154.png"/></div>
+
+* 页表基址(放在 stap 寄存器中)
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524154647.png"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/rv64.jpg"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524154607.png"/></div>
+
+#### RISC-V 地址转换
+* Sv32 in RV32
+  * 当在satp 寄存器中启用了分页时, 虚拟地址
+映射启动。
+  * 1. satp.PPN 给出一级页表基址,VA[31:22] VPN[1] 给出一级页号,CPU 会读取位于地址
+(satp. PPN × 4096 + VA[31: 22] × 4) 的页表项。
+  * 2. 该PTE 包含二级页表的基址,VA[21:12]给出二级页号,CPU 读取位于地址(PTE.PPN × 4096 + VA[21: 12] × 4) 的叶节点页表项。
+  * 1. 叶节点页表项的PPN 字段和页内偏移(原始虚址的最低12 个有效位) 组成了最终结果: 物理地址就是(LeafPTE. PPN × 4096+ VA[11: 0])
+  
+### 使能 RISC-V 页表
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/lecture05_enable.jpg"/></div>
+
+页表也是放在内存中, 于是 OS 配置页表的流程如下:
+* 为页表分配物理内存
+* 确定映射的物理空间与虚拟空间
+* 创建页表
+* 设置satp, 刷新TLB，使能页表
