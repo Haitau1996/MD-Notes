@@ -373,3 +373,55 @@ swapping 名称的由来:
   * 低地址的空闲块起始地址必须是 $2^{i+1}$ 的倍数
 
 <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210524110517.png"/></div>
+
+### Slab 分配器
+rCore 中的物理内存管理接口如下:
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210524132508.png"/></div>
+
+如果前面我们介绍了伙伴系统, 其最小的单元可能是一个页面(4K), 而如果需要分配更小的内存, 使用伙伴系统就会有很大的浪费. 我们使用 Slab 分配器, 充当中间商, 从页分配器器获得资源, 充当一个中间商. 
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524133032.png"/></div>
+
+SLAB 分配器源于 Solaris 2.4 的分配算法, 工作于内存的物理页分配算法之上, **管理特定大小对象的缓存**, 进行快速高效的物理内存分配, 其引入想解决下列问题:
+* 内核对象远小于页的大小
+* 内核对象会被频繁地申请和释放
+* 内核对象初始化时间超过分配和释放内存的总时间
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524134907.png"/></div>
+
+其基本的特征如下:
+* 为每种使用的内核对象建立单独的缓存区
+* 按对象大小分组
+* 有两种 SLAB 对象状态: 已分配或空闲
+* 三类缓存区队列: Full/Partial/Empty
+* 优先从 partial 队列中分配对象
+* 缓存区为每个处理器维护一个本地缓存(避免锁的问题)
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/lecture04.jpg"/></div>
+
+#### CPU 缓存着色与 SLAB
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524135858.png"/></div>
+
+#### SLAB 的数据结构
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/slab_data_structure.jpg"/></div>
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/Single Slab.jpg"/></div>
+
+#### SLOB 的数据结构
+针对嵌入式系统 SLAB 的简化版本
+* 没有本地 CPU 高速缓存和本地节点的概念
+* 只存在三哥全局 partial free 链表
+* 链表按照对象大小划分
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/slob data.jpg"/></div>
+
+#### SLUB 分配器
+目标
+* 简化设计理念
+思路
+* 简化SLAB 的结构：取消了大量的队列和相关开销
+* 一个SLAB 是一组一个或多个页面，封装了固定大小的对象，内部没有元数据
+* 将元数据存储在页面相关的页结构
+* 没有单独的Empty SLAB 队列
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/Single_Slub.jpg"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/slub_data_structure.jpg"/></div>
