@@ -10,21 +10,21 @@ What is this cource?
 ![avatar](figure/1-1.PNG)
 
 ### 动态链接问题
-for a given set of N-Objects,支持以下的操作<br>
+for a given set of N-Objects,支持以下的操作  
 * Union command
 * find query
 
-Connect 具备的性质<br>
+Connect 具备的性质  
 * reflexive 
 * transitive
 * Symmetric
 
 #### Quick Find
-具体的数据结构：<br> 
-:arrow_forward: 使用一个size为n的array，id[]<br>
+具体的数据结构：   
+:arrow_forward: 使用一个size为n的array，id[]  
 :arrow_forward: 如果两者id一样的话，那么就认为是connected
 
-优缺点： find query非常快，但是union需要消耗太多资源。<br>
+优缺点： find query非常快，但是union需要消耗太多资源。  
 具体实现过程中需要注意的地方：
 * 初始构造函数需要给id[i]赋值为i
 * union时候需要遍历整个array.
@@ -44,19 +44,19 @@ Connect 具备的性质<br>
 
 ### Analysis of Algorithms
 
-![status](figure/3-1.png)<br>
+![status](figure/3-1.png)  
 一般而言,有四个角度去理解程序,作为学生,我们必须全部了解他们.为何去分析算法:
 
 * 预测performance
 * 比较算法s
 * 对程序运行提供一些保证
 
-**cost of basic opeartion**  :<br>
-![costs operation](figure/3-2.png)<br>
-很多时候可以把离散的求和近似成连续的积分,去评估一个算法的复杂度:<br>
-![descrete](figure/3-3.png)<br>
-**常见算法的复杂度** :<br>
-![growth](figure/3-4.png)<br>
+**cost of basic opeartion**  :  
+![costs operation](figure/3-2.png)  
+很多时候可以把离散的求和近似成连续的积分,去评估一个算法的复杂度:  
+![descrete](figure/3-3.png)  
+**常见算法的复杂度** :  
+![growth](figure/3-4.png)  
 
 **3-Sum 的 $N^2 \log N$ 解法**
 
@@ -64,16 +64,16 @@ Connect 具备的性质<br>
 * for each pair of numbers a[i] and a[j] **binary search** for -(a[i] + a[j]) ($N^2 \log N$)
 
 **内存使用的定量分析:**
-![memory](figure/3-5.png)<br>
+![memory](figure/3-5.png)  
 
 ### Stacks and queues
 
-面向对象编程的基本思想，分离interface和implementation.<br>
-![seperate](figure/4-1.png)<br>
+面向对象编程的基本思想，分离interface和implementation.  
+![seperate](figure/4-1.png)  
 
 #### Linked Lists representation
 
-![linklist stack](figure/4-2.png)<br>
+![linklist stack](figure/4-2.png)  
 不需要构造函数， 然后有一个指向node的reference,初始值为null.分析它的performance:
 
 - 最坏的情况下每个operation都要const time
@@ -82,13 +82,13 @@ Connect 具备的性质<br>
 #### array implementation
 
 用array实现，总是会遇到容量的问题，这个实现需要构造函数，同时给capacity(breaked the API),
-![array stack](figure/4-3.png)<br>
+![array stack](figure/4-3.png)  
 这个实现需要注意几个小的问题:
 - Overflow and Underflow: 使用resize解决这个问题
 - Loitering(虚度\游荡): pop之后将最后元素设置为null,让Java回收它
 
 ##### Array resize
-**repreted doubling** 如果array full, 创建new array of twice the size, 然后复制元素. 这样的话Insert N个元素的时间消耗为N+(2+4+8+...+N)~3N.<br>
+**repreted doubling** 如果array full, 创建new array of twice the size, 然后复制元素. 这样的话Insert N个元素的时间消耗为N+(2+4+8+...+N)~3N.  
 在1/4的size时候,将容量变成现在的1/2(new新的再copy).性能分析:
 - 内存的使用~8N到~32N之间(不包含string)
 - worst下push/pop需要O(N)的时间,best和摊销下都是O(1)
@@ -101,20 +101,20 @@ Connect 具备的性质<br>
 - [x] 需要在客户端的casting
 - [x] 如果出现mismatch, 出现的是run-time error
 
-新的解决方案就是**java generics**,可以避免client端的casting,同时在compile-time发现type dismatch errors.<br>
-注: java 不允许Generic的array, 只能是用casting将Object的转为Item[ ]:<br>
+新的解决方案就是**java generics**,可以避免client端的casting,同时在compile-time发现type dismatch errors.  
+注: java 不允许Generic的array, 只能是用casting将Object的转为Item[ ]:  
 ```Java
 S = (Item[]) new Object[capacity];
 ```
 
 #### 迭代器
-![Iterator](figure/4-4.png)<br>
+![Iterator](figure/4-4.png)  
 
 ### Sorting
 用define的key将数据排成一个有序的,data可能是 _Double_, _String_ 或者 _java.io.File_ , 具体的做法是实现 _Callbacks_, 在不同的语言中具体的实现可能不同:
 * C: function pointers
 * C++ : class-type functions
-* Java : interfaces<br>
+* Java : interfaces  
 ![implementation](figure/5-1.png)
 ```Java
 Public class Date implements Comparable<Data>{ //尖括号说明只允许和Data对比
@@ -163,9 +163,9 @@ Public class Date implements Comparable<Data>{ //尖括号说明只允许和Data
 ```
 
 #### Insertion Sort
-前面部分是有序的, 每次迭代中将后面的第一个元素(下标为i)插入前面有序的部分:<br>
-![insertion sort](figure/5-2.png)<br>
-这种算法需要 ~ $\frac{1}{4} N^2$ 次比较和交换on average,在最坏的情况下是$\frac{1}{2}$<br>
+前面部分是有序的, 每次迭代中将后面的第一个元素(下标为i)插入前面有序的部分:  
+![insertion sort](figure/5-2.png)  
+这种算法需要 ~ $\frac{1}{4} N^2$ 次比较和交换on average,在最坏的情况下是$\frac{1}{2}$  
 
 #### Shell Sort
 每次都move多个位置, 这样的话一次可能就不止改变一个逆序对:
@@ -185,6 +185,6 @@ Public class Date implements Comparable<Data>{ //尖括号说明只允许和Data
 * 递归地将每个half排序
 * 将两个halves合并
 
-在Java中可以增加很多断言, 可以帮助检测程序的逻辑错误, 同时更有利于文档的编写. <br>
-Merge sort最多使用 $N \log N$ 次 compare 和 $6 N \log N$次array acesses 去给size为N的array排序.<br>
+在Java中可以增加很多断言, 可以帮助检测程序的逻辑错误, 同时更有利于文档的编写.   
+Merge sort最多使用 $N \log N$ 次 compare 和 $6 N \log N$次array acesses 去给size为N的array排序.  
 此外, 还有一个问题是Merge sort对于小的subarray来说效率并不高,可以 **在~ 7个item左右的时候换成insertion sort**.
