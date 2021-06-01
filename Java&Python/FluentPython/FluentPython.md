@@ -45,4 +45,109 @@ Python 内置函数 `repr` 能把一个对象用字符串的形式表达出来�
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210601110814.png"/></div>
 
 ### len 不是普通方法
-len 之所以不是一个普通方法，是为了让Python 自带的数据结构可以走后门，abs 也是同理.这种处理方式在保持内置类型的效率和保证语言的一致性之间找到了一个平衡点.
+len 之所以不是一个普通方法，是为了让Python 自带的数据结构可以走后门，abs 也是同理.这种处理方式在**保持内置类型的效率和保证语言的一致性之间找到了一个平衡点**.
+
+## Chap 2: 序列构成的数组
+Python 从 ABC 语言继承了很多 Idea: 序列的泛型操作、内置的元组和 mapping 类型、用缩进来架构的源码、无需变量声明的强类型...
+
+### 内置的序列类型简介
+Python 标准库用 C 实现了丰富的序列类型:
+* 容器序列: list、tuple 和collections.deque 这些序列能存放不同类型的数据
+* 扁平序列: str、bytes、bytearray、memoryview 和array.array，这类序列只能容纳一种类型
+
+同时还可以按照元素是否可修改分类:
+* 可变序列:list、bytearray、array.array、collections.deque 和 memoryview
+* 不可变序列: tuple、str 和 bytes。
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210601144206.png"/></div>
+
+上图显示可变序列和不可变序列的差异,最重要也最基础的序列类型应该就是列表（list）, 它是可变的, 同时可以存放不同类型的元素.  
+
+### 列表推导 和 生成器表达式
+
+列表推导是构建列表（list）的快捷方式，而生成器表达式则可以用来创建其他任何类型的序列。
+
+#### 列表推导和可读性
+
+```Shell
+>>> symbols = '$¢£¥€¤'
+>>> codes = []
+>>> for symbol in symbols:
+...  codes.append(ord(symbol))
+# 另一种写法
+>>> symbols = '$¢£¥€¤'
+>>> codes = [ord(symbol) for symbol in symbols]
+```
+列表推导可以**帮助我们把一个序列或是其他可迭代类型中的元素过滤或是加工，然后再新建一个列表**。例如在上面的例子中, for 语句被用于生成新建列表, 通常的原则是，只用列表推导来创建新的列表，并且尽量保持简短.  
+
+#### 列表推导同filter和map的比较
+filter 和map 合起来能做的事情，列表推导也可以做，而且还不需要借助难以理解和阅读的 lambda 表达式。
+```Shell
+>>> symbols = '$¢£¥€¤'
+>>> beyond_ascii = [ord(s) for s in symbols if ord(s) > 127]
+>>> beyond_ascii
+[162, 163, 165, 8364, 164]
+>>> beyond_ascii = list(filter(lambda c: c > 127, map(ord, symbols)))
+```
+
+#### 笛卡尔积
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210601150534.png"/></div>
+
+上面展示的就是四种花色和三种牌面的笛卡尔积, 结果是一个包含 12 个元素的列表, 可以这样实现:
+```shell
+>>> colors = ['black', 'white']
+>>> sizes = ['S', 'M', 'L']
+>>> tshirts = [(color, size) for color in colors for size in sizes]
+```
+这个列表的两个循环嵌套的顺序和 for 从句的先后顺序是一致的.  
+
+#### 生成器表达式
+使用生成器是比使用列表来初始化元组/数组或其他序列类型的更好的选择, 生成器表达式背后遵守了迭代器协议，可以逐个地产出元素，而不是先建立一个完整的列表，然后再把这个列表传递到某个构造函数里。  
+生成器表达式的**语法跟列表推导差不多，只不过把方括号换成圆括号而已**。
+```Shell
+>>> symbols = '$¢£¥€¤'
+>>> tuple(ord(symbol) for symbol in symbols)
+(36, 162, 163, 165, 8364, 164)
+>>> import array
+>>> array.array('I', (ord(symbol) for symbol in symbols))
+```
+
+### 元组不仅仅是不可变的列表
+除了用作不可变的列表，它还可以用于没有字段名的记录。
+#### 元组和记录
+将元组中的元素视为记录中的一个字段数据, 这个位置信息给数据赋予了意义, 位置信息也变得非常重要. 
+#### 元组拆包
+元组拆包可以应用到任何可迭代对象上，唯一的硬性要求是，被可迭代对象中的元素数量必须要跟接受这些元素的元组的空档数一致。除非我们用* 来表示忽略多余的元素.其中**最好辨认的元组拆包形式就是平行赋值**:
+```Shell
+>>> lax_coordinates = (33.9425, -118.408056)
+>>> latitude, longitude = lax_coordinates # 元组拆
+```
+##### 用*来处理剩下的元素
+在Python 中，函数用*args 来获取不确定数量的参数算是一种经典写法. 
+```Shell
+>>> a, *body, c, d = range(5)
+>>> a, body, c, d
+(0, [1, 2], 3, 4)
+```
+
+#### 嵌套元组拆包
+接受表达式的元组可以是嵌套式的, 只要这个接受元组的嵌套结构符合表达式本身的嵌套结构，Python 就可以作出正确的对应。
+
+#### 具名元组
+`collections.namedtuple` 是一个工厂函数，它可以用来构建一个带字段名的元组和一个有名字的类——这个带名字的类对调试程序有很大帮助。
+```Shell
+>>> from collections import namedtuple
+# 元组的四个元素分别为 名字/国家/人口/坐标, 其中坐标依旧是一个元组
+>>> City = namedtuple('City', 'name country population coordinates') 
+>>> tokyo = City('Tokyo', 'JP', 36.933, (35.689722, 139.691667)) 
+>>> tokyo
+City(name='Tokyo', country='JP', population=36.933, coordinates=(35.689722,139.691667))
+```
+此外, 还有 `_field` 属性, `_make()` 方法 和 `_asdict()` 方法. 
+
+#### 作为不可变列表的元组
+除了跟增减元素相关的方法之外，元组支持列表的其他所有方法, 此外, 元组没有`__reversed__` 方法，但是这个方法只是个针对 list 的优化而已，reversed(my_tuple) 这个用法在没有`__reversed__` 的情况下也是合法的。
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210601153905.png"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210601153936.png"/></div>
+
+### 切片
