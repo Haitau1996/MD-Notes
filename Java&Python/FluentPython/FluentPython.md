@@ -248,3 +248,24 @@ NumPy 和SciPy 提供的高阶数组和矩阵操作,都是异常强大的库，�
 * asyncio: 里面有Queue、LifoQueue、PriorityQueue 和JoinableQueue, 为异步编程里的任务管理提供了专门的便利。
 * heapq: 没有队列类，而是提供了heappush 和heappop 方法，让用户可以把可变序列当作堆队列或者优先队列来使用。
 
+## Chap 3: 字典和集合
+dict 类型不但在各种程序里广泛使用，它也是Python 语言的基石。
+### 泛映射类型
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210602100251.png"/></div>
+
+`collections.abc` 模块中有 `Mapping` 和 `MutableMapping` 这两个抽象基类，它们的作用是为dict 和其他类似的类型定义形式接口.  
+所有映射类型都是利用dict 来实现的，因此它们有个共同的限制，即只有可散列的数据类型才能用作这些映射里的键(value 则不受此限制).  
+如果一个对象是可散列的，那么在这个对象的生命周期中，它的**散列值是不变的**，而且这个对象需要实现 `__hash__()` 方法。另外可散列对象还要有 `__eq__()` 方法， 这样才能跟其他键做比较。如果**两个可散列对象是相等的，那么它们的散列值一定是一样的**.  
+### 字典推导
+字典推导（dictcomp）可以从任何以键值对作为元素的可迭代对象中构建出字典。
+```Python
+>>> DIAL_CODES = [ 
+... (86, 'China'),
+... (81, 'Japan'),
+... ]
+>>> {code: country.upper() for country, code in country_code.items() 
+... if code > 66}
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210602102238.png"/></div>
+
+#### 用setdefault处理找不到的键
