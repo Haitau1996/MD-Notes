@@ -269,3 +269,107 @@ dict 类型不但在各种程序里广泛使用，它也是Python 语言的基�
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210602102238.png"/></div>
 
 #### 用setdefault处理找不到的键
+当字典 `dict[key]` 不能找到正确的键的时候，Python 会抛出异常, 可以用 `d.get(k, default)` 来代替d[k]，给找不到的键一个默认的返回值,[使用 setdefault 是一个更好的做法](https://github.com/fluentpython/example-code/blob/master/03-dict-set/index.py), 其中的:
+```Python
+index.setdefault(word, []).append(location)
+```
+就相当于:
+```Python
+if key not in my_dict:
+    my_dict[key] = []
+my_dict[key].append(new_value)
+```
+### 映射的弹性键查询
+如果我们希望键在映射中不存在的时候依旧能读取到默认值, 可以有两种做法:
+* 使用 `defaultdict` 
+* 定义一个 dict 的子类, 同时实现 `__missing__`
+
+#### defaultdict
+实例化一个 `defaultdict` 的时候，需要给构造方法提供一个**可调用对象**，这个可调用对象会在 `__getitem__` 碰到找不到的键的时候[被调用](https://github.com/fluentpython/example-code/blob/master/03-dict-set/index_default.py)，让 `__getitem__` 返回某种默认值。如 `dd = defaultdict(list)`, 如果键 key 不存在, 则:
+1. 调用list() 来建立一个新列表
+2. 把这个新列表作为值，'key' 作为它的键，放到 dd 中
+3. 返回这个列表的引用。
+
+#### 特殊方法`__missing__`
+基类 dict 并没有定义这个方法，但是 dict 是知道有这么个东西存在的。如果继承类提供了`__missing__` 方法，那么在`__getitem__` 碰到找不到的键的时候，Python 就会自动调用它，而不是抛出一个 KeyError 异常。  
+```Python
+class StrKeyDict0(dict): 
+    def __missing__(self, key):
+        if isinstance(key, str): 
+            raise KeyError(key)
+        return self[str(key)]
+```
+上面的例子是, 如果我们用一个 str 去查找可编程电路板的针脚, 但是很多时候我们输入针脚号为 int 的时候, 需要能查找成功对应的针脚, 查找失败有两种情况:
+1. 如果输入的为 str 并且没有对应的接口, 那么就失败
+2. 如果输入的为 int , 我们将它转化称为 str 之后再查找
+
+### 字典的变种
+collections 模块中，除了defaultdict 之外还有不同映射类型:
+* collections.OrderedDict: 在添加键的时候会保持顺序，因此键的迭代次序总是一致的
+* collections.ChainMap: 可以容纳数个不同的映射对象，然后在进行键查找操作的时候，这些对象会被当作一个整体被逐个查找，直到键被找到为止。
+* collections.Counter: 这个映射类型会给键准备一个整数计数器。每次更新一个键的时候都会增加这个计数器。
+
+### 子类化UserDict
+创造自定义映射类型来说，以 UserDict 为基类，比以普通的 dict 为基类要方便, 后者有时会**在某些方法的实现上走一些捷径**，导致我们不得不在它的子类中重写这些方法，但是UserDict 就不会带来这些问题. UserDict 并不是 dict 的子类，但是 UserDict 有一个叫作data 的属性，是dict 的实例，这个属性实际上是UserDict 最终存储数据的地方(背后的思想在 C++ 中很常见, **用组合替代继承**)。  
+此外, UserDict 继承的是 `MutableMapping`，所以 StrKeyDict 里剩下的那些映射类型的方法都是从UserDict、MutableMapping 和Mapping 这些超类继承而来的, 下面两个方法非常有用:
+* MutableMapping.update
+* Mapping.get
+
+### 不可变映射类型
+types 模块中引入了一个封装类名叫MappingProxyType。如果给这个类一个映射，它会返回一个只读的映射视图。虽然是个只读视图，但是它是动态的。这意味着如果对原映射做出了改动，我们**通过这个视图可以观察到，但是无法通过这个视图对原映射做出修改**。  
+```Python
+>>> from types import MappingProxyType
+>>> d = {1:'A'}
+>>> d_proxy = MappingProxyType(d)
+>>> d_proxy[2] = 'x'
+TypeError: 'mappingproxy' object does not support item assignment
+```
+
+### 集合论
+集合的本质是许多**唯一对象**的聚集, 集合中的元素必须是可散列的，set 类型本身是不可散列的，但是frozenset 可以. 集合还实现了很多基础的中缀运算符, 如交集/并集/差集. 其极快的查找功能来源于背后的散列表, 内置的set 和frozenset 提供了丰富的功能和操作.
+#### 集合字面量
+set 可以有字面量的形式(`{'a','b'}`), 但是空集要用`set()`, 因为 `{}` 表示的是空字典. 但是没有针对 frozenset 的特殊字面量句法，我们只能采用构造方法。 
+```Python
+>>> frozenset(range(10))
+frozenset({0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+```
+
+#### 集合推导
+同样的, 集合也可以有类似于字典的推导:
+```Python
+>>> from unicodedata import name 
+>>> {chr(i) for i in range(32, 256) if 'SIGN' in name(chr(i),'')}
+{'§', '=', '¢', '#', '¤', '<', '¥', 'μ', '×', '$', '¶', '£', '©',
+'°', '+', '÷', '±', '>', '¬', '®', '%'}
+```
+
+#### 集合的操作
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210602161905.png"/></div>
+
+* 集合的数学运算：这些方法或者会生成新集合，或者会在条件允许的情况下就地修改集合
+* 集合的比较运算符，返回值是布尔类型
+* 集合的其他方法包含添加/清除元素等
+
+### dict和set的背后
+#### 散列表
+dict/set 背后的散列表其实是一个**稀疏数组** (总是有空白元素的数组称为稀疏数组,sparse array).Python 会设法保证大概还有三分之一的表元是空的，所以在快要达到这个阈值的时候，原有的散列表会被复制到一个更大的空间里面。
+#### 散列值和相等性
+自定义对象调用hash() 的话，实际上运行的是自定义的 `__hash__`。如果两个对象在比较的时候是相等的，那它们的散列值必须相等，否则散列表就不能正常运行. 在最理想的状况下，越是相似但不相等的对象，它们散列值的差别应该越大。
+#### 散列表算法
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210602163143.png"/></div>
+
+`my_dict[search_key]` 的背后 Python 首先会调用hash(search_key) 来计算search_key 的散列值，把这个值最低的几位数字当作偏移量，在散列表里查找表元.  
+若不是空的，则表元里会有一对`found_key:found_value`。这时候Python 会检验`search_key ==found_key` 是否为真，如果它们相等的话，就会返回 found_value。 
+不匹配的话，这种情况称为散列冲突, 为了解决散列冲突，算法会在散列值中另外再取几位，然后用特殊的方法处理一下，把新得到的数字再当作索引来寻找表元. 
+
+#### dict的实现及其导致的结果
+1. 键必须是可散列的
+   1. 支持hash() 函数，并且通过__hash__() 方法所得到的散列值是不变的。
+   2. 支持通过__eq__() 方法来检测相等性。
+   3. 若a == b 为真，则hash(a) == hash(b) 也为真。
+2. 字典在内存上的开销巨大
+3. 键查询很快
+4. 键的次序取决于添加顺序
+
+set 的实现和结果和上面十分类似.
+
