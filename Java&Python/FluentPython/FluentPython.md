@@ -373,3 +373,110 @@ dict/set 背后的散列表其实是一个**稀疏数组** (总是有空白元�
 
 set 的实现和结果和上面十分类似.
 
+## Chap 4: 文本和字节序列
+Python3 明确区分了人类可读的文本字符串和原始的字节序列, 我们需要理解字符串和字节序列的区别. 
+### 字符问题
+一个字符串是一个字符序列, 重要的是**如何定义"字符"**, 目前“字符”的最佳定义是 Unicode 字符。  
+* 字符的标识，即码位, 是前缀 `U+` 的4~6个十六位数字
+* 字符的具体表述取决于所用的编码
+
+码位转化为字节序列的过程被称为编码, 反之就是解码:
+```Python
+>>> s = 'café'
+>>> len(s) 
+4
+>>> b = s.encode('utf8') 
+>>> b
+b'caf\xc3\xa9' 
+>>> len(b)
+5
+>>> b.decode('utf8') 
+'café'
+```
+Python 3 的bytes 类型却不是把str 类型换个名称那么简单，而且还有关系紧密的bytearray 类型。
+
+### 字节概要
+Python 3 引入了不可变bytes 类型,Python 2.6 添加了可变 bytearray 类型, bytes 或bytearray 对象的各个元素是介于0~255（含）之间的整数，虽然字面量表示法表明其中有 ASCII 文本, 但是可能使用三种不同的方式显示:
+* 可打印的 ASCII 范围内的字节, 使用 ASCII 字符本身显示
+* 制表符/换行符/回车符 等, 使用转义序列
+* 其他字节的值, 使用十六进制的转义序列
+
+除了格式化方法和几个处理 Unicode 的方法, str 类的其他方法都支持 bytes 和 bytearray 类型.构建bytes 或bytearray 实例还可以调用各自的构造方法:
+* 一个str 对象和一个encoding 关键字参数
+* 一个可迭代对象，提供 0~255 之间的数值。
+* 一个实现了缓冲协议的对象(使用缓冲类对象构建二进制序列是一种低层操作，可能涉及类型转换)
+
+#### 结构体和内存视图
+struct 模块提供了一些函数，把打包的字节序列转换成不同类型字段组成的元组，还有一些函数用于执行反向转换，把元组转换成打包的字节序列.  
+memoryview 类不是用于创建或存储字节序列的，而是共享内存，让你访问其他二进制序列、打包的数组和缓冲中的数据切片，而无需复制字节序列.  
+### 基本的编解码器
+Python 自带了超过100 种编解码器, 用于在文本和字节之间相互转换. 只需要将编码/解码器名称传给 `open`/`str.encode()`,`bytes.decode()` 等函数的 encoding 参数.
+
+### 了解编解码问题
+导致编码问题的是 可能是UnicodeEncodeError、UnicodeDecodeError 或者 SyntaxError 等其他错误.
+#### 处理UnicodeEncodeError
+把文本转换成字节序列时，如果**目标编码中没有定义某个字符，那就会抛出UnicodeEncodeError 异常**，除非把errors参数传给编码方法或函数，对错误进行特殊处理。
+```Python
+>>> city = 'São Paulo'
+>>> city.encode('cp437', errors='ignore') 
+b'So Paulo'
+>>> city.encode('cp437', errors='replace') 
+b'S?o Paulo'
+>>> city.encode('cp437', errors='xmlcharrefreplace') 
+b'S&#227;o Paulo'
+```
+#### 处理UnicodeDecodeError
+不是每一个字节都包含有效的ASCII 字符，也不是每一个字符序列都是有效的UTF-8 或UTF-16。但是很多陈旧的编码能解码任何的字节序列流而不抛出错误, 如随机噪声. 
+```Python
+>>> octets = b'Montr\xe9al'
+>>> octets.decode('utf_8', errors='replace')
+'Montr􀓠al'
+```
+
+#### 使用预期之外的编码加载模块时抛出的SyntaxError
+Python 3 默认使用UTF-8 编码源码，如果加载的.py 模块中包含 UTF-8 之外的数据，而且没有声明编码，会得到 SyntaxError...  
+为了修正这个问题，可以在文件顶部添加一个神奇的coding 注释.
+```Python
+# coding: cp1252
+print('Olá, Mundo!')
+```
+#### 如何找出字节序列的编码
+简单来说，不能。必须有人告诉你。只要假定字节流是人类可读的纯文本，就可能通过试探和分析找出编码, 如统一字符编码侦测包Chardet能识别所支持的30 种编码.
+
+#### BOM：有用的鬼符
+BOM，即字节序标记（byte-order mark），指明编码时使用Intel CPU 的小字节序。  
+在小字节序设备中，各个码位的最低有效字节在前面, 在大字节序CPU 中，编码顺序是相反的, 为了避免混淆，UTF-16 编码在要编码的文本前面加上特殊的不可见字符ZERO WIDTH NOBREAK SPACE（U+FEFF）。
+
+### 处理文本文件
+处理文本的最佳实践是“Unicode 三明治”, 要尽早把输入（例如读取文件时）的字节序列解码成字符串。对输出来说，则要尽量晚地把字符串编码成字节序列。
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210603145234.png"/></div>
+
+处理文本很简单, 但是如果依赖默认编码, 就会遇到麻烦:`locale.getpreferredencoding()` 返回的编码是最重要的, 这是打开文件的默认编码，也是重定向到文件的sys.stdout/stdin/stderr 的默认编码。
+* 没有指定 encoding 参数，默认值由 `locale.getpreferredencoding()` 提供
+* 如果设定了PYTHONIOENCODING 环境变量, sys.stdout/stdin/stderr 的编码使用设定的值
+
+**关于编码默认值的最佳建议是：别依赖默认值**。
+### 为了正确比较而规范化Unicode字符串
+```Python
+>>> s1 = 'café'
+>>> s2 = 'cafe\u0301'
+>>> s1,s2
+('café', 'café')
+>>> s1 == s2
+False
+```
+在Unicode 标准中，'é' 和'e\u0301' 这样的序列叫“标准等价物”（canonical equivalent），应用程序应该把它们视作相同的字符, **但是Python看到的是不同的码位序列, 因此判定两者不相等**. 我们用 `unicodedata.normalize` 函数提供的Unicode 规范化, 第一个参数是 'NFC'(Normalization Form C)、'NFD'、'NFKC' 和'NFKD'其中之一
+#### 大小写折叠
+大小写折叠其实就是把所有文本变成小写，再做些其他转换(由`str.casefold()`方法支持)。  
+#### 规范化文本匹配实用函数
+NFC 和 NFD 可以放心使用，而且能合理比较 Unicode 字符串。如果要处理多语言文本，工具箱中应该有 nfc_equal 和fold_equal 函数。
+#### 极端“规范化”：去掉变音符号
+[这个例子](https://github.com/fluentpython/example-code/blob/master/04-text-byte/sanitize.py)会对文本做进一步处理，很有可能会改变原意。只有知道目标语言、目标用户群和转换后的用途，才能确定要不要做这么深入的规范化。
+
+### 支持字符串和字节序列的双模式API
+#### 正则表达式中的字符串和字节序列
+如果使用字节序列构建正则表达式，\d 和\w 等模式**只能匹配 ASCII 字符**；相比之下，如果是字符串模式，就能匹配 ASCII 之外的 Unicode 数字或字母.
+#### os函数中的字符串和字节序列
+os 模块中的所有函数、文件名或路径名参数既能使用字符串，也能使用字节序列。如果这样的函数使用字符串参数调用，该**参数会使用sys.getfilesystemencoding() 得到的编解码器自动编码，然后操作系统会使用相同的编解码器解码**。
+
+# Part III: Functions as Objects
