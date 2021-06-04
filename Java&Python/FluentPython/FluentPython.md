@@ -480,3 +480,52 @@ NFC 和 NFD 可以放心使用，而且能合理比较 Unicode 字符串。如�
 os 模块中的所有函数、文件名或路径名参数既能使用字符串，也能使用字节序列。如果这样的函数使用字符串参数调用，该**参数会使用sys.getfilesystemencoding() 得到的编解码器自动编码，然后操作系统会使用相同的编解码器解码**。
 
 # Part III: Functions as Objects
+## Chap 5: First-Class Function
+在Python 中，函数是一等对象:
+* 在运行时创建
+* 能赋值给变量或数据结构中的元素
+* 能作为参数传给函数
+* 能作为函数返回的结果
+
+### 把函数视作对象
+Python 函数是对象, 我们可以将它赋值给变量, 然后通过变量名调用, 还可以作为参数传给map 函数.
+```Python
+>>> fac = factorial
+>>> fac
+<function factorial at 0x0000017e6be85160>
+>>> m2fac = map(factorial, range(11)) 
+>>> list(m2fac)
+```
+### 高阶函数
+接受函数为参数，或者把函数作为结果返回的函数是高阶函数.在函数式编程范式中，最为人熟知的高阶函数有map、filter、reduce 和apply(Python 3中已移除)。
+#### map、filter和reduce的现代替代品
+函数式语言通常会提供map、filter 和reduce 三个高阶函数, Python 3 中，map 和filter 还是内置函数，但是由于引入了列表推导和生成器表达式，它们变得没那么重要了。列表推导或生成器表达式具有map 和filter 两个函数的功能，而且更易于阅读:
+```Python
+>>> list(map(fact, range(6))) 
+[1, 1, 2, 6, 24, 120]
+>>> [fact(n) for n in range(6)] 
+[1, 1, 2, 6, 24, 120]
+>>> list(map(factorial, filter(lambda n: n % 2, range(6)))) 
+[1, 6, 120]
+>>> [factorial(n) for n in range(6) if n % 2] 
+[1, 6, 120]
+```
+reduce 在 Python 3 中放到functools 模块里, sum 和reduce 的通用思想是把某个操作连续应用到序列的元素上，累计之前的结果，把一系列值归约成一个值。
+
+### 匿名函数
+Python 简单的句法限制了lambda 函数的定义体**只能使用纯表达式**。换句话说，lambda 函数的定义体中不能赋值，也不能使用while 和try 等Python 语句。
+```Python
+>>> fruits = ['strawberry', 'fig', 'apple', 'cherry', 'raspberry', 'banana']
+>>> sorted(fruits, key=lambda word: word[::-1])
+['banana', 'apple', 'fig', 'raspberry', 'strawberry', 'cherry']
+```  
+除了作为参数传给高阶函数之外，Python 很少使用匿名函数。由于句法上的限制，非平凡的lambda 表达式要么难以阅读，要么无法写出。
+### 可调用对象
+除了用户定义的函数，调用运算符（即`()`, 类似于C++中的lambda|functor|function pointer）还可以应用到其他对象上,使用内置的callable() 函数判断:
+* 用户定义的函数
+* 内置函数
+* 内置方法
+* 方法
+* 类: 调用类时会运行类的`__new__` 方法创建一个实例，然后运行`__init__` 方法，初始化实例，最后把实例返回给调用方。因为Python 没有new 运算符，所以调用类相当于调用函数。
+* 类的实例: 如果类定义了`__call__` 方法，那么它的实例可以作为函数调用。
+* 生成器函数:使用yield 关键字的函数或方法。调用生成器函数返回的是生成器对象。
