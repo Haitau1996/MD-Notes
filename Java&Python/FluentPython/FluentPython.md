@@ -604,3 +604,69 @@ functools 除了 reduce 之外, 最有用的是partial 及其变体，partialmet
 ```
 这其实有点像 适配器模式. `functools.partialmethod` 函数（Python 3.4 新增）的作用与partial 一样，不过是**用于处理方法**.
 
+## Chap 6: 使用一等函数实现设计模式
+Norvig 建议在有一等函数的语言中**重新审视“策略”“命令”“模板方法”和“访问者”模式**。通常，我们可以把这些模式中涉及的某些类的实例替换成简单的函数，从而减少样板代码。
+### 案例分析：重构“策略”模式
+如果合理利用作为一等对象的函数，某些设计模式可以简化，“策略”模式就是其中一个很好的例子。
+#### 经典的策略模式
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210607110800.png"/></div>
+
+“策略”模式的定义如下:
+> 定义一系列算法，把它们一一封装起来，并且使它们可以相互替换。本模式使得算法可以独立于使用它的客户而变化。
+
+* 上下文: 把一些计算委托给实现不同算法的可互换组件，它提供服务。
+* 策略: 实现不同算法的组件共同的接口。
+* 具体策略: “策略”的具体子类。fidelityPromo、BulkPromo 和 LargeOrderPromo 是这里实现的三个具体策略。
+
+#### Function-Oriented Strategy
+在[经典的实现](https://github.com/fluentpython/example-code/blob/master/06-dp-1class-func/classic_strategy.py)中, 每个具体策略都是一个类，而且都只定义了一个方法，即discount。此外，策略实例没有状态(没有实例属性), 我们可以**把具体策略换成了简单的函数，而且去掉了[Promo抽象类](https://github.com/fluentpython/example-code/blob/master/06-dp-1class-func/strategy.py)**。
+
+#### 选择最佳策略：简单的方式
+```Python
+promos = [fidelity_promo, bulk_item_promo, large_order_promo] 
+def best_promo(order): 
+    """选择可用的最佳折扣
+    """
+    return max(promo(order) for promo in promos) 
+```
+这个实现把所有的策略卸在一个列表中, 十分简单易读, 但是**若想添加新的促销策略，要定义相应的函数，还要记得把它添加到 promos 列表中**.
+
+#### 找出模块中的全部策略
+在Python 中，模块也是一等对象，而且标准库提供了几个处理模块的函数。Python 文档是这样说明内置函数 `globals` 的。
+> 返回一个字典，表示当前的**全局符号表**。这个符号表始终针对当前模块（对函数或方法来说，是指定义它们的模块，而不是调用它们的模块）。
+
+```Python
+promos = [globals()[name] for name in globals() 
+            if name.endswith('_promo') 
+            and name != 'best_promo']
+```
+收集所有可用促销的另一种方法是，在一个单独的模块中保存所有策略函数，把`best_promo` 排除在外。
+```Python
+promos = [func for name, func in
+                   inspect.getmembers(promotions, inspect.isfunction)]
+```
+动态收集促销折扣函数更为显式的一种方案是使用简单的装饰器。
+
+### 命令模式
+“命令”设计模式也可以通过把函数作为参数传递而简化。
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210607113111.png"/></div>
+
+> “命令”模式的目的是 **解耦调用操作的对象（调用者）和提供实现的对象（接收者）**
+
+这个模式的做法是，在二者之间放一个Command 对象，让它实现只有一个方法（execute）的接口，调用接收者中的方法执行所需的操作。这样，调用者无需了解接收者的接口，而且不同的接收者可以适应不同的Command 子类。**MacroCommand 可能保存一系列命令**，它的execute()方法会在各个命令上调用相同的方法。  
+我们可以不为调用者提供一个Command 实例，而是给它一个函数, MacroCommand 可以实现成定义了`__call__`方法的类。这样，MacroCommand 的实例就是可调用对象，各自维护着一个函数列表，供以后调用:
+```Python
+class MacroCommand:
+    """一个执行一组命令的命令"""
+    def __init__(self, commands):
+        self.commands = list(commands) 
+    def __call__(self):
+        for command in self.commands: 
+            command()
+```
+这两个模式之间的区别在于:
+* 命令模式多了一个接收者（Receiver）角色
+* 策略模式的意图是封装算法，它认为“算法”已经是一个**完整的、不可拆分的原子业务**（注意这里是原子业务，而不是原子对象），即其意图是让这些**算法独立，并且可以相互替换，让行为的变化独立于拥有行为的客户**
+* 命令模式则是对动作的解耦，把一个动作的执行分为**执行对象（接收者角色）、执行行为（命令角色），让两者相互独立而不相互影响**。
+
+**“命令”和“策略”模式（以及“模板方法”和“访问者”模式）可以使用一等函数实现，这样更简单，甚至“不见了”**(至少对于某些用途而言是这样).
