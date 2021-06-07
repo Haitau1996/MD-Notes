@@ -670,3 +670,127 @@ class MacroCommand:
 * 命令模式则是对动作的解耦，把一个动作的执行分为**执行对象（接收者角色）、执行行为（命令角色），让两者相互独立而不相互影响**。
 
 **“命令”和“策略”模式（以及“模板方法”和“访问者”模式）可以使用一等函数实现，这样更简单，甚至“不见了”**(至少对于某些用途而言是这样).
+
+## Chap 7: 函数装饰器和闭包
+函数装饰器用于**在源码中“标记”函数，以某种方式增强函数的行为**。除了在装饰器中有用处之外，闭包还是回调式异步编程和函数式编程风格的基础.  
+### 装饰器基础
+装饰器是可调用的对象(一般是高阶函数)，其参数是另一个函数（被装饰的函数）, 一般而言处理被装饰的函数, 然后将其返回, 当然也可以将它替换成另一个函数或者可调用对象. 
+```Python
+@decorate
+def target():
+    print('running target()')
+# 相当于下面
+def target():
+    print('running target()')
+target = decorate(target) # 从这里可以清楚看到, decorate 不一定要返回 target
+```
+装饰器只是语法糖, 装饰器可以像常规的可调用对象那样调用，其参数是**另一个函数**。很多时候，这样做更方便，尤其是做元编程（在运行时改变程序的行为）时。
+
+### Python何时执行装饰器
+装饰器的一个关键特性是，它们在**被装饰的函数定义之后立即运行**,这通常是在导入时(即Python 加载模块时).
+```shell
+$ python3 registration.py
+running register(<function f1 at 0x100631bf8>)
+running register(<function f2 at 0x100631c80>)
+running main()
+registry -> [<function f1 at 0x100631bf8>, <function f2 at 0x100631c80>]
+running f1()
+running f2()
+running f3()
+```
+从[上面例子](https://github.com/fluentpython/example-code/blob/master/07-closure-deco/registration.py)的输出可以发现, register 在模块中其他函数之前运行（两次）。**函数装饰器在导入模块时立即执行，而被装饰的函数只在明确调用时运行**。这突出了Python 程序员所说的导入时和运行时之间的区别。  
+### 使用装饰器改进“策略”模式
+之前的示例有个很重要的问题就是**新增策略后可能会忘记将它放到 `promos` 列表中**, 使用[注册装饰器](https://github.com/fluentpython/example-code/blob/master/07-closure-deco/strategy_best4.py)解决了这个问题.和之前的相比有几个优点:
+* 促销策略函数无需使用特殊的名称（即不用以_promo 结尾）
+* @promotion 装饰器突出了被装饰的函数的作用，还便于临时禁用某个促销策略：只需把装饰器注释掉。
+* 促销折扣策略可以在其他模块中定义，在系统中的任何地方都行，只要使用`@promotion`装饰即可。
+
+需要注意的是, **多数装饰器会修改被装饰的函数**。通常，它们会定义一个内部函数，然后将其返
+回，替换被装饰的函数。**使用内部函数的代码几乎都要靠闭包才能正确运作**。
+
+### 变量作用域规则
+Python 不要求声明变量，但是假定**在函数定义体中赋值的变量是局部变量**。如果在函数中赋值时想让解释器**把它当成全局变量，要使用global 声明**：
+```Python
+>>> b = 6
+>>> def f3(a):
+...     global b
+...     print(a)
+...     print(b)
+...     b = 9
+...
+>>> f3(3)
+3
+6
+>>> b
+9
+```
+
+### 闭包
+人们有时会把闭包和匿名函数弄混, 因为**在函数内部定义函数不常见，直到开始使用匿名函数才会这样做**。闭包指延伸了作用域的函数，其中包含函数定义体中引用、不在定义体中定义的非全局变量。  
+对比一个 avg 的 [OO实现](https://github.com/fluentpython/example-code/blob/master/07-closure-deco/average_oo.py) 和 [高阶函数实现](https://github.com/fluentpython/example-code/blob/master/07-closure-deco/average.py), 前者的历史值存在 `self.series` 属性中, 而高阶函数中, 看上去调用avg(10) 时，`make_averager` 函数已经返回了，而它的本地作用域也一去不复返。实际上, averager 函数中，series 是自由变量（free variable）。这是一个技术术语，指未在本地作用域中绑定的变量:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210607143835.png"/></div>
+
+闭包是一种函数，它会保留**定义函数时存在的自由变量的绑定**，这样调用函数时，虽然定义作用域不可用了，但是仍能使用那些绑定。只有嵌套在其他函数中的函数才可能需要处理不在全局作用域中的外部变量。
+### nonlocal声明
+在另一种实现中, 我们在averager 的定义体中为count 赋值了，这会把count 变成局部变量。total 变量也受这个问题影响。前面的没有报错是因为列表是可变的, 但是对数字、字符串、元组等不可变类型来说，只能读取，不能更新。如果尝试重新绑定，例如`count = count + 1`，其实会**隐式创建局部变量count**。这样，count 就不是自由变量了，因此不会保存在闭包中。
+```Python
+def make_averager():
+    count = 0
+    total = 0
+    def averager(new_value):
+        count += 1
+        total += new_value
+        return total / count
+        return averager
+```
+Python 3 引入了 `nonlocal` 声明。它的作用是**把变量标记为自由变量，即使在函数中为变量赋予新值了，也会变成自由变量**。如果为 `nonlocal` 声明的变量赋予新值，闭包中保存的绑定会更新。
+```Python
+def make_averager():
+    count = 0
+    total = 0
+    def averager(new_value):
+        nonlocal count, total
+        count += 1
+        total += new_value
+        return total / count
+        return averager
+```
+### 实现一个简单的装饰器
+[这里](https://github.com/fluentpython/example-code/blob/master/07-closure-deco/clockdeco.py)是实现装饰器的典型行为：把被装饰的函数**替换成新函数**，二者接受相同的参数，而且（通常）**返回被装饰的函数本该返回的值，同时还会做些额外操作**。  
+
+### 标准库中的装饰器
+标准库中最值得关注的两个装饰器是lru_cache 和全新的singledispatch.
+#### 使用`functools.lru_cache`做备忘
+它实现了备忘（memoization）功能。这是一项优化技术，它**把耗时的函数的结果保存起来，避免传入相同的参数时重复计算**。
+```Python
+import functools
+from clockdeco import clock
+@functools.lru_cache() 
+@clock 
+def fibonacci(n):
+    if n < 2:
+        return n
+    return fibonacci(n-2) + fibonacci(n-1)
+if __name__=='__main__':
+    print(fibonacci(30))
+```
+使用这个装饰器后, fib 的调用次数从2 692 537降低到了 31.这个装饰器可以使用两个可选的参数来配置。它的签名是：
+```Python
+functools.lru_cache(maxsize=128, typed=False)
+```
+lru_cache 使用字典存储结果，而且键根据调用时传入的定位参数和关键字参数创建，所以被lru_cache 装饰的函数，它的**所有参数都必须是可散列的**。
+
+#### 单分派泛函数
+因为 Python **不支持重载方法或函数**，所以我们不能使用不同的签名定义htmlize 的变体，也无法使用不同的方式处理不同的数据类型。`functools.singledispatch` 装饰器可以把整体方案拆分成多个模块，甚至可以为你无法修改的类提供专门的函数。使用后的普通函数根据第一个参数的类型，以不同方式执行相同操作的一组函数。这个[例子](https://github.com/fluentpython/example-code/blob/master/07-closure-deco/generic.py)中有几点需要特别强调的:
+* 我们先是要用装饰器标记基函数
+* 对于专门的类型使用 `@<base>.register(<type>)` 注册专用的函数
+* 只要可能，注册的专门函数应该处理抽象基类,代码支持的兼容类型更广泛。
+
+### 叠放装饰器
+装饰器是函数，因此可以组合起来使用, 把@d1 和@d2 两个装饰器按顺序应用到f 函数上，作用相当于`f = d1(d2(f))`。
+### 参数化装饰器
+我们可以让装饰器接收其他参数, **创建一个装饰器工厂函数，把参数传给它，返回一个装饰器，然后再把它应用到要装饰的函数上**。
+#### 一个参数化的注册装饰器
+为了便于启用或禁用register 执行的函数注册功能，我们为[它](https://github.com/fluentpython/example-code/blob/master/07-closure-deco/registration_param.py)提供一个可选的active 参数，设为False 时，不注册被装饰的函数. 其中的 register 函数**不是装饰器，而是装饰器工厂函数**, 它的返回值是一个装饰器。  
+
+# Part IV: 面向对象惯用法
