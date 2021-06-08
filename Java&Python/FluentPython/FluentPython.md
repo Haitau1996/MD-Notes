@@ -878,4 +878,81 @@ True
 这个结果很有意思, 一开始 `wref` 弱引用指向的是 `a_set`, 后来在控制台中绑定到了 `_`, 故还在, 运行`wref() is None` 之后`_` 绑定给了 False, 故对象已经不在了.  
 
 ### Python对不可变类型施加的把戏
-对元组 t 来说，t[:] 不创建副本，而是返回同一个对象的引用。此外，tuple(t) 获得的也是同一个元组的引用. str、bytes 和frozenset 实例也有这种行为。共享字符串字面量是一种优化措施，称为驻留（interning）。CPython 还会在小的整数上使用这个优化措施，防止重复创建“热门”数字. 
+对元组 t 来说，t[:] 不创建副本，而是返回同一个对象的引用。此外，tuple(t) 获得的也是同一个元组的引用. str、bytes 和frozenset 实例也有这种行为。共享字符串字面量是一种优化措施，称为驻留（interning）。CPython 还会在小的整数上使用这个优化措施，防止重复创建“热门”数字.
+
+## Chap 9: 复合 Python 风格的对象
+Python 中依靠鸭子类型（duck typing）：我们只需按照预定行为实现对象所需的方法即可。
+> 鸭子类型（英语：duck typing）在程序设计中是动态类型的一种风格。在这种风格中，一个对象有效的语义，不是由继承自特定的类或实现特定的接口，而是由"当前方法和属性的集合"决定。
+
+### 对象表示形式
+Python 提供了两种方式:
+* `repr()` 以便于开发者理解的方式返回对象的字符串表示形式。
+* `str()` 以便于用户理解的方式返回对象的字符串表示形式。
+
+为了给对象提供其他的表示形式，还会用到另外两个特殊方法：`__bytes__` 和`__format__`。
+
+### 再谈向量类
+我们定义一些特殊方法后得到基本的[向量类](https://github.com/fluentpython/example-code/blob/master/09-pythonic-obj/vector2d_v0.py), 有几点需要强调:
+* typecode 是类属性，在Vector2d 实例和字节序列之间转换时使用。
+* 定义`__iter__` 方法，把Vector2d 实例变成可迭代的对象，这样才能拆包
+
+我们已经定义了很多基本方法，但是显然少了一个操作：使用bytes() 函数生成的二进制表示形式重建Vector2d 实例。
+### 备选构造方法
+我们希望能从字节序列转化为 vector2d 实例, 于是想要[实现 frombytes 方法](https://github.com/fluentpython/example-code/blob/master/09-pythonic-obj/vector2d_v1.py)
+* 类方法使用classmethod 装饰器修饰
+* 不用传入self 参数；相反，要通过cls 传入类本身
+
+### classmethod与staticmethod
+* classmethod 定义操作类，而不是操作实例的方法
+* staticmethod 普通的函数，只是碰巧在类的定义体中，而不是在模块层定义
+```Python
+>>> Demo.klassmeth() 
+(<class '__main__.Demo'>,)
+>>> Demo.klassmeth('spam')
+(<class '__main__.Demo'>, 'spam')
+>>> Demo.statmeth() 
+()
+>>> Demo.statmeth('spam')
+('spam',)
+```
+classmethod 装饰器非常有用，我们可以看到其第一个参数是class名.同时, staticmethod 不是特别有用.  
+### 格式化显示
+// TODO: 格式化一直看不大懂
+
+### 可散列的Vector2d
+为了把Vector2d 实例变成可散列的，必须实现`__hash__` 方法（`__eq__` 方法已经实现过了), 此外还要让向量不可变.  
+我们要把x 和y 分量设为[只读特性](https://github.com/fluentpython/example-code/blob/master/09-pythonic-obj/vector2d_v3.py)
+* 使用两个前导下划线（尾部没有下划线，或者有一个下划线），把属性标记为私有的
+* @property 装饰器把读值方法标记为特性, 读值方法与公开属性同名，都是x
+
+需要注意的是, 想要创建可散列的类型, 不一定要实现特定, 也不一定要保护实例属性, 只需要正确实现 `__hash__` 和`__eq__` 方法即可, 但是**实例的散列值绝不应该变化，因此我们借机提到了只读特性**.  
+
+### Python的私有属性和“受保护的”属性
+Python 不能像Java 那样使用 private 修饰符创建私有属性，但是 Python 中可以有名称改写(name mangling): ，如果以`__mood` 的形式（两个前导下划线，尾部没有或最多有一个下划线）命名实例属性，Python 会把属性名存入实例的`__dict__` 属性中，而且会在前面加上一个下划线和类名。只要编写`v1._Vector__x = 7` 这样的代码，就能轻松地为Vector2d 实例的私有分量直接赋值。  
+有的人约定使用一个下划线前缀编写“受保护”的属性（如self._x）, 很多Python 程序员严格遵守的约定，他们不会在类外部访问这种属性.
+
+### 使用`__slots__`类属性节省空间
+通过`__slots__` 类[属性](https://github.com/fluentpython/example-code/blob/master/09-pythonic-obj/vector2d_v3_slots.py)，能节省大量内存，方法是让解释器在元组中存储实例属性，而不用字典。
+```Python
+class Vector2d:
+    __slots__ = ('__x', '__y')
+    typecode = 'd'
+    ...
+```
+目的是告诉解释器：**这个类中的所有实例属性都在这**,这样就会避免使用消耗内存的`__dict__` 属性. 在类中定义`__slots__` 属性之后，实例不能再有`__slots__` 中所列名称之外的其他属性。如果类中定义了`__slots__` 属性，而且想把实例作为弱引用的目标，那么要把`__weakref__`添加到`__slots__` 中。
+
+### 覆盖类属性
+Python 有个很独特的特性：类属性可用于为实例属性提供默认值。Vector2d.typecode 属性的默认值是'd', 如果在转换之前把 Vector2d **实例的typecode 属性**设为'f'，那么使用4 字节单精度浮点数表示各个分量. 
+```Python
+>>> from vector2d_v3 import Vector2d
+>>> v1 = Vector2d(1.1, 2.2)
+>>> dumpd = bytes(v1) # b'd\x9a\x99\x99\x99\x99\x99\xf1?\x9a\x99\x99\x99\x99\x99\x01@'
+>>> v1.typecode = 'f'
+>>> dumpf = bytes(v1) # b'f\xcd\xcc\x8c?\xcd\xcc\x0c@'
+```
+有种修改方法更符合 Python 风格，类属性是公开的, 我们经常可以创建一个子类, 用于定制数据属性.
+```Python
+>>> from vector2d_v3 import Vector2d
+>>> class ShortVector2d(Vector2d): 
+...     typecode = 'f'
+```
