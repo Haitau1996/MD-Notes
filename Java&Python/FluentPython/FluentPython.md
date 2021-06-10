@@ -1038,3 +1038,50 @@ def __eq__(self, other):
 ```
 ### Vector类第5版：格式化
 我们同样要在这里做格式化, 但是不使用极坐标，而使用球面坐标（也叫超球面坐标），因为Vector 类支持n 个维度，而超过四维后，球体变成了“超球体”. [具体实现](https://github.com/fluentpython/example-code/blob/master/10-seq-hacking/vector_v5.py)有很多dirty的细节问题不用深究.
+
+## Chap 11: 接口 从协议到抽象基类
+接口：从鸭子类型的代表特征动态协议，到使接口更明确、**能验证实现是否符合规定的抽象基类**. Python 社区不建议你自己编写抽象基类，因为很容易过度设计。 
+### Python文化中的接口和协议
+我们把协议定义为**非正式的接口**，是让Python 这种动态类型语言实现多态的方式, 具体的实现是，Python 语言没有interface 关键字，而且除了抽象基类，每个类都有接口：类实现或继承的公开属性, 包括特殊方法.  
+**受保护的属性和私有属性不在接口中**, 接口的一个补充定义是: 对象公开方法的子集，让对象在系统中扮演特定的角色. 而协议是接口，但不是正式的（只由文档和约定定义），因此**协议不能像正式接口那样施加限制**.
+### Python喜欢序列
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210610095419.png"/></div>
+
+鉴于序列协议的重要性，如果没有`__iter__` 和`__contains__` 方法，Python 会**调用`__getitem__` 方法，设法让迭代和`in` 运算符可用**。这意味着Python 中的迭代是鸭子类型的一种极端形式：**为了迭代对象，解释器会尝试调用两个不同的方法**。  
+### 使用猴子补丁在运行时实现协议
+如果尝试打乱[FrenchDeck 实例](https://github.com/fluentpython/example-code/blob/master/01-data-model/frenchdeck.py)，会出现异常. 原因是，shuffle 函数要调换集合中元素的位置，而FrenchDeck 只实现了不可变的序列协议。可变的序列还必须提供`__setitem__` 方法, 下面是一个运行时修正:
+```Python
+>>> def set_card(deck, position, card):
+...     deck._cards[position] = card
+... 
+>>> FrenchDeck.__setitem__ = set_card
+```
+这种技术叫做**猴子补丁：在运行时修改类或模块，而不改动源码**。
+
+### _Alex Martelli_ 的水禽
+鸭子类型意味着忽略对象的真正类型, 转而**关注对象有没有实现所需的方法/签名和语义**,这关注的是形态和举止的相似性, 属于**表型系统学**.然而，平行进化往往会导致不相关的种产生相似的特征, 生物（和其他学科）遇到的这个问题，迫切需要（甚至是催生出）表征学之外的分类方式解决，即**支序系统学**, 这种分类学主要根据从共同祖先那里继承的特征分类，而不是单独进化的特征.参照水禽的分类学演化，我建议在鸭子类型的基础上增加白鹅类型: **只要cls 是抽象基类， 即cls 的元类是`abc.ABCMeta`， 就可以使用`isinstance(obj, cls)`**。  
+要抑制住创建抽象基类的冲动。滥用抽象基类会造成灾难性后果，**表明语言太注重表面形式**，这对以实用和务实著称的 Python 可不是好事。抽象基类是用于封装框架引入的一般性概念和抽象的, 我们基本上不需要自己编写新的抽象基类，只要**正确使用现有的抽象基类**，就能获得 _99.9_ % 的好处，而不用冒着设计不当导致的巨大风险。 
+### 定义抽象基类的子类
+我们先明确吧 [FrenchDeck2 声明为 MutableSequence的子类](https://github.com/fluentpython/example-code/blob/master/11-iface-abc/frenchdeck2.py)
+* 支持洗牌只需实现`__setitem__` 方法
+* 继承MutableSequence 的类必须实现`__delitem__` 方法和 `insert`
+
+需要注意的是, 导入时Python 不会检查抽象方法的实现，在运行时实例化FrenchDeck2 类时才会真正检查。
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210610144006.png"/></div>
+
+### 标准库中的抽象基类
+#### collections.abc模块中的抽象基类
+Python 3.4 在collections.abc 模块中定义了16 个抽象基类，下面是简要的 UML 类图:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210610144216.png"/></div>
+
+* Iterable、Container 和Sized: 各个集合都应该继承这三个抽象基类, 或者至少实现兼容的协议
+* Sequence、Mapping 和Set: 这三个是主要的不可变集合类型，而且各自都有可变的子类。
+* MappingView
+* Callable 和Hashable: 这两个抽象基类与集合没有太大的关系, 主要作用是为内置函数`isinstance` 提供支持，以一种安全的方式判断对象能不能调用或散列
+* Iterator: Iterable 的子类
+  
+#### 抽象基类的数字塔
+[numbers 包](https://docs.python.org/3/library/numbers.html)定义的是“数字塔”（即各个抽象基类的层次结构是线性的）, 其中Number 是位于最顶端的超类，随后是Complex 子类，依次往下，最底端是Integral 类, 想检查一个数是不是整数，可以使用`isinstance(x, numbers.Integral)`.`decimal.Decimal` 没有注册为`numbers.Real` 的虚拟子类，如果你的程序需要Decimal 的精度，要防止与其他低精度数字类型混淆，尤其是浮点数。 
+
+### 定义并使用一个抽象基类
+// TODO:
