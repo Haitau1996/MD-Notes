@@ -1151,5 +1151,39 @@ Django 中视图是可调用的对象, 参数是表示HTTP 请求的对象，返
 View 的具体子类应该实现处理方法，但它们为什么不在View 接口中呢？原因是：**子类只需实现它们想支持的处理方法**。Django 基于类的视图API 是多重继承更好的示例。尤其是，Django 的混入类易于理解：各个混入的目的明确，而且名称的后缀都是 _...Mixin_。
 
 ## Chap 13: 正确重载运算符
-
+在 Python 中, 不但中缀运算符和一元运算符可以重载, 函数调用`()`/属性访问`.` 和元素访问`[]` 也可以重载.在这里我们主要关心前者.
 ### 运算符重载基础
+Python 对运算符重载施加了一些限制:
+* 不能重载内置类型的运算符
+* 不能新建运算符，只能重载现有的
+* 某些运算符不能重载——is、and、or 和not(但是为运算符`& | ~`可以)
+
+### 一元运算符
+支持一元运算符很简单，只需实现相应的特殊方法。这些特殊方法只有一个参数，`self`: **始终返回一个新对象**。也就是说，不能修改self，要创建并返回合适类型的新实例.  
+我们在[这里](https://github.com/fluentpython/example-code/blob/master/13-op-overloading/vector_v6.py) 重新定义了 `__abs__`/`__neg__`/`__pos__`, 没有支持`__invert__`在尝试计算`~v`的时候就会抛出一个 TypeError.  
+一般 `x == +x` 总是成立的, 但是有两个特例, 一是涉及精度的时候, 新实例和老的精度不同, 故不相等. 一是从使用角度出发, 在`Collection.Counter`中新实例会将负值和零相应的计数去除. 
+### 重载向量加法运算符`+`
+序列应该支持+ 运算符（用于拼接），以及* 运算符（用于重复复制）。我们[定义了`+`之后](https://github.com/fluentpython/example-code/blob/master/13-op-overloading/vector_v7.py),原则上可以使用向量去加任何元素可迭代的对象, 但是, 如果对调操作数, 混合类型的加法就会失败, 为此我们需要实现 “右向”（right）特殊方法`__radd__`, 实现后调用过程就如此:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210616152324.png"/></div>
+
+### 重载标量乘法运算符`*`
+涉及 _vector_ 操作数的积有很多种, 我们依旧可以实现最简单可用的 `__mul__`/`__rmul__`,但是提供不兼容的操作数时会出问题, 我们可以使用白鹅类型检查, 并且提供更好的错误提示:
+```Python
+def __mul__(self, scalar):
+    if isinstance(scalar, numbers.Real): 
+        return Vector(n * scalar for n in self)
+    else: 
+        return NotImplemented
+def __rmul__(self, scalar):
+    return self * scalar 
+```
+Python 3.5 引入了[matrix multiplication](https://github.com/fluentpython/example-code/blob/master/13-op-overloading/vector_py3_5.py).
+### 众多比较运算符
+比较运算符和之前的`+`/`*`有量个很明显的区别:
+* 正向和反向调用使用的**不是同一系列方法**: 正向的`__gt__` 方法调用的是反向的`__lt__` 方法，并把参数对调。
+* 对`==` 和`!=` 来说，如果反向调用失败，Python 会比较对象的ID，而不是抛出 TypeError
+
+在[v8实现](https://github.com/fluentpython/example-code/blob/master/13-op-overloading/vector_v8.py)中, 我们使用了白鹅类型解决了vector 和 tuple 相等判断为 true 的问题. 而 ne 就不用实现, 定义了`__eq__` 方法，而且它不返回NotImplemented，`__ne__` 会对`__eq__` 返回的结果取反。
+
+### 增量赋值运算符
+对不可变类型来说，如果定义了`__add__` 方法的话，不用编写额外的代码，+= 就能使用. 如果实现了就地运算符方法, 它们会**就地修改左操作数，而不会创建新对象作为结果**, 因此不可变类型，如Vector 类，一定不能实现就地特殊方法。
