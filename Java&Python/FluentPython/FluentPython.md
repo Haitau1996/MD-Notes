@@ -1295,3 +1295,40 @@ with open('mydata.txt') as fp:
     for line in iter(fp.readline, '\n'):
         process_line(line)
 ```
+
+## Chap 15: 上下文管理器和else块
+在 _Python_ 中上下文管理器可能几乎与子程序（subroutine）本身一样重要。这里讨论其他语言中不常见的一些流程控制特性, _with_ 语句会**设置一个临时的上下文，交给上下文管理器对象控制，并且负责清理上下文**。
+### if 语句之外的 else 块
+在这些语句中使用 else 子句通常能让代码更易于阅读，而且能省去一些麻烦，不用设置控制标志或者添加额外的 if 语句。else 子句的行为如下:
+* for: 仅当for 循环运行完毕时（即**for 循环没有被break 语句中止**）才运行else 块
+* while: 仅当while 循环因为条件为假值而退出时（即 **while 循环没有被break 语句中止**）才运行else 块
+* try:仅当try 块中没有异常抛出时才运行else 块
+
+```Python
+try:
+    dangerous_call()
+    after_call()
+except OSError:
+    log('OSError...')
+```
+为了清晰和准确，try 块中应该只包含预期抛出异常的语句。因此，像下面这样写更好：
+```Python
+try:
+    dangerous_call()
+except OSError:
+    log('OSError...')
+else:
+    after_call() # 如若没有抛出异常, 就执行这个语句
+```
+### 上下文管理器和 `with` 块
+**with 语句的目的是简化try/finally 模式。** 用于保证一段代码运行完毕后执行某项操作，即便那段代码由于异常、return 语句或`sys.exit()` 调用而中止，也会执行指定的操作. 
+
+上下文管理器协议包含 `__enter__` 和 `__exit__` 两个方法。with 语句开始运行时，会在上下文管理器对象上调用`__enter__` 方法。with 语句运行结束后，会在上下文管理器对象上调用`__exit__` 方法，以此扮演 finally 子句的角色. **不管控制流程以哪种方式退出with 块，都会在上下文管理器对象上调用`__exit__` 方法**，而不是在 `__enter__` 方法返回的对象上调用。 
+
+### 使用`@contextmanager`
+`@contextmanager` 装饰器能减少创建上下文管理器的样板代码量，因为不用编写一个完整的类，定义`__enter__` 和`__exit__` 方法，而只需实现有一个yield 语句的生成器，生成想让`__enter__` 方法返回的值。  
+yield 语句的作用是把函数的定义体分成两部分：yield 语句前面的所有代码在with 块开始时执行, yield 语句后面的代码在with 块结束时（即调用`__exit__` 方法时）执行。
+
+## Chap 16: 协程
+### 生成器如何进化成协程
+协程是指一个过程，这个过程与调用方协作，产出由调用方提供的值。
