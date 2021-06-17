@@ -1187,3 +1187,111 @@ Python 3.5 引入了[matrix multiplication](https://github.com/fluentpython/exam
 
 ### 增量赋值运算符
 对不可变类型来说，如果定义了`__add__` 方法的话，不用编写额外的代码，+= 就能使用. 如果实现了就地运算符方法, 它们会**就地修改左操作数，而不会创建新对象作为结果**, 因此不可变类型，如Vector 类，一定不能实现就地特殊方法。
+
+# Part V: Control Flow
+## Chap 14: 可迭代的对象、迭代器和生成器
+扫描内存中放不下的数据集时，我们要找到一种**惰性获取**数据项的方式，即**按需一次获取一个数据项**, 这就是迭代器模式(Iterator pattern)。为了抽象出迭代器模式，Python 2.2 中加入了 `yield` 关键字, 用于构建生成器, 其作用和迭代器一样. 
+
+### Sentence类第1版：单词序列
+实现一个最基本的[序列](https://github.com/fluentpython/example-code/blob/master/14-it-generator/sentence.py), 只需要有 `__getitem__` 和 `__len__`.
+#### 序列可以迭代的原因：iter函数
+解释器需要迭代对象x 时，会自动调用iter(x):
+1. 检查对象是否实现了`__iter__` 方法，如果实现了就调用它，获取一个迭代器。
+2. 如果没有实现`__iter__` 方法，但是实现了__getitem__ 方法，Python 会创建一个迭代器，尝试按顺序（从索引0 开始）获取元素。
+3. 如果尝试失败，Python 抛出TypeError 异常，通常会提示“C object is not iterable”
+
+虽然前面定义的Sentence 类是可以迭代的，但却无法通过`issubclass(Sentence, abc.Iterable)` 测试。
+
+### 可迭代的对象与迭代器的对比
+* 可迭代的对象: 使用iter 内置函数可以获取迭代器的对象(实现了 `__iter__`或者`__getitem__`)  
+    标准的迭代器接口有两个方法:
+    * `__next__`
+    * `__iter__`: 返回self
+  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210617100606.png"/></div>
+
+* **迭代器** 迭代器是这样的对象：实现了无参数的`__next__` 方法，返回序列中的下一个元素；如果没有元素了，那么抛出 _StopIteration_ 异常, Python 中的迭代器实现了 `__iter__`, 因此是可迭代的
+
+### Sentence类第2版：典型的迭代器
+这里实现了一个不符合 Python 习惯做法的[迭代器版本](https://github.com/fluentpython/example-code/blob/master/14-it-generator/sentence_iter.py), 它通过一个辅助的类和下标索引, 实现 GoF 中描述的迭代器模式. 
+#### 把Sentence变成迭代器：坏主意
+构建可迭代的对象和迭代器时经常会出现错误，原因是混淆了二者。迭代器可以迭代，但是可迭代的对象不是迭代器。GoF 中说,迭代器模式可用来：
+* 访问一个聚合对象的内容而无需暴露它的内部表示
+* 支持对聚合对象的多种遍历
+* 为遍历不同的聚合结构提供一个统一的接口(即支持多态迭代)
+
+为了“支持多种遍历”，必须能从同一个可迭代的实例中获取多个独立的迭代器，而且各个迭代器要能维护自身的内部状态，因此这一模式正确的实现方式是，**每次调用 `iter(my_iterable)` 都新建一个独立的迭代器**。
+### Sentence类第3版：生成器函数
+实现相同功能，但却符合 Python [习惯的方式](https://github.com/fluentpython/example-code/blob/master/14-it-generator/sentence_gen.py)是，用生成器函数代替SentenceIterator 类。
+
+#### 生成器函数的工作原理
+只要Python 函数的定义体中有yield 关键字，该函数就是生成器函数。调用生成器函数时，会返回一个生成器对象。生成器函数会**创建一个生成器对象，包装生成器函数的定义体**。把生成器传给`next(...)`函数时, 生成器函数会想抢执行下一个 yield 语句.
+
+### Sentence类第4版：惰性实现
+设计 _Iterator_ 接口时需要考虑到惰性：next(my_iterator) 一次生成一个元素. 目前实现的几版Sentence 类都不具有惰性，因为`__init__` 方法急迫地构建好了文本中的单词列表，然后将其绑定到self.words 属性上。  
+`re.finditer` 函数是`re.findall` 函数的惰性版本，我们基于此建立一个[惰性的版本](https://github.com/fluentpython/example-code/blob/master/14-it-generator/sentence_gen2.py).
+* 不再需要words 列表
+* finditer 函数构建一个迭代器, 产出MatchObject实例。
+* match.group() 方法从MatchObject 实例中提取匹配正则表达式的具体文本。
+
+### Sentence类第5版：生成器表达式
+简单的生成器函数，可以替换成生成器表达式:生成器表达式可以理解为列表推导的惰性版本(不会迫切地构建列表，而是返回一个生成器，按需惰性生成元素)。  
+把生成器表达式返回的值赋值时候, 只需调用相应的函数，虽然调用时会返回一个生成器，但是这里并不使用。**只有for 循环迭代时，函数的定义体才会真正执行**。于是我们有了生成器表达式的[版本](https://github.com/fluentpython/example-code/blob/master/14-it-generator/sentence_genexp.py):
+* `__iter__` 方法中不是使用生成器函数(没有yield), 而是使用生成器表达式构建生成器，然后将其返回。
+
+生成器表达式**是创建生成器的简洁句法**，这样无需先定义函数再调用。不过，**生成器函数灵活得多**，可以使用多个语句实现复杂的逻辑，也可以作为协程使用. 一般而言如果生成器表达式要分成多行写的情况下建议写生成器函数.
+
+### 标准库中的生成器函数
+标准库提供了很多生成器，从用于逐行迭代纯文本文件的对象，到出色的`os.walk` 函数.  
+第一组是用于过滤的生成器函数：从输入的可迭代对象中产出元素的子集，而且不修改元
+素本身。
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210617105408.png"/></div>
+
+下一组是用于映射的生成器函数：在输入的单个可迭代对象（map 和starmap 函数处理多
+个可迭代的对象）中的各个元素上做计算，然后返回结果。
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210617105518.png"/></div>
+
+接下来这一组是用于合并的生成器函数，这些函数都从输入的多个可迭代对象中产出元
+素:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210617105602.png"/></div>
+
+有些生成器函数会从一个元素中产出多个值，扩展输入的可迭代对象:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210617105644.png"/></div>
+
+最后一组生成器函数用于产出输入的可迭代对象中的全部元素，不过会以某种方式重新排列。
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210617105734.png"/></div>
+
+### yield from
+如果生成器函数需要产出另一个生成器生成的值，传统的解决方法是使用嵌套的for 循环:
+```Python
+>>> def chain(*iterables):
+...     for it in iterables:
+...         for i in it:
+...             yield i
+...
+>>> s = 'ABC'
+>>> t = tuple(range(3))
+>>> list(chain(s, t))
+['A', 'B', 'C', 0, 1, 2]
+```
+Since Python 3.3:
+```Python
+>>> def chain(*iterables):
+...     for i in iterables:
+...         yield from i
+...
+>>> list(chain(s, t))
+['A', 'B', 'C', 0, 1, 2]
+```
+
+### 可迭代的归约函数
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210617110143.png"/></div>
+
+上图函数都接受一个可迭代的对象，然后返回单个结果。这些函数叫“归约”函数、“合拢”函数或“累加”函数。
+
+### 深入分析iter函数
+iter 函数还有一个鲜为人知的用法：传入两个参数，使用常规的函数或任何可调用的对象创建迭代器。第一个参数必须是可调用的对象，用于不断调用（没有参数），产出各个值；第二个值是哨符.
+```Python
+with open('mydata.txt') as fp:
+    for line in iter(fp.readline, '\n'):
+        process_line(line)
+```
