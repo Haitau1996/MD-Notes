@@ -1330,5 +1330,103 @@ else:
 yield 语句的作用是把函数的定义体分成两部分：yield 语句前面的所有代码在with 块开始时执行, yield 语句后面的代码在with 块结束时（即调用`__exit__` 方法时）执行。
 
 ## Chap 16: 协程
+字典为动词“_to yield_”给出了两个释义：产出和让步。yield item 这行代码会产出一个值，提供给 `next(...)` 的调用方；此外，还会作出让步，暂停执行生成器，让调用方继续工作，直到需要使用另一个值时再调用 `next()`。
 ### 生成器如何进化成协程
-协程是指一个过程，这个过程与调用方协作，产出由调用方提供的值。
+协程是指一个过程，这个过程与调用方协作，产出由调用方提供的值。协程看上去也是子程序，但执行过程中，在子程序内部可中断，然后转而执行别的子程序，在适当的时候再返回来接着执行。  
+协程的底层架构在 Python 2.5 中实现, yield 关键字可以在表达式中使用，而且生成器API 中增加了 `.send(value)` 方法。生成器的调用方可以使用`.send(...)` 方法发送数据，发送的数据会成为生成器函数中`yield` 表达式的值。因此，生成器可以作为协程使用。  
+PEP 380 对生成器函数的句法做了两处改动，以便更好地作为协程使用。
+* 现在，生成器可以返回一个值
+* 新引入了yield from 句法，使用它可以把复杂的生成器重构成小型的嵌套生成器，省去了之前把生成器的工作委托给子生成器所需的大量样板代码。
+
+### 用协程生成器的基本行为
+```Python
+>>> def simple_coroutine(): 
+...     print('-> coroutine started')
+...     x = yield 
+...     print('-> coroutine received:', x)
+...
+>>> my_coro = simple_coroutine()
+>>> next(my_coro) 
+-> coroutine started
+>>> my_coro.send(42) 
+-> coroutine received: 42
+Traceback (most recent call last): 
+...
+StopIteration
+```
+从上面这个例子中可以看到, 在协程中, `yield` 往往出现在表达式的右边. 调用 next 方法后, 在 yeild 处暂停, 知道接受了send 过来的值才继续执行.  
+协程可以身处四个状态中的一个。当前状态可以使用`inspect.getgeneratorstate(...)` 函数确定:
+* 'GEN_CREATED':等待开始执行
+* 'GEN_RUNNING':解释器正在执行
+* 'GEN_SUSPENDED':在yield 表达式处暂停。
+* 'GEN_CLOSED':执行结束。
+
+仅当协程处于暂停状态时才能调用`send` 方法, 最先调用 `next(my_coro)` 函数这一步通常称为“预激”（prime）协程. 
+
+### 使用协程计算移动平均值
+引入一个稍微复杂的例子, 在一个无限循环中计算[移动平均值](https://github.com/fluentpython/example-code/blob/master/16-coroutine/coroaverager0.py), 从中可以看到, yield 表达式用于**暂停执行协程，把结果发给调用方；还用于接收调用方后面发给协程的值，恢复无限循环**。  
+使用协程之前**必须预激**，可是这一步容易忘记。为了避免忘记，可以在协程上使用一个特殊的装饰器。
+
+### 预激协程的装饰器
+为了简化协程的用法，有时会使用一个[预激装饰器](https://github.com/fluentpython/example-code/blob/master/16-coroutine/coroutil.py)。定义了之后就可以使用 `@coroutine` 装饰器:
+```Python
+from coroutil import coroutine 
+@coroutine 
+def averager(): 
+    ... # 和上一节的定义完全相同
+```
+使用 `yield from` 句法调用协程时，会自动预激，因此与这种装饰器不兼容. 
+
+### 终止协程和异常处理
+协程中未处理的异常会向上冒泡，传给`next` 函数或`send` 方法的调用方（即触发协程的对象）。
+```Python
+>>> from coroaverager1 import averager
+>>> coro_avg = averager()
+>>> coro_avg.send('spam') 
+Traceback (most recent call last):
+...
+TypeError: unsupported operand type(s) for +=: 'float' and 'str'
+>>> coro_avg.send(60) 
+Traceback (most recent call last):
+File "<stdin>", line 1, in <module>
+StopIteration
+```
+从上面的例子中可以看到, 发送参数不是数字, 协程内部有异常抛出, 如果**协程内没有处理异常, 就会终止, 重新激活协程, 会抛出 `StopIteration` 异常**. 这意味着终止协程的一种方式：发送某个哨符值，让协程退出,如`my_coro.send(StopIteration)`. 此外,客户代码可以在生成器对象上调用两个方法，显式地把异常发给协程。
+* `generator.throw(exc_type[, exc_value[, traceback]])`: 致使生成器在暂停的yield 表达式处抛出指定的异常。如果生成器处理了抛出的异常，代码会向前执行到下一个yield 表达式，而产出的值会成为调用 `generator.throw` 方法得到的返回值。如果生成器没有处理抛出的异常，异常会向上冒泡，传到调用方的上下文中。
+* `generator.close()`: 致使生成器在暂停的yield 表达式处抛出GeneratorExit 异常。如果生成器没有处理这个异常，或者抛出了StopIteration 异常（通常是指运行到结尾），调用方不会报错。
+
+### 让协程返回值
+[新版](https://github.com/fluentpython/example-code/blob/master/16-coroutine/coroaverager2.py)的 averager 协程会返回结果, 为了返回值，协程必须正常终止. return 表达式的值会偷偷传给调用方，赋值给 StopIteration 异常的一个属性。
+```Python
+>>> coro_avg = averager()
+>>> next(coro_avg)
+>>> coro_avg.send(10) 
+>>> coro_avg.send(30)
+>>> coro_avg.send(6.5)
+>>> coro_avg.send(None) 
+Traceback (most recent call last):
+...
+StopIteration: Result(count=3, average=15.5)
+```
+于是, 我们可以捕获 `StopIteration` 异常, 获取返回值:
+```Python
+>>> try:
+...     coro_avg.send(None)
+... except StopIteration as exc:
+...     result = exc.value
+...
+>>> result
+Result(count=3, average=15.5)
+```
+
+### 使用 `yield from`
+在生成器gen 中使用 `yield from subgen()`时，`subgen` 会获得控制权，把产出的值传给 `gen` 的调用方，即调用方可以直接控制subgen。与此同时，**gen 会阻塞，等待subgen 终止**。  
+前面提到过的 `yield from` 结构其中一个作用是替代产出值的嵌套 [for 循环](https://github.com/dabeaz/python-cookbook/blob/master/src/4/how_to_flatten_a_nested_sequence/example.py), 但是实际上 `yield from` 结构的本质作用无法通过简单的可迭代对象说明，而要发散思维，**使用嵌套的生成器**。yield from 的主要功能是**打开双向通道，把最外层的调用方与最内层的子生成器连接起来**.这样二者可以直接发送和产出值，还可以直接传入异常，而不用在位于中间的协程中添加大量处理异常的样板代码. 为此我们使用几个专门的术语:
+* 委派生成器:包含`yield from <iterable>` 表达式的生成器函数。
+* 子生成器:从`yield from` 表达式中`<iterable>` 部分获取的生成器
+* 调用方: PEP 380 使用“调用方”这个术语指代调用委派生成器的客户端代码
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210621150549.png"/></div>
+
+// TODO: 不是很理解 yield from
+
