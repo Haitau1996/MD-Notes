@@ -1463,3 +1463,8 @@ CPython **解释器本身就不是线程安全的**，因此有GIL，一次只�
 * `futures.as_completed` 函数返回一个迭代器，在future 运行结束后产出future
 
 这其实是一个惯用法, 构建一个字典，把各个future 映射到其他数据（future 运行结束后可能有用）上. 
+
+## Chap 18 : 使用asyncio包处理并发
+真正的并行需要多个核心, 实际上大多数过程都是并发处理的，而不是并行处理。计算机始终运行着100 多个进程，**确保每个进程都有机会取得进展**(通过上下文切换)，不过四核 CPU 本身同时做的事情不能超过四件。asyncio 使用事件循环驱动的协程实现并发。
+### 线程与协程对比
+一个借由 [threading 模块](https://github.com/fluentpython/example-code/blob/master/18-asyncio-py3.7/spinner_thread.py)使用线程实现，一个借由 [asyncio 包](https://github.com/fluentpython/example-code/blob/master/18-asyncio-py3.7/spinner_asyncio.py) 使用协程实现。
