@@ -1,7 +1,7 @@
 *.pdf
 */*.pdf
+*.exe
 .vscode/*
-source/
 src/
 /CPP拾遗/
 draw.io/
