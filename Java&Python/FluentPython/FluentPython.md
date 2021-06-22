@@ -1430,3 +1430,36 @@ Result(count=3, average=15.5)
 
 // TODO: 不是很理解 yield from
 
+## Chap 17: 使用future处理并发
+future 指一种对象，**表示异步执行的操作**。
+### 网络下载的三种风格
+在I/O 密集型应用中，如果代码写得正确，那么不管使用哪种并发策略（使用线程或asyncio 包），吞吐量都比依序执行的代码高很多。  
+依次下载的[脚本](https://github.com/fluentpython/example-code/blob/master/17-futures/countries/flags.py)几个过程分别是得到 flag 和 保存 flag. 
+#### 使用 `concurrent.futures` 模块下载
+`concurrent.futures` 模块的主要特色是`ThreadPoolExecutor` 和`ProcessPoolExecutor` 类，这两个类实现的接口能分别在不同的线程或进程中执行可调用的对象。这两个类在**内部维护着一个工作线程或进程池，以及要执行的任务队列**。一个典型的[实现](https://github.com/fluentpython/example-code/blob/master/17-futures/countries/flags_threadpool.py)中可以看到, 接口抽象的层级很高, 无需关注任何实现细节.   
+#### _future_ 在哪里
+标准库中有两个名为 _Future_ 的类, 实例都表示可能**已经完成或者尚未完成的延迟计算**.通常情况下自己不应该创建 _future_，而**只能由并发框架（`concurrent.futures` 或`asyncio`）实例化**。其主要的几个方法:
+* `.done()`: 返回值是布尔值，指明 `future` 链接的可调用对象是否已经执行。
+* `.add_done_callback()`: 参数是可调用对象, `future` 运行结束后会调用指定的可调用对象。
+* `.result()`: 运行结束后,返回可调用对象的结果或者抛出执行可调用对象时候抛出的的异常
+
+为了理解这些过程, [新的实现](https://github.com/fluentpython/example-code/blob/master/17-futures/countries/flags_threadpool_ac.py)将 `executor.map` 调用换成两个 for 循环.
+
+实际上这些都是并发执行而无法并行下载, `concurrent.futures` 库实现的两个示例受GIL(全局解释器锁)限制, 只在单个线程中执行. 
+
+### 阻塞型 _I/O_ 和 _GIL_
+CPython **解释器本身就不是线程安全的**，因此有GIL，一次只允许使用一个线程执行Python 字节码。标准库中所有执行阻塞型 _I/O_ 操作的函数，**在等待操作系统返回结果时都会释放 _GIL_**。
+
+### 使用`concurrent.futures`模块启动进程
+`concurrent.futures`这个模块实现的是真正的并行计算，它使用 `ProcessPoolExecutor` 类把工作分配给多个 Python 进程处理. 需要做 CPU 密集型处理, 使用这个模块能够绕开 GIL, `ProcessPoolExecutor` 类中，max_worker 参数是可选的, 大多数情况下不使用—— 默认值是`os.cpu_count()` 函数返回的 CPU 数量。如果使用 Python 处理CPU 密集型工作，应该试试PyPy. 
+
+### 显示下载进度并处理错误
+#### flags2系列示例处理错误的方式
+我们在新的[例子](https://github.com/fluentpython/example-code/blob/master/17-futures/countries/flags2_sequential.py)中加入了异常处理, 当 http 代码不是 200(不成功) 时, 使用`requests.Response.raise_for_status` 方法抛出异常. 
+
+#### 使用futures.as_completed函数
+[flags2_threadpool.py](https://github.com/fluentpython/example-code/blob/master/17-futures/countries/flags2_threadpool.py) 脚本用到`futures.ThreadPoolExecutor` 类和`futures.as_completed` 函数.有几点需要注意:
+* 使用字典把各个Future 实例（表示一次下载）映射到相应的国家代码上，在处理错误时使用
+* `futures.as_completed` 函数返回一个迭代器，在future 运行结束后产出future
+
+这其实是一个惯用法, 构建一个字典，把各个future 映射到其他数据（future 运行结束后可能有用）上. 
