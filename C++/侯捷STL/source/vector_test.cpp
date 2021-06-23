@@ -71,3 +71,7 @@ string* pItem = (string*)::bsearch(&target, (c.data()),
 	test_moveable(vector<MyString>(),vector<MyStrNoMove>(), value);	
 }	
 }
+int main(){
+	long int arg = 500000L;
+	jj02::test_vector(arg);
+}

@@ -3,7 +3,6 @@
 #include <ctime> 
 #include <cstdlib> //qsort, bsearch, NULL
 #include "test_helper.hpp"
-#define ASIZE 500000
 using namespace std;
 namespace jj01
 {

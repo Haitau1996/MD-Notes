@@ -1,4 +1,14 @@
-using namespace std;
+//----------------------------------------------------
+#include <iostream>
+#include <cstdio>  //snprintf()
+#include <cstdlib> //RAND_MAX
+#include <cstring> //strlen(), memcpy()
+#include <string> 
+using std::cin;
+using std::cout;
+using std::string;
+
+//以下 MyString 是為了測試 containers with moveable elements 效果.  
 class MyString { 
 public: 
     static size_t DCtor;  	//累計 default-ctor 的呼叫次數 
@@ -94,6 +104,20 @@ size_t MyString::CAsgn=0;
 size_t MyString::MCtor=0;
 size_t MyString::MAsgn=0;
 size_t MyString::Dtor=0;
+
+namespace std 	//必須放在 std 內 
+{
+template<> 
+struct hash<MyString> 	//這是為了 unordered containers 
+{
+	size_t 
+	operator()(const MyString& s) const noexcept
+	{  return hash<string>()(string(s.get()));  }  
+	    //借用現有的 hash<string> (in ...\include\c++\bits\basic_string.h)
+};
+}
+//-----------------
+//以下 MyStrNoMove 是為了測試 containers with no-moveable elements 效果.  
 class MyStrNoMove { 
 public: 
     static size_t DCtor;  	//累計 default-ctor 的呼叫次數 
@@ -170,3 +194,15 @@ size_t MyStrNoMove::CAsgn=0;
 size_t MyStrNoMove::MCtor=0;
 size_t MyStrNoMove::MAsgn=0;
 size_t MyStrNoMove::Dtor=0;
+
+namespace std 	//必須放在 std 內 
+{
+template<> 
+struct hash<MyStrNoMove> 	//這是為了 unordered containers 
+{
+	size_t 
+	operator()(const MyStrNoMove& s) const noexcept
+	{  return hash<string>()(string(s.get()));  }  
+	   //借用現有的 hash<string> (in ...\4.9.2\include\c++\bits\basic_string.h)
+};
+}

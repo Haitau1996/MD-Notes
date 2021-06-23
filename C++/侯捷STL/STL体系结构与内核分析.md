@@ -73,7 +73,26 @@ for(auto& elem : c){
   * Unordered Set/MultiSet
   * Unordered Map/MultiMap
 
-使用到几个[辅助的函数](src/test_helper.cpp), 运行 [array 的测试](source/array_test.cpp)结果如下:
+### 几个容器的测试
+* 使用到几个[辅助的函数](src/test_helper.cpp), 运行 <font size= 5>[array 的测试](source/array_test.cpp)</font>结果如下:
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210622191032.png"/></div>
 
-### 使用容器 vector
+* 使用容器 <font size=5>vector [测试](source/vector_test.cpp)</font>一个查找的过程:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210623160636.png"/></div>
+ 
+  发现 `std::find()` 相对还是比较快的, 而 sort 之后再 bsearch , sort 过程就要花费很多时间.   
+* 接下来测试 <font size=5>[list](source/list_test.cpp)</font>:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210623161557.png"/></div>
+
+_list / forward_list / deque_ 都有最大的个数, 值和具体运行环境有关. 可以发现, 对 _list_ 排序的时间比 _vector_ 明显要长.  
+* 接下来测试<font size=5>[forward_list](source/forward_list_test.cpp)</font>
+  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210623162448.png"/></div>
+
+需要注意的是, 仔细查看 `forward_list` 的 Modifiers, 发现它只有 `push_front()` 成员函数而没有 `push_back`, 直觉上也是, 如果没有表尾指针, 向尾部插入的速度是十分不合理的. 
+* 测试一个 gun c 的非标准单向链表 <font size=5>[slist](source/slist_test.cpp)</font>
+  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210623163804.png"/></div>
+
+* 测试一个 <font size=5>[deque](source/deque_test.cpp)</font>.
+  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210623164705.png"/></div>
+
+  

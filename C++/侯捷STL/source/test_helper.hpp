@@ -1,5 +1,22 @@
-#include <iostream>
+#include<iostream>
+#include<algorithm>
+#include <typeinfo>  //typeid()
 using namespace std;
+const long ASIZE  =   500000L;
+
+template<typename T>
+void output_static_data(const T& myStr)
+{
+	cout << typeid(myStr).name() << " -- " << endl; 
+	cout << " CCtor=" << T::CCtor 	
+		 << " MCtor=" << T::MCtor 
+	     << " CAsgn=" << T::CAsgn 		 
+		 << " MAsgn=" << T::MAsgn 
+		 << " Dtor="  << T::Dtor 
+		 << " Ctor="  << T::Ctor 
+		 << " DCtor=" << T::DCtor 		 
+		 << endl;	
+}
 long get_a_target_long()
 {
     long target=0;
