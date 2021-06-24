@@ -1,3 +1,7 @@
+#ifndef TEST_HELPER 
+#define TEST_HELPER
+#endif
+
 #include<iostream>
 #include<algorithm>
 #include <typeinfo>  //typeid()

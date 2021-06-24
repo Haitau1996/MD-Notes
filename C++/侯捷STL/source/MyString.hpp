@@ -1,3 +1,6 @@
+#ifndef MY_STRING
+#define MY_STRING
+#endif
 //----------------------------------------------------
 #include <iostream>
 #include <cstdio>  //snprintf()

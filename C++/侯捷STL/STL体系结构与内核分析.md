@@ -74,7 +74,7 @@ for(auto& elem : c){
   * Unordered Map/MultiMap
 
 ### 几个容器的测试
-* 使用到几个[辅助的函数](src/test_helper.cpp), 运行 <font size= 5>[array 的测试](source/array_test.cpp)</font>结果如下:
+* 使用到几个[辅助的函数](source/test_helper.cpp), 运行 <font size= 5>[array 的测试](source/array_test.cpp)</font>结果如下:
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210622191032.png"/></div>
 
 * 使用容器 <font size=5>vector [测试](source/vector_test.cpp)</font>一个查找的过程:
@@ -87,7 +87,7 @@ for(auto& elem : c){
 _list / forward_list / deque_ 都有最大的个数, 值和具体运行环境有关. 可以发现, 对 _list_ 排序的时间比 _vector_ 明显要长.  
 * 接下来测试<font size=5>[forward_list](source/forward_list_test.cpp)</font>
   <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210623162448.png"/></div>
-
+  
 需要注意的是, 仔细查看 `forward_list` 的 Modifiers, 发现它只有 `push_front()` 成员函数而没有 `push_back`, 直觉上也是, 如果没有表尾指针, 向尾部插入的速度是十分不合理的. 
 * 测试一个 gun c 的非标准单向链表 <font size=5>[slist](source/slist_test.cpp)</font>
   <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210623163804.png"/></div>
@@ -95,4 +95,16 @@ _list / forward_list / deque_ 都有最大的个数, 值和具体运行环境有
 * 测试一个 <font size=5>[deque](source/deque_test.cpp)</font>.
   <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210623164705.png"/></div>
 
-  
+  先看 deque 的结构, 可以发现它是 **用分段连续的方法提供一个元素放在连续空间中的假象**. 
+  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210623170249.png"/></div>
+
+* [_stack_](source/stack_test.cpp) 和 [_queue_](source/queue_test.cpp) 实际上是一个容器适配器, 其内部是一个 _deque_:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210623171139.png"/></div> <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210623171251.png"/></div>
+  因为他们只有一个方向 压入/弹出, 故对应的成员函数是 `push()`/`pop()`. 此外, _deque / queue / stack_ 不提供迭代器, 因为**通过迭代器修改元素会改变其独特的性质**.
+
+* [_multi_set_](source/multiset_test.cpp) 测试中可以看到, 容器自带的 sort 比 `std::sort` 块:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624093336.png"/></div>
+* [_multi_map_](source/multimap_test.cpp): 需要注意的是, 这里使用了 pair, map 中的一个元素是`<int, string>`, 并且 multimap 不能用 `[]` 做 insersiton<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624094048.png"/></div>
+* [_unordered_multiset_](source/unordered_multiset_test.cpp):可以看到篮子数量比元素数量还要多, 这是设计上的内部考量, 元素个数大于篮子个数的时候, 篮子数量会大致翻倍然后重新打散元素.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624094948.png"/></div><div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624095257.png"/></div>
+* [_unordered_multimap_](source/unordered_multimap_test.cpp):<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624095628.png"/></div>
+* [_set_](source/set_test.cpp): 和 multiset 不同,其中的元素不可重复, 重复的元素就被忽略了, 故 size 刚好为 random 能产生的数字数量(32768)<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624105639.png"/></div>
+* [_map_](source/map_test.cpp): 值得注意的是,这里可以使用`[]` 插入元素<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624110336.png"/></div>
+
