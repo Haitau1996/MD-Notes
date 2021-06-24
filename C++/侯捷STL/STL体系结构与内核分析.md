@@ -1,5 +1,5 @@
 # STL 体系结构与内核分析
-## Intro
+## Lecture 1
 标准库以头文件的形式出现:
 * C++ 标准库的头文件不带后缀`.h`
 * 新式的 C 头文件不带后缀 `.h`, 但是加了一个c, 如`cstdio`
@@ -11,7 +11,7 @@
 * cppreference.com (可以通过 cppman 在命令行访问)
 * https://gcc.gnu.org/onlinedocs/
 
-## STL 体系结构基础
+### STL 体系结构基础
 STL 有六大基本组件: **容器, 分配器, 迭代器, 算法, 仿函数, 适配器**.其关系如下:
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210622143801.png"/></div>
 
@@ -54,8 +54,8 @@ for(auto& elem : c){
 }
 ```
 
-## 容器的分类与测试 
-### 容器 - 结构与分类
+### 容器的分类与测试 
+#### 容器 - 结构与分类
 * 顺序容器
   * <font color=pink>array</font>: 语言的一部分, since C++11 也变成了一个 class(`std::array`)
   * vector: 空间可以自动增长, 分配器自动做这个事情
@@ -73,7 +73,7 @@ for(auto& elem : c){
   * Unordered Set/MultiSet
   * Unordered Map/MultiMap
 
-### 几个容器的测试
+#### 几个容器的测试
 * 使用到几个[辅助的函数](source/test_helper.cpp), 运行 <font size= 5>[array 的测试](source/array_test.cpp)</font>结果如下:
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210622191032.png"/></div>
 
@@ -108,7 +108,7 @@ _list / forward_list / deque_ 都有最大的个数, 值和具体运行环境有
 * [_set_](source/set_test.cpp): 和 multiset 不同,其中的元素不可重复, 重复的元素就被忽略了, 故 size 刚好为 random 能产生的数字数量(32768)<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624105639.png"/></div>
 * [_map_](source/map_test.cpp): 值得注意的是,这里可以使用`[]` 插入元素<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624110336.png"/></div>
 
-## 使用分配器 _allocator_
+### 使用分配器 _allocator_
 [这里](source/allocator_test.cpp) 我们使用了集中 gunc "方言" 类型的内存分配器, 它们都在 `ext\*_allocator.hpp` 中定义. 一般而言, 分配器是配合容器使用的, 我们没有必要去直接使用分配器.实在是要直接使用分配去的话, 类似于这样写, allocate 中的数字是需要的元素个数:
 ```C++
 int* p;
@@ -120,3 +120,21 @@ p = alloc2.allocate( 1 );
 alloc2.deallocate( p, 1);
 ```
 从使用者的角度看, 我们使用 `new`/`delete`, `new[]`/`delete[]`, `malloc/free`应对小量的内存需求, **不需要记住到底要删除多少个元素**, 因此用起来比分配器要方便得多. 这时候, 如果我们要了 5 个而只还了 3个, 其结果就是未定义的. 
+
+## Lecture 2
+### 源代码的分布
+* GUN C++ 以4.9.2 版本为例, 其目录表面上在 `\4.9.2\include\C++` 中, 实际上在
+  *  `\4.9.2\include\C++\bit` 各种以 STL 开头的文件中
+  *  `\4.9.2\include\C++\ext` 这里有 GNU 自己的一些方言(extention)
+
+### _OOP_ vs. _GP_
+* 面向对象编程企图将数据结构和算法结合在一起, 可以看到 list 这时候就只能用 `someList.sort()`, 无法用 `::sort`, 因为**其内部用到了随机访问迭代器** <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624125219.png"/></div>
+* 而 GP 就是将数据结构和算法分开, 通过迭代器提供接口, 而在算法那边, 可以根据不同的迭代器类型特化不同版本的 `::sort`:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624130457.png"/></div><div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624130006.png"/></div>
+
+  * 容器和算法的团队可以各自闭门造车, 期间以迭代器联通即可
+  * 算法通过迭代器确定操作范围, 并且通过迭代器取用容器的元素
+
+所谓的算法, 其内部最终**涉及元素本身**的操作, 无非**比大小**而已.   
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624131015.png"/></div>
+
+### 操作符重载与模版(泛化/特化/偏特化)
