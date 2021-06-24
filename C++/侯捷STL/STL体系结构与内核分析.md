@@ -108,3 +108,15 @@ _list / forward_list / deque_ 都有最大的个数, 值和具体运行环境有
 * [_set_](source/set_test.cpp): 和 multiset 不同,其中的元素不可重复, 重复的元素就被忽略了, 故 size 刚好为 random 能产生的数字数量(32768)<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624105639.png"/></div>
 * [_map_](source/map_test.cpp): 值得注意的是,这里可以使用`[]` 插入元素<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624110336.png"/></div>
 
+## 使用分配器 _allocator_
+[这里](source/allocator_test.cpp) 我们使用了集中 gunc "方言" 类型的内存分配器, 它们都在 `ext\*_allocator.hpp` 中定义. 一般而言, 分配器是配合容器使用的, 我们没有必要去直接使用分配器.实在是要直接使用分配去的话, 类似于这样写, allocate 中的数字是需要的元素个数:
+```C++
+int* p;
+a1locator<int> alloc1 ;
+p = alloc1.allocate( 1 ) ;
+alloc1.deallocate(p, 1);
+__gnu_cxx::malloc_allocator<int> alloc2 ;
+p = alloc2.allocate( 1 );
+alloc2.deallocate( p, 1);
+```
+从使用者的角度看, 我们使用 `new`/`delete`, `new[]`/`delete[]`, `malloc/free`应对小量的内存需求, **不需要记住到底要删除多少个元素**, 因此用起来比分配器要方便得多. 这时候, 如果我们要了 5 个而只还了 3个, 其结果就是未定义的. 
