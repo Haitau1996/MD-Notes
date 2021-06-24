@@ -138,3 +138,61 @@ alloc2.deallocate( p, 1);
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624131015.png"/></div>
 
 ### 操作符重载与模版(泛化/特化/偏特化)
+[操作符重载](https://en.cppreference.com/w/cpp/language/operators),其具体的形式如下, 我们一般要注意区分前置和后置的情形.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624151549.png"/></div>
+
+具体我们可以看一个 list 的迭代器, 我们说它是泛型指针, 那么所有能对指针进行的操作, 我们也可以在这种迭代器做:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624152520.png"/></div>
+
+[class template](https://en.cppreference.com/w/cpp/language/class_template)在使用的时候需要**明白地告诉编译器具体参数的类型是什么**:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624152758.png"/></div>
+
+[function template](https://en.cppreference.com/w/cpp/language/function_template) 是泛化的函数, 编译器会对 function Template 进行**实参推导**.  
+这里对 [member template](https://en.cppreference.com/w/cpp/language/member_template) 不做深入的讨论.  
+
+#### 模板的泛化与特化
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624153709.png"/></div>
+
+* 特化的版本, `template<>` **尖括号中是空的**, 不需要写`typename etc`
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624154010.png"/></div>
+
+#### 模板的偏特化(partial specialization)
+出现在模板参数有多个或者专门针对指针的情况, 例如我们的向量对于bool可以有更节约空间的方式实现:
+```C++
+// 泛化
+template<class T,
+         class Alloc= alloc>
+clase vector{
+  ...
+};
+// 偏特化
+template<class alloc>
+class vector<bool, alloc>{
+  ...
+};
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624154545.png"/></div>
+
+### 分配器
+在所有的 C++ 平台上, new 都是调用 `operator new`, 背后调用 `malloc` 得到的块比我们想象的要大一些, 附加了很多额外的开销, 面对小块内存, overhead 占的比例就大:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624161946.png"/></div>
+
+接下来查看 VC6 中的 allocator 实现:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624162310.png"/></div>
+
+Borland C++ 5的实现如下:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624162943.png"/></div>
+
+GUN C 2.9.1 也差不多( `<defalloc.h>`):
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624163213.png"/></div>
+
+这会引发一个问题, 如果我们容器中放很多个元素, 单个元素的大小不大, 那么 overhead 的影响可能就无法忽略. 实际上, 各个容器的默认分配器在 GUNC 2.9.1 中是`alloc` ( `<stl_alloc.h>` )而不是`allocator`.其诉求是**尽量减小 malloc 的次数**, 它维护一条链表, 每个位置对应一个大小并且指向一个链表, 要的时候过去查看对应链表是否为空, 是的话才调用 _malloc_. 
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624164009.png"/></div>
+
+GNU C++ 4.9 之后使用的分配器变成了 `std::allocator`, 它有一个别名为`__allocator_base<_Tp>` 的父类`new_allocator`
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624164450.png"/></div>
+
+G4.9 的标准库还有很多 extention allocators, 其中`__pool_alloc` 就是上面提到的 `alloc`:
+```C++
+vector<string, __gnu_cxx::__pool_alloc<string>> vec;
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624164802.png"/></div>
