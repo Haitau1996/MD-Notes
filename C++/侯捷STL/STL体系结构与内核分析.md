@@ -196,3 +196,113 @@ G4.9 的标准库还有很多 extention allocators, 其中`__pool_alloc` 就是�
 vector<string, __gnu_cxx::__pool_alloc<string>> vec;
 ```
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624164802.png"/></div>
+
+C++2.9中的容器的结构和分类如下:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624171803.png"/></div>
+
+### 深度探索 _list_
+在 2.9 版本中, 我们发现, _list_ 本质上里面只有一个数据成员, `node`, 就是一个指针, 在 32 位的系统上取 sizeof 自然就是 4. 它是一个指针, 指向一个空白节点:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624172338.png"/></div>
+
+为什么需要向 `__list_iterator` 传入三个参数(实际上后续的版本已经改了)?  
+其中的 iterator 是一个 class, 才能足够 smart. `list<T>::iterator` 就是 `__list_iterator<T, T&, T*>`. 它有 5 个 _typedef_ 和一系列的操作符重载. 
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624183046.png"/></div>
+
+后置的 `++`用了很多已经被重载的操作符, 但是具体的调用细节还是要仔细琢磨:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624183431.png"/></div>
+
+前置的返回的是一个 reference, 后置的返回的是一个对象.   
+GCC 4.9 中的 List 变得十分复杂:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624191522.png"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210624191658.png"/></div>
+
+### 迭代器的设计原则
+_traits_ 是人为制造的萃取机, iterator traits 能够萃取出迭代器的特性, 我们就需要知道它有哪些特性. <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625103323.png"/></div>
+
+例如 rotate 中就需要一个参数`std::__iterator_category(__first)`, 而它是萃取机`iterator_traits<_iter>::iterator_category()`, 在 rotate 的原型中, 还想要知道 iterator 的 `difference_type` 和 `value_type`.此外迭代器的相关类型还有 `reference` 和 `pointer`.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625105134.png"/></div>
+
+不是 class, 没有办法做 typedef, 如往算法中传递的不是通用的迭代器而只是 raw pointer.  萃取机作为一个中介层就能解决问题: 
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625111429.png"/></div>
+
+traits 可以接收任意的 type, 那么根据传入的类型做偏特化. 为什么传入 const pointer 依旧得到 type, 去了 const, **因为声明一个无法被赋值的变量没什么用**. 标准库中有各种 traits:
+* type traits `<…/C++/type_traits>`
+* iterator traits `<.../C++/bits/stl_iterator.h>`
+* char traits `<…/C++/bits/char_traits.h>`
+* allocator traits `<…/C++/bits/alloc_traits.h>`
+* pointer traits `<…/C++/bits/ptr_traits.h>`
+* array traits `<…/C++/array>`
+
+### _vector_
+主要的标准库实现容量到了之后都是两倍的增加. 它是靠三根指针控制整个vector, 故它的 size 在 32 位系统上是 12.每次成长会大量调用拷贝函数和析构函数, 故需要注意这部分开销. <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625125137.png"/></div>
+
+在 vector 中含有指针, 实际上就可以当作迭代器. 当它被丢给萃取机时, 就会走入 `T*` 的路径.在 C++ 2.9 中vector 是一个单一的类, 但是在 4.9 中就有了复杂的继承关系:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625131006.png"/></div>
+
+这个 impl 为了用 allocator 的公共, 但是没有 is-a 关系, 设计时候使用 public 继承其实不是好的习惯. _vector_ 中的 iterator 实现非常曲折, 
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625131923.png"/></div>
+
+### _array_
+没有包装的话, 就无法享受STL 中便利的算法/仿函数. TR1 中的 array 也用 typedef 实现了 `value_type`/`pointer`/`iterator`, 同样它的迭代器在萃取机中, 走的也是针对指针特化的版本. 在 4.9 中也变得十分复杂:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625132619.png"/></div>
+
+forward_list 对比 list, 没有更多的东西, 故不多介绍.
+
+### _deque_
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625133020.png"/></div>
+
+deque 是分段连续的, 为了维持这种假象, 迭代器走到边界的时候需要有能力找到上/下一个缓冲区. <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625144829.png"/></div>
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625152518.png"/></div>
+
+```C++
+inline size_t __deque_buf_size(size_t n, size_t sz){
+    return n!=0? n:(size<512? size_t(512/sz):size_t(1));
+}
+```
+2.9 版本的是允许指定缓存区大小的, 我们从 `insert(iterator position, const value_type&x)` 看deque 动态变化的过程, 它首先会判断是否是在头部和尾部, 都不在的话调用 `insert_aux`.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625153426.png"/></div>
+
+### _deque_ 如何模拟连续空间
+deque 就是依靠迭代器完成了对连续空间的模拟, 该迭代器重载了很多操作符. 
+* 两个迭代器的距离相当于 $ L_{buffer}\times N_{buffer difference} + itr到末尾长度 + x 到开头的长度$
+    ```C++
+    difference_type operator-(const self& x) const{
+        return difference_type(buffer_size())* (node - x.node -1)+
+        (this->cur - this->first) + (x.last - x.cur);
+    }
+    ```
+* 重载 `++`/`--` 的时候需要考虑到边界的问题<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625155753.png"/></div>
+* 此外, 作为随机访问迭代器, 提供了 `+`/`+=` 等操作符重载, 需要先判断目标点是否落在同一个 Buffer:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625160315.png"/></div>
+
+4.9 不再允许调整 Buffer size:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625160747.png"/></div>
+
+控制中心是一个 vector, 增长的时候它是拷贝到中间那段, 这样向左右都可以扩充缓冲区. 
+
+### _queue_ 和 _stack_
+他们是容器适配器, 其内部含有一个 容器, 然后将无法使用的功能封起来.
+```C++
+template <class T, class Sequence=deque<T>>
+class queue {
+public:
+    typedef typename Sequence::value_type value_type;
+    typedef typename Sequence::size_type size_type;
+    typedef typename Sequence::reference reference;
+    typedef typename Sequence::const_reference const_reference;
+protected:
+    Sequence c; //底層容器
+public:
+    bool empty() const { return c.empty(); }
+    size_type size() const { return c.size() ; }
+    reference front() { return c.front(); }
+    const_reference front() const { return c.front(); }
+    reference back() { return c.back(); }
+    const_reference back() const { return c.back(); }
+    void push(const value_type& x) { c.push_back(x); }
+    void pop() { c.pop_front() ; }
+}
+```
+_stack_ 或 _queue_ 都 **<font color=red>不允许</font> 遍历**, 也 **不提供迭代器**. 他们都可以选择 _list_ 或者 _deque_(默认) 作为底层容器.   
+_stack_ 可以选择 vector作为底层容器, 但是 _queue_ 不能(vec 没有 `pop_front()`).  
+他们都不能用 `set/map` 作为底层结构.
