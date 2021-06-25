@@ -355,4 +355,10 @@ map 重载了操作符`[]`: 传回和 key 相关联的 data, key 不存在的话
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625180528.png"/></div>
 
 ### 容器 hashtable
-hashtable 实现没有太多数学上的东西, 更多的是经验的总结.
+hashtable 实现没有太多数学上的东西, 更多的是经验的总结.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625180840.png"/></div>
+
+发生碰撞的时候, 需要设计将它们拉开. 更好的做法是发生碰撞后将它们放到链表中(separate chaining):
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625181333.png"/></div>
+
+链表太长(元素的个数比篮子的个数多)的话需要将它们打散, 篮子增加两倍(不严格, 因为用的质数), 然后重新 hashing. 
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625182008.png"/></div>
