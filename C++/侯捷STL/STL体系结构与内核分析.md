@@ -306,3 +306,53 @@ public:
 _stack_ 或 _queue_ 都 **<font color=red>不允许</font> 遍历**, 也 **不提供迭代器**. 他们都可以选择 _list_ 或者 _deque_(默认) 作为底层容器.   
 _stack_ 可以选择 vector作为底层容器, 但是 _queue_ 不能(vec 没有 `pop_front()`).  
 他们都不能用 `set/map` 作为底层结构.
+
+### 红黑树深度探索
+红黑树是高度平衡的二叉搜索树, 它的排序规则有利于 search 和 insert, 并且保持适度平衡(没有任何节点过深).  
+rb_tree 提供遍历以及迭代器, 按正常规则遍历, 便能获得排序状态.   
+我们不应该(没有绝对禁止)使用红黑树的迭代器改变元素值, 修改会破坏其内部结构. 在它的支撑下, map 允许元素的 data 被改变, 但是元素的 key 是不可以被改变的.   
+提供两种 insertion 的操作, `insert_unique()` 和 `insert_equal()`.  
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625164259.png"/></div>
+在双向链表中有一个刻意制造的不含data的节点, 在红黑树中也是(为了方便实现).我们可以尝试自己调用一下红黑树:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625165135.png"/></div>
+
+```C++
+//GCC 2.9
+rb_tree<int, int, identity<int>, less<int>> itree;
+// GCC 4.9  _Rb_tree<int, int, _Identity<int>, less<int>> itree;
+cout << itree.empty() << endl; //1
+cout << itree.size () << endl; //0
+itree.insert_unique(3); // GCC 4.9 itree._M_insert_unique(3);
+itree.insert_unique(8);
+itree.insert_unique(5);
+itree.insert_unique(9);
+itree.insert_unique(13);
+itree.insert_unique (5) ; // no effect, since using insert_unique(()) .
+cout<< itree.empty() << endl; //0
+cout << itree.size() << e ndl; //5
+cout<<itree.count( 5 ) << endl; //1
+itree.insert_equal(5); // itree._M_insert_equal(5);
+itree.insert_equal(5);
+cout << itree.size() << endl; //7
+cou t<< itree.count(5) << endl; //3, since using insert_equal ().
+```
+
+### _set / multi_set_
+他们排序的依据就是 key, 它的 key 和 value 合二为一, 我们 <font color=red> 无法 </font> 使用他们的迭代器改变元素的值. 
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625171153.png"/></div>
+
+VC6 中没有提供 `identity()`, 但是他们有类似的实现:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625171610.png"/></div>
+
+### _map / multi_map_
+他们排序的依据是 key, 同时提供的迭代器也无法修改元素的 key, 但是**修改 data 的操作是合理的**. 
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625172438.png"/></div>
+
+它的迭代器就是红黑树的迭代器, 打包成 pair 的时候指定的 **Key 是 _const_**. 在 VC6 中则是自己写一个仿函数, 实现了类似于 _select2st_ 的功能. <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625172738.png"/></div>
+
+map 重载了操作符`[]`: 传回和 key 相关联的 data, key 不存在的话就会创建一个元素,data 为默认值.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625180528.png"/></div>
+
+### 容器 hashtable
+hashtable 实现没有太多数学上的东西, 更多的是经验的总结.
