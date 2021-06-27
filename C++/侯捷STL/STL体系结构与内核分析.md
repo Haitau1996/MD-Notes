@@ -362,3 +362,5 @@ hashtable 实现没有太多数学上的东西, 更多的是经验的总结.<div
 
 链表太长(元素的个数比篮子的个数多)的话需要将它们打散, 篮子增加两倍(不严格, 因为用的质数), 然后重新 hashing. 
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625182008.png"/></div>
+
+测试
