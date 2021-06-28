@@ -596,3 +596,9 @@ bool binary_scarch (Forward iterator first,
 有了上面的基础, 看 `not1` 就相对容易, 它也是用一个辅助函数, 在里面实例化一个临时的 `unary_negate` 对象, 这个对象中有一个 protected 成员记住了 `pred`, 真正调用的时候才把记住的`pred`拿出来用.
 
 #### `std::bind`
+C++ 11 中引入了 `std::bind`, 它和placeholder(占位符)[配合使用](source/bind_test.cpp) 有很好的效果, 它可以绑定:
+1. 函数
+2. 函数对象
+3. 成员函数, 占位符`_1`必须是某个对象的地址
+4. 数据成员, 占位符`_1`必须是某个对象的地址
+
