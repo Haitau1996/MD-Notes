@@ -544,3 +544,35 @@ bool binary_scarch (Forward iterator first,
     return (first!=last && !(val < *first));
 }
 ```
+
+### 仿函数(Functor)
+标准库提供的仿函数有下面几个主要的类型(继承 _binary_function_ 是融入 STL 的体系结构, 没有额外开销得到了很多个 `typedef`, 并且可以被适配(adaptable)):
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628152042.png"/></div>
+
+1. 算术类
+    ```C++
+    template<class T>
+    struct minus:public binary_function<T, T, T>{
+      T operator()(const T& x, const T& y) const
+      { return x-y;}
+    };
+    ```
+2. 逻辑运算类
+    ```C++
+    template <class T>
+    struct logical_and :public binary_funttion<T, T, bool> {
+      bool operator()(const T& x, const T& y) const
+      { return x&&y;}
+    };
+3. 相对关系类(比大小)
+    ```C++
+    template <class T> 
+    struct equal_to : public binary_funrtion<T, T, bool> {
+      bool operator()( T & x, const T & y) const
+      { returr(x == y;)}
+    };
+    ```
+
+这些动作要传给算法, 故需要用函数/仿函数的形式, GNU C 中有一些有用但是非标准的仿函数:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628151341.png"/></div>
+
