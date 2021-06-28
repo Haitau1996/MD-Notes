@@ -576,3 +576,23 @@ bool binary_scarch (Forward iterator first,
 这些动作要传给算法, 故需要用函数/仿函数的形式, GNU C 中有一些有用但是非标准的仿函数:
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628151341.png"/></div>
 
+### 适配器
+这个适配器A改造了B, 那么使用A的时候, 内部的事情实际上就是 B 在做. A 是使用者和 B 之间的桥梁. 在我们讨论的这么多适配器中, 都是用内含(而非继承)的方式取实现.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628153148.png"/></div>
+
+#### 函数适配器
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628154124.png"/></div>
+
+我们先看 `bind2nd`, 它的一个大的原则是先记住其参数(`less<int>()`产生的一个临时对象和 40, 需要注意的是, 很多时候类名+小括号**是在产生临时对象**而不是调用仿函数), 然后真正用的时候才会绑定.  
+使用辅助函数 `bind2nd` 一个很重要的原因是我们无法写出 `Operation` 的具体类型, 因此需要使用这个辅助函数, 让编译器帮忙推导, 然后传入`binder2nd` 的构造函数中, 这时候内部的 protected 数据就记住了两个参数.  
+`count_if` 的第三参数, _pred_, 不断地调用 它的 operator(), 到此故事就结束了.  
+函数适配器能回答 `Operation::second_argument_type` 这个问题, 因此会在 `binder2nd<...>(...)` 的时候检查类型, 这样的话类型不匹配在编译的时候就会报错, 而不是把问题留在运行时.而且返回值类型和适配后传入的第一个值的类型都可以用类似的萃取方法得到.因此**一个函数对象必须能够回答这三个问题才能和 `bind2nd` 这个函数对象完美搭配**, 故要继承 _binary_function_ 得到相应的 typedef.  
+`typename`在这里的作用是帮助编译, 因为在编译到哪个地方的时候, `Operation` 是什么还不知道, 编译器到`A::B`会有犹豫, 它是类的成员 还是一个 typename.  
+`binder2nd`适配完一个函数后, 它也可能被其他适配器适配, 因此需要继承 `unary_function`以回答相应的问题.  
+`bind2st/bind2nd` 现在有点过时了, 被复杂的 `bind` 取代.
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628160739.png"/></div>
+
+有了上面的基础, 看 `not1` 就相对容易, 它也是用一个辅助函数, 在里面实例化一个临时的 `unary_negate` 对象, 这个对象中有一个 protected 成员记住了 `pred`, 真正调用的时候才把记住的`pred`拿出来用.
+
+#### `std::bind`
