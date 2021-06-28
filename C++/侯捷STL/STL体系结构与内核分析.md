@@ -444,3 +444,103 @@ void display_category(Iter iter){
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628110003.png"/></div>
 
 这是STL 中算法实现的基本方法: **先有一个总的函数, 在里面萃取出迭代器的类型, 然后根据迭代器类型调用不同的重载版本**.接着看 `advance`:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628124505.png"/></div>
+
+从这里也可以看出,使用类的层次结构可以不用对每种迭代器都实现特定的重载版本, 可以沿着继承链向上查找. 下面看 迭代器和类型的萃取机是如何影响 copy 的实现:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628130539.png"/></div>
+
+这里的类型萃取机就是在问类型有没有实现 non-trival(非编译器默认给出的) 的操作符 `=`.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628131306.png"/></div>
+
+算法是模版函数, 要可以针对各种各样的类型, 语法没办法让主函数只能接收某种类型的迭代器, 但是会有"暗示".<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628132012.png"/></div>
+
+### 算法源码剖析
+```C++
+template <class InputIerator ,
+          class T>
+T accumulate (InputIterator first ,
+              InputIterator last ,
+              T init ){
+  for ( ; first != last ; ++first)
+    //將元素累加至初值init 身上
+    init = init + *first;
+  return init;
+}
+template <class InputIerator ,
+          class T,
+          class BiniryOperation>
+T accumulate (InputIterator first ,
+              InputIterator last ,
+              T init ,
+              BinaryOperation binary_op){
+  for ( ; first != last ; ++first)
+    //將元素累 **计算** 至初值init 身上
+    init = binary_op(init,*first);
+  return init;
+}
+```
+这样的话, [测试函数](source/accumulate_test.cpp)就覆盖了不同版本的累积函数.传入的函数只要和小括号中的参数相同即可, 可以是一般的函数(函数指针)/函数对象/lambda 表达式.
+```C++
+template <class InputIteraror ,
+          class Function>
+Function for_each (InputIterator first ,
+                  InputIterator last ,
+                  Function f ){
+  for ( ; first ! = last; ++first)
+    f(*first);
+  return f;
+}
+```
+`for_each` [实例](source/for_each_test.cpp)就是对每个元素, 都传入的可调用对象(参数只有一个元素)执行.  
+C++ 标准库中很多算法都有`algo`/`algo_if`/`algo_copy` 对:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628134957.png"/></div>
+
+其中的 _Predicate_ 可以理解为一种断言, 根据迭代器指向对象返回一个 boolean 值.
+
+有的算法除了有全局的版本`std::algo()`/ , 部分容器还有成员函数实现`c.algo()`:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628142338.png"/></div>
+
+`find/find_if` 也是这样, 因为下面八个关联容器有自己特有的数据组织方式, 因此类内实现起这些操作来比较快.  
+`sort` 要求的是随机访问迭代器, 所以 `list`/`forward_list` 只有成员函数版本的 `c.sort()` 实现. 使用的时候还要注意可以有反向迭代器(实际上是迭代器适配器):
+```C++
+reverse_iterator
+rbegin()
+{ return reverse_iterator(end());}
+reverse_iterator
+rend()
+{ return reverse_iterator(begin());}
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628143651.png"/></div>
+
+在使用二分查找的时候, 内部用了`lower_bound`/`upper_bound`:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628144220.png"/></div>
+
+```C++
+template <class Forwardlterator, class T>
+ForwardIterator
+lower_bound(ForwardIterator first,
+            ForwardIterator last,
+            const T& val){
+  ForwardIterator it;
+  iterator_traits<Forwardlterator>::differencc_type count, step;
+  count = distance(first, last);
+  while (count>O)
+  {
+    it = first; step=count/2; advance(it,step);
+    if (*it < val) {
+      first= ++it;
+      count -= step +1;
+    }
+    else count = step;
+  }
+  return first;
+}
+template <class Forwardlterator, class T>
+bool binary_scarch (Forward iterator first,
+                    Forwardlterator last,
+                    const T & val)
+{ 
+    first = std::lower_bound(first, last, val);
+    return (first!=last && !(val < *first));
+}
+```
