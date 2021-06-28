@@ -363,4 +363,42 @@ hashtable 实现没有太多数学上的东西, 更多的是经验的总结.<div
 链表太长(元素的个数比篮子的个数多)的话需要将它们打散, 篮子增加两倍(不严格, 因为用的质数), 然后重新 hashing. 
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210625182008.png"/></div>
 
-测试
+```C++
+// 标准库中的定义
+template<class Value,
+         class Key,
+         class HashFcn,
+         class ExtractKey,
+         class EqualKey,
+         class Alloc = alloc>
+class hashtable{
+public:
+    typedef HashFun hasher;
+    typedef EqualKey key_equal;
+    typedef size_t size_type;
+private:
+    hasher hash;
+    key_equal equals;
+    ExtractKey get_key;
+    ...
+};
+// 写一个包装器
+struct eqstr{
+  bool operator()(const char* s1, const char* s2) cosnt{
+    return strcmp(s1, s2) == 0; // strcmp 返回值是 -1, 0, 1
+  }
+};
+// 在 APP 端这样使用
+hashtable<const char*,
+          const char*,
+          hash<const char*>,
+          identity<const char*>,// GCC 特有的, VC6 有类似的实现
+          eqstr,// 这是一个函数包装器, 因为 c-string 的strcmp接口和我们想要的不同
+          alloc>
+ht(50, hash<const char*>(), eqstr());
+ht.insert_unique("kiwi");
+```
+在 GNU C++ 2.9 中使用模板偏特化的方法, 对特种类型的数据实现了对应的 hash:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628101129.png"/></div>
+
+但是并不是所有类型都有 哈希函数, 如在 GCC 2.9 中只针对 C-Style String 有 hash 函数.得到了 哈希值后, 决定在哪个篮子里一般就是取模运算, 一般篮子数的大小为质数.
