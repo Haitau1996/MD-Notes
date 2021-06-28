@@ -402,3 +402,45 @@ ht.insert_unique("kiwi");
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628101129.png"/></div>
 
 但是并不是所有类型都有 哈希函数, 如在 GCC 2.9 中只针对 C-Style String 有 hash 函数.得到了 哈希值后, 决定在哪个篮子里一般就是取模运算, 一般篮子数的大小为质数.
+
+## Lecture 3: Algorithm
+STL的六大部件, 除了算法是函数模板, 其他的都是类模板.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628102557.png"/></div>
+
+算法看不到容器, 但是可以通过向迭代器问答的方式(使用萃取机, 如`typename iterator_traits<I>::iterator_category`)得到容器的信息(如迭代器怎么走).
+
+### 迭代器的分类
+```C++
+//五種iterator category
+struct input_iterator_tag {} ;
+struct output_iterator_tag {} ;
+struct forward_iterator_tag : public input_iterator_tag {} ;
+struct bidirectional_iterator_tag : public forward_iterator_tag {};
+struct random_access_iterator_tag : public bidirectional_itcrator_tag{};
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628102806.png"/></div>
+
+迭代器有五种, 是通过类继承的方式形成了层次结构,这种分类比 `enum` 要好:
+```C++
+void _display_category(random_access_iterator){
+    std::cout << "random access"<< std::endl;
+}
+void _display_category(bidirectional_iterator){
+    ...
+}
+...
+template<typename Iter>
+void display_category(Iter iter){
+    typename iterator_traits<Iter>::iterator_category cagy;
+    _display_category(cagy);
+}
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628105453.png"/></div>
+
+考察一下 `ostream_iterator` 的上线, 发现它继承了 一系列的 `typedef`, 可以少写不少东西. 
+
+### 迭代器分类对算法的影响
+我们以 `distance` 函数为例, 说明迭代器分类对于算法效率的影响:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628110003.png"/></div>
+
+这是STL 中算法实现的基本方法: **先有一个总的函数, 在里面萃取出迭代器的类型, 然后根据迭代器类型调用不同的重载版本**.接着看 `advance`:
