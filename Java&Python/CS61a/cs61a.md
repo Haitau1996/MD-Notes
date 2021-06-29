@@ -1,8 +1,3 @@
----
-tags: []
-created: 2020-12-27T07:17:06.978Z
-modified: 2020-12-28T06:07:37.793Z
----
 # CS 61A: Structure and Interpretation of Computer Programs 
 ## Lecture 1: Intro
 
@@ -198,7 +193,7 @@ quotient,remainder = divide_exact(2013,10)
 ```
 
 #### 运行 python 文件中的代码
-```zsh
+```bash
 $ python -i someFile.py # 交互模式运行
 $ python someFile.py    # 直接运行
 $ python -m doctest -v lecture01.py # 运行的时候可以进行单元测试
@@ -644,7 +639,6 @@ The range type: 一个连续的整数组成的 sequence.<br>
 [-2,-1, 0, 1]
 >>> list(range(4))
 [0, 1, 2, 3]
-
 ```
 ### List Comprehensions
 ![](figure/11.2.png)<br>
