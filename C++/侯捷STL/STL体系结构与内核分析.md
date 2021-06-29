@@ -576,7 +576,7 @@ bool binary_scarch (Forward iterator first,
 这些动作要传给算法, 故需要用函数/仿函数的形式, GNU C 中有一些有用但是非标准的仿函数:
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628151341.png"/></div>
 
-### 适配器
+### 函数适配器
 这个适配器A改造了B, 那么使用A的时候, 内部的事情实际上就是 B 在做. A 是使用者和 B 之间的桥梁. 在我们讨论的这么多适配器中, 都是用内含(而非继承)的方式取实现.
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210628153148.png"/></div>
 
@@ -602,3 +602,40 @@ C++ 11 中引入了 `std::bind`, 它和placeholder(占位符)[配合使用](sour
 3. 成员函数, 占位符`_1`必须是某个对象的地址
 4. 数据成员, 占位符`_1`必须是某个对象的地址
 
+### 迭代器适配器
+#### reverse_iterator
+之前提到的`rbegin`就是一个迭代器适配器:
+```C++
+template<class Iterator>
+class reverse_iterator{
+protected:
+  Iterator current;
+public:
+  typedef typename iterator_traits<Itertaor>::iterator_category iterator_category;
+  ...
+  // 最重要的是 dereference, 对反向迭代器的取值就是对正向的前一个位置的取值
+  reference operator*() const{
+    Iterator temp = current;
+    return *--temp;
+  }
+  ...
+}
+```
+#### inserter
+我们在调用 copy 的时候, 实际上对于每个元素已经写死了是调用赋值操作.如果我们想要在其中插入, 可以使用 _inserter_ 这个辅助函数(接收容器和迭代器), 在里面使用了一个迭代器适配器 _insert_iterator_, 它在里面重载了操作符`=`:`copy(bar.begin(), bar.end(), inserter(foo, it))`.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210629095135.png"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210629095208.png"/></div>
+
+使用之后, 将迭代器适配成为了 _insert_iterator_, 因此使用 copy 的时候调用的是适配器重载的操作符.
+
+#### ostream_iterator
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210629101324.png"/></div>
+
+`std::cout` 是一个对象, 可以取地址, 用于初始化 `ostream_iterator` 适配器之后, 适配器里面重载了 操作符`operator=`/`operator++`, 就符合 copy 的操作.
+
+#### istream_iterator
+当我们在创建一个输入流迭代器的时候已经在读数据了.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210629102228.png"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210629102254.png"/></div>
+
+同一个 copy 搭配不同的适配器就会有不同的行为.
