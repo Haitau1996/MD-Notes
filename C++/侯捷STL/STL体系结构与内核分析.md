@@ -639,3 +639,51 @@ public:
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210629102254.png"/></div>
 
 同一个 copy 搭配不同的适配器就会有不同的行为.
+
+## Lecture 4
+### 一个万用的哈希函数
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210629103653.png"/></div>
+
+类的 hash function 一个 naive 的思路就是将各个元素的哈希值加起来.TR1 就有一个一个不错的哈希函数
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210629104302.png"/></div>
+
+上面的 1,2,3 三个同名函数, 使用了可变参数模板, 因为其类型不同, 所以是不同的东西.  
+1️ 所做的事情就是把事情传给 2 做, 2 会先调用 4, 然后做递归, 最后一步就会转给 3做,它同样需要调用 4. 于是核心就在 4 的修改种子的动作中.
+
+4做的事情没有任何数学支持, 就是要越乱越好. 比单纯的将元素的 hash code 相加要好不少. 其中的魔数就是黄金分割在 16进制中的表示.
+
+```C++
+//from boost <funcfional/hash>
+template <typename T>
+inline void hash_combine(size_t& seed , const T& val){
+  seed ^= hash<T>()(val) + 
+          0x9e3779b6 +
+          (seed << 6) +
+          (seed >> 2);
+}
+template <typename T>
+inline void hash_val(size_t& seed, const T& val){
+  hash_combine(seed,val);
+}
+template <typename T, typename... Types>
+inline void hash_val(size_t& seed,
+                     const T& val,
+                     const Types&... arsg)
+{
+  hash_combine(seed,val);
+  hash_val(seed,args...);
+}
+template <typename... Types>
+inline size_t hash_val(const Types&... arsg){
+  size_t seed = 0l
+  hash_val(seed, args...);
+  return seed;
+}
+// Functor
+class CustomerHash{
+  public:
+    size_t operator()(const Customer&s)const{
+      return hash_val(c.fname, c.lname,c.no);
+    }
+};
+```
