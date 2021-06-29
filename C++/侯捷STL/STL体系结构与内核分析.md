@@ -687,3 +687,84 @@ class CustomerHash{
     }
 };
 ```
+### Tuple
+在 G4.8 中, 我们可以看到使用可变参数模板和继承实现的 tuple:
+```C++
+template<typename... Values> class tuple;
+template<> class tuple<>{};
+
+template<typename Head, typename... Tail>
+class tuple<Head, Tail...>
+:private tuple<Tail...>{
+  typedef tuple<Tail...> inherited;
+public:
+  tuple(){}
+  tuple(Head v, Tail.. vtail):
+    m_head(v),inherited(vtail...){}//inherited(vatil) 是调用父类构造器, 不是生成临时对象
+  typename Head::type head(){return m_head;}
+  inherited& tail(){ return *this;}
+protected:
+  Head m_head;
+}
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210629114920.png"/></div>
+
+使用 tuple 也很方便, 可以用 `get<n>(someTuple)`从中得到某个元素, 也有类似于萃取的机制 `tuple_size<tuple_type>::value`.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210629115457.png"/></div>
+
+### Type Traits
+G2.9 中实现了一些简单的 type_traits, 有一个泛化的版本和若干个针对不同类型的特化版本:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210629125338.png"/></div>
+
+这个实用性不强, 因为需要用户为自己的类写出 traits. [C++ 11 之后](http://www.cplusplus.com/reference/type_traits/)我们不需要为自己的类写特化的 traits, 就可以直接使用, 如 `is_void<T>::value`/`has_virtual_destructor<T>::value`.
+
+### type_traits 的实现
+实现 `is_void`, 我们先看使用模板的方式是如何去掉常量性质和易变(volatile)性质, 具体是使用两个接收不同参数的 type traits, 非常量/易失 就走泛化版本, 否走走特殊路径, 两者都返回相同的值:
+```C++
+template<typename _Tp>
+struct remove_const{ 
+  typedef _Tp type;
+};
+template<typename _Tp>
+struct remove_const<_Tp const>{// 对 const 的特化版本
+  typedef _Tp type; 
+};
+template<typename _Tp>
+struct remove_volatile{ 
+  typedef _Tp type;
+};
+template<typename _Tp>
+struct remove_volatile<_Tp volatile>{// 对 volatile 的特化版本
+  typedef _Tp type; 
+};
+
+/// remove cv
+template<typename _Tp>
+struct remvoe_cv{
+  typedef remove_const<typename remove_volatile<_Tp>::type>::type type;
+};
+/// add const
+template<typename _Tp>
+struct add_const{
+  typedef _Tp const  type;
+};
+
+/// 同样的, 对于void, 我们有泛化的版本返回 false/ 特化的版本返回 true
+template<typename >
+struct __is_void_helper:public false_type{};
+template<>
+struct __is_void_helper<void>:public true_type{};
+template<typename _Tp>
+struct is_void
+:public __is_void_helper<typename remove_cv<_Tp>::type>::type
+{};
+```
+从上面的实现来看, 实际上就是先把 常量性和易失性 这种令人迷惑的东西, 然后丢给 helper, 然后在 helper 中使用泛化版本回答是假, 然后实现一堆特化版本实现为 true.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210629145315.png"/></div>
+
+`is_class, is_union, is_enum, is_pod` 这些在源代码中无法找到具体的实现, 可能要依赖编译器:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210629145600.png"/></div>
+
+### cout
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210629131552.png"/></div>
+
+把很多类型的对象往 cout 扔, 就是因为他们实现了重载的版本. 如果标准库中没有的话, 我们需要为自己的类型重载操作符 `<<`.
