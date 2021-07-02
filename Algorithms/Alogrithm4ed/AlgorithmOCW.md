@@ -346,13 +346,18 @@ public class Stack<Item> implements Iterable<Item>
 * Return: pop return address and local environment
 
 ## Sorting
-用define的key将数据排成一个有序的,data可能是 _Double_, _String_ 或者 _java.io.File_ , 具体的做法是实现 _Callbacks_, 在不同的语言中具体的实现可能不同:
+用define的key将数据排成一个有序的,data可能是 _Double_, _String_ 或者 _java.io.File_ , 具体的做法是实现 _Callbacks_(**reference to executable code**), 在不同的语言中具体的实现可能不同:
 * C: function pointers
 * C++ : class-type functions
-* Java : interfaces  
-![implementation](figure/5-1.png)
+* Java : interfaces  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702152246.png"/></div>
+
+对于传入的数据类型, 它必须通过 `compareTo()` 方法实现一个全序关系:
+* 自反性，对于所有的 v，v=v；
+* 反对称性，对于所有的 `v<w` 都有`v>w`，且v=w 时w=v；
+* 传递性，对于所有的v、w和x，如果 `v<=w` 且 `w<=x` ，则 `v<=x`。
+
 ```Java
-Public class Date implements Comparable<Data>{ //尖括号说明只允许和Data对比
+public class Date implements Comparable<Data>{ //尖括号说明只允许和Data对比
     private final int month, day, year;
     Public Data(int m, int d, int y){
         month = m;
@@ -372,10 +377,14 @@ Public class Date implements Comparable<Data>{ //尖括号说明只允许和Data
 }
 ```
 
-#### Selection Sort
+### Selection Sort
 选择排序的算法描述:
-* 在第i次迭代中, 找到剩余部分最小元素的下标 _min_
+* 在第i次迭代( i 从 0 开始)中, 找到剩余部分(从 _a[i]_ 到 _a[n-1]_ )最小元素的下标 _min_
 * Swap _a[i]_ 和 _a[min]_
+
+它有两个不变量:
+* index i(包括 i) 的左边已经排好序
+* index i 右边的元素没有排序, 但是可以确定左边的值不大于右边任何一个<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702154842.png"/></div>
     ```Java
     ...
     private static void exch(Comparable[] a; int i,int j){
@@ -397,25 +406,67 @@ Public class Date implements Comparable<Data>{ //尖括号说明只允许和Data
     ...
     ```
 
-#### Insertion Sort
-前面部分是有序的, 每次迭代中将后面的第一个元素(下标为i)插入前面有序的部分:  
-![insertion sort](figure/5-2.png)  
-这种算法需要 ~ $\frac{1}{4} N^2$ 次比较和交换on average,在最坏的情况下是$\frac{1}{2}$  
+### Insertion Sort
+前面部分是有序的, 每次迭代中将后面的第一个元素(下标为i)插入前面有序的部分, 和交换排序略微有点区别, 它也有两个不变量:
+* 下标 i 的左边部分(包括 i) 是已经排好的
+* 下标 i 的右边部分没有被看见<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702154328.png"/></div> 
+```Java
+public class Insertion
+{
+    public static void sort(Comparable[] a)
+    {
+        int N = a.length;
+        for (int i = 0; i < N; i++)
+            for (int j = i; j > 0; j--)
+                if (less(a[j], a[j-1]))
+                    exch(a, j, j-1);
+                else break;
+    }
+    ...
+}
+```
+这种算法需要 $\sim \frac{1}{4} N^2$ 次比较和交换on average,在最坏的情况下是$\frac{1}{2} N^2$. 它在 partially-sorted arrays 上有比较好的性能.
 
 #### Shell Sort
-每次都move多个位置, 这样的话一次可能就不止改变一个逆序对:
+insertion sort 每次只移动一个位置, 翻转一个逆序对. 一个提升思路是每次都 move 多个位置, 这样的话一次可能就不止改变一个逆序对:
 * 间隔非常大的时候, 是处理一个小的subarray
 * 间隔不大的时候, 实际上array基本已经有排好序了
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702155528.png"/></div>
 
 间隔的序列
 * Powers of two: 这个效率非常差, 因为奇数和偶数的之间的交换只有在最后一个1-sort的时候才会发生
 * Powers if two minus one : 可能可以工作
 * $3x+1$: 简单实现, 效果还行
 * merging of $(9\times 4^i) - (9 \times 2^i) + 1$ 和 $4^i - (3 \times 2^i)+1$
-![shell sort](figure/5-3.png)
+    ```Java
+    public class Shell
+    {
+        public static void sort(Comparable[] a)
+        {
+            int N = a.length;
+            int h = 1;
+            while (h < N/3) h = 3*h + 1; // 1, 4, 13, 40, 121, 364, ...
+            while (h >= 1)
+            { // h-sort the array.
+                for (int i = h; i < N; i++)
+                {
+                    for (int j = i; j >= h && less(a[j], a[j-h]); j -= h)
+                        exch(a, j, j-h);
+                }
+                h = h/3;
+            }
+        }
+        ...
+    }
+    ```
+实际上如果使用  3x+1 的序列, 最坏情况下的对比次数是  $N^{\frac{3}{2}}$.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702160642.png"/></div>
 
-### Merge Sort
-#### Intro
+### Shuffle
+Knuth Shuffle:
+* 在第 i 次迭代中, 从 0 到 i 中选取随机数 r
+* Swap _a[i]_ 和 _a[r]_
+## Merge Sort
+### Intro
 * 将array分成两半
 * 递归地将每个half排序
 * 将两个halves合并
