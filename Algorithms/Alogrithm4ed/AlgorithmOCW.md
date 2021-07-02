@@ -143,43 +143,174 @@ public static int count(int[] a)
 * 内存对齐: Each object uses a multiple of 8 bytes<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210701225057.png"/></div>
 
 
-### Stacks and queues
+## Stacks and queues
 
 面向对象编程的基本思想，分离interface和implementation.  
-![seperate](figure/4-1.png)  
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702091457.png"/></div>
 
-#### Linked Lists representation
+### Stacks
+Stack 需要实现下面的接口:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702091631.png"/></div>
 
-![linklist stack](figure/4-2.png)  
+#### 链表实现
+```Java
+public class LinkedStackOfStrings
+{
+    private Node first = null;
+    private class Node
+    {
+        String item;
+        Node next;
+    }
+    public boolean isEmpty()
+    { return first == null; }
+
+    public void push(String item)
+    {
+        Node oldfirst = first;
+        first = new Node();
+        first.item = item;
+        first.next = oldfirst;
+    }
+
+    public String pop()
+    {
+        String item = first.item;
+        first = first.next;
+        return item;
+    }
+}
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702092340.png"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702092255.png"/></div>
+
 不需要构造函数， 然后有一个指向node的reference,初始值为null.分析它的performance:
 
 - 最坏的情况下每个operation都要const time
-- N个Item需要约~40N的空间(不包括reference指向的string)
+- N个Item需要约 ~40N 的空间(不包括reference指向的string)
 
 #### array implementation
 
-用array实现，总是会遇到容量的问题，这个实现需要构造函数，同时给capacity(breaked the API),
-![array stack](figure/4-3.png)  
+用array实现，我们使用一个容量为 N 的 array, `s[]`, 存放整个 stack. 添加元素的时候在`s[N]`处, 删除时在 `s[N-1]` 处. 总是会遇到容量的问题，这个实现需要构造函数，同时给capacity(breaked the API),
+```Java
+public class FixedCapacityStackOfStrings
+{
+    private String[] s;
+    private int N = 0;
+    public FixedCapacityStackOfStrings(int capacity)
+    { s = new String[capacity]; }
+
+    public boolean isEmpty()
+    { return N == 0; }
+
+    public void push(String item)
+    { s[N++] = item; }
+
+    public String pop()
+    { return s[--N]; }
+}
+```
 这个实现需要注意几个小的问题:
 - Overflow and Underflow: 使用resize解决这个问题
 - Loitering(虚度\游荡): pop之后将最后元素设置为null,让Java回收它
+    ```Java
+    public String pop()
+    {
+        String item = s[--N];
+        s[N] = null;
+        return item;
+    }
+    ```
 
-##### Array resize
+### Array resize
 **repreted doubling** 如果array full, 创建new array of twice the size, 然后复制元素. 这样的话Insert N个元素的时间消耗为N+(2+4+8+...+N)~3N.  
+```Java
+public ResizingArrayStackOfStrings()
+{ s = new String[1]; }
+
+public void push(String item)
+{
+    if (N == s.length) resize(2 * s.length);
+    s[N++] = item;
+}
+private void resize(int capacity)
+{
+    String[] copy = new String[capacity];
+    for (int i = 0; i < N; i++)
+    copy[i] = s[i];
+    s = copy;
+}
+```
 在1/4的size时候,将容量变成现在的1/2(new新的再copy).性能分析:
-- 内存的使用~8N到~32N之间(不包含string)
-- worst下push/pop需要O(N)的时间,best和摊销下都是O(1)
+- 内存的使用 ~8N 到 ~32N 之间(不包含string)
+- worst 下 push/pop 需要O(N)的时间,best 和摊销下都是 O(1)
+    ```Java
+    public String pop()
+    {
+        String item = s[--N];
+        s[N] = null;
+        if (N > 0 && N == s.length/4) resize(s.length/2);
+        return item;
+    }
+    ```
 
-#### Linkde-List Queue
-这个时候我们需要Maintain两个pointer,分别对应first和Last Node.
+### Linkde-List Queue
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702095106.png"/></div>
+这个时候我们需要 Maintain 两个 pointer,分别对应 first 和 Last Node.
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702095205.png"/></div>
 
-#### 泛型
-在实际的应用场景中, 我们通常需要装有不同对象类型的容器, 如有了StackOfStrings, 还想要StackOfURLs, StackOfInts,过去的做法, 使用面向对象的多态:
-- [x] 需要在客户端的casting
-- [x] 如果出现mismatch, 出现的是run-time error
+```Java
+public class LinkedQueueOfStrings
+{
+    private Node first, last;
+    private class Node
+    { /* same as in LinkedStackOfStrings */ }
+    public boolean isEmpty()
+    { return first == null; }
 
-新的解决方案就是**java generics**,可以避免client端的casting,同时在compile-time发现type dismatch errors.  
-注: java 不允许Generic的array, 只能是用casting将Object的转为Item[ ]:  
+    public void enqueue(String item)
+    {
+        Node oldlast = last;
+        last = new Node();
+        last.item = item;
+        last.next = null;
+        if (isEmpty()) first = last;
+        else oldlast.next = last;
+    }
+
+    public String dequeue()
+    {
+        String item = first.item;
+        first = first.next;
+        if (isEmpty()) last = null;
+        return item;
+    }
+}
+```
+### 泛型
+在实际的应用场景中, 我们通常需要装有不同对象类型的容器, 如有了 StackOfStrings, 还想要 StackOfURLs, StackOfInts,过去的做法, 使用面向对象的多态:
+- [x] 需要在客户端的 casting
+- [x] 如果出现 mismatch, 出现的是 run-time error
+```Java
+StackOfObjects s = new StackOfObjects();
+Apple a = new Apple();
+Orange b = new Orange();
+s.push(a);
+s.push(b);
+a = (Apple) (s.pop());
+```
+
+新的解决方案就是 **java generics**,可以避免 client 端的 casting,同时在 compile-time 发现 type dismatch errors.  
+```Java
+Stack<Apple> s = new Stack<Apple>();
+Apple a = new Apple();
+Orange b = new Orange();
+s.push(a);
+s.push(b); // Compile-time Errors: type dismatch
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702095947.png"/></div>
+
+注: java 不允许Generic的array, 只能是用casting将Object的转为Item[ ]: <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702100106.png"/></div>
+ 
 ```Java
 S = (Item[]) new Object[capacity];
 ```
