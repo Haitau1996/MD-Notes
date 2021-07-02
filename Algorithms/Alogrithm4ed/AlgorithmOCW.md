@@ -310,15 +310,42 @@ s.push(b); // Compile-time Errors: type dismatch
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702095947.png"/></div>
 
 注: java 不允许Generic的array, 只能是用casting将Object的转为Item[ ]: <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702100106.png"/></div>
- 
+
 ```Java
 S = (Item[]) new Object[capacity];
 ```
 
-#### 迭代器
-![Iterator](figure/4-4.png)  
+### 迭代器
+在 Java 中实现 iteration over some container, 只需要让这个 container 实现 `java.lang.Iterable` 接口. 实现之后就可以有非常 elegant 的客户端代码:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702105313.png"/></div> 
 
-### Sorting
+```Java
+import java.util.Iterator;
+public class Stack<Item> implements Iterable<Item>
+{
+    ...
+    public Iterator<Item> iterator() { return new ListIterator(); }
+    private class ListIterator implements Iterator<Item>
+    {
+        private Node current = first;
+        public boolean hasNext() { return current != null; }
+        public void remove() { /* not supported */ }
+        public Item next()
+        {
+            Item item = current.item;
+            current = current.next;
+            return item;
+        }
+    }
+}
+```
+背包是一种不支持从中删除元素的集合数据类型 —— 它的目的就是帮助用例收集元素并迭代遍历所有收集到的元素（用例也可以检查背包是否为空或者获取背包中元素的数量）。迭代的顺序不确定且与用例无关。
+### applications
+编译器就是使用 stack 来支持函数调用:
+* Function call: push local environment and return address
+* Return: pop return address and local environment
+
+## Sorting
 用define的key将数据排成一个有序的,data可能是 _Double_, _String_ 或者 _java.io.File_ , 具体的做法是实现 _Callbacks_, 在不同的语言中具体的实现可能不同:
 * C: function pointers
 * C++ : class-type functions
@@ -349,7 +376,7 @@ Public class Date implements Comparable<Data>{ //尖括号说明只允许和Data
 选择排序的算法描述:
 * 在第i次迭代中, 找到剩余部分最小元素的下标 _min_
 * Swap _a[i]_ 和 _a[min]_
-```Java
+    ```Java
     ...
     private static void exch(Comparable[] a; int i,int j){
         Comparable swap = a[i];
@@ -368,7 +395,7 @@ Public class Date implements Comparable<Data>{ //尖括号说明只允许和Data
         }
     }
     ...
-```
+    ```
 
 #### Insertion Sort
 前面部分是有序的, 每次迭代中将后面的第一个元素(下标为i)插入前面有序的部分:  
