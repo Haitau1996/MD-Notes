@@ -476,10 +476,129 @@ Knuth Shuffle:
 
 ## Merge Sort
 ### Intro
-* 将array分成两半
-* 递归地将每个half排序
-* 将两个halves合并
+* 将 array 分成两半
+* **递归地** 将每个 half 排序
+* 将两个 halves 合并
 
-在Java中可以增加很多断言, 可以帮助检测程序的逻辑错误, 同时更有利于文档的编写.   
-Merge sort最多使用 $N \log N$ 次 compare 和 $6 N \log N$次array acesses 去给size为N的array排序.  
-此外, 还有一个问题是Merge sort对于小的subarray来说效率并不高,可以 **在 ~7 个item左右的时候换成insertion sort**.
+先看更简单的 merge 过程, 只需要先将原来的数组拷贝到 auxiliary 数组 `aux[]` 中, 然后维护三个 index, 根据比较结果赋值和挪动指针:
+```Java
+private static void merge(Comparable[] a, Comparable[] aux, int lo, int mid, int hi)
+{
+    assert isSorted(a, lo, mid);    // Pre-Condition: a[lo .. mid] sorted
+    assert isSorted(a, mid+1, hi);  // as above
+
+    for (int k = lo; k <= hi; k++)
+        aux[k] = a[k];
+    int i = lo, j = mid+1;
+    for (int k = lo; k <= hi; k++)
+    {
+        if (i > mid) a[k] = aux[j++];    // 小的那个 half 已经挪完了
+        else if (j > hi) a[k] = aux[i++];// 大的那个 Half 已经挪完了
+        else if (less(aux[j], aux[i])) a[k] = aux[j++];
+        else a[k] = aux[i++];
+    }
+
+    assert isSorted(a, lo, hi);
+}
+```
+在Java中可以增加很多断言, 可以**帮助检测程序的逻辑错误, 同时更有利于文档的编写**.有了 merge 之后, 它可以应付最基本的情况(只有两个元素), 于是 sort 的实现就变得十分简单:
+```Java
+private static void sort(Comparable[] a, Comparable[] aux, int lo, int hi)
+{
+    if (hi <= lo) return;
+    int mid = lo + (hi - lo) / 2;
+    sort(a, aux, lo, mid);
+    sort(a, aux, mid+1, hi);
+    merge(a, aux, lo, mid, hi);
+}
+public static void sort(Comparable[] a)
+{
+    Comparable[] aux = new Comparable[a.length];// 在此写出辅助 array, 可以减少很多内存使用
+    sort(a, aux, 0, a.length - 1);
+}
+```
+If $D (N)$ satisfies $D (N) = 2 D (N / 2) + N$ for $N > 1$, with $D (1) = 0$,then $D (N) = N \log N$.  
+Merge sort最多使用 $N \log N$ 次 compare 和 $6 N \log N$次 array acesses 去给size为N的array排序.  
+此外,还有几个小的提升方法:
+* Merge sort对于小的subarray来说效率并不高,可以 **在 ~7 个item左右的时候换成insertion sort**.
+* 在两个 subarray 已经排好序的时候, 跳过 merge 过程
+    ```Java
+    ...
+    if (!less(a[mid+1], a[mid])) return;
+    merge(a, aux, lo, mid, hi);
+    ...
+    ```
+* 在 `aux[]` 和 `a[]` 之间来回倒腾, 省去元素拷贝的时间
+
+### bottom-up mergesort
+自底向上的 mergesort 丢弃了递归, 而是使用每次对指数递增的 subarray 做 merge:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702211821.png"/></div>
+
+```Java
+public static void sort(Comparable[] a)
+{
+    int N = a.length;
+    Comparable[] aux = new Comparable[N];
+    for (int sz = 1; sz < N; sz = sz+sz)
+        for (int lo = 0; lo < N-sz; lo += sz+sz)
+            merge(a, aux, lo, lo+sz-1, Math.min(lo+sz+sz-1, N-1));
+}
+```
+
+### sorting complexity
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702212217.png"/></div>
+
+Proposition: Any compare-based sorting algorithm must use at least $\log( N ! ) \sim N \log N$ compares in the worst-case. 证明如下:
+* 假设有一个包含 $a_1$ 到 $a_N$ N个不同值的 array
+* 最坏的情况下会有 高度为 h 的决策树
+* 高度为 h 的二叉树最多有 $2^h$ 个树叶
+* 一共有 $N!$ 种排列 $\Rightarrow$ 至少要有 $N!$ 个树叶
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702212947.png"/></div>
+
+因此, Optimal algorithm = mergesort.
+
+### comparators
+Comparator interface: sort using an **alternate order**.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702213337.png"/></div>
+
+我们在之前的实现中, 使用的是默认的 `compareTo()` 方法, 实际上, `sort` 可以定义第二个参数:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702213433.png"/></div>
+
+```Java
+public static void sort(Object[] a, Comparator comparator)
+{
+    int N = a.length;
+    for (int i = 0; i < N; i++)
+        for (int j = i; j > 0 && less(comparator, a[j], a[j-1]); j--)
+            exch(a, j, j-1);
+}
+private static boolean less(Comparator c, Object v, Object w)
+{ return c.compare(v, w) < 0; }
+private static void exch(Object[] a, int i, int j)
+{ Object swap = a[i]; a[i] = a[j]; a[j] = swap; }
+```
+除了上述对于 sort 的修改, 我们还需要实现一个 Comparator:
+```Java
+public class Student
+{
+    private final String name;
+    private final int section;
+    ...
+    public static class ByName implements Comparator<Student>
+    {
+        public int compare(Student v, Student w)
+        { return v.name.compareTo(w.name); }
+    }
+    public static class BySection implements Comparator<Student>
+    {
+        public int compare(Student v, Student w)
+        { return v.section - w.section; }
+    }
+}
+```
+
+### 稳定性
+A stable sort **preserves the relative order of items with equal keys**.
+* Insertion sort is stable: 我们没有在插入的时候让新的 item 插入到相等的 item 之前
+* Selection sort is not stable: 可能在某个 long distance exchange 中将某个不大的值放到很后面
+* Shellsort sort is not stable: 同样的有Long distance exchange
+* Mergesort is stable: 取决于 merge 过程是否稳定, 良好的 merge 实现是稳定的(equal key 时候从左边的 array 选择)
