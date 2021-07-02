@@ -465,6 +465,15 @@ insertion sort 每次只移动一个位置, 翻转一个逆序对. 一个提升�
 Knuth Shuffle:
 * 在第 i 次迭代中, 从 0 到 i 中选取随机数 r
 * Swap _a[i]_ 和 _a[r]_
+
+### Application:Convex Hull
+* 可以通过逆时针的方式完成一个 凸包的遍历, 
+* 而该凸包上的点和 p(y 坐标最小) 的连线和 y 轴的夹角逐渐变大. 
+
+这样的话, 我们就可以从简单的 fact 将一个问题转化为排序问题.
+* 找到 Y 坐标最小的值/然后定义夹角再排序
+* 怎样定义 counter clock wise turn: 使用向量的叉积
+
 ## Merge Sort
 ### Intro
 * 将array分成两半
@@ -473,4 +482,4 @@ Knuth Shuffle:
 
 在Java中可以增加很多断言, 可以帮助检测程序的逻辑错误, 同时更有利于文档的编写.   
 Merge sort最多使用 $N \log N$ 次 compare 和 $6 N \log N$次array acesses 去给size为N的array排序.  
-此外, 还有一个问题是Merge sort对于小的subarray来说效率并不高,可以 **在~ 7个item左右的时候换成insertion sort**.
+此外, 还有一个问题是Merge sort对于小的subarray来说效率并不高,可以 **在 ~7 个item左右的时候换成insertion sort**.
