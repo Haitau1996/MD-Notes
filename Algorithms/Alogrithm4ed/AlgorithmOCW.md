@@ -740,3 +740,30 @@ Quick-select:
     <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704212402.png"/></div>
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704212707.png"/></div>
 
+## 优先队列
+### _API and elementary implementations_
+对于 Java 中的不同 collection, 其删除操作所删除的对象各有不同:
+* _Stack_: Remove the item ==most recently added==
+* _Queue_: Remove the item ==least recently added==
+* _Randomized queue_: Remove a random item
+* _Priority queue_: Remove the ==largest (or smallest) item==
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704214710.png"/></div>
+
+其使用接口的方式如下:
+```Java
+MinPQ<Transaction> pq = new MinPQ<Transaction>();
+while (StdIn.hasNextLine())
+{
+    String line = StdIn.readLine();
+    Transaction transaction = new Transaction(line);
+    pq.insert(transaction);
+    if (pq.size() > m)
+        pq.delMin();
+}
+```
+我们可以用array(unordered) 和 linked-list(ordered)实现:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704215343.png"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704215506.png"/></div>
+
+### _Binary Heap_
