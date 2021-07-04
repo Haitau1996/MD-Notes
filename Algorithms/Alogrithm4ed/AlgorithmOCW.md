@@ -602,3 +602,141 @@ A stable sort **preserves the relative order of items with equal keys**.
 * Selection sort is not stable: 可能在某个 long distance exchange 中将某个不大的值放到很后面
 * Shellsort sort is not stable: 同样的有Long distance exchange
 * Mergesort is stable: 取决于 merge 过程是否稳定, 良好的 merge 实现是稳定的(equal key 时候从左边的 array 选择)
+
+## Quick Sort
+Quick Sort 也是一种递归的算法, 它和 merge sort 的一个很大的区别在于, Quick 是在确定完位置之后再递归, Merge 是递归之后再 Merge(确定位置):
+1. Shuffle the array 
+2. pertition the array, 对于一个某个 index j:
+   1. Entry `a[j]` is in place
+   2. No larger entry to the left of j & No smaller entry to the right of j
+3. Sort each subarray recursively <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704194944.png"/></div>
+
+置换位置的过程, 我们首先设置头和尾指针, 然后向中间挪动, 两个指针发现合适的元素 i 和 j 的时候, 交换 `a[i]` 和 `a[j]`, 如果两个指针越界的, 就交换 `a[lo]` 和 `a[j]`:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704195459.png"/></div>
+
+```Java
+private static int partition(Comparable[] a, int lo, int hi)
+{
+    int i = lo, j = hi+1;
+    while (true)
+    {
+        while (less(a[++i], a[lo])) // 找到左边需要 swap 的元素
+            if (i == hi) break;
+        while (less(a[lo], a[--j])) // 找到右边需要交换的元素
+            if (j == lo) break;
+        if (i >= j) break;          // 看指针是否越界
+        exch(a, i, j);
+    }
+    exch(a, lo, j);                 // 把标兵和交界处的元素互换
+    return j;
+}
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704195825.png"/></div>
+
+_partition_ 这个最重要的过程实现之后, 我们就可以使用递归的方式去实现整个 快排:
+```Java
+public class Quick
+{
+    private static int partition(Comparable[] a, int lo, int hi)
+    { /* as above */ }
+    public static void sort(Comparable[] a)
+    {
+        StdRandom.shuffle(a);
+        sort(a, 0, a.length - 1);
+    }
+    private static void sort(Comparable[] a, int lo, int hi)
+    {
+        if (hi <= lo) return;
+        int j = partition(a, lo, hi);
+        sort(a, lo, j-1);
+        sort(a, j+1, hi);
+    }
+}
+```
+实现的细节上, 有下面几点需要注意:
+1. 这个分割的过程是 in-place 的
+2. 循环的终止条件需要我们仔细考虑
+3. 处理重复的元素有点麻烦
+4. 我们要使用随机洗牌提供性能保证
+   * 在 subarray 中使用随机方式选择标兵可以实现相同的效果
+   
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704200703.png"/></div>
+
+从概率的分析看, 比较的期望是 $\sim 2n\log n$, 交换的期望是$\sim \frac{1}{3}n\log n$:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704201119.png"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704201146.png"/></div>
+
+性能总结:
+1. Quick Sort 谁一种随机化的算法
+2. 平均情况下比 Merge Sort 多 39% 的比较, 但是只需要更少的 data movement, 因此比 merge sort 要快一些
+3. 其他的情况
+   1. 最好的情况下需要 $n\log n$ 次比较
+   2. 最坏的情况下需要 $\sim \frac{1}{2}n^2$ 次比较
+4. Quicksort is not stable
+
+小的性能提升方法, 和 Merge sort 类似
+1. 在 $\sim 10$ 个元素的时候使用插入排序
+2. 取 3 个随机元素的中位数当标兵
+
+### selection
+目标: Given an array of n items, find the $k^{th}$ smallest item.  
+我们思考后可以得到下面的结论:
+1. 上界就是$n\log n$: 最坏的情况下排序后就能找到第 n 个
+2. 对于 k = 1, 2, 3, 扫描一遍就能得到
+3. 对于其他情况, 也是 n 为下界: 必须每个元素都看到
+
+Quick-select:  
+* 我们每次用快排中的分割方法, 确定 a[j];
+* j 比 k 小就在右边接着分,  否则就在左边分, 相等的话就找到了
+    ```Java
+    public static Comparable select(Comparable[] a, int k)
+    {
+        StdRandom.shuffle(a);
+        int lo = 0, hi = a.length - 1;
+        while (hi > lo)
+        {
+            int j = partition(a, lo, hi);
+            if (j < k) lo = j + 1;
+            else if (j > k) hi = j - 1;
+            else return a[k];
+        }
+        return a[k];
+    }
+    ```
+
+这个算法的复杂度是显性的, $n + n / 2 + n / 4 + … + 1 \sim 2n$.更复杂的分析如下:
+\[\begin{aligned}
+    C_{n}   & \sim 2 n+2 k \ln (n / k)+2(n-k) \ln (n /(n-k)) \\
+            & \leq(2+2 \ln 2) n\\
+            & \approx 3.38n
+\end{aligned}
+\]
+
+### duplicate keys
+对于重复元素非常多的情况下, 如果每次都将重复的元素放在标兵的一侧, 那么使用的时候就会发现很容易出现复杂度 $\sim \frac{1}{2}n^2$ 的情况. 解决的一个思路被称为 **3-way partitioning**: <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704211726.png"/></div>
+
+其具体的做法如下:
+* Let v be partitioning item `a[lo]`
+* 将 i 从左到右扫描
+  * (`a[i]` < v): exchange `a[lt]` with `a[i]`; increment both `lt` and `i`
+  * (`a[i]` > v): exchange `a[gt]` with `a[i]`; decrement `gt`
+  * (`a[i]` == v): increment i
+    ```Java
+    private static void sort(Comparable[] a, int lo, int hi)
+    {
+        if (hi <= lo) return;
+        int lt = lo, gt = hi;
+        Comparable v = a[lo];
+        int i = lo;
+        while (i <= gt)
+        {
+            int cmp = a[i].compareTo(v);
+            if (cmp < 0) exch(a, lt++, i++);
+            else if (cmp > 0) exch(a, i, gt--);
+            else i++;
+        }
+        sort(a, lo, lt - 1);
+        sort(a, gt + 1, hi);
+    }
+    ```
+    <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704212402.png"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704212707.png"/></div>
+
