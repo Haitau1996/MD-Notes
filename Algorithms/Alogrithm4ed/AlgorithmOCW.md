@@ -1,5 +1,54 @@
-# [Algotrithms OCW](https://cuvids.io/app/course/2/) {ignore=true}
-[TOC]
+# [Algotrithms OCW](https://cuvids.io/app/course/2/) 
+- [Algotrithms OCW](#algotrithms-ocw)
+- [Part I](#part-i)
+  - [cource Overview](#cource-overview)
+  - [动态链接问题](#动态链接问题)
+    - [Quick Find [eager approach]](#quick-find-eager-approach)
+    - [Quick Union[lazy approach]](#quick-unionlazy-approach)
+    - [improvment](#improvment)
+  - [Analysis of Algorithms](#analysis-of-algorithms)
+    - [Obersvation](#obersvation)
+    - [mathematical models](#mathematical-models)
+    - [order-of-growth classifications](#order-of-growth-classifications)
+    - [theory of algorithms](#theory-of-algorithms)
+    - [内存使用的定量分析](#内存使用的定量分析)
+  - [Stacks and queues](#stacks-and-queues)
+    - [Stacks](#stacks)
+      - [链表实现](#链表实现)
+      - [array implementation](#array-implementation)
+    - [Array resize](#array-resize)
+    - [Linkde-List Queue](#linkde-list-queue)
+    - [泛型](#泛型)
+    - [迭代器](#迭代器)
+    - [applications](#applications)
+  - [Sorting](#sorting)
+    - [Selection Sort](#selection-sort)
+    - [Insertion Sort](#insertion-sort)
+    - [Shell Sort](#shell-sort)
+    - [Shuffle](#shuffle)
+    - [Application:Convex Hull](#applicationconvex-hull)
+  - [Merge Sort](#merge-sort)
+    - [Intro](#intro)
+    - [bottom-up mergesort](#bottom-up-mergesort)
+    - [sorting complexity](#sorting-complexity)
+    - [comparators](#comparators)
+    - [稳定性](#稳定性)
+  - [Quick Sort](#quick-sort)
+    - [selection](#selection)
+    - [duplicate keys](#duplicate-keys)
+  - [优先队列](#优先队列)
+    - [_API and elementary implementations_](#api-and-elementary-implementations)
+    - [_Binary Heap_](#binary-heap)
+    - [Heap Sort](#heap-sort)
+    - [event-driven simulation](#event-driven-simulation)
+  - [符号表](#符号表)
+    - [API](#api)
+    - [elementary implementations](#elementary-implementations)
+      - [简单链表实现](#简单链表实现)
+      - [ordered array](#ordered-array)
+      - [ordered operations](#ordered-operations)
+    - [BSTs](#bsts)
+      - [ordered operations](#ordered-operations-1)
 # Part I
 
 ## cource Overview 
@@ -917,3 +966,112 @@ public class Particle
 * Given a key, search for the corresponding value.
 
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705101954.png"/></div>
+
+下面是实现中的几个约定:
+* Values are not `null`.
+* Method `get()` returns null if key not present.
+* Method `put()` overwrites old value with new value.
+
+Key 和 value 的要求:  
+* Value 类型: 任意的 generic 类型
+* Key 类型则需要满足下面的假设<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705104400.png"/></div>
+* 一个最佳实践是使用 immutable 类型作为符号表的 key
+
+在Java 中的 Equality test(继承 method `equals()`), 对于自定义的类型, 要注意它的实现:
+* Reflexive: `x.equals(x)` is true.
+* Symmetric: `x.equals(y)` 当且仅当 `y.equals(x)`.
+* Transitive: if `x.equals(y)` and `y.equals(z)`, then `x.equals(z)`.
+* Non-null: `x.equals(null)` is false
+
+在实现的时候往往会加上下面几行作为优化:
+```Java
+if (y == this) return true;
+if (y == null) return false;
+if (y.getClass() != this.getClass())
+    return false;
+```
+* 对于 primitive type, 使用 `==`
+* 对于对象, 使用 `equals()`
+* 对于数组, 需要比较其中的每个元素 `Array.deepEquals(a,b)` 而不是 `q.equals(b)`
+
+### elementary implementations
+#### 简单链表实现
+使用一个链表, 每个节点维护一个 key-value 对, 查找只需要对整个链表做扫描, 插入时同样, 如果发现了 key 的话就更新值, 没发现就插入到头节点. <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705105926.png"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705110100.png"/></div>
+
+#### ordered array
+使用一个有序的 array 存储 key-value 对.这时候我们可以使用二分法查找, 问题在于插入的时候需要挪动一大堆的元素. <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705110333.png"/></div>
+
+#### ordered operations
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705110750.png"/></div>
+
+### BSTs
+A BST is a binary tree in **symmetric order**.
+* 二叉树: 一个二叉树要么是空的, 要么只有两个不相交的子树
+* Symmetric order: Each node has a key; a node’s key is both 
+  * Larger than all keys in its left subtree.
+  * Smaller than all keys in its right subtree<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705111332.png"/></div>
+
+在 Java 中, 一个 BST 就是**对根节点的引用**, 每个节点都有四个 field:
+* A key and a Value
+* A reference to the left and the right subtree
+
+```Java
+private class Node
+{
+    private Key key;
+    private Value val;
+    private Node left, right;
+    public Node(Key key, Value val)
+    {
+        this.key = key;
+        this.val = val;
+    }
+}
+public class BST<Key extends Comparable<Key>, Value>
+{
+    private Node root;
+    private class Node
+    { /* see previous slide */ }
+    public void put(Key key, Value val)
+    { /* see slide in this section */ }
+    public Value get(Key key)
+    { /* see next slide */ }
+    public Iterable<Key> keys()
+    { /* see slides in next section */ }
+    public void delete(Key key)
+    { /* see textbook */ }
+}
+```
+Search/Insert 的实现十分简单
+```Java
+public Value get(Key key)
+{
+    Node x = root;
+    while (x != null)
+    {
+        int cmp = key.compareTo(x.key);
+        if (cmp < 0) x = x.left;
+        else if (cmp > 0) x = x.right;
+        else return x.val;
+    }
+    return null;
+}
+
+public void put(Key key, Value val)
+{ root = put(root, key, val); }
+private Node put(Node x, Key key, Value val)
+{
+    if (x == null) return new Node(key, val);
+    int cmp = key.compareTo(x.key);
+    if (cmp < 0) x.left = put(x.left, key, val);
+    else if (cmp > 0) x.right = put(x.right, key, val);
+    else /* if(cmp ==0)*/  x.val = val;
+    return x;
+}
+```
+二叉树的很多操作的复杂度都和其深度有关, 因此它的不同形状对性能的影响很大:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705112700.png"/></div>
+
+如果 N 个不同 key 随机插入 BST, 预期 search/insert 操作的对比次 $\sim 2\ln N$(和 [quick sort](#selection) 很像).
+
+#### ordered operations
