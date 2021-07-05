@@ -59,6 +59,13 @@
       - [Red-black BST representation](#red-black-bst-representation)
       - [Insertion in a LLRB tree: overview](#insertion-in-a-llrb-tree-overview)
     - [B-trees](#b-trees)
+  - [GEOMETRIC APPLICATIONS OF BSTS](#geometric-applications-of-bsts)
+    - [line segment intersection](#line-segment-intersection)
+    - [kd trees](#kd-trees)
+  - [Hash Table](#hash-table)
+    - [hash functions](#hash-functions)
+      - [Modular hashing](#modular-hashing)
+    - [separate chaining](#separate-chaining)
 # Part I
 
 ## cource Overview 
@@ -1336,3 +1343,89 @@ Generalize 2-3 trees by allowing up to M - 1 key-link pairs per node:
 * Insert at bottom.
 * Split nodes with M key-link pairs on the way up the tree.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705161751.png"/></div>
 
+## GEOMETRIC APPLICATIONS OF BSTS
+### line segment intersection
+我们只需要从左向右扫描:
+* x 坐标(左端点)就将它插入 y-坐标的 BST
+* x 坐标(右端点)就将它移除 y-坐标的 BST
+* 遇到垂直的线段, 就在 BST 中左 range search<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705163235.png"/></div>
+
+### kd trees
+这里我们要做的是将 range search 拓展到 2d keys.
+//TODO: 暂停一下等会再看
+
+## Hash Table
+Save items in a **key-indexed table** (index is a function of the key). **_Hash Function_**: 一个从 key 计算得到 array index 的函数. Hashing 过程中, 需要注意下面几个问题:
+* Equality test
+* Collision resolution
+### hash functions
+在理想的情况下, 一个好的哈希函数均匀地将 Key 打散产生一个 table index.
+* 高效地计算
+* 每个 table index 对每个键的可能性相等
+
+每个 Java Class 都继承了一个方法`hashCode()`:
+* 基本要求: If `x.equals(y)`, then `(x.hashCode() == y.hashCode())`.
+* Highly desirable: If `!x.equals(y)`, then `(x.hashCode() != y.hashCode())`.
+    ```Java
+    public final class String
+    {
+        private final char[] s;
+        ...
+        public int hashCode()
+        {
+            int hash = 0;
+            for (int i = 0; i < length(); i++)
+            hash = s[i] + (31 * hash);
+            return hash;
+        }
+    }
+    public final class Transaction implements Comparable<Transaction>
+    {
+        private final String who;
+        private final Date when;
+        private final double amount;
+        public Transaction(String who, Date when, double amount)
+        { /* as before */ }
+        ...
+        public boolean equals(Object y)
+        { /* as before */ }
+        public int hashCode()
+        {
+            int hash = 17;
+            hash = 31*hash + who.hashCode();
+            hash = 31*hash + when.hashCode();
+            hash = 31*hash + ((Double) amount).hashCode();
+            return hash;
+        }
+    }
+    ```
+
+实践上有一个比较标准用户自定义类哈希函数的实现流程:
+* Combine each significant field using the 31x + y rule.
+* If field is a primitive type, use wrapper type `hashCode()`.
+* If field is null, return 0.
+* If field is a reference type, use `hashCode()`.(applies rule recursively)
+* If field is an array, apply to each entry.
+
+#### Modular hashing
+一个哈希值是 $-2^{31}$ 到 $2^{31}-1$ 之间的整数, 实际上大小为 M 的 array 下标在 0 到 M-1 之间, 因此我们需要做模运算:
+```Java
+private int hash(Key key) // has bug for neg numbers
+{ return key.hashCode() % M; }
+private int hash(Key key) // has 1-in-a-billion bug(for -2^{31})
+{ return Math.abs(key.hashCode()) % M; }
+private int hash(Key key) // correct
+{ return (key.hashCode() & 0x7fffffff) % M; }
+```
+对于一个良好的哈希函数:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705185652.png"/></div>
+
+### separate chaining
+**碰撞**发生在两个不同的 key hashing 到了相同的 Index时候, 除非我们可以有平方增长的内存空间, 否则这将不可避免.为了应对碰撞, 一个做法是分离链接法, 使用一个 M 大小的 linked-list array:
+* Hash: map key to integer i between 0 and M - 1.
+* Insert: put at front of $i^{th}$ chain (if not already there).
+* Search: need to search only $i^{th}$ chain
+
+```Java
+public class SeparateChainingHashST<Key, Value>
+{
+    ... 
