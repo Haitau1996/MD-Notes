@@ -53,6 +53,9 @@
       - [deletion](#deletion)
         - [Deleting the minimum](#deleting-the-minimum)
         - [Hibbard deletion](#hibbard-deletion)
+  - [Balanced Search Tree](#balanced-search-tree)
+    - [2-3 search trees](#2-3-search-trees)
+    - [red-black BSTs](#red-black-bsts)
 # Part I
 
 ## cource Overview 
@@ -1185,3 +1188,28 @@ private Node delete(Node x, Key key) {
 ```
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705124139.png"/></div>
 
+
+## Balanced Search Tree
+### 2-3 search trees
+这种 2-3 树允许每个 node 有 1 个或者两个 key:
+* 2-node: one key, two children
+* 3-node: two keys, three children<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705142323.png"/></div>
+
+有了上面的性质, 在 2-3 tree 中查找就十分方便:
+* Compare search key against keys in node.
+* Find interval containing search key
+* Follow associated link (recursively).
+
+Insertion into a 2-3 tree:  
+* 如果是插入到 2-3 tree 底部的 2-node: Add new key to 2-node to create a 3-node
+* 如果是插入到底部的 3-node
+   1. Add new key to 3-node to create **temporary 4-node**
+   2. Move middle key in 4-node into parent.
+   3. Repeat up the tree, as necessary.
+   4. If you reach the root and it's a 4-node, split it into three 2-nodes
+
+2-3 tree 有两个很好的性质:**Maintains symmetric order** and **perfect balance**.因为每次 transformation 都没有改变这两个性质, 故一直可以保持.因此其性能如下:
+* Wrost Case: $\lg N$(全部为 2-Nodes)
+* Base Case: $\log_3 N$(全部为 3-Nodes)<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705143816.png"/></div>
+
+### red-black BSTs
