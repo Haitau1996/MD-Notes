@@ -767,3 +767,146 @@ while (StdIn.hasNextLine())
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704215506.png"/></div>
 
 ### _Binary Heap_
+Binary heap 是一个 heap-ordered 完全二叉树的数组实现, 它要求:
+* parent's key 不小于 children's key
+* 下标从 1 开始
+* 按照 level 顺序接受 nodes
+* 不需要显式的链接
+
+这时候, 数组元素的位置就可以确定互相间的关系
+* k元素的父节点就是 [k/2]
+* k的子节点就是 2k 和 2k+1
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705091955.png"/></div>
+
+接下来看各种相关的操作是如何实现:
+1. swim: 当一个 node 的 key 比它的 parent's key 大的时候, 只需要将 child 和 parent 对换, 直到依旧满足 heap order
+    ```Java
+    private void swim(int k)
+    {
+        while (k > 1 && less(k/2, k))
+        {
+            exch(k, k/2);
+            k = k/2;
+        }
+    }
+    ```
+2. 添加新元素的时候, 只需要将 node 放在最后, 然后 swip it up, 最多需要 $1 + \lg n$ 次对比 
+    ```Java
+    public void insert(Key x)
+    {
+        pq[++n] = x;
+        swim(n);
+    }
+    ```
+2. sink:一个元素的 key 比它的 children 小, 需要做的就是比较两个 children 的 key, 再和大大那个交换, 直到满足条件
+    ```Java
+    private void sink(int k)
+    {
+        while (2*k <= n)
+        {
+            int j = 2*k;
+            if (j < n && less(j, j+1)) j++;
+            if (!less(k, j)) break;
+            exch(k, j);
+            k = j;
+        }
+    }
+    ```
+4. 删除最大值: 将 root 和 end 的节点交换, 删除最后一个节点(原来的 root), 然后将新 root 下沉
+    ```Java
+    public Key delMax()
+    {
+        Key max = pq[1];
+        exch(1, n--);
+        sink(1);
+        pq[n+1] = null;
+        return max;
+    }
+    ```
+```Java
+public class MaxPQ<Key extends Comparable<Key>>
+{
+    private Key[] pq;
+    private int n;
+
+    public MaxPQ(int capacity)
+    { pq = (Key[]) new Comparable[capacity+1]; }
+
+    public boolean isEmpty()
+    { return n == 0; }
+
+    public void insert(Key key) // see previous code
+    public Key delMax() // see previous code
+    private void swim(int k) // see previous code
+    private void sink(int k) // see previous code
+
+    private boolean less(int i, int j)
+    { return pq[i].compareTo(pq[j]) < 0; }
+    private void exch(int i, int j)
+    { Key t = pq[i]; pq[i] = pq[j]; pq[j] = t; }
+}
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705093713.png"/></div>
+
+此外我们需要考虑一些东西:
+* 下溢和上溢
+  * Underflow: throw exception if deleting from empty PQ.
+  * Overflow: add no-arg constructor and use resizing array.
+* Minimum-oriented priority queue: 将 less 改成 greater,并且实现 greater
+* key 的不变性: 假设客户端无法在使用 PQ 的时候修改key, 最佳实践就是使用 immutable keys, immutable 数据有下面的好处
+  * Safe to use as key in priority queue or symbol table
+  * Simplifies debugging
+  * Simplifies concurrent programming.
+  * More secure in presence of hostile code
+
+### Heap Sort
+Heap Sort 的基本思路如下:
+* 首先将 input array 看成是一个完全的二叉树
+* 然后使用 n 个key 构建一个 max-heap(using **bottom-up method**)<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705095259.png"/></div>
+    ```Java
+    for (int k = n/2; k >= 1; k--)
+        sink(a, k, n);
+    ```
+* 最后重复地选出(并删除)最大元素
+    ```Java
+    while (n > 1)
+    {
+        exch(a, 1, n--);
+        sink(a, 1, n);
+    }
+    ```
+
+Heap construction makes ≤ n exchanges and ≤ 2n compares, uses ≤ $2n\lg n$ compares and exchanges.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705095710.png"/></div>
+
+### event-driven simulation
+Change state only when something interesting happens:
+* Between collisions, particles move in straight-line trajectories.
+* Focus only on times when collisions occur.
+* Maintain PQ of collision events, prioritized by time.
+* Delete min = get next collision.
+
+```Java
+public class Particle
+{
+    private double rx, ry; // position
+    private double vx, vy; // velocity
+    private final double radius; // radius
+    private final double mass; // mass
+    private int count; // number of collisions
+
+    public Particle( ... ) { ... }
+    public void move(double dt) { ... }
+    public void draw() { ... }
+    // 下面就是预测是否和 particle / wall 碰撞
+    public double timeToHit(Particle that) { }
+    public double timeToHitVerticalWall() { }
+    public double timeToHitHorizontalWall() { }
+    // 碰撞之后的行为
+    public void bounceOff(Particle that) { }
+    public void bounceOffVerticalWall() { }
+    public void bounceOffHorizontalWall() { }
+}
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705100852.png"/></div>
+
