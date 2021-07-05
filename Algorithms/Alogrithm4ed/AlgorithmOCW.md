@@ -49,6 +49,10 @@
       - [ordered operations](#ordered-operations)
     - [BSTs](#bsts)
       - [ordered operations](#ordered-operations-1)
+      - [迭代](#迭代)
+      - [deletion](#deletion)
+        - [Deleting the minimum](#deleting-the-minimum)
+        - [Hibbard deletion](#hibbard-deletion)
 # Part I
 
 ## cource Overview 
@@ -1075,3 +1079,109 @@ private Node put(Node x, Key key, Value val)
 如果 N 个不同 key 随机插入 BST, 预期 search/insert 操作的对比次 $\sim 2\ln N$(和 [quick sort](#selection) 很像).
 
 #### ordered operations
+* min/max 操作十分 trivial
+* floor(Largest key ≤ a given key) 需要详细考虑不同的情况
+  * Case 1. [k equals the key in the node]:The floor of k is k
+  * Case 2. [k is less than the key in the node]: The floor of k is in the left subtree.
+  * Case 3. [k is greater than the key in the node]: The floor of k is in the right subtree(if there is any key ≤ k in right subtree);
+    ```Java
+    public Key floor(Key key)
+    {
+        Node x = floor(root, key);
+        if (x == null) return null;
+        return x.key;
+    }
+    private Node floor(Node x, Key key)
+    {
+        if (x == null) return null;
+        int cmp = key.compareTo(x.key);
+
+        if (cmp == 0) return x;
+
+        if (cmp < 0) return floor(x.left, key);
+        Node t = floor(x.right, key);
+        if (t != null) return t;
+        else           return x;
+    }
+    ```
+* rank(How many keys < k), 和 floor 类似, 需要考虑三种情况
+    ```Java
+    public int rank(Key key)
+    { return rank(key, root); }
+    private int rank(Key key, Node x)
+    {
+        if (x == null) return 0;
+        int cmp = key.compareTo(x.key);
+        if (cmp < 0) return rank(key, x.left);
+        else if (cmp > 0) return 1 + size(x.left) + rank(key, x.right);
+        else if (cmp == 0) return size(x.left);
+    }
+    ```
+
+#### 迭代
+迭代很多时候可以使用递归实现, 如果不用的话就可以使用一个队列作为辅助, 如对于 in-order travaesal:
+1. Traverse left subtree
+2. Enqueue key
+3. Traverse right subtree
+    ```Java
+    public Iterable<Key> keys()
+    {
+        Queue<Key> q = new Queue<Key>();
+        inorder(root, q);
+        return q;
+    }
+    private void inorder(Node x, Queue<Key> q)
+    {
+        if (x == null) return;
+        inorder(x.left, q);
+        q.enqueue(x.key);
+        inorder(x.right, q);
+    }
+    ```
+#### deletion
+##### Deleting the minimum
+* Go left until finding a node with a null left link.
+* Replace that node by its right link.
+* Update subtree counts.
+
+```Java
+public void deleteMin()
+{ root = deleteMin(root); }
+private Node deleteMin(Node x)
+{
+    if (x.left == null) return x.right;
+    x.left = deleteMin(x.left);
+    x.count = 1 + size(x.left) + size(x.right);
+    return x;
+}
+```
+##### Hibbard deletion
+首先我们找到 key 为 k 的元素
+* case 0: 没有 child, 直接删除
+* case 1: 只有一个 child, 直接用 child 替代
+* case 2: 有两个 childern, 用右边的最小值替代当前位置, 并且删除最小值(同样的可以用左边最大值替代)
+```Java
+public void delete(Key key)
+{ root = delete(root, key); }
+private Node delete(Node x, Key key) {
+    if (x == null) return null;
+    int cmp = key.compareTo(x.key);
+    // search for the key
+    if (cmp < 0) x.left = delete(x.left, key);
+    else if (cmp > 0) x.right = delete(x.right, key);
+    else {
+        if (x.right == null) return x.left; // no right child
+        if (x.left == null) return x.right; // no left child 
+        // replate with successor
+        Node t = x;
+        x = min(t.right);
+        x.right = deleteMin(t.right);
+        x.left = t.left;
+    }
+    //update subtree counts
+    x.count = size(x.left) + size(x.right) + 1;
+    return x;
+}
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705124139.png"/></div>
+
