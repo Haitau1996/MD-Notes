@@ -1,11 +1,11 @@
-# [Algotrithms OCW](https://cuvids.io/app/course/2/) 
-
+# [Algotrithms OCW](https://cuvids.io/app/course/2/) {ignore=true}
+[TOC]
 # Part I
 
 ## cource Overview 
 
-What is this cource?
-**Algorithm** : method for solving a problem
+What is this cource?  
+**Algorithm** : method for solving a problem  
 **Data Structure** ： methods to store information 
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210630184506.png"/></div>
 
@@ -427,7 +427,7 @@ public class Insertion
 ```
 这种算法需要 $\sim \frac{1}{4} N^2$ 次比较和交换on average,在最坏的情况下是$\frac{1}{2} N^2$. 它在 partially-sorted arrays 上有比较好的性能.
 
-#### Shell Sort
+### Shell Sort
 insertion sort 每次只移动一个位置, 翻转一个逆序对. 一个提升思路是每次都 move 多个位置, 这样的话一次可能就不止改变一个逆序对:
 * 间隔非常大的时候, 是处理一个小的subarray
 * 间隔不大的时候, 实际上array基本已经有排好序了
@@ -910,3 +910,10 @@ public class Particle
 ```
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705100852.png"/></div>
 
+## 符号表
+### API
+符号表是对 key-value 对的抽象.
+* Insert a value with specified key.
+* Given a key, search for the corresponding value.
+
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705101954.png"/></div>
