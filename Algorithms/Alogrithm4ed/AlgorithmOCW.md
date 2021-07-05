@@ -56,6 +56,9 @@
   - [Balanced Search Tree](#balanced-search-tree)
     - [2-3 search trees](#2-3-search-trees)
     - [red-black BSTs](#red-black-bsts)
+      - [Red-black BST representation](#red-black-bst-representation)
+      - [Insertion in a LLRB tree: overview](#insertion-in-a-llrb-tree-overview)
+    - [B-trees](#b-trees)
 # Part I
 
 ## cource Overview 
@@ -1213,3 +1216,123 @@ Insertion into a 2-3 tree:
 * Base Case: $\log_3 N$(全部为 3-Nodes)<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705143816.png"/></div>
 
 ### red-black BSTs
+有了前面的基础, 我们需要考虑如何更好地用二叉树来表示上面的 2-3 tree, 一种实现就是使用 "internal" left-leaning links 作为 3-node 的胶水:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705151031.png"/></div>
+
+于是, 就有了一个等价的定义:  
+* No node has two red links connected to it.
+* Every path from root to null link has the same number of black links.(perfect black balanced)
+* Red links lean left<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705151304.png"/></div>
+
+#### Red-black BST representation
+我们新添加一个 color bit 标志红黑树中节点和 parent 连接的颜色:
+```Java
+private static final boolean RED = true;
+private static final boolean BLACK = false;
+private class Node
+{
+    Key key;
+    Value val;
+    Node left, right;
+    boolean color; // color of parent link
+}
+private boolean isRed(Node x)
+{
+    if (x == null) return false;
+    return x.color == RED;
+}
+```
+**Left rotation**:Orient a (temporarily) right-leaning red link to lean left.
+```Java
+private Node rotateLeft(Node h)
+{
+    assert isRed(h.right);
+    Node x = h.right;
+    h.right = x.left;
+    x.left = h;
+    x.color = h.color;
+    h.color = RED;
+    return x;
+}
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705152024.png"/></div>
+
+**Right rotation**: Orient a left-leaning red link to (temporarily) lean right.  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705154529.png"/></div>
+
+```Java
+private Node rotateRight(Node h)
+{
+    assert isRed(h.left);
+    Node x = h.left;
+    h.left = x.right;
+    x.right = h;
+    x.color = h.color;
+    h.color = RED;
+    return x;
+}
+```
+**Color flip**: 对于原来的 4-node, 只需要改一下连接的颜色即可
+```Java
+private void flipColors(Node h)
+{
+    assert !isRed(h);
+    assert isRed(h.left);
+    assert isRed(h.right);
+    h.color = RED;
+    h.left.color = BLACK;
+    h.right.color = BLACK;
+}
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705152441.png"/></div>
+
+#### Insertion in a LLRB tree: overview
+我们在插入的时候, 和 2-3 Tree 保持一致就可以:
+* warmup 1: Insert to a tree with exactly 1 node:
+  * on the left: 只需要在 node 和 parent 之间建立一条 red link,**就像是将2-node 转化成了 3-node**
+  * on the right: 在 node 和 parent 之间建立一条 red link, 之后再**rotate left** 得到一个 Legal 3-node
+* warmup 2: insert into a tree with excatly 2 nodes:
+  * larger: 在右边插入, 建立一个新的 red link(相当于4 node), 然后分裂(将两个红色改成黑色)
+  * smaller: 将它插入左边, 然后做一个 rotate, 之后再改变颜色
+  * in-between: 先插入子节点的右手边(red link), 然后做一个 left rotate, 然后 right rotate, 最后 flip color<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705154244.png"/></div>
+* Insert into a 3-node at the bottom.
+  1. 做正常的 BST 插入, link 为红色
+  2. Rotate to balance the 4-node (if needed).
+  3. Flip colors to **pass red link up one level**.
+  4. Rotate to make lean left (if needed).<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705155010.png"/></div>
+  5. Repeat case 1 or case 2 up the tree (if needed)<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705155131.png"/></div>
+
+总的来说, 我们就需要做三个事情:
+* 右边的子树是红的, 左边是黑的: rotate left
+* 左 child 和 左-左 grand child 是红的, 需要 rotate right
+* 两个 childern 都是红的: flip color<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705160327.png"/></div>
+    ```Java
+    private Node put(Node h, Key key, Value val)
+    {
+        if (h == null) return new Node(key, val, RED); // insert at bottom
+        int cmp = key.compareTo(h.key);
+        if (cmp < 0) h.left = put(h.left, key, val);
+        else if (cmp > 0) h.right = put(h.right, key, val);
+        else if (cmp == 0) h.val = val;
+
+        if (isRed(h.right) && !isRed(h.left)) h = rotateLeft(h);
+        if (isRed(h.left) && isRed(h.left.left)) h = rotateRight(h);
+        if (isRed(h.left) && isRed(h.right)) flipColors(h);
+        return h;
+    }
+    ```
+
+在最坏的情况下, 树的高度 $\leq 2\lg N$.
+* Every path from root to null link has same number of black links
+* Never two red links in-a-row<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705160827.png"/></div>
+
+### B-trees
+Generalize 2-3 trees by allowing up to M - 1 key-link pairs per node:
+* At least 2 key-link pairs at root
+* At least M / 2 key-link pairs in other nodes.
+* External nodes contain client keys.
+* Internal nodes contain copies of keys to guide search.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705161400.png"/></div>
+
+它的插入过程可以理解为 2-3 树的一种拓展:  
+* Search for new key.
+* Insert at bottom.
+* Split nodes with M key-link pairs on the way up the tree.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705161751.png"/></div>
+
