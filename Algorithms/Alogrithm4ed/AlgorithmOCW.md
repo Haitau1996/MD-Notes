@@ -1,6 +1,5 @@
-# [Algotrithms OCW](https://cuvids.io/app/course/2/) 
-- [Algotrithms OCW](#algotrithms-ocw)
-- [Part I](#part-i)
+# [Algotrithms OCW Part I](https://cuvids.io/app/course/2/) 
+- [Algotrithms OCW Part I](#algotrithms-ocw-part-i)
   - [cource Overview](#cource-overview)
   - [动态链接问题](#动态链接问题)
     - [Quick Find [eager approach]](#quick-find-eager-approach)
@@ -74,7 +73,6 @@
       - [Set](#set)
       - [indexing clients](#indexing-clients)
       - [sparse vectors](#sparse-vectors)
-# Part I
 
 ## cource Overview 
 
