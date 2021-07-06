@@ -66,6 +66,14 @@
     - [hash functions](#hash-functions)
       - [Modular hashing](#modular-hashing)
     - [separate chaining](#separate-chaining)
+    - [线性探测](#线性探测)
+      - [Clustering](#clustering)
+      - [Knuth's parking problem](#knuths-parking-problem)
+    - [context](#context)
+    - [应用](#应用)
+      - [Set](#set)
+      - [indexing clients](#indexing-clients)
+      - [sparse vectors](#sparse-vectors)
 # Part I
 
 ## cource Overview 
@@ -1429,3 +1437,117 @@ private int hash(Key key) // correct
 public class SeparateChainingHashST<Key, Value>
 {
     ... 
+    private static class Node
+    {
+        private Object key;
+        private Object val;
+        private Node next;
+        ...
+    }
+    private int hash(Key key)
+    { return (key.hashCode() & 0x7fffffff) % M; }
+
+    public Value get(Key key) {
+        int i = hash(key);
+        for (Node x = st[i]; x != null; x = x.next)
+            if (key.equals(x.key)) return (Value) x.val;
+        return null;
+    }
+}
+```
+基于 uniform hashing 假设, list size 的分布是二项分布, Number of probes for search/insert is proportional to $N / M$.因此在 $N/M$ 过大的时候需要 resizing:
+* Double size of array M when N / M ≥ 8
+* Halve size of array M when N / M ≤ 2.
+* Need to **rehash all keys when resizing**.
+
+### 线性探测
+线性探测的做法是, 将 key 放在 index i if free; if not try i+1, i+2, etc. 
+```Java
+public class LinearProbingHashST<Key, Value>
+{
+    private int M = 30001;
+    private Value[] vals = (Value[]) new Object[M];
+    private Key[] keys = (Key[]) new Object[M];
+    ...
+    public Value get(Key key)
+    {
+        for (int i = hash(key); keys[i] != null; i = (i+1) % M)
+        if (key.equals(keys[i]))
+            return vals[i];
+        return null;
+    }
+    public void put(Key key, Value val)
+    {
+        int i;
+        for (i = hash(key); keys[i] != null; i = (i+1) % M)
+            if (keys[i].equals(key))
+                break;
+        keys[i] = key;
+        vals[i] = val;
+    }
+}
+```
+#### Clustering
+<font color=blue>Cluster</font>: A contiguous block of items.  
+<font color=blue>Observation</font>: New keys likely to hash into middle of big clusters.  
+
+#### Knuth's parking problem
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210706094710.png"/></div>
+<font color=blue>Half-full</font>:   
+With M/2 cars, mean displacement is ~ 3/2.
+
+<font color=blue>Full</font>: 
+With M cars, mean displacement is $\sim \sqrt{\pi M/8}$.  
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210706095155.png"/></div>
+
+### context
+在实际的实现中, uniform hashing 假设的实现可能十分重要:
+* 在一些关键的领域: 航空器控制系统/核反应堆/...
+* 要应对 DoS 攻击<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210706095805.png"/></div>
+
+哈希还有很多变种:  
+Two-probe hashing. [ separate-chaining variant ]
+* Hash to two positions, insert key in shorter of the two chains.
+* Reduces expected length of the longest chain to $\log \log N$.
+
+Double hashing. [ linear-probing variant ]
+* Use linear probing, but skip a variable amount, not just 1 each time.
+* Effectively eliminates clustering.
+* Can allow table to become nearly full.
+* More difficult to implement delete.
+
+Cuckoo hashing. [ linear-probing variant ]
+* Hash key to two positions; insert key into either position; if occupied,reinsert displaced key into its alternative position (and recur).
+* Constant worst-case time for search.
+
+### 应用
+#### Set
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210706100456.png"/></div>
+
+实现 set 只需要将 val 去掉只保留 key, 应用包括 spell check.
+```Java
+public class BlackList
+{
+    public static void main(String[] args)
+    {
+        SET<String> set = new SET<String>();
+        In in = new In(args[0]);
+        while (!in.isEmpty())
+            set.add(in.readString());
+        while (!StdIn.isEmpty())
+        {
+            String word = StdIn.readString();
+            if (!set.contains(word))
+            StdOut.println(word);
+        }
+    }
+}
+```
+#### indexing clients
+Given a list of files, create an index so that you can efficiently find all files containing a given query string:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210706101334.png"/></div>
+
+#### sparse vectors
+Sparse matrix-vector multiplication, assumming that Matrix dimension is 10,000; average nonzeros per row ~ 10.  
+我们使用符号表只表示 non-zero index:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210706101731.png"/></div>
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210706101842.png"/></div>
