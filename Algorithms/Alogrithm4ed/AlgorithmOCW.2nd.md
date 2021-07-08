@@ -23,10 +23,10 @@ Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <fo
 这种表示形式, 维护一个由边构成的 list(可能是链表或者数组):<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210707094708.png"/></div>
 
 #### Adjacency-matrix graph representation
-维护一个 V-By-V 二维 boolean 矩阵, 其中的每个元素, `adj[v][w] == adj[w][v]`.
+**邻接矩阵**维护一个 V-By-V 二维 boolean 矩阵, 其中的每个元素, `adj[v][w] == adj[w][v]`.
 
 #### Adjacency-list graph representation
-Maintain vertex-indexed array of lists.
+**邻接表** Maintain vertex-indexed array of lists.
 ```Java
 public class Graph
 {
