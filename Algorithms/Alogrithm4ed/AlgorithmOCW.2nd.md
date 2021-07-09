@@ -1,7 +1,7 @@
 <font size =10>[Algotrithms OCW Part II](https://cuvids.io/app/course/2/)</font>
 
 - [无向图](#无向图)
-  - [introduction](#introduction)
+  - [UG:Intro](#ugintro)
   - [graph API](#graph-api)
     - [Graph representation](#graph-representation)
     - [Set-of-edges graph representation](#set-of-edges-graph-representation)
@@ -17,8 +17,18 @@
     - [BFS:特性](#bfs特性)
   - [connected components](#connected-components)
 - [有向图](#有向图)
+  - [DG:Intro](#dgintro)
+  - [DG:API](#dgapi)
+  - [DG:Search](#dgsearch)
+    - [Depth-first search in digraphs](#depth-first-search-in-digraphs)
+    - [Breadth-first search in digraphs](#breadth-first-search-in-digraphs)
+  - [topological sort](#topological-sort)
+    - [Precedence scheduling](#precedence-scheduling)
+    - [Topological sort](#topological-sort-1)
+  - [strong components](#strong-components)
+    - [Kosaraju-Sharir algorithm](#kosaraju-sharir-algorithm)
 ## 无向图
-### introduction
+### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
 * <font color=blue>Path</font>: Sequence of vertices connected by edges.
 * <font color=blue>Cycle</font>: Path whose first and last vertices are the same<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210707093508.png"/></div>
@@ -203,3 +213,126 @@ public class CC
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709110507.png"/></div>
 
 ## 有向图
+### DG:Intro
+<font color=blue>Digraph</font>: Set of vertices connected pairwise by directed edges.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709111609.png"/></div>
+
+### DG:API
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709142448.png"/></div>
+
+```Java
+public class DiGraph
+{
+    private final int V;
+    private final Bag<Integer>[] adj;
+    public DiGraph(int V)
+    {
+        this.V = V;
+        adj = (Bag<Integer>[]) new Bag[V];
+        for (int v = 0; v < V; v++)
+            adj[v] = new Bag<Integer>();
+    }
+    public void addEdge(int v, int w)
+    {
+        adj[v].add(w);
+        // 和Graph 的唯一区别是这里不需要添加 adj[w].add(v);
+    }
+    public Iterable<Integer> adj(int v)
+    { return adj[v]; }
+}
+```
+
+### DG:Search
+#### Depth-first search in digraphs
+可以看到, 这个 DFS 算法和无向图是完全一致的, Every undirected graph is a digraph (with edges in both directions).
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709143051.png"/></div>
+
+#### Breadth-first search in digraphs
+广度优先算法在有向图和无向图中也是相同的.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709143919.png"/></div>
+
+### topological sort
+#### Precedence scheduling
+<font color=green>Goal</font>:   Given a set of tasks to be completed with **precedence constraints**,in which order should we schedule the tasks?  
+抽象:
+vertex = task; edge = precedence constraint.
+
+#### Topological sort
+DAG: Directed acyclic(没有环) graph.  
+Topological sort: Redraw DAG so all edges point upwards.  
+具体的实现:
+1. 首先运行 DFS
+2. 然后用 post-order 返回节点<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709145051.png"/></div>
+
+```Java
+public class DepthFirstOrder
+{
+    private boolean[] marked;
+    private Stack<Integer> reversePostorder;
+    public DepthFirstOrder(Digraph G)
+    {
+        reversePostorder = new Stack<Integer>();
+        marked = new boolean[G.V()];
+        for (int v = 0; v < G.V(); v++)
+            if (!marked[v]) dfs(G, v);
+    }
+    private void dfs(Digraph G, int v)
+    {
+        marked[v] = true;
+        for (int w : G.adj(v))
+        if (!marked[w]) 
+            dfs(G, w);    
+        reversePostorder.push(v);
+    }
+    public Iterable<Integer> reversePostorder()
+    { return reversePostorder; }
+}
+```
+
+### strong components
+定义: 
+* Vertices v and w are **strongly connected** if there is both a directed pathfrom v to w and a directed path from w to v.  
+* A strong component is a **maximal subset** of strongly-connected vertices<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709145835.png"/></div>
+
+#### Kosaraju-Sharir algorithm
+
+Reverse graph: Strong components in G are same as in $G^R$.  
+Kernel DAG: Contract each strong component into a single vertex.  
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709150159.png"/></div>
+
+该算法的核心思想:
+* 计算 $G^R$ kernal DAG 中的拓扑序<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709150820.png"/></div>
+* Run DFS, considering vertices in reverse topological order.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709150852.png"/></div>
+
+```Java
+public class KosarajuSharirSCC
+{
+    private boolean marked[];
+    private int[] id;
+    private int count;
+    public KosarajuSharirSCC(Digraph G)
+    {
+        marked = new boolean[G.V()];
+        id = new int[G.V()];
+        DepthFirstOrder dfs = new DepthFirstOrder(G.reverse());
+        for (int v : dfs.reversePostorder())
+        {
+            if (!marked[v])
+            {
+                dfs(G, v);
+                count++;
+            }
+        }
+    }
+    private void dfs(Digraph G, int v)
+    {
+        marked[v] = true;
+        id[v] = count;
+        for (int w : G.adj(v))
+            if (!marked[w])
+                dfs(G, w);
+    }
+    public boolean stronglyConnected(int v, int w)
+    { return id[v] == id[w]; }
+}
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709151134.png"/></div>
+
