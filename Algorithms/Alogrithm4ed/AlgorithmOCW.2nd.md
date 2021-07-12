@@ -27,6 +27,9 @@
     - [Topological sort](#topological-sort-1)
   - [strong components](#strong-components)
     - [Kosaraju-Sharir algorithm](#kosaraju-sharir-algorithm)
+- [最小生成树](#最小生成树)
+  - [MST: Intro](#mst-intro)
+  - [MST: 贪婪算法](#mst-贪婪算法)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -336,3 +339,14 @@ public class KosarajuSharirSCC
 ```
 <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709151134.png"/></div>
 
+## 最小生成树
+### MST: Intro
+$\color{blue}{定义}$: **生成树**是图 G 的子图 T, 它满足以下性质:
+* connected
+* Acyclic
+* 包含所有的节点
+
+$\color{olive}{最小生成树}$: 给出一个包含Positive edge weights 的无向图(connected), 找出最小 weight 的生成树.
+
+### MST: 贪婪算法
+给出几个简化的假设: Edges weights 不相等, 并且图是 connected, 那么 MST 是存在且唯一的.  
