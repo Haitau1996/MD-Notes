@@ -30,6 +30,7 @@
 - [最小生成树](#最小生成树)
   - [MST: Intro](#mst-intro)
   - [MST: 贪婪算法](#mst-贪婪算法)
+  - [Weighted edge API](#weighted-edge-api)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -350,3 +351,85 @@ $\color{olive}{最小生成树}$: 给出一个包含Positive edge weights 的无
 
 ### MST: 贪婪算法
 给出几个简化的假设: Edges weights 不相等, 并且图是 connected, 那么 MST 是存在且唯一的.  
+图的一种**切分**(cut) 是将图的所有顶点分为两个非空且不重叠的两个集合。**横切边**是一条连接两个属于不同集合的顶点的边.
+> **切分定理**:在一幅加权图中，给定任意的切分，它的横切边中的权重最小者必然属于图的最小生成树。
+
+MST 的贪心算法: 
+* 初始状态下所有边均为灰色
+* 找到一种切分，它产生的横切边均不为黑色,将它权重最小的横切边标记为黑色
+* 反复直到标记了 V-1 条黑色边为止
+
+Efficient implementations: Choose cut? Find min-weight edge?
+* Kruskal's algorithm.
+* Prim's algorithm
+
+### Weighted edge API
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210713094808.png"/></div>
+
+```Java
+public class Edge implements Comparable<Edge>
+{
+  private final int v, w;
+  private final double weight;
+  public Edge(int v, int w, double weight)
+  {
+    this.v = v;
+    this.w = w;
+    this.weight = weight;
+  }
+  public int either()
+  { return v; }
+  public int other(int vertex)
+  {
+    if (vertex == v) return w;
+    else return v;
+  }
+  public int compareTo(Edge that)
+  {
+    if (this.weight < that.weight) return -1;
+    else if (this.weight > that.weight) return +1;
+    else return 0;
+  }
+}
+```
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210713095123.png"/></div>
+
+在此基础上, 其实现的示意图如下:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210713095239.png"/></div>
+
+```Java
+public class EdgeWeightedGraph
+{
+  private final int V;
+  private final Bag<Edge>[] adj;
+  public EdgeWeightedGraph(int V)
+  {
+    this.V = V;
+    adj = (Bag<Edge>[]) new Bag[V];
+    for (int v = 0; v < V; v++)
+      adj[v] = new Bag<Edge>();
+  }
+  public void addEdge(Edge e)
+  {
+    int v = e.either(), w = e.other(v);
+    adj[v].add(e);
+    adj[w].add(e);
+  }
+  public Iterable<Edge> adj(int v)
+  { return adj[v]; }
+}
+```
+MST 的 API 如下:
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210713095442.png"/></div>
+
+使用方式:
+```Java
+public static void main(String[] args)
+{
+    In in = new In(args[0]);
+    EdgeWeightedGraph G = new EdgeWeightedGraph(in);
+    MST mst = new MST(G);
+    for (Edge e : mst.edges())
+        StdOut.println(e);
+    StdOut.printf("%.2f\n", mst.weight());
+}
+```
