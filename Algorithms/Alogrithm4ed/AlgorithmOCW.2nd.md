@@ -31,6 +31,8 @@
   - [MST: Intro](#mst-intro)
   - [MST: 贪婪算法](#mst-贪婪算法)
   - [Weighted edge API](#weighted-edge-api)
+  - [Kruskal's algorithm](#kruskals-algorithm)
+  - [Prim's algorithm](#prims-algorithm)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -433,3 +435,90 @@ public static void main(String[] args)
     StdOut.printf("%.2f\n", mst.weight());
 }
 ```
+### Kruskal's algorithm
+按照边的权重顺序（从小到大）处理, 将它加入最小生成树中, 加入的边不会与已经加入的构成环, 直到树中包含 V-1 条边为止.  
+$\color{Olive}Challenge:$ 怎样检验加入的 v-w 边产生一个环, 其实现复杂度如何:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210713141840.png"/></div>
+
+$\color{Green}Efeective\ Solution:$ 使用 union-fine 数据结构:
+* 对每个 connected component 维护一个 set
+* 如果 w 和 v 在同一个 set, 那么加入边 v-w 会产生一个环
+* 否则, 添加 v-w 边, 同时 merge 两个 set
+
+```Java
+public class KruskalMST
+{
+    private Queue<Edge> mst = new Queue<Edge>();
+    public KruskalMST(EdgeWeightedGraph G)
+    {
+        MinPQ<Edge> pq = new MinPQ<Edge>(G.edges()); // 从边生成 pq
+        
+        UF uf = new UF(G.V());
+        while (!pq.isEmpty() && mst.size() < G.V()-1)
+        {
+            Edge e = pq.delMin();
+            int v = e.either(), w = e.other(v);
+            if (!uf.connected(v, w))
+            {
+                uf.union(v, w);
+                mst.enqueue(e);
+            }
+        }
+    }
+    public Iterable<Edge> edges()
+    { return mst; }
+}
+```
+$\color{Green}复杂度分析:$ Kruskal 算法的计算一幅含有 V 个顶点和 E 条边的连通加权无向图的最小生成树所需的空间和 E 成正比，所需的时间和 $E\log E$ 成正比（最坏情况, 就是排序需要的）。<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210713143032.png"/></div>  
+
+$\color{Olive}特殊情况$: If edges are already sorted, order of growth is $E \log* V$(通常$\log* V \leq 5$).
+### Prim's algorithm
+* 一开始这棵树只有一个顶点
+* 然后向它添加V-1 条边，
+* 每次总是将下一条 **连接树中的顶点与不在树中的顶点且权重最小的边** 加入树中
+
+这显然是生成了 MST, 它自动将节点分成了两个切分, 而其中的权重最小的边就是横切边中的最小者.  
+$\color{Olive}挑战:$ 找出只有1端在 T 中的最小边<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210714141340.png"/></div>
+
+Lazy solution. 维护一个由(至少)一个端点在 T 中的边组成的 PQ.
+* Delete-min to determine next edge e = v–w to add to T
+* Disregard if both endpoints v and w are marked (both in T).
+* Otherwise, let w be the unmarked vertex
+  * add to PQ any edge incident to w
+  * add e to T and mark w
+    ```Java
+    public class LazyPrimMST
+    {
+        private boolean[] marked; // MST vertices
+        private Queue<Edge> mst;  // MST edges
+        private MinPQ<Edge> pq;   // PQ of edges
+        private void visit(WeightedGraph G, int v)
+        {
+            marked[v] = true;
+            for (Edge e : G.adj(v))
+                if (!marked[e.other(v)])
+                    pq.insert(e);
+        }
+
+        public Iterable<Edge> mst()
+        { return mst; }
+
+        public LazyPrimMST(WeightedGraph G)
+        {
+            pq = new MinPQ<Edge>();
+            mst = new Queue<Edge>();
+            marked = new boolean[G.V()];
+            visit(G, 0);
+            while (!pq.isEmpty() && mst.size() < G.V() - 1)
+            {
+                Edge e = pq.delMin();
+                int v = e.either(), w = e.other(v);
+                if (marked[v] && marked[w]) continue;
+                    mst.enqueue(e);
+                if (!marked[v]) visit(G, v);
+                if (!marked[w]) visit(G, w);
+            }
+        }
+    }
+    ```
+    <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210714142521.png"/></div>
+
