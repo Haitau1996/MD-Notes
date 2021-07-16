@@ -34,6 +34,8 @@
   - [Kruskal's algorithm](#kruskals-algorithm)
   - [Prim's algorithm](#prims-algorithm)
     - [Indexed priority queue](#indexed-priority-queue)
+- [最小路径(shortest paths)](#最小路径shortest-paths)
+  - [SP:APIs](#spapis)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -440,7 +442,7 @@ public static void main(String[] args)
 按照边的权重顺序（从小到大）处理, 将它加入最小生成树中, 加入的边不会与已经加入的构成环, 直到树中包含 V-1 条边为止.  
 $\color{Olive}Challenge:$ 怎样检验加入的 v-w 边产生一个环, 其实现复杂度如何:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210713141840.png"/></div>
 
-$\color{Green}Efeective\ Solution:$ 使用 union-fine 数据结构:
+$\color{Green}{Efeective\ Solution:}$ 使用 union-fine 数据结构:
 * 对每个 connected component 维护一个 set
 * 如果 w 和 v 在同一个 set, 那么加入边 v-w 会产生一个环
 * 否则, 添加 v-w 边, 同时 merge 两个 set
@@ -469,9 +471,9 @@ public class KruskalMST
     { return mst; }
 }
 ```
-$\color{Green}复杂度分析:$ Kruskal 算法的计算一幅含有 V 个顶点和 E 条边的连通加权无向图的最小生成树所需的空间和 E 成正比，所需的时间和 $E\log E$ 成正比（最坏情况, 就是排序需要的）。<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210713143032.png"/></div>  
+$\color{Green}{复杂度分析:}$ Kruskal 算法的计算一幅含有 V 个顶点和 E 条边的连通加权无向图的最小生成树所需的空间和 E 成正比，所需的时间和 $E\log E$ 成正比（最坏情况, 就是排序需要的）。<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210713143032.png"/></div>  
 
-$\color{Olive}特殊情况$: If edges are already sorted, order of growth is $E \log* V$(通常$\log* V \leq 5$).
+$\color{Olive}{特殊情况}$: If edges are already sorted, order of growth is $E \log* V$(通常$\log* V \leq 5$).
 ### Prim's algorithm
 * 一开始这棵树只有一个顶点
 * 然后向它添加V-1 条边，
@@ -480,7 +482,7 @@ $\color{Olive}特殊情况$: If edges are already sorted, order of growth is $E 
 这显然是生成了 MST, 它自动将节点分成了两个切分, 而其中的权重最小的边就是横切边中的最小者.  
 $\color{Olive}挑战:$ 找出只有1端在 T 中的最小边<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210714141340.png"/></div>
 
-$\color{Olive}Lazy solution$: 维护一个由(至少)一个端点在 T 中的 **边组成的 PQ**.
+$\color{Olive}{Lazy solution}$: 维护一个由(至少)一个端点在 T 中的 **边组成的 PQ**.
 * Delete-min to determine next edge e = v–w to add to T
 * Disregard if both endpoints v and w are marked (both in T).
 * Otherwise, let w be the unmarked vertex
@@ -523,7 +525,7 @@ $\color{Olive}Lazy solution$: 维护一个由(至少)一个端点在 T 中的 **
     ```
     <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210714142521.png"/></div>
 
-$\color{Olive}Eager\ solution$:  维护一个一条边连接到 T 的**顶点构成的 PQ**, 其优先级就是该点连接到 T 最短的边.  
+$\color{Olive}{Eager\ solution}$:  维护一个一条边连接到 T 的**顶点构成的 PQ**, 其优先级就是该点连接到 T 最短的边.  
 * Delete min vertex v and add its associated edge e = v–w to T.
 * Update PQ by considering all edges e = v–x incident to v
   * ignore if x is already in T
@@ -544,3 +546,7 @@ Associate an index between 0 and N - 1 with each key in a priority queue:
 * Use `swim(qp[i])` to implement `decreaseKey(i, key)`.
 
 <div align=center><img src="https://i.imgur.com/DQwK9rf.png"/></div>
+
+## 最小路径(shortest paths)
+Given an edge-weighted digraph, find the shortest path from s to t.
+### SP:APIs
