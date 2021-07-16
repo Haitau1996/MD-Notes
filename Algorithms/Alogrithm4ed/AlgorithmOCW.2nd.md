@@ -33,6 +33,7 @@
   - [Weighted edge API](#weighted-edge-api)
   - [Kruskal's algorithm](#kruskals-algorithm)
   - [Prim's algorithm](#prims-algorithm)
+    - [Indexed priority queue](#indexed-priority-queue)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -479,7 +480,7 @@ $\color{Olive}特殊情况$: If edges are already sorted, order of growth is $E 
 这显然是生成了 MST, 它自动将节点分成了两个切分, 而其中的权重最小的边就是横切边中的最小者.  
 $\color{Olive}挑战:$ 找出只有1端在 T 中的最小边<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210714141340.png"/></div>
 
-Lazy solution. 维护一个由(至少)一个端点在 T 中的边组成的 PQ.
+$\color{Olive}Lazy solution$: 维护一个由(至少)一个端点在 T 中的 **边组成的 PQ**.
 * Delete-min to determine next edge e = v–w to add to T
 * Disregard if both endpoints v and w are marked (both in T).
 * Otherwise, let w be the unmarked vertex
@@ -522,3 +523,24 @@ Lazy solution. 维护一个由(至少)一个端点在 T 中的边组成的 PQ.
     ```
     <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210714142521.png"/></div>
 
+$\color{Olive}Eager\ solution$:  维护一个一条边连接到 T 的**顶点构成的 PQ**, 其优先级就是该点连接到 T 最短的边.  
+* Delete min vertex v and add its associated edge e = v–w to T.
+* Update PQ by considering all edges e = v–x incident to v
+  * ignore if x is already in T
+  * add x to PQ if not already on it
+  * decrease priority of x if v–x becomes shortest edge connecting x to T
+
+#### Indexed priority queue
+Associate an index between 0 and N - 1 with each key in a priority queue:
+* Supports insert and delete-the-minimum
+* Supports decrease-key given the index of the key.
+
+具体的实现是对之前 PQ 的改进:
+* 首先有一个和之前的 MinPQ 一样的实现
+* 维护平行的 array `keys[]`/`pq[]` 和`qp[]`:
+  * key[i] 为 i 的优先级
+  * pq[i] 是 index of the key in heap position i
+  * qp[i] is the heap position of the key with index i
+* Use `swim(qp[i])` to implement `decreaseKey(i, key)`.
+
+<div align=center><img src="https://i.imgur.com/DQwK9rf.png"/></div>
