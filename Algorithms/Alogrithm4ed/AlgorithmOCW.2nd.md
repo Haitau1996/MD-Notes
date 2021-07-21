@@ -482,7 +482,7 @@ $\color{Olive}{特殊情况}$: If edges are already sorted, order of growth is $
 这显然是生成了 MST, 它自动将节点分成了两个切分, 而其中的权重最小的边就是横切边中的最小者.  
 $\color{Olive}挑战:$ 找出只有1端在 T 中的最小边<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210714141340.png"/></div>
 
-$\color{Olive}{Lazy solution}$: 维护一个由(至少)一个端点在 T 中的 **边组成的 PQ**.
+$\color{Olive}{Lazy\ solution}$: 维护一个由(至少)一个端点在 T 中的 **边组成的 PQ**.
 * Delete-min to determine next edge e = v–w to add to T
 * Disregard if both endpoints v and w are marked (both in T).
 * Otherwise, let w be the unmarked vertex
