@@ -36,6 +36,14 @@
     - [Indexed priority queue](#indexed-priority-queue)
 - [最小路径(shortest paths)](#最小路径shortest-paths)
   - [SP:APIs](#spapis)
+  - [最小路径的特性](#最小路径的特性)
+    - [边的松弛](#边的松弛)
+    - [通用算法](#通用算法)
+  - [SP:Dijkstra's algorithm](#spdijkstras-algorithm)
+  - [edge-weighted DAGs](#edge-weighted-dags)
+  - [negative weights](#negative-weights)
+    - [Bellman-Ford algorithm](#bellman-ford-algorithm)
+    - [检查 negative cycle](#检查-negative-cycle)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -550,3 +558,176 @@ Associate an index between 0 and N - 1 with each key in a priority queue:
 ## 最小路径(shortest paths)
 Given an edge-weighted digraph, find the shortest path from s to t.
 ### SP:APIs
+首先我们需要定义边和图, 在边和图的基础上才能实现最短路径:
+<div align=center><img src="https://i.imgur.com/miaDg9G.png"/></div><div align=center><img src="https://i.imgur.com/8APFRhW.png"/></div>
+
+```Java
+public class DirectedEdge
+{
+  private final int v, w;
+  private final double weight;
+  public DirectedEdge(int v, int w, double weight)
+  {
+    this.v = v;
+    this.w = w;
+    this.weight = weight;
+  }
+  public int from()
+  { return v; }
+  public int to()
+  { return w; }
+  public int weight()
+  { return weight; }
+}
+public class EdgeWeightedDigraph
+{
+  private final int V;
+  private final Bag<DirectedEdge>[] adj;
+  public EdgeWeightedDigraph(int V)
+  {
+    this.V = V;
+    adj = (Bag<DirectedEdge>[]) new Bag[V];
+    for (int v = 0; v < V; v++)
+      adj[v] = new Bag<DirectedEdge>();
+  }
+  public void addEdge(DirectedEdge e)
+  {
+    int v = e.from();
+    adj[v].add(e);
+  }
+  public Iterable<DirectedEdge> adj(int v)
+  { return adj[v]; }
+}
+```
+<div align=center><img src="https://i.imgur.com/COQCv9h.png"/></div>
+
+### 最小路径的特性
+我们的目标是找到从 s 到其他所有节点的最短路径, 观察发现存在一个 最短路径树(如果到某个顶点有两条路径, 可以删除其中一条的最后一条边). 于是我们可以用两个vertex-indexed arrays 表示这个 SPT:
+* `distTo[v]` is length of shortest path from s to v.
+* `edgeTo[v]` is **last edge** on shortest path from s to v.
+    ```Java
+    public double distTo(int v)
+    { return distTo[v]; }
+    public Iterable<DirectedEdge> pathTo(int v)
+    {
+        Stack<DirectedEdge> path = new Stack<DirectedEdge>();
+        for (DirectedEdge e = edgeTo[v]; e != null; e = edgeTo[e.from()])
+            path.push(e);
+        return path;
+    }
+    ```
+
+#### 边的松弛
+在遇到新的边时, 更新信息就可以得到新的最短路径, 我们在其中会遇到边的松弛技术: 如果 e = v->w 给出了一条经由 v 到 w 的最短路径, 就要更新 `distTo[w]` 和 `edgeTo[w]`:
+```Java
+private void relax(DirectedEdge e)
+{
+    int v = e.from(), w = e.to();
+    if (distTo[w] > distTo[v] + e.weight())
+    {
+        distTo[w] = distTo[v] + e.weight();
+        edgeTo[w] = e;
+    }
+}
+```
+如果 G 是一个 edge-weighted digraph, 如果满足下面条件, `distTo[]` 就是从 s 出发的最短路径:
+* distTo[s] = 0
+* 对于每个顶点v, distTo[v] 就是从 s 到 v 的某个路径
+* 对于边 e = v->w, distTo[w] <= distTo[v] + e.weight
+
+#### 通用算法
+首先将distTo[s]置0, 其他元素设置为无穷大, 然后做下面的动作:
+> 放松 G 中的任意边, 直到不存在有效边为止.
+
+### SP:Dijkstra's algorithm
+首先将最小的非树顶点放松并加入树中, 直到所有的顶点都在树中或者所有的非树顶点的 `distTo[]` 均为无穷大.   
+改算法计算任意给出无负边的 edge-weighted digraph 的 SPT,因为:
+* 每条边 e = v->w 只松弛了一次, 保证 `distTo[w] <= distTo[v] + e.weight()`
+* Inequality holds until algorithm terminates:
+  * `distTo[w]` 不会增加
+  * `distTo[v]` 不会改变
+
+```Java
+public class DijkstraSP
+{
+    private DirectedEdge[] edgeTo;
+    private double[] distTo;
+    private IndexMinPQ<Double> pq;
+    public DijkstraSP(EdgeWeightedDigraph G, int s)
+    {
+        edgeTo = new DirectedEdge[G.V()];
+        distTo = new double[G.V()];
+        pq = new IndexMinPQ<Double>(G.V());
+        for (int v = 0; v < G.V(); v++)
+            distTo[v] = Double.POSITIVE_INFINITY;
+        distTo[s] = 0.0;
+
+        pq.insert(s, 0.0);
+        while (!pq.isEmpty())
+        {
+            int v = pq.delMin();
+            for (DirectedEdge e : G.adj(v))
+                relax(e);
+        }
+    }
+}
+private void relax(DirectedEdge e)
+{
+    int v = e.from(), w = e.to();
+    if (distTo[w] > distTo[v] + e.weight())
+    {
+        distTo[w] = distTo[v] + e.weight();
+        edgeTo[w] = e;
+        if (pq.contains(w)) pq.decreaseKey(w, distTo[w]);
+        else pq.insert (w, distTo[w]);
+    }
+}
+```
+这个算法看起来和 prim 算法很像, 实际是同一族算法(DFS and BFS are also in this family of algorithms), 主要的区别在于:
+* Prim 算法选择距离<font color=red> tree</font> 最近的顶点(无向图中)
+* Dijkstra 选择距离<font color=red> source</font> 最近的顶点(有向图中)
+
+一般而言, 它的复杂度取决于内部PQ 的实现:<div align=center><img src="https://i.imgur.com/3wulAnv.png"/></div>
+
+### edge-weighted DAGs
+如果是无环的图, 找最短的路径更加简单, 可以使用拓扑排序:
+* Consider vertices in topological order
+* Relax all edges pointing from that vertex
+
+同样我们得到的也是一个 SPT:
+* 每条边 e = v->w 只松弛了一次, 保证 `distTo[w] <= distTo[v] + e.weight()`
+* Inequality holds until algorithm terminates:
+  * `distTo[w]` 不会增加: 它是单调降的
+  * `distTo[v]` 不会改变: 因为是按照拓扑排序走的, v 松弛侯不会有边再指向 v(即使是有负边)
+
+```Java
+public class AcyclicSP
+{
+    private DirectedEdge[] edgeTo;
+    private double[] distTo;
+
+    public AcyclicSP(EdgeWeightedDigraph G, int s)
+    {
+        edgeTo = new DirectedEdge[G.V()];
+        distTo = new double[G.V()];
+
+        for (int v = 0; v < G.V(); v++)
+            distTo[v] = Double.POSITIVE_INFINITY;
+        distTo[s] = 0.0;
+
+        Topological topological = new Topological(G);
+        for (int v : topological.order())
+            for (DirectedEdge e : G.adj(v))
+                relax(e);
+    }
+}
+```
+
+### negative weights
+a SPT exists iff **no negative cycles**.
+#### Bellman-Ford algorithm
+对下列操作重复 V 次: 松弛所有的边(E条).有个改进:FIFO implementation. Maintain queue of vertices whose distTo[] changed.
+<div align=center><img src="https://i.imgur.com/zza8pnp.png"/></div>
+
+#### 检查 negative cycle
+If any vertex v is updated in pass V, there exists a negative cycle.
