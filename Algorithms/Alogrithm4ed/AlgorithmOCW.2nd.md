@@ -44,6 +44,9 @@
   - [negative weights](#negative-weights)
     - [Bellman-Ford algorithm](#bellman-ford-algorithm)
     - [检查 negative cycle](#检查-negative-cycle)
+- [最大流问题](#最大流问题)
+  - [MF:Intro](#mfintro)
+    - [Mincut Problem](#mincut-problem)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -731,3 +734,8 @@ a SPT exists iff **no negative cycles**.
 
 #### 检查 negative cycle
 If any vertex v is updated in pass V, there exists a negative cycle.
+
+## 最大流问题
+### MF:Intro
+输入都是一个 edge-weighted digraph(其中的权重不是欧几里得距离而是容量), 有一个源 s 和目标 t.
+#### Mincut Problem
