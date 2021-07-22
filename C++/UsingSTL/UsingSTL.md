@@ -601,9 +601,59 @@ std::stack<double, std::list<double>> copy_stack(my_stack);
 `priority_queue<T>` 容器适配器定义了一个元素有序排列的队列, 默认**队列头部的元素优先级最高**. 这个处理过程有点类似于急救室抢救病人, 它并不总是先到先处理. 适配器模板有三个参数, 存储对象类型, 底层容器类型(默认是一个向量) 和 一个函数对象(用于决定元素的顺序). 
 ![](figure/3.3.png)
 #### 创建优先队列
-我们使用初始化列表或者迭代器初始化优先队列的时候, 不需要有序, 优先队列会对他们进行排序:
+**初始化列表中的序列可以来自任何容器，并且不需要有序**。 优先队列会对他们进行排序:
 ```C++
 std::string wrds[] {"one", "two", "three", "four"};
-std::priority_queue<std::string> words { std::begin(wrds),
+std::priority_queue<std::string> words {std::begin(wrds),
                                         std::end(wrds)}; // "two" "three" "one "four"
+//在使用中可以指定用于排序的函数对象和底层的容器类型
+std::string wrds[] {"one", "two", "three", "four"};
+std::priority_queue<std::string, std::deque<std::string>> words {std::begin(wrds), std::end(wrds)};
+std::vector<int> values{21, 22, 12, 3, 24, 54, 56};
+std::priority_queue<int> numbers {std::less<int>(), values};// 在列表初始化的第一个位置指定函数对象
+std::priority_queue<int, std::vector<int>, std::greater<int>> // 还可以在模板参数中写出
+                    numbers1 {std::greater<int>(), values};
 ```
+
+#### 优先队列的操作
+* `push(const T& obj)/push(const T&& obj)`: 将元素副本/元素 放到适当的位置
+* `emplace(T constructor args...)` 
+* `top()` 返回优先队列中第一个元素的引用
+* `pop()` 移除第一个元素
+* `size()` 返回队列钟元素的个数
+* `empty()` 判断队列是否为空
+* `swap(priority_queue<T>& other)` 和参数进行元素互换, 所包含的元素类型必须相同
+
+```C++
+std::priority_queue<std::string> words;
+std::string word;
+std::cout << "Enter words separated by spaces, enter Ctrl+Z on a separate line to end:\n";
+while (true)
+{
+  if ((std::cin >> word).eof())
+  break;
+  words.push(word);
+}
+std::priority_queue<std::string> words_copy {words}; // A copy for output
+while (!words_copy.empty())
+{
+  std::cout << words_copy.top() << " ";
+  words_copy.pop();
+}
+std::cout << std::endl;
+```
+### 堆
+**堆不是容器, 而是一种特别的数据组织方式**.完全二叉树可以用数组的方式保存, 也可以用其他顺序表的方式储存.
+#### 创建堆
+创建堆的函数在 `<algorithm>` 中, `make_heap` 对随机访问迭代器指定的一段元素重新排列, 生成一个堆. 
+```C++
+std::vector<double> numbers { 2.5, 10.0, 3.5, 6.5, 8.0, 12.0, 1.5, 6.0 };
+std::make_heap(std::begin(numbers), std::end(numbers)); // Result: 12 10 3.5 6.5 8 2.5 1.5 6
+```
+优先队列是一个堆, 底层一个优先队列的实例创建了一个堆, 并且可以提供堆没有的优势: 
+* 它可以自动保持元素的顺序
+* 除了第一个元素, 我们无法访问到其他元素
+
+因此, 相反在很多场合, 这的反面就成了堆的优势. 
+
+#### 堆操作
