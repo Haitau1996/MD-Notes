@@ -51,6 +51,7 @@
   - [Ford-Fulkerson 算法](#ford-fulkerson-算法)
   - [maxflow-mincut theorem](#maxflow-mincut-theorem)
 - [STRING SORTS](#string-sorts)
+  - [String in Java](#string-in-java)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -778,3 +779,22 @@ iii. There is no augmenting path with respect to f.
 //TODO: 复杂度分析
 
 ## STRING SORTS
+### String in Java
+String 是字符的序列,而字符在不同的变成语言中是不同的.
+* C char data type: 通常是一个 8-bit 整数
+  * 支持 7-bit 的 ASCII
+  * 最多支持 256 个字符
+* Java char data type: A 16-bit unsigned integer
+  * 支持原生的 16-bit Unicode
+  * 支持 21-bit 的 Unicode 3.0
+
+<font color=olive>String data type in Java</font>:Immutable sequence of characters.
+* Length
+* Indexing
+* Substring 
+* Concatenation(连接)
+    <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210723101319.png"/></div>
+
+除此以外, Java 中还有一个 `StringBuilder` 数据类型做客可变的字符序列, 内部是使用变长的 `char[]` 数组和长度实现的:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210723111104.png"/></div>
+
+此外还有和它类似的 `StringBuffer`, 它更慢但是是线程安全的.
