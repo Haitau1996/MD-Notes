@@ -47,6 +47,10 @@
 - [最大流问题](#最大流问题)
   - [MF:Intro](#mfintro)
     - [Mincut Problem](#mincut-problem)
+    - [Maxflow problem](#maxflow-problem)
+  - [Ford-Fulkerson 算法](#ford-fulkerson-算法)
+  - [maxflow-mincut theorem](#maxflow-mincut-theorem)
+- [STRING SORTS](#string-sorts)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -739,3 +743,38 @@ If any vertex v is updated in pass V, there exists a negative cycle.
 ### MF:Intro
 输入都是一个 edge-weighted digraph(其中的权重不是欧几里得距离而是容量), 有一个源 s 和目标 t.
 #### Mincut Problem
+定义 st-cut: 是将顶点分成两个不相连的集合, 其中 s 在一个 set A 而 t 在另一个 set B. 它的容量就是从 A 到 B 的边的容量之和.<div align=center><img src="https://i.imgur.com/lL2nezY.png"/></div>
+
+Minimum st-cut (mincut) problem:<font color=olive> Find a cut of minimum capacity.</font>  
+
+#### Maxflow problem
+定义 An st-flow (flow) is an assignment of values to the edges such that:
+* Capacity constraint: 0 ≤ edge's flow ≤ edge's capacit
+* Local equilibrium: inflow = outflow at every vertex (except s and t)
+
+Maximum st-flow (maxflow) problem:<font color=olive> Find a flow of maximum value.</font>
+
+### Ford-Fulkerson 算法
+* 首先将所有的 flow 初始化为0
+* 增长通路(augmenting path)找到一条从 s 的 t 的 undirected path
+  * 可以在 forward 方向上增加 flow(非满)
+  * 可以在 backward 方向上降低 flow(非空)
+* 根据瓶颈增加flow
+
+### maxflow-mincut theorem
+Def. The <font color=olive>net flow across</font>: a cut (A, B) is the sum of the flows on its edges from A to B minus the sum of the flows on its edges from B to A.  
+<font color=blue>Flow-value lemma</font>: Let f be any flow and let (A, B) be any cut. Then, the net flow across (A, B) equals the value of f.  
+它的一个推论就是, 从 s 出来的outflow 和 到达 t 的inflow 相等, 都等于 flow 的值.  
+>弱二元性: 如果 f 是任意的 flow 而 (A,B) 是任意的 cut, flow value <= cut 的容量.  
+Value of flow f = net flow across cut (A, B) ≤ capacity of cut (A, B).
+
+<font color=olive>Augmenting path theorem</font>: A flow f is a maxflow iff no augmenting paths.  
+<font color=olive>Maxflow-mincut theorem</font>. Value of the maxflow = capacity of mincut.
+
+Pf. The following three conditions are equivalent for any flow f :  
+i. There exists a cut whose capacity equals the value of the flow f.  
+ii. f is a maxflow.  
+iii. There is no augmenting path with respect to f.  
+//TODO: 复杂度分析
+
+## STRING SORTS
