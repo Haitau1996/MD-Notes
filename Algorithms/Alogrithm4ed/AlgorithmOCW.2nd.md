@@ -52,6 +52,11 @@
   - [maxflow-mincut theorem](#maxflow-mincut-theorem)
 - [STRING SORTS](#string-sorts)
   - [String in Java](#string-in-java)
+  - [Key-Index Sorting](#key-index-sorting)
+  - [LSD(Least-significant-digit-first) radix sort](#lsdleast-significant-digit-first-radix-sort)
+  - [MSD radix sort](#msd-radix-sort)
+  - [3-way radix quicksort](#3-way-radix-quicksort)
+  - [suffix arrays](#suffix-arrays)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -798,3 +803,155 @@ String 是字符的序列,而字符在不同的变成语言中是不同的.
 除此以外, Java 中还有一个 `StringBuilder` 数据类型做客可变的字符序列, 内部是使用变长的 `char[]` 数组和长度实现的:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210723111104.png"/></div>
 
 此外还有和它类似的 `StringBuffer`, 它更慢但是是线程安全的.
+
+### Key-Index Sorting
+如果排序使用的 key 是 0 到 R-1 之间的整数, 我们可以将 key 作为 array index, 从而超过 $N\log N$ 的 optimal 算法.
+* 使用 key 作为 Index 计算每个 letter 的频率
+* 根据上面得到的频率计算累积的频率
+* 根据累积频率移动元素
+* 将元素复制回原来的 array
+
+```Java
+int N = a.length;
+int[] count = new int[R+1];
+
+for (int i = 0; i < N; i++)
+    count[a[i]+1]++;
+
+for (int r = 0; r < R; r++)
+    count[r+1] += count[r];
+
+for (int i = 0; i < N; i++)
+    aux[count[a[i]]++] = a[i];
+
+for (int i = 0; i < N; i++)
+    a[i] = aux[i];
+```
+上面的复杂度很好分析, 就是 $\color{Olive}{N+R}$
+
+### LSD(Least-significant-digit-first) radix sort
+这个算法的思路很简单, 就是从右到左依次使用每个元素做 key-index sort:
+* Consider characters from right to left
+* Stably sort using $d^{ th}$ character as the key
+    ```Java
+    public class LSD
+    {
+        public static void sort(String[] a, int W) //fixed Length W String
+        {
+            int R = 256;
+            int N = a.length;
+            String[] aux = new String[N];
+            for (int d = W-1; d >= 0; d--)
+            {
+                int[] count = new int[R+1];
+                for (int i = 0; i < N; i++)
+                    count[a[i].charAt(d) + 1]++;
+                for (int r = 0; r < R; r++)
+                    count[r+1] += count[r];
+                for (int i = 0; i < N; i++)
+                    aux[count[a[i].charAt(d)]++] = a[i];
+                for (int i = 0; i < N; i++)
+                    a[i] = aux[i];
+            }
+        }
+    }
+    ```
+<div align=center><img src="https://i.imgur.com/V6nEcbX.png"/></div>
+
+### MSD radix sort
+* Partition array into R pieces according to first character
+* Recursively sort all strings that start with each character
+
+<div align=center><img src="https://i.imgur.com/2pSIXfa.png"/></div>
+
+如果遇到了已经到达末尾的 string, 就当他们在尾部有一个比其他 Char 都小的 extra char.
+```Java
+private static int charAt(String s, int d)
+{
+    if (d < s.length()) return s.charAt(d);
+    else return -1;
+}
+```
+```Java
+public static void sort(String[] a)
+{
+    aux = new String[a.length];
+    sort(a, aux, 0, a.length - 1, 0);
+}
+private static void sort(String[] a, String[] aux, int lo, int hi, int d)
+{
+    if (hi <= lo) return;
+        int[] count = new int[R+2];
+    for (int i = lo; i <= hi; i++)
+        count[charAt(a[i], d) + 2]++;
+    for (int r = 0; r < R+1; r++)
+        count[r+1] += count[r];
+    for (int i = lo; i <= hi; i++)
+        aux[count[charAt(a[i], d) + 1]++] = a[i];
+    for (int i = lo; i <= hi; i++)
+        a[i] = aux[i - lo];
+
+    for (int r = 0; r < R; r++)
+    sort(a, aux, lo + count[r], lo + count[r+1] - 1, d+1);
+}
+```
+但是这种算法可能会有很严重的性能问题:
+* 对于小的 subarray, 运行的速度非常慢
+* 由于递归的存在, 会有大量的小 subarray
+
+解决的办法就是低于某个临界值的时候, 使用 insertion sort:
+* Insertion sort, but start at $d^{th}$ character.
+    ```Java
+    private static void sort(String[] a, int lo, int hi, int d)
+    {
+    for (int i = lo; i <= hi; i++)
+        for (int j = i; j > lo && less(a[j], a[j-1], d); j--)
+            exch(a, j, j-1);
+    }
+    ```
+* 实现 less
+    ```Java
+    private static boolean less(String v, String w, int d)
+    {
+        for (int i = d; i < Math.min(v.length(), w.length()); i++)
+        {
+            if (v.charAt(i) < w.charAt(i)) return true;
+            if (v.charAt(i) > w.charAt(i)) return false;
+        }
+        return v.length() < w.length();
+    }
+    ```
+
+### 3-way radix quicksort
+这个算法的思路就是对第 d 个元素做 3-way partitioning(大于/小于/等于)
+* Less overhead than R-way partitioning in MSD string sort.
+* Does not re-examine characters equal to the partitioning char
+
+```Java
+private static void sort(String[] a)
+{ sort(a, 0, a.length - 1, 0); }
+private static void sort(String[] a, int lo, int hi, int d)
+{
+    if (hi <= lo) return;
+    int lt = lo, gt = hi;
+    int v = charAt(a[lo], d);
+    int i = lo + 1;
+    while (i <= gt)
+    {
+        int t = charAt(a[i], d);
+        if (t < v) exch(a, lt++, i++);
+        else if (t > v) exch(a, i, gt--);
+        else i++;
+    }
+
+    sort(a, lo, lt-1, d);
+    if (v >= 0) sort(a, lt, gt, d+1);
+    sort(a, gt+1, hi, d);
+}
+```
+<div align=center><img src="https://i.imgur.com/NtlVvf6.png"/></div>
+<div align=center><img src="https://i.imgur.com/PCmreMk.png"/></div>
+
+### suffix arrays
+在 java 中, substring 只是需要移动一个 offset, 因此我们可以在 $O(N)$ 的时间内生成一个 suffix. 然后可以根据这个做很多事情, 例如查找最长的重复子串, 就可以先做 suffix array, 然后对生成的 array 排序:
+<div align=center><img src="https://i.imgur.com/IPK7bzL.png"/></div>
