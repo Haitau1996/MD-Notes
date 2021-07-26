@@ -60,6 +60,10 @@
 - [单词查找树](#单词查找树)
   - [R-way tries](#r-way-tries)
     - [performance](#performance)
+  - [ternary(三元的) search tries](#ternary三元的-search-tries)
+  - [character-based operations](#character-based-operations)
+    - [Patricia trie](#patricia-trie)
+    - [Suffix tree](#suffix-tree)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -1030,5 +1034,110 @@ public class TrieST<Value>
 <font color=olive>Search miss</font>:
 * Could have mismatch on first character
 * Typical case: examine only a few characters (sublinear).
-<div align=center><img src="https://i.imgur.com/OF5w15s.png"/></div>
+
+### ternary(三元的) search tries
+这个思路是将 characters 和 values 放在 node 中, **each node has 3 children**: smaller (left), equal (middle), larger (right).<div align=center><img src="https://i.imgur.com/wVuzeYQ.png"/></div>    
+<font color=olive>Search hit</font>: Node where search ends has a non-null value.  
+<font color=olive>Search miss</font>: Reach a null link or node where search ends has null value.  
+
+Node 中放了五个数据域:
+```Java
+private class Node
+{
+    private Value val;
+    private char c;
+    private Node left, mid, right;
+}
+```
+其他部分代码如下:
+```Java
+public class TST<Value>
+{
+    private Node root;
+    private class Node
+    { /* see previous slide */ }
+
+    public void put(String key, Value val)
+    { root = put(root, key, val, 0); }
+    private Node put(Node x, String key, Value val, int d)
+    {
+        char c = key.charAt(d);
+        if (x == null) { x = new Node(); x.c = c; }
+        if (c < x.c) x.left = put(x.left, key, val, d);
+        else if (c > x.c) x.right = put(x.right, key, val, d);
+        else if (d < key.length() - 1) x.mid = put(x.mid, key, val, d+1);
+        else x.val = val;
+        return x;
+    }
+    public boolean contains(String key)
+    { return get(key) != null; }
+    public Value get(String key)
+    {
+        Node x = get(root, key, 0);
+        if (x == null) return null;
+        return x.val;
+    }
+    private Node get(Node x, String key, int d)
+    {
+        if (x == null) return null;
+        char c = key.charAt(d);
+        if (c < x.c) return get(x.left, key, d);
+        else if (c > x.c) return get(x.right, key, d);
+        else if (d < key.length() - 1) return get(x.mid, key, d+1);
+        else return x;
+    }
+}
+```
+
+可以使用 $R^2$ TST, 作为 R-way tries 和 TST 的混合, 最早两个字母用一个 $26^2$ 的矩阵表示, 后面的用 TST, 它可以作为 TST 的一种提升:
+<div align=center><img src="https://i.imgur.com/xadOzZu.png"/></div>
+<div align=center><img src="https://i.imgur.com/hpx0Q7G.png"/></div>
+
+### character-based operations
+符号表可以支持若干常用的 character-based 操作:
+* Prefix match
+* Wildcard match
+* Longest prefix
+
+```Java
+private void collect(Node x, String prefix, Queue<String> q)
+{
+    if (x == null) return;
+    if (x.val != null) q.enqueue(prefix);
+    for (char c = 0; c < R; c++)
+        collect(x.next[c], prefix + c, q);
+}
+public Iterable<String> keysWithPrefix(String prefix)
+{
+    Queue<String> queue = new Queue<String>();
+    Node x = get(root, prefix, 0);
+    collect(x, prefix, queue);
+    return queue;
+}
+```
+在 Trie 中左最长公共字符串十分简单:
+* search for query string
+* keep track of longest key encountered
+
+```Java
+public String longestPrefixOf(String query)
+{
+    int length = search(root, query, 0, 0);
+    return query.substring(0, length);
+}
+private int search(Node x, String query, int d, int length)
+{
+    if (x == null) return length;
+    if (x.val != null) length = d;
+    if (d == query.length()) return length;
+    char c = query.charAt(d);
+    return search(x.next[c], query, d+1, length);
+}
+```
+#### Patricia trie
+* Remove one-way branching
+* Each node represents a sequence of characters<div align=center><img src="https://i.imgur.com/pxYtVr8.png"/></div>
+
+#### Suffix tree
+Patricia trie of suffixes of a string.<div align=center><img src="https://i.imgur.com/czUML4Z.png"/></div>
 
