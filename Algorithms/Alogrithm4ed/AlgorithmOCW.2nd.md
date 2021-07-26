@@ -64,6 +64,8 @@
   - [character-based operations](#character-based-operations)
     - [Patricia trie](#patricia-trie)
     - [Suffix tree](#suffix-tree)
+- [子串查找](#子串查找)
+  - [brute force](#brute-force)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -1141,3 +1143,25 @@ private int search(Node x, String query, int d, int length)
 #### Suffix tree
 Patricia trie of suffixes of a string.<div align=center><img src="https://i.imgur.com/czUML4Z.png"/></div>
 
+## 子串查找
+<font color=olive>Goal</font>: Find pattern of length M in a text of length N.(通常 `M<<N`)  
+
+### brute force
+对于每个 text 作为位置, 检查 pattern是否匹配.
+```Java
+public static int search(String pat, String txt)
+{
+    int M = pat.length();
+    int N = txt.length();
+    for (int i = 0; i <= N - M; i++)
+    {
+        int j;
+        for (j = 0; j < M; j++)
+            if (txt.charAt(i+j) != pat.charAt(j))
+                break;
+        if (j == M) return i;
+    }
+    return N;
+}
+```
+在最坏的情况下的, 需要 $\sim MN$ 次比较.
