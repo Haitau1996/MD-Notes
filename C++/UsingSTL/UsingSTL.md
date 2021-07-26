@@ -657,3 +657,11 @@ std::make_heap(std::begin(numbers), std::end(numbers)); // Result: 12 10 3.5 6.5
 因此, 相反在很多场合, 这的反面就成了堆的优势. 
 
 #### 堆操作
+* `make_heap(iterBegin, iterEnd)`: 从哟个随机访问迭代器中生成堆
+* `push_heap(iterBegin, iterEnd)` 用于 `push_back(someElement)` 之后, 会认为只有最后一个是新元素, 在此基础上重新排列元素使得其复合堆条件
+* `pop_heap(iterBegin, iterEnd, std::greater<>())`: 将第一个元素移除之后, 并保证剩下的依旧是一个堆
+* `is_heap()/is_heap_until()` 检查迭代器区间中的元素排列是否构成一个堆, 后者是检查第一个不构成堆的元素
+* `sort_heap()` 将元素段作为堆来排序, 如果不是堆, 就会在运行时崩溃
+> 我们可以直接使用 _algorithm_ 头文件中的函数模板 `sort` 排序, 但是 sort_heap 是充分利用堆的局部有序性可以使得排序变得更快
+
+### 在容器中保存指针
