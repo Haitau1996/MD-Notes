@@ -665,3 +665,12 @@ std::make_heap(std::begin(numbers), std::end(numbers)); // Result: 12 10 3.5 6.5
 > 我们可以直接使用 _algorithm_ 头文件中的函数模板 `sort` 排序, 但是 sort_heap 是充分利用堆的局部有序性可以使得排序变得更快
 
 ### 在容器中保存指针
+// TODO:
+## Chapter 4: map 容器
+`map` 容器是关联容器的一种, 在关联容器中**对象的位置取决于和它关联的键值**, 键可以是基本类型也可以是类类型. map 容器中的元素是 `pair<const Key, T>` 类型的对象, 每种map 模板都有自己的特性:  
+|           | rb_tree | hash_map |
+|:-----------:|:---------:| :---------:|
+|允许重复键  | multimap|unodeared_multimap|
+|不允许重复键|map|unordered_map|
+
+### map 容器的用法
