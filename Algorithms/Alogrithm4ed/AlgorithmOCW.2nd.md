@@ -57,6 +57,9 @@
   - [MSD radix sort](#msd-radix-sort)
   - [3-way radix quicksort](#3-way-radix-quicksort)
   - [suffix arrays](#suffix-arrays)
+- [单词查找树](#单词查找树)
+  - [R-way tries](#r-way-tries)
+    - [performance](#performance)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -955,3 +958,77 @@ private static void sort(String[] a, int lo, int hi, int d)
 ### suffix arrays
 在 java 中, substring 只是需要移动一个 offset, 因此我们可以在 $O(N)$ 的时间内生成一个 suffix. 然后可以根据这个做很多事情, 例如查找最长的重复子串, 就可以先做 suffix array, 然后对生成的 array 排序:
 <div align=center><img src="https://i.imgur.com/IPK7bzL.png"/></div>
+
+## 单词查找树
+我们希望借助 String 的性质, 找到一种比 hashing 更快/比 BSTs 更灵活的数据结构和算法.<div align=center><img src="https://i.imgur.com/iX5D97y.png"/></div>
+
+### R-way tries
+trie 来自于一个文字游戏, 其主要作用是取出(re<font color=blue>trie</font>val)数据. 
+* 将字符(而不是 keys) 存放到节点中
+* 每个 node 有 R 个 children, 每个存放可能的字符(我们没有将 null 画出)
+* 将 value 存放在相关的 key 的最后一个字符中<div align=center><img src="https://i.imgur.com/difuWL7.png"/></div>
+
+在 trie 中的搜索十分简单, 沿着节点向下查找
+* search hit: node where search ends has a non-null value
+* Search miss: reach **null link** or node where search **ends has null value**.
+
+Tries 中的插入:
+* Encounter a null link: create new node.
+* Encounter the last character of the key: set value in that node
+
+Tries 中的删除:
+* Find the node corresponding to key and set value to null.
+* If node has null value and all null links, remove that node (and recur).
+
+实现的时候, 我们将子节点放在一个 array 中, 其 index 对应的就是 char 的顺序
+```Java
+private static class Node
+{
+  private Object value;
+  private Node[] next = new Node[R];
+}
+```
+
+其他部分的代码如下:
+```Java
+public class TrieST<Value>
+{
+    private static final int R = 256;
+    private Node root = new Node();
+    private static class Node
+    { /* see previous slide */ }
+
+    public void put(String key, Value val)
+    { root = put(root, key, val, 0); }
+    private Node put(Node x, String key, Value val, int d)
+    {
+        if (x == null) x = new Node();
+        if (d == key.length()) { x.val = val; return x; }
+        char c = key.charAt(d);
+        x.next[c] = put(x.next[c], key, val, d+1);
+        return x;
+    }
+    public boolean contains(String key)
+    { return get(key) != null; }
+    public Value get(String key)
+    {
+        Node x = get(root, key, 0);
+        if (x == null) return null;
+        return (Value) x.val;
+    }
+    private Node get(Node x, String key, int d)
+    {
+        if (x == null) return null;
+        if (d == key.length()) return x;
+        char c = key.charAt(d);
+        return get(x.next[c], key, d+1);
+    }
+}
+```
+#### performance
+<font color=olive>Search hit</font>: Need to examine all L characters for equality.  
+<font color=olive>Search miss</font>:
+* Could have mismatch on first character
+* Typical case: examine only a few characters (sublinear).
+<div align=center><img src="https://i.imgur.com/OF5w15s.png"/></div>
+
