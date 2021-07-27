@@ -66,6 +66,8 @@
     - [Suffix tree](#suffix-tree)
 - [子串查找](#子串查找)
   - [brute force](#brute-force)
+    - [回退的问题](#回退的问题)
+  - [Knuth-Morris-Pratt](#knuth-morris-pratt)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -1165,3 +1167,59 @@ public static int search(String pat, String txt)
 }
 ```
 在最坏的情况下的, 需要 $\sim MN$ 次比较.
+#### 回退的问题
+在很多应用场景下, 我们希望避免 text stream 中的回退, 但是上面的暴力算法包含了回退的过程:<div align=center><img src="https://i.imgur.com/dvYVrM5.png"/></div>
+
+一个常见的改进是在增加 j 的同时增加 i, 但依旧改变不了需要回退的结果.
+```Java
+public static int search(String pat, String txt)
+{
+    int i, N = txt.length();
+    int j, M = pat.length();
+    for (i = 0, j = 0; i < N && j < M; i++)
+    {
+        if (txt.charAt(i) == pat.charAt(j)) j++;
+        else { i -= j; j = 0; }
+    }
+    if (j == M) return i - M;
+    else return N;
+}
+```
+### Knuth-Morris-Pratt
+前面的暴力算法没有利用已经扫描过的子串信息而常常需要回退, 而KMP 算法总是能够避免回退, 它是基于**确定性有限状态自动机**(DFA).
+* 有限数量的状态(包括开始和停止)
+* 对于字母表中的每个 char 只有一种转变
+* 如果转变到了 halt 状态则代表已经找到子串<div align=center><img src="https://i.imgur.com/PaTuQL7.png"/></div>
+
+该有限状态机使用一个 2-D array 表示, 在该状态下, 接收到对应的数字则转到对应的状态:
+```Java
+public int search(String txt)
+{
+    int i, j, N = txt.length();
+    for (i = 0, j = 0; i < N && j < M; i++)
+        j = dfa[txt.charAt(i)][j];// 从矩阵中, 查找接收到数字之后的下一个状态
+    if (j == M) return i - M;
+    else return N;
+}
+```
+于是最重要的问题就是**如何建立 DFA**:
+1. 对于成功匹配的转变, 只需要 j+1 即可
+2. 在不匹配的情况下, 在状态 j 时并且下一个字符是 `c!= pattern.charAt(j)`, 只需要在还在建立中的 DFA 中模拟 `pattern[1..j-1]`(忽略首字母是因为要右移一位, 忽略最后的字符是因为匹配失败), 然后做转换 c, 在代码中就是 Copy `dfa[][X]` to `dfa[][j]`:
+    ```Java
+    public KMP(String pat)
+    {
+        this.pat = pat;
+        M = pat.length();
+        dfa = new int[R][M];
+        dfa[pat.charAt(0)][0] = 1;
+        for (int X = 0, j = 1; j < M; j++)
+        {
+            for (int c = 0; c < R; c++)
+                dfa[c][j] = dfa[c][X];
+            dfa[pat.charAt(j)][j] = j+1;
+            X = dfa[pat.charAt(j)][X];
+        }
+    }
+    ```
+
+KMP 算法需要不多于 M+N 次的 char access 和 $R\times M$ 的空间. 
