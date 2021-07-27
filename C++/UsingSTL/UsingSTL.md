@@ -74,6 +74,7 @@
     - [访问 map 元素](#访问-map-元素)
     - [删除元素](#删除元素-2)
   - [pair<> & tuple<> 的用法](#pair--tuple-的用法)
+    - [pair 的操作](#pair-的操作)
 ## Chapter 1: intruction to STL
 STL为一个功能强大且可扩展的工具集,用于组织和处理数据,STL可以划分为四个概念库:
 
@@ -796,3 +797,19 @@ auto iter = people.emplace_hint(pr.first, Name{"Cal", "Cutta"}, 62);
 * `clear()` 用于删除容器中的所有元素
 
 ### pair<> & tuple<> 的用法
+一般来说, pair 可以封装一对不同的任意类型的对象, 例如可以封装两个序列容器或者两个序列容器的指针, 在 _\<utility>_ 头文件中定义. `tuple<>` 是 `pair` 的返化, 可以封装不同类型的任意数量的对象, 定义在 _\<tuple>_ 头文件中. 
+#### pair 的操作
+pair 是比较简单的数据类型, 只有两个 public 数据成员 `first`/`second`. 和右值引用一样, 可以有各种版本的引用参数:
+```C++
+std::string s1 {"test"}, s2{"that"};
+std::pair<std::string, std::string> my_pair{s1, s2};
+std::pair<std::string, std::string> your_pair{std::string {"test"}, std::string {"that"}};
+std::pair<std::string, std::string> his_pair{"test", std::string {"that"}};
+std::pair<std::string, std::string> her_pair{"test", "that"};
+```
+上面四个版本涵盖了各种类型
+* 第一个赋值参数
+* 第二个移动参数
+* 第三个第四个包含了从 `const char*` 到 `std::string` 的隐式类型转换
+
+此外, 我们可以使用辅助函数 `std::make_pair<T1,T2>` 生成并且返回一个 pair 对象, 函数模板的参数值可以手动指定也可以由编译器推断.  
