@@ -1204,7 +1204,7 @@ public int search(String txt)
 ```
 于是最重要的问题就是**如何建立 DFA**:
 1. 对于成功匹配的转变, 只需要 j+1 即可
-2. 在不匹配的情况下, 在状态 j 时并且下一个字符是 `c!= pattern.charAt(j)`, 只需要在还在建立中的 DFA 中模拟 `pattern[1..j-1]`(忽略首字母是因为要右移一位, 忽略最后的字符是因为匹配失败), 然后做转换 c, 在代码中就是 Copy `dfa[][X]` to `dfa[][j]`:
+2. 在不匹配的情况下, 在状态 j 时并且下一个字符是 `c!= pattern.charAt(j)`, 只需要在还在建立中的 DFA 中模拟 `pattern[1..j-1]`(忽略首字母是因为要右移一位, 忽略最后的字符是因为匹配失败), 然后做转换 c, 在代码中就是 Copy `dfa[][X]` to `dfa[][j]`:<div align=center><img src="https://i.imgur.com/aRdUJrU.png"/></div>
     ```Java
     public KMP(String pat)
     {
