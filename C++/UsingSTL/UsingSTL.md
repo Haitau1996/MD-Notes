@@ -1,8 +1,80 @@
-# Using The C++ Standard Template Libraries
-<font size=4>**Ivor Hortan**</font>
+<font size=10> Using The C++ Standard Template Libraries</font>  
+<font size=6>**Ivor Hortan**</font>
 ***
 
-## Chap 1: intruction to STL
+- [Chapter 1: intruction to STL](#chapter-1-intruction-to-stl)
+  - [模板](#模板)
+  - [容器](#容器)
+  - [迭代器](#迭代器)
+    - [迭代器的类别](#迭代器的类别)
+    - [流迭代器](#流迭代器)
+    - [迭代器适配器](#迭代器适配器)
+      - [反向迭代器](#反向迭代器)
+      - [插入迭代器](#插入迭代器)
+      - [移动迭代器](#移动迭代器)
+  - [迭代器上的运算](#迭代器上的运算)
+  - [智能指针](#智能指针)
+    - [使用`unique_ptr<T>`](#使用unique_ptrt)
+      - [重置 `unique_ptr` 对象](#重置-unique_ptr-对象)
+      - [比较和检查 `unique_ptr` 对象](#比较和检查-unique_ptr-对象)
+    - [使用 `shared_ptr<T>`](#使用-shared_ptrt)
+      - [重置 `shared_ptr<T>`](#重置-shared_ptrt)
+      - [比较和检查 `shared_ptr<T>` 对象](#比较和检查-shared_ptrt-对象)
+    - [使用 `weak_ptr<T>` 指针](#使用-weak_ptrt-指针)
+  - [算法](#算法)
+  - [将函数作为实参传入](#将函数作为实参传入)
+    - [函数对象](#函数对象)
+    - [Lambda 表达式](#lambda-表达式)
+      - [将 lambda 表达式传给函数](#将-lambda-表达式传给函数)
+      - [捕获子句](#捕获子句)
+- [Chapter 2: 使用序列容器](#chapter-2-使用序列容器)
+  - [使用 `array<T,n>` 容器](#使用-arraytn-容器)
+    - [访问元素](#访问元素)
+    - [使用数组容器的迭代器](#使用数组容器的迭代器)
+    - [比较数组容器](#比较数组容器)
+  - [使用 `vector<T>` 容器](#使用-vectort-容器)
+    - [创建 `vector<T>`容器](#创建-vectort容器)
+    - [容量和大小](#容量和大小)
+    - [访问元素](#访问元素-1)
+    - [使用 vector 容器的迭代器](#使用-vector-容器的迭代器)
+    - [向 vector 容器中添加元素](#向-vector-容器中添加元素)
+      - [增加元素](#增加元素)
+      - [插入元素](#插入元素)
+    - [删除元素](#删除元素)
+    - [`vector<bool>` 容器](#vectorbool-容器)
+  - [使用 `deque<T>` 容器](#使用-dequet-容器)
+    - [生成 deque 容器](#生成-deque-容器)
+    - [访问元素](#访问元素-2)
+    - [添加和移出元素](#添加和移出元素)
+    - [替换 deque 中的内容](#替换-deque-中的内容)
+  - [使用 `list<T>` 容器](#使用-listt-容器)
+    - [生成 list 容器](#生成-list-容器)
+    - [添加元素](#添加元素)
+    - [删除元素](#删除元素-1)
+    - [排序和合并元素](#排序和合并元素)
+    - [访问元素](#访问元素-3)
+  - [使用`forward_list<T>` 容器](#使用forward_listt-容器)
+  - [自定义迭代器](#自定义迭代器)
+- [Chapter 3: 容器适配器](#chapter-3-容器适配器)
+  - [创建和使用 `stack<T>` 容器适配器](#创建和使用-stackt-容器适配器)
+    - [stack 操作](#stack-操作)
+  - [创建和使用 `queue<T>`容器适配器](#创建和使用-queuet容器适配器)
+    - [queue 的操作](#queue-的操作)
+  - [使用优先队列](#使用优先队列)
+    - [创建优先队列](#创建优先队列)
+    - [优先队列的操作](#优先队列的操作)
+  - [堆](#堆)
+    - [创建堆](#创建堆)
+    - [堆操作](#堆操作)
+  - [在容器中保存指针](#在容器中保存指针)
+- [Chapter 4: map 容器](#chapter-4-map-容器)
+  - [map 容器的用法](#map-容器的用法)
+    - [创建 map 容器](#创建-map-容器)
+    - [map 元素的插入](#map-元素的插入)
+    - [访问 map 元素](#访问-map-元素)
+    - [删除元素](#删除元素-2)
+  - [pair<> & tuple<> 的用法](#pair--tuple-的用法)
+## Chapter 1: intruction to STL
 STL为一个功能强大且可扩展的工具集,用于组织和处理数据,STL可以划分为四个概念库:
 
 1. 容器库
@@ -190,7 +262,7 @@ lambda 的引入符不一定为空, 可以有捕获子句, 指定一些封闭范
 
 不能将 auto 用于任何使用了正在定义变量的变量的 lambda 表达式, auto 不能用于自引用. 为了捕获指定变量,只要在捕获子句中列出他们的名称, 用 `&` 的话是引用传递,如`[&, factor]` 表示其他所有变量都是按引用传递, factor 使用值, 而且要加 `mutable` 才能改变 lambda 表达式中 factor 的值.<br>
 
-## Chap 02: 使用序列容器
+## Chapter 2: 使用序列容器
 序列容器用线性的方式存取元素, 主要有五种标准的序列容器:
 * `array<T,n>`: fixed-size array
 * `vector<T>`: 可以动态扩容的容器, `push_back()`/ `pop_back()` 操作效率比较高
@@ -669,3 +741,58 @@ std::make_heap(std::begin(numbers), std::end(numbers)); // Result: 12 10 3.5 6.5
 |不允许重复键|map|unordered_map|
 
 ### map 容器的用法
+STL map 容器对于元素的组织方式并没有具体的要求, 但元素一般都会保存在一个平衡二叉树中(通常是rb_tree). 
+#### 创建 map 容器
+map 模板有四个类型参数, 分别是 key 类型, value 类型, 用于比较 Key 大小的函数对象以及底层的内存分配器类型. 我们可以使用初始化列表来对比两个对象:
+```C++
+std::map<std::string, size_t> people{ std::make_pair("Ann", 25), std::make_pair("Bill", 46),
+                                      std::make_pair("Jack", 32), std::make_pair("Jill", 32) }
+```
+当然, 不用 `make_pair` 也可以直接使用key-value, 如 `{"Ann",25}`.  
+`map<K,T>` 中也定义了移动和复制构造函数, 用于从现有的容器/容器的迭代器构造.
+#### map 元素的插入
+`map<K,T>` 容器的成员函数 `insert()` 有多个版本, 可以在容器中插入一个或者多个 `pair<const key, value>` 对象. 
+```C++
+std::map<std::string, size_t> people {std::make_pair("Ann", 25), std::make_pair("Bill", 46),
+                                      std::make_pair("Jack", 32), std::make_pair("Jill", 32)};
+auto pr = std::make_pair("Fred", 22); // Create a pair element...
+auto ret_pr = people.insert(pr); // ..and insert it
+std::cout << ret_pr.first->first << " " << ret_pr.first->second
+<< " " << std::boolalpha << ret_pr.second << " \n"; // Fred 22 true
+```
+需要做一些解释:
+* `make_pair` 没有带模板特化, 是相信编译器可以推导出来, 推导出来的 `<const char*,int>` 可以隐式类型转换成我们需要的类型
+* map 的 `insert` 函数返回的是一个 pair 对象, 具体而言是 `pair<iterator, bool>`, 其成员 first 是一个迭代器指向插入元素(成功)或者阻止插入的元素(失败)
+
+我们也可以提供一个提示符来指出元素插入的位置, 提示符是迭代器的形式, 通常是从提示符指示的位置开始查找新元素的插入位置, 好的提示符可以提高插入操作的速度.
+```C++
+auto ret_pr = people.insert(std::make_pair("Jim", 48));
+people.insert(ret_pr.first, std::make_pair("Ian", 38));// 从上一个元素插入的位置开始查找新的插入位置
+```
+* `map` 中的成员函数 `count()` 返回map 中键对应元素的数目, 可以为我们的插入操作提供一些帮助
+* `insert` 借助迭代器和初始化列表可以一次性插入多个元素
+    ```C++
+    std::map<std::string, size_t> crowd {{"May", 55}, {"Pat", 66}, {"Al", 22}, {"Ben", 44}};
+    auto iter = std::begin(people);
+    std::advance(iter, 4); // begin iterator+ 4
+    crowd.insert(++std::begin(people), iter); // 使用迭代器, Insert 2nd, 3rd, and 4th elements from people
+    crowd.insert({{"Bert", 44}, {"Ellen", 99}});// 使用初始化列表
+    ```
+    * 需要注意的是初始化列表生成的对象是 `initializer_list<const string,size_t>`类型, 并且该函数的参数必须是 const 类型, 因为 non-const 到 const 没有隐式类型转换
+
+除了使用 insert 插入之外, 还可以使用 `emplace()`/`emplace_hint()` 构造并且插入元素, 生成元素的本质是一样的, 但我们必须为后者提供一个指示生成位置的迭代器作为第一个参数.此外他们有不同的返回值, 后者返回的不是一个 pair 而只是一个迭代器.
+```C++
+std::map<Name, size_t> people;
+auto pr = people.emplace(Name{"Dan", "Druff"}, 77);
+auto iter = people.emplace_hint(pr.first, Name{"Cal", "Cutta"}, 62);
+```
+#### 访问 map 元素
+* 可以获取 map 容器的开始/结束迭代器以及反向迭代器
+* map 提供成员函数 `at(Key)` 返回参数对应的对象, Key 不存在则抛出 `out_of_range` 异常
+* map 提供以键为参数的的下标运算符, 返回一个和键所关联对象的引用(如果键不存在, 则会插入一个 value 为默认值的新对象)
+
+#### 删除元素
+* `erase()` 用于删除键和参数匹配的元素
+* `clear()` 用于删除容器中的所有元素
+
+### pair<> & tuple<> 的用法
