@@ -68,6 +68,8 @@
   - [brute force](#brute-force)
     - [回退的问题](#回退的问题)
   - [Knuth-Morris-Pratt](#knuth-morris-pratt)
+  - [Boyer-Moore](#boyer-moore)
+  - [Rabin-Karp](#rabin-karp)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -1222,4 +1224,125 @@ public int search(String txt)
     }
     ```
 
-KMP 算法需要不多于 M+N 次的 char access 和 $R\times M$ 的空间. 
+KMP 算法需要不多于 $M+N$ 次的 char access 和 $R\times M$ 的空间. 
+
+### Boyer-Moore
+<div align=center><img src="https://i.imgur.com/hrwI7PH.png"/></div>
+
+从上图产生一种直觉:
+* 可以从右向左扫描字符
+* 这样如果字符不在 pattern 中的时候, 最多可以一次跳过 M 个char
+
+仔细揣摩, 这个算法的关键在于<font color=blue>可以跳过多少个字符</font>:  
+* case 1: Mismatch character not in pattern, 可以直接跳过 M 个字符
+* Case 2a: Mismatch character in pattern <div align=center><img src="https://i.imgur.com/Nylgb5u.png"/></div>
+* Mismatch character in pattern (but heuristic no help).
+
+Precompute index of rightmost occurrence of character c in pattern.<div align=center><img src="https://i.imgur.com/BszRR3Y.png"/></div>
+
+```Java
+public int search(String txt)
+{
+    int N = txt.length();
+    int M = pat.length();
+    int skip;
+    for (int i = 0; i <= N-M; i += skip)
+    {
+        skip = 0;
+        for (int j = M-1; j >= 0; j--)
+        {
+            if (pat.charAt(j) != txt.charAt(i+j))
+            {
+                skip = Math.max(1, j - right[txt.charAt(i+j)]);
+                break;
+            }
+        }
+        if (skip == 0) return i;
+    }
+    return N;
+}
+```
+在通常, 这个算法只需要 $\sim N/M$ 次字符比较, 在最坏的情况下和暴力方法一样, 我们可以加入类似于 KMP 的规则将最坏情况提升到约 3N.
+
+### Rabin-Karp
+Basic idea = <font color=blue>modular hashing</font>  
+* Compute a hash of `pat[0..M-1]`.
+* For each i, compute a hash of `txt[i..M+i-1]`.
+* If pattern hash = text substring hash, check for a match<div align=center><img src="https://i.imgur.com/afiMtK4.png"/></div>
+
+选用的哈希函数如下:
+$$
+x_{i}=t_{i} R^{M-1}+t_{i+1} R^{M-2}+\ldots+t_{i+M-1} R^{0} (\mod Q)
+$$
+```Java
+private long hash(String key, int M)
+{
+    long h = 0;
+    for (int j = 0; j < M; j++)
+        h = (h * R + key.charAt(j)) % Q;
+    return h;
+}
+```
+我们知道 $x_i$ 之后可以在常数时间之内得到 $x_{i+1}$:
+$$
+\begin{aligned}
+&x_{i}=t_{i} R^{M-1}+t_{i+1} R M-2+\ldots+t_{i+M-1} R^{0} \\
+&x_{i+1}=t_{i+1} R^{M-1}+t_{i+2} R^{M-2}+\ldots+t_{i+M} R^{0}\\
+\Rightarrow x_{i+1} &= (x_i - t_iR^{M-1})R + t_{i+M}
+\end{aligned}
+$$
+<div align=center><img src="https://i.imgur.com/lyLiQuG.png"/></div>
+
+```Java
+public class RabinKarp
+{
+    private long patHash; // pattern hash value
+    private int M; // pattern length
+    private long Q; // modulus
+    private int R; // radix
+    private long RM1; // R^(M-1) % Q
+
+    public RabinKarp(String pat) {
+        M = pat.length();
+        R = 256;
+        Q = longRandomPrime();// 某个大的质数
+
+        RM1 = 1;
+        for (int i = 1; i <= M-1; i++)
+            RM1 = (R * RM1) % Q;
+        patHash = hash(pat, M);
+    }
+
+    private long hash(String key, int M)
+    {
+        long h = 0;
+        for (int j = 0; j < M; j++)
+        h = (h * R + key.charAt(j)) % Q;
+        return h;
+    }
+
+    public int search(String txt)
+    {
+        int N = txt.length();
+        int txtHash = hash(txt, M);
+        if (patHash == txtHash) return 0;
+        for (int i = M; i < N; i++)
+        {
+            txtHash = (txtHash + Q - RM*txt.charAt(i-M) % Q) % Q;
+            txtHash = (txtHash*R + txt.charAt(i)) % Q;
+            if (patHash == txtHash) return i - M + 1;
+        }
+        return N;
+    }
+}
+```
+* Monte Carlo version: Return match if hash match       
+  * Always runs in linear time.
+  * Extremely likely to return correct answer
+* Las Vegas version. Check for substring match if hash match;continue search if false collision.
+  * Always returns correct answer
+  * Extremely likely to run in linear time (but worst case is $M\times N$).
+
+复杂性分析:  
+Theory: If Q is a sufficiently large random prime (about $M N^2$), then the probability of a false collision is about 1/N.
+<div align=center><img src="https://i.imgur.com/KHx96RK.png"/></div>
