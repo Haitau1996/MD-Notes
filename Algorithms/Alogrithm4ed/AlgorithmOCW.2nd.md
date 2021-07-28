@@ -73,6 +73,10 @@
 - [正则表达式](#正则表达式)
   - [REs and NFAs](#res-and-nfas)
     - [模式匹配的实现](#模式匹配的实现)
+  - [NFA 模拟](#nfa-模拟)
+    - [NFA representation](#nfa-representation)
+    - [NFA 模拟过程](#nfa-模拟过程)
+  - [构造对应的 NFA](#构造对应的-nfa)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -1377,8 +1381,115 @@ Theory: If Q is a sufficiently large random prime (about $M N^2$), then the prob
 * 匹配成功侯的状态改变(图中黑色表示)
 * 对于任何能够转到 accept 状态的序列都接受
 
-对于非确定性的理解: 
+**理解非确定性**: 
 * DFA是确定性的：每种状态的转换都完全由文本中的字符所决定。
-* 当面对匹配模式的多种可能时，自动机能够**猜出**正确的转换
-* NFA 中离开一个状态的**转换可能有多种**，因此从这种状态可能进行的转换是不确定的(即使不扫描任何字符，它在不同的时间所进行的状态转换也可能是不同的)
+* NFA 当面对匹配模式的多种可能时，自动机能够**猜出**正确的转换
+* NFA 中离开一个状态的**转换可能有多种**，因此从这种状态可能进行的转换是不确定的(即使不扫描任何字符，它在不同的时间所进行的状态转换也可能是不同的), **需要选出正确的转换**, 具体实现的时候就需要检查所有可能的转换
+<div align=center><img src="https://i.imgur.com/RSEhW8g.png"/></div>
 
+### NFA 模拟
+#### NFA representation
+<font color=olive>State Names</font>: 从 0 到 M 的字符串.  
+<font color=olive>匹配的转换</font>: 将正则表达式存在一个数组 re[] 中  
+$\color{olive}{\varepsilon - transitions}$: 存放在一个 有向图 G 中
+
+#### NFA 模拟过程
+我们需要维护读取到前 i 个 text 字符侯 所有可能的 NFA 状态.<div align=center><img src="https://i.imgur.com/n1EALfW.png"/></div>  
+在读取下一个输入字符的时候
+* 找到在 match transitions 中可以到达的state
+* 找到在 $\varepsilon-transitions$ 中可以到达的 state
+
+在没有更多的输入字符的时候:
+* 如果其中有任何状态达到了 accept state, 就接受
+* 否则 reject
+
+<font color=olive>Digraph reachability</font>:找到所有从给出点/点集 可以到达的 顶点.  
+<font color=blue>解决方案</font>: 点集中的每个点作为 source, 运行 DFS 并且不做 unmarking .  
+
+```Java
+public class NFA
+{
+    private char[] re; // match transitions
+    private Digraph G; // epsilon transition digraph
+    private int M; // number of states
+    public NFA(String regexp)
+    {
+        M = regexp.length();
+        re = regexp.toCharArray();
+        G = buildEpsilonTransitionDigraph();
+    }
+    public boolean recognizes(String txt)
+    {
+        Bag<Integer> pc = new Bag<Integer>();
+        DirectedDFS dfs = new DirectedDFS(G, 0);
+        for (int v = 0; v < G.V(); v++)
+            if (dfs.marked(v)) pc.add(v);
+
+        for (int i = 0; i < txt.length(); i++)
+        {
+            Bag<Integer> states = new Bag<Integer>();
+            for (int v : pc)
+            {
+                if (v == M) continue;
+                if ((re[v] == txt.charAt(i)) || re[v] == '.')
+                    states.add(v+1);
+            }
+            dfs = new DirectedDFS(G, states);
+            pc = new Bag<Integer>();
+            for (int v = 0; v < G.V(); v++)
+                if (dfs.marked(v)) pc.add(v);
+        }
+        for (int v : pc)
+            if (v == M) return true;
+        return false;
+    }
+    public Digraph buildEpsilonTransitionDigraph()
+    { /* stay tuned */ }
+}
+```
+**复杂性分析**:判定一个长度为 _M_ 的正则表达式所对应的 NFA 能否识别一段长度为 _N_ 的文本所需的时间在最坏情况下和 _MN_ 成正比。 
+
+### 构造对应的 NFA
+<font color=olive>状态</font>: 包含 RE 中的每个 symbol, 外加一个 accept 态.  
+<div align=center><img src="https://i.imgur.com/s2xNtv9.png"/></div>
+
+* 连接操作: 状态的匹配转换和字母表中的字符对应关系就是连接操作的实现
+* 括号: 在 $\varepsilon$-转换中加入一条到下一个 state 的边
+* 闭包操作: 在$\varepsilon$-转换中加入三条边<div align=center><img src="https://i.imgur.com/kHFVWRY.png"/></div>
+* "或" 操作: 对于前后的每个表达式添加一条 $\varepsilon$-转换的边<div align=center><img src="https://i.imgur.com/TYTsCFA.png"/></div>
+
+于是, 就有了一个新的问题, 括号对转换十分重要, 我们使用一个 stack 来维护:
+* `(` symbol: push `(` onto stack
+* `|` symbol: push `|` onto stack
+* `)` symbol: pop corresponding `(` and any intervening `|`;add ε-transition edges for closure/or
+
+```Java
+private Digraph buildEpsilonTransitionDigraph() {
+    Digraph G = new Digraph(M+1);
+    Stack<Integer> ops = new Stack<Integer>();
+    for (int i = 0; i < M; i++) {
+        int lp = i;
+
+    if (re[i] == '(' || re[i] == '|') ops.push(i);
+
+    else if (re[i] == ')') {
+        int or = ops.pop();
+        if (re[or] == '|') {
+            lp = ops.pop();
+            G.addEdge(lp, or+1);
+            G.addEdge(or, i);
+        }
+        else lp = or;
+    }
+    if (i < M-1 && re[i+1] == '*') {
+        G.addEdge(lp, i+1);
+        G.addEdge(i+1, lp);
+    }
+    if (re[i] == '(' || re[i] == '*' || re[i] == ')')
+        G.addEdge(i, i+1);
+    }
+    return G;
+}
+```
+**复杂度分析**: 构造和长度为 _M_ 的正则表达式相对应的 NFA 所需的时间和空间在最坏情况下与 _M_ 成正比.  
+<div align=center><img src="https://i.imgur.com/ud5SEUH.png"/></div>
