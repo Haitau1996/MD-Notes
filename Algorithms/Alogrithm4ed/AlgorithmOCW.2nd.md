@@ -77,6 +77,9 @@
     - [NFA representation](#nfa-representation)
     - [NFA 模拟过程](#nfa-模拟过程)
   - [构造对应的 NFA](#构造对应的-nfa)
+- [数据压缩](#数据压缩)
+  - [run-length coding](#run-length-coding)
+  - [Huffman compression](#huffman-compression)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -1493,3 +1496,70 @@ private Digraph buildEpsilonTransitionDigraph() {
 ```
 **复杂度分析**: 构造和长度为 _M_ 的正则表达式相对应的 NFA 所需的时间和空间在最坏情况下与 _M_ 成正比.  
 <div align=center><img src="https://i.imgur.com/ud5SEUH.png"/></div>
+
+## 数据压缩
+压缩可以减小一个文件的尺寸, 节约存储的空间和传输时间, 因为大多数文件都有很多冗余.其基础模型如下: <div align=center><img src="https://i.imgur.com/KzTYETY.png"/></div>
+<font color=olive>压缩比</font>: Bits in C (B) / bits in B.  
+<font color=olive>Fixed-length code</font>: k-bit code supports alphabet of size $2^k$.   
+为了更好地处理二进制的数据, 我们将会用到 Java 语言中的二进制标准输入和输出:
+<div align=center><img src="https://i.imgur.com/wYTUuQk.png"/></div>
+<div align=center><img src="https://i.imgur.com/bqvmifd.png"/></div>
+
+命题: 没有算法可以处理所有的 bitstring.
+* 证明1:假设存在一个能够压缩任意比特流的算法，那么也就可以用它压缩它自己的输出以得到一段更短的比特流，循环往复直到比特流的长度为0 ！能够将任意比特流的长度压缩为0 显然是荒谬的，因此存在能够压缩任意比特流的算法的假设也是错误的。
+* 证明2:假设有一种算法能够对所有长度为 1000 位的比特流进行无损压缩，那么每一种能够被压缩的比特流都对应着一段较短且不同的比特流。但长度小于 1000 位的比特流一共只有 $1+2+4+...+2^{998}+2^{999}=2^{1000}-1$ 种，而长度为 1000 位的比特流一共有 $2^{1000}$ 种，因此该算法不可能压缩所有长度为 1000 的比特流。
+
+### run-length coding
+比特流中最简单的冗余形式就是一长串重复的比特。下面我们学习一种经典的游程编码(Run-Length Encoding), 只需要将游程的长度直接编码即可:<div align=center><img src="https://i.imgur.com/4B0PAwJ.png"/></div>
+
+```Java
+public class RunLength
+{
+    private final static int R = 256;
+    private final static int lgR = 8;
+    public static void compress()
+    {
+        char cnt = 0;
+        boolean b, old = false;
+        while (!BinaryStdIn.isEmpty())
+        {
+            b = BinaryStdIn.readBoolean();
+            if (b != old)
+            {
+                BinaryStdOut.write(cnt);
+                cnt = 0;
+                old = !old;
+            }
+            else
+            {
+                if (cnt == 255)
+                {
+                    BinaryStdOut.write(cnt);
+                    cnt = 0;
+                    BinaryStdOut.write(cnt);
+                }
+            }
+            cnt++;
+        }
+        BinaryStdOut.write(cnt);
+        BinaryStdOut.close();
+    }
+    public static void expand()
+    {
+        boolean bit = false;
+        while (!BinaryStdIn.isEmpty())
+        {
+            int run = BinaryStdIn.readInt(lgR);
+            for (int i = 0; i < run; i++)
+                BinaryStdOut.write(bit);
+            bit = !bit;
+        }
+        BinaryStdOut.close();
+    }
+}
+```
+### Huffman compression
+这个编码最基本的思想是使用不同长度的比特去编码不同的字符. 而传统的摩尔斯码是有二义性的, 在实现上需要在中间加入一个 medium gap 去分割字符. 我们可以使用一个 binary trie 表示:
+* char 是一个叶节点
+* 编码就是从根节点到叶检点的路径<div align=center><img src="https://i.imgur.com/rM6iMmO.png"/></div>
+
