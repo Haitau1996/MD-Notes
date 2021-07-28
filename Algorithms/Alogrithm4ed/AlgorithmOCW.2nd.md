@@ -70,6 +70,7 @@
   - [Knuth-Morris-Pratt](#knuth-morris-pratt)
   - [Boyer-Moore](#boyer-moore)
   - [Rabin-Karp](#rabin-karp)
+- [正则表达式](#正则表达式)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -1346,3 +1347,6 @@ public class RabinKarp
 复杂性分析:  
 Theory: If Q is a sufficiently large random prime (about $M N^2$), then the probability of a false collision is about 1/N.
 <div align=center><img src="https://i.imgur.com/KHx96RK.png"/></div>
+
+## 正则表达式
+Pattern matching. Find one of a specified set of strings in text.
