@@ -71,6 +71,8 @@
   - [Boyer-Moore](#boyer-moore)
   - [Rabin-Karp](#rabin-karp)
 - [正则表达式](#正则表达式)
+  - [REs and NFAs](#res-and-nfas)
+    - [模式匹配的实现](#模式匹配的实现)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -1349,4 +1351,34 @@ Theory: If Q is a sufficiently large random prime (about $M N^2$), then the prob
 <div align=center><img src="https://i.imgur.com/KHx96RK.png"/></div>
 
 ## 正则表达式
-Pattern matching. Find one of a specified set of strings in text.
+<font color=olive>Pattern matching</font>: Find one of a specified set of strings in text, 例如在基因组研究中需要得到有某个特征的基因序列:<div align=center><img src="https://i.imgur.com/lFGCM5f.png"/></div>
+
+<font color=blue>正则表达式</font> 是一种指定一系列(possibly infinite)字符串的标记:<div align=center><img src="https://i.imgur.com/b3VYtYH.png"/></div>
+除了上面的 连接/或/闭包/括号 四种基础的操作外, 为了方便还有额外的操作:<div align=center><img src="https://i.imgur.com/LDpfNlO.png"/></div>
+在各种组合下, 正则表达式极富表现力:
+<div align=center><img src="https://i.imgur.com/P6EpJJ8.png"/></div>
+
+### REs and NFAs 
+<font color=olive>RE</font>(正则表达式): Concise way to describe a set of strings.  
+<font color=olive>NFA</font>(非确定有限状态自动机): Machine to recognize whether a given string is in a given set.  
+<font color=blue>Kleene's theorem</font>:
+* 对于任意的 DFA, 存在一个与之对应的 RE
+* 对于任意的 RE, 存在要给与之对应的 NFA
+
+#### 模式匹配的实现
+我们首先需要理解 NFA, 然后基本的做法就是
+* 从 RE 中建立 NFA
+* 用文本作为输入模拟 NFA
+
+<font color=blue>Bad news</font>: 上面这个基础的做法用 DFA 可能是不可行的, 得到的 DFA 会有指数级增长的状态.  
+**使用 NFA 做正则表达式匹配**:
+* 同样的对于每个 RE 中的字符都作为一个状态
+* 其中包含了 $\color{red}{\varepsilon - transition}$: 在没有扫描 text 的前提下改变状态(图中用红色表示)
+* 匹配成功侯的状态改变(图中黑色表示)
+* 对于任何能够转到 accept 状态的序列都接受
+
+对于非确定性的理解: 
+* DFA是确定性的：每种状态的转换都完全由文本中的字符所决定。
+* 当面对匹配模式的多种可能时，自动机能够**猜出**正确的转换
+* NFA 中离开一个状态的**转换可能有多种**，因此从这种状态可能进行的转换是不确定的(即使不扫描任何字符，它在不同的时间所进行的状态转换也可能是不同的)
+

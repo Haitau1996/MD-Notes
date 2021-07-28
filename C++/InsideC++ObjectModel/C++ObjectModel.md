@@ -27,7 +27,8 @@ protected:
 <p align="center">
 <img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210331123916.jpg"/>
 </p>
-上面是一个简单模型, 以空间和执行效率为代价降低编译器复杂度,一个对象是一系列slot(位置,狭槽), 每个指向一个成员, 因此一个对象的大小就是指针大小乘以member个数, 这个模型没有用到实际的编译器中, 但是该观念影响后面的设计.
+
+上面是一个简单模型, **以空间和执行效率为代价降低编译器复杂度**,一个对象是一系列slot(位置,狭槽), 每个指向一个成员, 因此一个对象的大小就是指针大小乘以 member 个数, 这个模型没有用到实际的编译器中, 但是该观念影响后面的设计.
 
 #### 表格驱动对象模型
 另一种思路是将与 member 相关信息抽出来, 放在一个 data member table 和 一个 member function table 中, 后者是一系列的slots, 这种观念成为支持 virtual function 的一个有效方案.
