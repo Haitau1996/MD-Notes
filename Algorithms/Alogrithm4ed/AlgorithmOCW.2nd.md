@@ -1563,3 +1563,81 @@ public class RunLength
 * char 是一个叶节点
 * 编码就是从根节点到叶检点的路径<div align=center><img src="https://i.imgur.com/rM6iMmO.png"/></div>
 
+首先我们要对节点建模:
+```Java
+private static class Node implements Comparable<Node>
+{
+    private final char ch; // used only for leaf nodes
+    private final int freq; // used only for compress
+    private final Node left, right;
+
+    public Node(char ch, int freq, Node left, Node right)
+    {
+        this.ch = ch;
+        this.freq = freq;
+        this.left = left;
+        this.right = right;
+    }
+
+    public boolean isLeaf()
+    { return left == null && right == null; }
+    public int compareTo(Node that)
+    { return this.freq - that.freq; }
+}
+```
+从前缀码中读取信息得到字符需要线性的运行时间:
+```Java
+public void expand()
+{
+    Node root = readTrie();
+    int N = BinaryStdIn.readInt();
+    for (int i = 0; i < N; i++)
+    {
+        Node x = root;
+        while (!x.isLeaf())
+        {
+            if (!BinaryStdIn.readBoolean())
+                x = x.left;
+            else
+                x = x.right;
+        }
+        BinaryStdOut.write(x.ch, 8);
+    }
+    BinaryStdOut.close();
+}
+```
+我们想要打印这个字典树, 可以使用对它的前序便利, 如果遇到了内部节点就打印一个 0 , 遇到了叶节点就打印一个 1 外加该节点的编码:<div align=center><img src="https://i.imgur.com/PHavV0X.png"/></div>
+
+而根据频率, 我们<font color=olive>使用 Shannon-Fano 算法找到一种前缀码</font>:
+* 将符号 S 分成两个大致频率相等的子集 $S_0$,$S_1$
+* $S_0$ 的编码以 0 开始, $S_1$ 的以 1 开始
+* 然后对两个子集做递归
+
+这个算法有两个问题:
+* 如何将符号分割成两部分
+* <font color=blue>并非最优</font>
+
+<font color=blue>Huffman algorithm</font>:  
+* 统计每个字符出现的频率,每个字符作为一个节点, 权重为 `freq[i]`
+* 重复下面的过程直到合成一个字典树
+  * 选出最小 weight 的两个字典树 `freq[i]`,`freq[j]`
+  * 将他们合并成一个字典树, 其权重变成 `freq[i] + freq[j]`
+
+```Java
+private static Node buildTrie(int[] freq)
+{
+    MinPQ<Node> pq = new MinPQ<Node>();
+    for (char i = 0; i < R; i++)
+        if (freq[i] > 0)
+            pq.insert(new Node(i, freq[i], null, null));
+    while (pq.size() > 1)
+    {
+        Node x = pq.delMin();
+        Node y = pq.delMin();
+        Node parent = new Node('\0', x.freq + y.freq, x, y);
+        pq.insert(parent);
+    }
+    return pq.delMin();
+}
+```
+**复杂度分析**: 哈夫曼编码算法使用一个堆, 需要的时间复杂度 为 $N + R\log R$, 前者用于读取获得频率, 后者用于建堆.  
