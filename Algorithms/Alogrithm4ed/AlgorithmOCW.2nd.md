@@ -81,6 +81,8 @@
   - [run-length coding](#run-length-coding)
   - [Huffman compression](#huffman-compression)
   - [LZW compression](#lzw-compression)
+- [归约](#归约)
+  - [算法设计](#算法设计)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -1648,7 +1650,7 @@ private static Node buildTrie(int[] freq)
 * 静态模型: 对于所有的 text 都是相同的
 * 动态模型: 针对不同的文本产生
  
-而LZW 是一种适应性模型, 根据读取的问问逐步学习, 其具体的过程如下:
+而LZW 是一种**适应性模型**, 根据读取的文本逐步学习, 其具体的过程如下:
 * Create ST associating W-bit codewords with string keys.
 * 使用单个字符初始化符号表.
 * Find longest string s in ST that is a prefix of unscanned part of input
@@ -1685,3 +1687,28 @@ public class LZW
     public static void expand(){/*...*/}
 }
 ```
+## 归约
+接下来要讨论的就是三个高级的主题:
+* 规约: 将某个计算问题变换为另一个问题的过程。
+* 线性规划:  研究线性约束条件下线性目标函数的极值问题的数学理论和方法
+* intractability: problems beyond our reach
+
+我们需要转换工具:
+* 从单独的问题到解决问题的模型
+* 从线性/平方 到 多项式/指数 的尺度
+* 从具体实现到概念模型
+
+归约的新视角就是根据计算性的要求将问题分类, 如果我们 可以/不能 高效地解决问题 X , 那还有什么问题我们 可以/不能 高效地解决.   
+<font color=olive>定义</font>: 如果我们可以使用解决 Y 的算法去帮助解决 X, 那么我们就说 X <font color=blue> reduces to </font> problem Y.<div align=center><img src="https://i.imgur.com/dhIsnLa.png"/></div>
+
+例如, 找出中位数可以归约为排序问题, To find the median of N items:
+* Sort N items.
+* Return item in the middle.
+
+### 算法设计
+归约可以帮助用于设计算法:
+* 找出凸包的问题可以归约为排序
+* 3-collinear reduces to sorting
+* Undirected shortest paths (with nonnegative weights) reduces to directed shortest path
+<div align=center><img src="https://i.imgur.com/HDBYl1P.png"/></div>
+
