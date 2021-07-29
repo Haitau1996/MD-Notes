@@ -80,6 +80,7 @@
 - [数据压缩](#数据压缩)
   - [run-length coding](#run-length-coding)
   - [Huffman compression](#huffman-compression)
+  - [LZW compression](#lzw-compression)
 ## 无向图
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
@@ -1641,3 +1642,46 @@ private static Node buildTrie(int[] freq)
 }
 ```
 **复杂度分析**: 哈夫曼编码算法使用一个堆, 需要的时间复杂度 为 $N + R\log R$, 前者用于读取获得频率, 后者用于建堆.  
+
+### LZW compression
+我们前面接触了两种压缩模型
+* 静态模型: 对于所有的 text 都是相同的
+* 动态模型: 针对不同的文本产生
+ 
+而LZW 是一种适应性模型, 根据读取的问问逐步学习, 其具体的过程如下:
+* Create ST associating W-bit codewords with string keys.
+* 使用单个字符初始化符号表.
+* Find longest string s in ST that is a prefix of unscanned part of input
+* Write the W-bit codeword associated with s
+* 将 s+c 写入符号表, c 是输入流的下一个字符
+
+我们在实现中使用一个单词查找树去支持 longest prefix match:<div align=center><img src="https://i.imgur.com/WypaWEw.png"/></div>
+
+```Java
+public class LZW
+{
+    private static final int R = 256;  // 输入字符数
+    private static final int L = 4096; // 编码总数=2^12
+    private static final int W = 12;   // 编码宽度
+    public static void compress()
+    {
+        String input = BinaryStdIn.readString();
+        TST<Integer> st = new TST<Integer>();
+        for (int i = 0; i < R; i++)
+            st.put("" + (char) i, i);
+        int code = R+1; // R为文件结束(EOF)的编码
+        while (input.length() > 0)
+        {
+            String s = st.longestPrefixOf(input); // 找到匹配的最长前缀
+            BinaryStdOut.write(st.get(s), W);     // 打印出s的编码
+            int t = s.length();
+            if (t < input.length() && code < L) // 将s加入符号表
+                st.put(input.substring(0, t + 1), code++);
+            input = input.substring(t); // 从输入中读取s
+        }
+        BinaryStdOut.write(R, W);       // 写入文件结束标记
+        BinaryStdOut.close();
+    }
+    public static void expand(){/*...*/}
+}
+```
