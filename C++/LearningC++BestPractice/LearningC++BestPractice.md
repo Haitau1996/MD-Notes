@@ -183,3 +183,24 @@ Got :4 test #clang
 总结:
 * 我们应该尽力避免所有转换
 * 可以使用 `-Wold-style-cast` 让编译器发出警告
+
+### 变量作用域和初始化
+这个可以简化为一句话: 直到不得不使用该变量时, 才声明变量.
+* never create a variable until you can initialize it
+* 尽可能地去限制变量的作用域
+* 尽可能使用 const
+* 有一些静态分析工具可以帮助我们缩小变量的 scope
+
+### 正确初始化成员变量
+* 使用成员初始化列表
+  * 它在构造器之前/基类构造器 之后被调用
+    ```C++
+    ClassName(const int i, std::string t_s)
+    : BaseClass(i),
+      m_s(std::move(t_s))
+    {}
+    ```
+  * 数据成员的初始化顺序和它们的声明顺序一样(不是初始化列表中的顺序)
+  * 成员初始化列表是初始化 const 数据成员的唯一方法
+  * clang/gcc 在初始化顺序和声明不同的时候会报错
+
