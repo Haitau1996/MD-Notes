@@ -204,3 +204,20 @@ Got :4 test #clang
   * 成员初始化列表是初始化 const 数据成员的唯一方法
   * clang/gcc 在初始化顺序和声明不同的时候会报错
 
+### 使用 lambda 表达式做复杂的初始化
+例如我们根据需要给一个 const string 赋值的时候, 如果先声明之后赋值, 就无法保持 constness. 我们可以将选择的语句放在函数中, 根据参数返回不同的 string, 也可以使用 `? :` 构成的三元表达式, 但是在分支很多的时候语句会非常复杂, 而一个比较好的实践是使用 lambda:
+```C++
+const std::string s1 = [&](){
+  switch(argc){
+    case 0: return "0 args";
+    case 1: return "1 arg";
+    default: return "many args";
+  }
+}();
+```
+总结:
+* lambda 表达式可以用于简化复杂的初始化过程
+* 这有助于帮助我们创建更多的 const-correct 代码
+* 这有助于减少对象的创建/赋值, 帮助提升代码性能
+
+
