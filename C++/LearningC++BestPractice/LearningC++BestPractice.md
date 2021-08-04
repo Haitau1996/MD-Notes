@@ -220,4 +220,41 @@ const std::string s1 = [&](){
 * 这有助于帮助我们创建更多的 const-correct 代码
 * 这有助于减少对象的创建/赋值, 帮助提升代码性能
 
+## 资源管理
+### 在接口中, 只使用指向单个(optional,可选)对象的裸指针
+在 core guideline 中指出, 接口中的指针应该只用于指向单个对象, 下面就出现了buffer overflow:
+```C++
+void print_ints(const int *s, int count){
+  for(int i{0}; i < count; ++i){
+    std::cout<< s[i] << "\n";
+  }
+}
+...
+const int ints[]{1,2,3,4,5};
+print_ints(ints,6);
+```
+在这种情况下, 我们可以使用一个容器,如 vector.  
+进一步, 我们要求裸指针只能指向单个并且 optional 对象(可能为 NULL), 因为**非 optional 的情况我们可以使用引用**:
+```C++
+void use_string(const std::string *pts){
+  if(pts){
+    // do something
+  }
+}
+int main(){
+  std::string s("hello");
+  use_string(&s);
+}
+```
+总结:
+* 要求接口中的裸指针只能指向单个并且 optional 对象
+* Guideline Library 中有一个 span 类, 提供开始/结尾指针可以和过去的接口兼容
+* 对于 optional 参数考虑使用 optional
+* 使用 C++ Core Checker 帮助检查代码
+
+### 使用 RAII 自动管理对象
+RAII: Resource Acquisition Is Initialization. 在这种思想下, 我们创建一个对象相当于获取某种资源, 在对象失效后它会自我清理, 这充分利用的 C++ 中的对象生命周期/析构函数 和 stack 管理机制. 
+* 使用构造器-析构器 对, 确保任何分配/初始化 过的对象会被释放
+* 消除了 unexpected 代码路径下对象没有没 cleanup 的可能
+* 事实上可以做得非常高效
 
