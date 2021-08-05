@@ -187,3 +187,116 @@ for 循环是遍历集合中每一个元素的简明方法:
 let s = "hello";
 ```
 我们借助字符串类型理解这部分内容,上面的变量 s 指向了一个字符串字面量, 它的值被硬编码到了当前的程序中. 但**不是所有的字符串值都能在编译时确定**, 第二种 String 类型会在堆上分配自己需要的存储空间, 能处理在编译时未知大小的文本.   
+```Rust
+let mut s = String::from("hello");
+s.push_str(", world");
+```
+而 String 类型可变是因为它采用了不同的内存处理方式. 
+
+#### 内存与分配
+对于字符串字面量, 它会被硬编码到二进制文件中, 访问异常高效. 而 String 类型为了支持一个可变的/可增长文本的类型, 需要在 heap 中分配一块在编译时不知道大小的内存来存放数据:
+* 使用的内存是由操作系统在运行时动态分配出来的
+* 用完后需要用某种方式归还给操作系统
+
+Rust 提供了一套解决方案, 内存自动地在拥有它的变量离开作用域后释放, 变量离开作用域时, 会调用一个叫做 `drop` 的特殊函数. 但是在复杂的环境中,**如果同时拥有多个指向同一块堆内存的变量, 就会出现二次释放的问题**.
+##### 移动
+```Rust
+let s1 = String::from("hello");
+let s2 = s1;
+```
+<div align=center><img src="https://i.imgur.com/SKiKlPK.png"/></div>
+
+Rust 不会在复制值的时候深度复制堆上的数据, 因为右上图在数据足够大的时候有相当的运行时开销. 但是如果按照左边的方式, s1 s2 离开作用域会调用两次 drop, 因此Rust 在做浅拷贝的同时, 会让第一个变量无效, 这种行为被称为 **移动**(move).<div align=center><img src="https://i.imgur.com/yALiO4H.png"/></div>
+
+如果我们需要图 4-3 这样深度拷贝堆上的数据时, 可以使用一种名为 `clone` 的方法:
+```Rust
+let s1 = String::from("hello");
+let s2 = s1.clone();
+```
+##### 栈上数据的复制
+现在还有一个问题, 在栈上的数据并不需要调用 `clone()` 方法依旧是合法的. 这是因为这些类型的数据**可以在编译时确定自己的大小,并且完整地保存在栈中**, Rust 为他们提供了一个名为 ==Copy== 的 trait, 一但某个类型拥有了这种 trait, 其变量在赋值给其他变量之后依旧可用(==Copy 和 Drop 不兼容==).  
+一般来说, **任何简单的标量类型和它们的组合类型都是可以 Copy 的, 任何需要分配内存或者某种资源的类型都不会是 Copy 的.**  
+#### 所有权与函数
+将值传递给函数在语义上与给变量赋值相似。**向函数传递值可能会移动或者复制，就像赋值语句一样**。
+```Rust
+let s:String = String::from("hello world");
+take_ownership(s);
+```
+在调用自定义函数 `take_ownership` 之后, s 指向的对象就被借用走了, 再使用 s 就会触发编译错误.  
+#### 返回值与作用域
+**函数在返回值的过程中也会发生所有权转移**:变量所有权的转移总是遵循相同的模式, 将一个值赋值给另一个变量的时候就会转移所有权, 当一个持有堆数据的变量离开作用域时, 就会调用 `drop` 清理回收数据, **除非将这些数据的所有权转到另一个变量上**.  
+当我们希望调用函数时保留参数的所有权, 就不得不将传入值作为结果返回, 我们可以利用 tuple 来返回多个值. 
+```Rust
+fn main() {
+    let s = String::from("hello");
+    let (_, s) = take_ownership(s, 2);
+    println!("the s now is {}", s);
+}
+fn take_ownership(mut some_str: String, mut i: i32) -> (i32, String) {
+    println!("the ownership of {} is token", some_str);
+    some_str.push_str(", world");
+    i += 2;
+    (i, some_str)
+}
+```
+但是使用 tuple 返回太笨拙, Rust 为这种场景提供了一个名为引用的功能. 
+
+### 引用与借用
+```Rust
+fn main() {
+    let s1 = String::from("hello");
+    let len = calculate_length(&s1);
+    println!("The length of '{}' is {}.", s1, len);
+}
+
+fn calculate_length(s: &String) -> usize {
+    s.len()
+}
+```
+`&` 符号就是引用，它们**允许你使用值但不获取其所有权**。在上面的例子中,`s.len()`之后 s 离开作用域, 但是因为它不持有指向值的所有权, 所以不调用 `drop()`.<div align=center><img src="https://i.imgur.com/R4swICi.png"/></div>
+
+这种通过引用将参数传递给函数的方法被称为**借用**(borrowing), 和变量一样, 引用默认是不可变的. 
+#### 可变引用
+实现可变引用需要先将变量声明为可变, 然后修改函数签名:
+```Rust
+fn main() {
+    let mut s = String::from("hello");
+    change(&mut s);
+}
+
+fn change(some_string: &mut String) {
+    some_string.push_str(", world");
+}
+```
+Rust 可变引用有一个很大的限制：**在特定作用域中的特定数据只能有一个可变引用**, 这个规则帮助我们避免数据竞争.
+* 两个或以上的指针同时访问同一个空间
+* 其中至少一个指针会向空间中写入数据
+* 没有同步数据访问的机制
+
+数据竞争引发的未定义行为往往难以在运行时进行跟踪, 使得出现的 Bug 难以诊断/修复. Rust 从规则上避免了这种情形的出现.我们可以通过花括号创建一个新的作用域, 实现不同时存在的多个引用. 
+```Rust
+    let mut s = String::from("hello");
+    {
+        let ref_of_s = &mut s;
+        ref_of_s.push_str(" World");
+    }
+    let another_ref = &mut s;
+```
+此外, 我们不能同时拥有不可变引用和可变引用.
+
+#### 悬垂引用
+在 Rust 语言中, 编译器会确保永远不会进入这种状态. 
+```Rust
+fn main() {
+    let reference_to_nothing = dangle();
+}
+
+fn dangle() -> &String {//error:expected named lifetime parameter
+    let s = String::from("hello");
+    &s
+}
+```
+在这个例子中, 我们在 `dangle()` 中要求返回一个对 String 对象的引用, 而 s 离开作用域后就失效了, 因此编译器就会报错:**Rust 能够保证引用总是有效的**.
+
+### 切片
+除了引用, Rust 还有一种不持所有权的数据类型: 切片(slice).slice 允许你引用集合中一段连续的元素序列，而不用引用整个集合。
