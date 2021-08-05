@@ -299,4 +299,30 @@ fn dangle() -> &String {//error:expected named lifetime parameter
 在这个例子中, 我们在 `dangle()` 中要求返回一个对 String 对象的引用, 而 s 离开作用域后就失效了, 因此编译器就会报错:**Rust 能够保证引用总是有效的**.
 
 ### 切片
-除了引用, Rust 还有一种不持所有权的数据类型: 切片(slice).slice 允许你引用集合中一段连续的元素序列，而不用引用整个集合。
+除了引用, Rust 还有一种不持所有权的数据类型: 切片(slice).slice 允许你引用集合中一段连续的元素序列，而不用引用整个集合。  
+字符串切片是指向 String 某个连续的部分的引用:
+```Rust
+let s = String::from("hello world");
+
+let hello = &s[0..5];
+let world = &s[6..11];
+```
+<div align=center><img src="https://i.imgur.com/QeDUODv.png"/></div>
+
+实际上, **字符串字面量就是切片**.因此我们用下面这种写法能够同时处理 String 和 &str:
+```Rust
+fn first_word(s: &str) -> &str {
+    // 同时处理 String 和 &str
+}
+let word = first_word(&my_string[..]);
+/*
+fn first_word(s: &String) -> &str {
+    //针对 String
+}
+*/
+```
+Rust 的切片类型**其实是通用的**:
+```Rust
+let a = [1, 2, 3, 4, 5];
+let slice = &a[1..3];
+```
