@@ -428,3 +428,38 @@ public:
 * 我们可以考虑使用 `T&`/`reference_wrapper<T>`/`T*`
 
 ### 不要传递从有别名的智能指针中获取的指针或引用
+我们在一个函数中, 使用引用智能指针指向的对象, 而它可能在别的函数中被 reseat, 这样的话该引用就引用了非法的对象:
+```C++
+struct SomeObj{
+  std::shared_ptr<int> i = std::make_shared<int>(1);
+  void update_val(){ // 在这个函数运行侯, i 可能指向别的地址
+    if(*i < 2) i = std::make_shared<int>(5);
+  }
+  static void print(const int t_i){std::cout << t_i;}
+  void use_value(){
+    const int &local_ref_of_i = *i;
+    update_value();  // 在这里改变了 i 指向的对象, 上面的引用实际上就已经失效了
+    print(local_ref_of_i);
+  }
+}
+```
+解决的办法:
+* 使用原来对象的拷贝 `const int copy_of_i = *i;`
+* 将智能指针拷贝, 延长其生命周期
+* 直接在 print 函数的参数中使用智能指针解引用, 打印新的值
+* 可以使用 address sanitizers 可以帮助定位类似的问题
+
+### 和 C API 交互的时候使用标准容器
+C 的API 经常要接收一个动态分配的 buffer, 如果我们按照 C-Style 写, 会带来很多问题:<div align=center><img src="https://i.imgur.com/s9gzrUV.png"/></div>
+
+上面的 `linkname` 是动态分配的, 但是在所有的返回路径上都没有释放内存, 这必然会导致内存泄漏.我们应该根据情况选择 vector/string/array 替代前面的动态缓存区:
+* 这些在内存上都是连续分布的
+* vector 大小的动态的而 array 大小是静态的
+* string 可以从 C buffer 中产生 C++ string<div align=center><img src="https://i.imgur.com/ejd6BHz.png"/></div>
+
+总结:
+* 即使是和 C API 打交道, 我们也要质疑 malloc/new 的使用
+* 我们应该使用合适的容器替代缓冲区
+* 手动管理的字符串终止符(`\0`) 会带来很大的问题
+
+面对智能指针之间类型转换产生的临时对象, 目前只能使用`nm`等工具从机器码分析对象的构造和析构.
