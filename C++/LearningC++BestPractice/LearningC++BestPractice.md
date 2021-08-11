@@ -258,3 +258,148 @@ RAII: Resource Acquisition Is Initialization. 在这种思想下, 我们创建�
 * 消除了 unexpected 代码路径下对象没有没 cleanup 的可能
 * 事实上可以做得非常高效
 
+### 避免默认生成的操作, 或者全部定义他们
+<div align=center><img src="https://i.imgur.com/qxOdgsm.png"/></div>
+
+在 C++ 11 之前, 人们常常把类的特殊的函数称为 Big-3, C++ 11 引入了移动操作之后, 所有的特殊函数如上图, 合理地利用移动操作可以帮助我们写出效率更高的代码.
+```C++
+struct S{
+  ~S(){};
+  std::string s;
+};
+int main(){
+  std::vector<S> ss;
+  for(int i{}; i< 100; ++i){
+    ss.emplace_back();
+  }
+}
+```
+上面这段代码中, 我们定义了析构函数, 于是编译器没有生成搬移的特殊函数, 在每个操作中都需要做一系列的复制, 效率特别低.  
+<font color=blue>rules of zero</font> 可以帮助我们实现更高效地代码: 
+* 不要自己定义任何的特殊函数
+* 类初始化甚至可以包含默认构造函数做的事情
+
+特例:
+* 如果我们要管理资源,我们应该有构造函数/析构函数并且实施 RAII
+* 这以为着我们要对所有的特殊函数做 定义/`=default`/`=delete`
+* 在管理资源的时候, 只管理一份
+
+### 尽量使用 stack-based 对象
+Stack based 对象有下面这些优点:
+* 没有动态分配, 一般要更加高效
+* 可以帮助编译器优化代码
+* less code/ safer / utilizes RAII
+
+可以使用 heap profilers 帮助实现.
+
+### 不要使用 c-style 内存管理
+我们自定义一个包含一个字符串和定义了所有特殊函数的类, 因为在 OOP 中, 自定义类中使用 malloc/free 在生命周期没有调用构造函数/析构函数, **需要手动调用**, 就算如此,面对构造/析构函数抛出异常的时候也难以处理:
+```C++
+struct MyString{
+  std::string s = "hello world";
+};
+int main(){
+  void* p = malloc(sizeof(MyString));
+  MyString *o = new(p) MyString();
+  o->~MyString();
+  free(p);
+}
+```
+
+### 避免使用 `new`/`delete`
+new/delete 比 malloc/free 要更好一点, 因为它们可以正确地初始化/析构对象, 但是和其他手动资源管理一样, 我们要尽力避免:
+```C++
+struct MyClass{
+...
+};
+void do_something(){
+  MyClass *o = new MyClass();
+  // do the work
+  delete o;
+}
+```
+在分配和释放中间可能由于种种原因控制流离开了函数(如提前 return/ 异常), 这时候就会有资源泄漏.  
+```C++
+void delete_ptr(std::string *p, int){
+  delete p;
+}
+void do_something(){
+  delete_ptr(new std::string("hello"), do_something_else());
+}
+```
+上面的例子中, 因为函数参数的求值顺序是未定义的, 因此很可能 `new` 了对象之后, 在 `do_something_else()` 抛出异常, 这时候控制流离开 `delete_ptr()`, 而手动分配的内存就没有释放.这时候我们应该使用 `unique_ptr<T>` 和 `make_unique<T>()`
+```C++
+void use_ptr(const unique_ptr<string>& p, int){}
+void do_something(){
+  use_ptr(make_unique<string>("hello"), do_something_else());
+}
+```
+总结:
+* 避免使用手动的资源管理
+* 更多使用 RAII/ scoped pointers
+* 使用`std::make_sharde<T>()`(C++11) 和 `std::make_unique<>()`(C++14), 这比手动构造然后传得智能指针要更加高效
+* 可以使用的工具有 ReSharper C++
+
+### 正确使用智能指针
+`unique_ptr<>`:
+* 用于表示 single ownership
+* 相对于手动的堆内存管理没有任何额外的开销
+* 在必要的时候可以轻易转化为后者
+
+`shared_ptr<>`:
+* 表示 multiple ownership
+* 内部使用 reference counting 实现
+* 相对于 `unique_ptr<>` 有额外开销(有时候很显著)
+
+此外我们可以使用 lamnda 闭包来自定义内存管理的函数:
+```C++
+const auto d = [](FILE *f){fclose(f);};
+const auto fileptr = unique_ptr<FILE, decltype(d)>(fopen("my/file","r"),d);
+```
+
+* `std::unique_ptr` 支持 array type 的构造和析构, 但是目前 `shared_ptr` 不支持.
+* unique_ptr 是无法复制的
+  ```C++
+  std::vector<std::unique_ptr<int>> v;
+  auto i = std::make_uinque<int>(5);
+  v.push_back(i); // 编译错误
+  v.push_back(std::move(i)); // ok
+  v.emplace_back(std::make_unique<int>(5)); // better
+  ```
+* 不要使用 `auto_ptr`
+  * 在没有移动语义之前设计
+  * 在复制/拷贝赋值 时候 steal 所有权
+  * 该特性已被弃用
+* 我们可以使用的工具有 clang-tidy
+
+### 使用 `weak_ptr` 打破环引用
+```C++
+#include<memory>
+#include<vector>
+struct Node: std::enable_shared_from_this<Node>{
+  std::shared_ptr<Node> parent;
+  std::vector<std::shared_ptr<Node>> childern;
+  void addChild(const std::shared_ptr<Node> &chd){
+    children.push_back(chd);
+    chd->parent = this->shared_from_this();
+  }
+};
+int main(){
+  auto some_node = std::make_shared<Node>();
+  some_node->addChild(std::make_shared<Node>());
+}
+```
+address sanitizer 可以检测出这段代码中的环引用, 我们应该将 parent 设置为 weak_ptr, 并且提供一个函数可以访问:
+```C++
+struct Node: std::enable_shared_from_this<Node> {
+  ...
+private:
+  std::weak_ptr<Node> m_parent;
+public:
+  std::shared_ptr<Node> parent(){
+    auto p = m_parent.lock()
+    if(p) return p;
+    else throw std::runtime_error("no parents");
+  }
+}
+```
