@@ -84,7 +84,7 @@ size_t count_a(const std::vector<char> &t_vec){
 
 ### 不要做不成熟的优化
 举一个简单的例子:
-* 使用`std::move()` 强制百年一起执行 move 操作
+* 使用`std::move()` 强制编译器执行 move 操作
 * 编译器很多时候会做返回值优化 RVO, 使用 `std::move()` 之后就无法做了
 
 ## 表达式和语句
@@ -130,7 +130,7 @@ range base for-loop 只能用于遍历整个容器, 同时使用的时候应该�
       std::cout<< int(c) << '\n';
     }
     ```
-* 我们可以使用 clnag-modernize 可以更新旧的 for loop 到 range-based for loop
+* 我们可以使用 clang-modernize 可以更新旧的 for loop 到 range-based for loop
 
 ### 了解标准库
 * 容器
@@ -403,3 +403,19 @@ public:
   }
 }
 ```
+
+### 除非转移控制权, 否则不要向函数传递智能指针
+传递参数有五种使用场景, 可以使用 C++ Core checker 检查智能指针的滥用
+* use: 可以传递指针或者引用
+  * 如果参数不能为 null, 偏向使用引用类型
+  * 尽可能使用 const
+* may share
+  * 传递一个 `const shared_ptr<T>&`, 这意味着指针是 const 而不是指针指向的对象, 我们可以修改指向的对象
+  * 如果不修改对象, 用 `const shared_ptr<const T>&`
+* share
+  * 传递 `shared_ptr<T>`, 在函数需要增加指针的 reference counting 时候
+* reseat
+  * 传递 `shared_ptr<T>&/unique_ptr<T>&`: 函数调用后指针指向另一个对象
+* take
+  * 将要转移智能指针的控制权, 因为它无法复制, 因此只有被搬移的时候代码才能编译成功
+  * `void take(unique_ptr<T>)`
