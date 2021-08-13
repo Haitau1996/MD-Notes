@@ -42,8 +42,6 @@
     - [summary](#summary)
   - [Chap 3 : 类型特征萃取](#chap-3--类型特征萃取)
     - [Intro](#intro)
-- [Mastering C++ STL](#mastering-c-stl)
-  - [Move 语义](#move-语义)
 # Hou Jie C++ 11 新特性
 
 ## 演进 环境 与资源
@@ -674,5 +672,3 @@ struct forward : select1st<T2, T1>//相当于完成了select2nd的功能
 ### Intro
 type_traits 库提供的一组特征(traits)类, <font color=red> 可以在编译器确定类型时候具有某种特征</font>, 例如是否是原生数组, 是否是整数,是否重载了operator<等,这些东西都是compile-time检查, 不会有任何运行时效率损失.type_traits库中的元函数有两大类,
 
-# Mastering C++ STL
-## Move 语义
