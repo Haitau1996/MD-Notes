@@ -99,7 +99,19 @@ void foobar( X &_result )
     return;
 };
 ```
-因为对象模型的内部如下:
+因为对象模型的内部如下, 同时可能在内部有 RVO:
    <p align="center"><img src="https://i.loli.net/2021/08/18/a2FBXOTNxzjItE8.png"/></p>
 
 ### 关键词带来的差异
+#### 关键词的困扰
+struct 通常的意思是一个数据集合体, 没有 private date, 也没有对应的操作(成员函数), C 的 Struct 和 C++ 支持的 class 之间有观念上的重要差异, 但是**关键词本身并不提供这些差异**:例如我们前置声明时候使用的是其中一个, 实现的时候使用另外一个, 这并不会造成矛盾, 只是不符合"一致性用法"这种风格而已.
+```C++
+// illegal? no ... simply inconsistent
+class node;
+...
+struct node { ... };
+```
+但是在模板参数列表中, 现代编译器都只能使用 class/typename, 而无法使用 struct. **关键词 class 的引入并不只是关键词, 还有所支持的封装和继承的哲学**,而保留 struct 更多是方便 C程序员迁移.
+
+#### 策略正确的 struct
+C 程序员的巧计在 C++ 中可能被视为陷阱, 过去把单一元素的数组放在一个结构体尾端, 结构体的对象就可以拥有可变大小的数组:
