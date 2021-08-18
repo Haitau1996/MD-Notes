@@ -89,7 +89,7 @@ int (*func_table[])(double)={//由function pointer 构成的数组
 ```
 function pointer 的使用场合包括:
 * GUI中的按钮控件记忆"当自身被按下的时候需要调用的函数"
-* 根据指向函数指针是的数组(有点类似于C++中的virtual table)对处理进行分配
+* 根据指向函数指针是的数组(有点类似于 C++ 中的 virtual table)对处理进行分配
 
 #### 自动变量(stack)
 
