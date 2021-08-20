@@ -164,11 +164,11 @@ else{
 ```x86asm
 # void swt ch ( struct context ** old, st ruct context *new)
 #
-# S av e c urre n t regi s ter co ntext in old
+# Save current register context in old
 # and then load register context from new.
 .globl swtch
 swtch:
-# Sav e old regi s ter s
+# Save old registers
 movl 4(%esp), %eax # put old ptr into eax
 popl 0 (%eax)   # save the old IP
 movl %esp, 4 (:%eax) # and stack
@@ -179,7 +179,7 @@ movl %esi, 20(%eax)
 movl %edi, 24(%eax)
 movl %ebp, 28(%eax)
 
-# Loa d new regi s ter s
+# Load new registers
 movl 4 (%esp), %eax # put new ptr into eax
 movl 28 ( %eax) , :%ebp # restore other registers
 movl 24(%eax), %edi
