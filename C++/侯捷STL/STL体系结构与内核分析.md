@@ -57,7 +57,11 @@ for(auto& elem : c){
 ### 容器的分类与测试 
 #### 容器 - 结构与分类
 * 顺序容器
-  * <font color=pink>array</font>: 语言的一部分, since C++11 也变成了一个 class(`std::array`)
+  * <font color=pink>array</font>: 语言的一部分, since C++11 也变成了一个模板类(`std::array`)
+    ```C++
+    template<class T, std::size_t N>
+    struct array;
+    ```
   * vector: 空间可以自动增长, 分配器自动做这个事情
   * deque:两端都可以增长
   * list: 双向环状列表
