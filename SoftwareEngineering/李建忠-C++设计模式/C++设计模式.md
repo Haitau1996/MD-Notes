@@ -163,7 +163,7 @@ GoF 中 23 种模式的分类:
 ### 装饰模式
 我们考虑一个流相关的操作, 流可能是文件流/网络流/内存流, 操作可能是加密/ 缓存/两者都有, 这时候一个[平凡的实现](code/streamTrivialImpl.cpp)需要 $1 + n + n \times m !/2$ 个类, 同时膨胀出非常多的冗余代码. <div align=center><img src="https://i.imgur.com/UFdSonL.png"/></div>
 
-我们[一个重构的思路](code/streamWithDecorator.cpp)是用组合替代继承, 再通过组合的对象多态调用, 将编译时的装配换成运行时装配. [再进一步](code/streamWithAbstractDecorator.cpp), 我们可以将两个操作的共同点提取出一个中间类 DecoratorStream(通过组合实现多态调用, 同时继承 Stream 以保证接口的一致性).这时候就只需要实现 $1 + n + 1 + m$ 个类:<div align=center><img src="https://i.imgur.com/cRznkzI.png"/></div>
+我们[一个重构的思路](code/streamWithDecorator.cpp)是用组合替代继承, 再通过组合的对象多态调用, 将编译时的装配换成运行时装配. [再进一步](code/streamWithAbstractDecorator.cpp), 我们可以将两个操作的共同点提取出一个中间类 DecoratorOfStream(通过组合实现多态调用, 同时继承 Stream 以保证接口的一致性).这时候就只需要实现 $1 + n + 1 + m$ 个类:<div align=center><img src="https://i.imgur.com/cRznkzI.png"/></div>
 
 #### 动机
 * 在某些情况下我们可能会“过度地使用继承来扩展对象的功能”，由于**继承为类型引入的静态特质**(如最早实现中的 `FileStream::Read(number)`这类操作,重构后使用多态指针调用虚函数就是动态特质, 由组合实现)，使得这种扩展方式缺乏灵活性；并且随着子类的增多（扩展功能的增多），各种子类的组合（扩展功能的组合）会导致更多子类的膨胀。
@@ -179,3 +179,24 @@ GoF 中 23 种模式的分类:
 * 通过采用组合而非继承的手法， Decorator 模式实现了在 ==运行时动态扩展对象功能== 的能力，而且可以根据需要扩展多个功能。避免了使用继承带来的 “灵活性差” 和 “多子类衍生问题”。
 * Decorator 类在接口上表现为 is-a Component 的继承关系，即 Decorator 类继承了 Component 类所具有的接口。但在实现上又表现为 has-a Component 的组合关系，即 Decorator 类又使用了另外一个 Component 类。
 * Decorator模式应用的要点在于解决 “==主体类在多个方向上的扩展功能==”
+
+### 桥模式
+#### 动机
+* 由于某些类型的固有的实现逻辑，使得它们具有两个变化的维度，乃至多个纬度的变化。
+* 如何应对这种“多维度的变化”？如何利用面向对象技术来使得类型可以轻松地沿着两个乃至多个方向变化，而不引入额外的复杂度？
+
+例如我们实现一个 [Messager 类](code/MessagerTrivalImpl.cpp), 在 PC 和 Mobile 两个平台都要有 Lite 和 Perfect 两种模式, 这时候需要实现 $1 + n + m\times n$ 个类(m 中各个功能没有交叉), 并且其中有很多重复的冗余代码.  
+这时候我们可以把父类变成一个字段(组合替代继承),再声明为同一个基类, 并将 `PCMessagerBase::Connect()` 这种静态调用转为 `m_messager->Connect()`. 然后再把公共的部分提取出来作为基类, 得到了[使用桥模式重构的版本](code/MessagerRefactoringWithBridge.cpp).
+
+#### 定义
+> 将抽象部分(业务功能)与实现部分(平台实现)分离，使它们都可以独立地变化。
+
+因为这两个变化的方向不应该在一个类中同时实现.
+
+#### 结构
+<div align=center><img src="https://i.imgur.com/Z2zJIM6.png"/></div>
+
+#### 要点总结
+* Bridge模式使用“对象间的**组合关系**”解耦了抽象和实现之间固有的绑定关系，使得抽象和实现可以沿着各自的维度来变化。所谓抽象和实现沿着各自纬度的变化，即“子类化”它们。
+* Bridge模式有时候类似于多继承方案，但是多继承方案往往违背单一职责原则（即一个类只有一个变化的原因），复用性比较差。Bridge模式是比多继承方案更好的解决方法。
+* Bridge模式的应用一般在“两个非常强的变化维度”，有时一个类也有多于两个的变化维度，这时可以使用Bridge的扩展模式。
