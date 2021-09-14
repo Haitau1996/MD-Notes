@@ -244,3 +244,13 @@ za.rotate(); // ZooAnimal::rotate() invoked
 ```
 OO 程序设计并不支持对 object 的直接处理, 多态造成一个以上类型(既是基类又是派生类)的力量并不发生在直接存取 object 这件事情上, 故 za 是一个 ZooAnimal 实例而非 Bear 实例. 此外, 编译器在 initialization 以及 assignment  of one class object with another 两件事情上做了折衷, 确保当某个对象有一个或者以上的 vptr 时候, ptr 的内容不会被源对象初始化或者改变.   
 当一个 base class boject 被直接初始化为(或者赋值为)一个 derived class object 时候, ==**derived object 就会被切割以便塞入较小的 base type 内存中, derived type 不会留下任何蛛丝马迹, 多态于是不在呈现**. 而 reference 和 pointer 致所有只支持多态, 是因为他们没有 involve any type-dependent commitment of resources, **只会改变所指向内存的大小和内容的解释方式**==.  
+
+## Chap 2: 构造函数语义学
+编译器背着 C++ 程序员做了太多的事情, 如类型转换运算符就是一个常见的例子, 为了支持 iostream 的标量测试 `if(cin)`, 架构师 Jerry Schwarz 定义了一个 `operator int()`, 而如果将 cout 写成 cin:
+```C++
+cin << someInteger;
+```
+编译器将会把 cin 转换为一个 int 类型的数据, 然后对它做左移 someInteger 位的操作.即使如此, implicit class conversion 依旧被认为是必要的, 它在 String Class 最初是一种推动性的力量, 减少了很多不必要的复制操作.  
+`explicit` 关键词的引入, **制止了单一单数的 constructor 被当做是一个 conversion 运算符**, 即便如此 conversion 运算符实际上也很难在一种可预期的良好行为模式下使用(因此介绍 C++ best practice 的书籍都会建议我们尽量不要使用). 我们在这里挖掘编译器对于 对象构造过程 的干涉, 以及对于程序形式和程序效率上的冲击.
+
+### Default Constructor 的构造操作
