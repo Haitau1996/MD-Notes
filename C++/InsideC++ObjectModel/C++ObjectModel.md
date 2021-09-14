@@ -111,7 +111,136 @@ class node;
 ...
 struct node { ... };
 ```
-但是在模板参数列表中, 现代编译器都只能使用 class/typename, 而无法使用 struct. **关键词 class 的引入并不只是关键词, 还有所支持的封装和继承的哲学**,而保留 struct 更多是方便 C程序员迁移.
+但是在模板参数列表中, 现代编译器都只能使用 class/typename, 而无法使用 struct. **关键词 class 的引入并不只是关键词, 还有所支持的封装和继承的哲学**,而保留 struct 更多是方便 C 程序员迁移.
 
 #### 策略正确的 struct
 C 程序员的巧计在 C++ 中可能被视为陷阱, 过去把单一元素的数组放在一个结构体尾端, 结构体的对象就可以拥有可变大小的数组:
+```C++
+struct mumble {
+    /* other stuff */
+    char pc[ 1 ];
+};
+```
+但是 C++ 中, 处于同一个 access section 的数据必定保证按其声明顺序出现在内存中, 但是**多个 access section 中的各笔数据顺序就是未定义的**. 
+```C++
+class stumble {
+public:
+    // operations ...
+protected:
+    // protected stuff
+private:
+    /* private stuff */
+    char pc[ 1 ];
+};
+```
+如果我们希望实现成那样, 最好将那部分抽取出来成为一个独立的 struct 声明, 从 C struct 中派生出 C++ 的部分:
+```C++
+struct C_point { ... };
+class Point : public C_point { ... };
+// C 和 C++ 两种用法都获得支持
+extern void draw_line( Point, Point );
+extern "C" void draw_rect ( C_point, C_Point );
+
+draw_line( Point( 0, 0 ), Point( 100, 100 ));
+draw_rect( Point( 0, 0 ), Point( 100, 100 ));
+```
+现在, **组合而非继承, 才是将 C 和 C++ 结合在一起的唯一可行方法**, 可以实现类型转换将一种转为另一种:
+```C++
+struct C_point { ... };
+class Point {
+public:
+    operator C_point() { return _c_point; }
+    // ...
+private:
+    C_point _c_point;
+    // ...
+};
+```
+
+### 对象的差异
+C++ 程序设计模型支持多种范式
+* 过程模型
+* 抽象数据类型模型
+* 面向对象模型
+* 函数式编程模型
+
+在 OO 中, **只有通过  reference 或者 pointer 的间接处理, 才支持所需的多态特性**.被指定的 Object 的真实类型在每一个特定点执行之前, 是无法解析的. 而在 ADT范式中, 程序处理的是一个拥有固定而单一类型的实例, 在编译时期就已经完全确定好了. 
+```C++
+void rotate(
+    X datum,
+    const X *pointer,
+    const X &reference )
+{
+    // cannot determine until run-time
+    // actual instance of rotate() invoked
+    (*pointer).rotate();
+    reference.rotate();
+    // always invokes X::rotate()
+    datum.rotate();
+}
+main() {
+    Z z; // a subtype of X
+    rotate( z, &z, z );
+    return 0;
+}
+```
+上段代码中使用对象副本调用的操作是没有多态行为的.   
+在 C++ 中, 多态只存在于一个个 public class 体系中, Non-Public 的派生行为以及类型为 void* 的指针也可以说是多态的, 但是他们必须经由显式的类型转换操作来管理. C++ 以下列方法支持多态:
+* 经由一组隐式类型转换
+    ```C++
+    shape *shape_ptr = new Circle();
+    ```
+* 经由虚函数机制
+    ```C++
+    shape_ptr-> rotate()
+    ```
+* 经由 dynamic_cast 和 typeid 运算符
+    ```C++
+    if ( circle *pc =dynamic_cast< circle* >( ps )) {}
+    ```
+
+多态的主要用途是经由一个共同的接口来影响类型的封装, 接口通常被定义在一个 抽象的 base class 中. 这使得 当类型有所增加、修改、或删减时，我们的程序代码不需改变, 同时, sub class 的供应者不需要重新写出“对继承体系中的所有类飞都共涌＂的行为和操作。  
+而一个 class 对象的空间占用包含下面的部分:
+* 其 nonstatic data members 的总和大小；
+* 加上任何由于 alignment（对齐, 32位计算机上通常为 4 byte）的需求而填补(padding) 上去的空间（可能存在千members 之间，也可能存在于集合体边界）．
+* 加上为了支待virtual 而由内部产生的任何额外负担(overhead).
+
+#### 指针的类型
+实际上, 指向不同类型的指针(包括内置类型和用户自定义类型), 他们之间的差异不在于内容不同, 而是其所寻址出来的对象不同: **指针类型会教导编译器如何解释某个特定地址中的内容及其大小**.   
+所谓的 cast 其实是一种编译器指令, 大部分时候并不改变一个指针所包含的真正地址, 只是影响被指出内存的带下和其内容的解释方式. 
+#### 加上多态之后
+```C++
+Bear b;
+ZooAnimal *pz = &b;
+Bear *pb = &b;
+```
+<div align=center><img src="https://i.imgur.com/YwpOwzr.png"/></div>
+
+这个时候, pb 涵盖的地址包含整个 Bear Object 而 pz 只是包含其中的 ZooAnimal subobject.
+```C++
+// 不合法： cell_block 不是ZooAnimal 的一个member,
+// 虽然我们知道 pz 当前指向一个Bear object.
+pz->cell_block;
+
+// ok: 经过一个显式的 c-style 的downcast 操作就没有问题！
+((Bear*)pz)->cell_block;
+
+// better: 但它是一个 runtime operation （成本较高）
+if (Bear* pb2 = dynarnic_cast< Bear*>(pz))
+pb2->cell_block;
+
+// ok: 因为cell_block 是Bear 的一个member.
+pb->cell_block;
+```
+pz 的类型将在编译期决定下面两点:
+* 固定的可用接口(ptrToZooAnimal 只能调用 ZooAnimal 的接口)
+* 该接口的 access level
+
+在执行点, pz 所指向的 object 类型决定函数所调用的实例, 类型信息的封装并不是在 pz 中维护, 而是在一个 link 中, 它存在于 object 的 vptr 和 vptr 所指向的 vtbl 中.  
+```C++
+Bear b;
+ZooAnimal za = b;
+za.rotate(); // ZooAnimal::rotate() invoked
+```
+OO 程序设计并不支持对 object 的直接处理, 多态造成一个以上类型(既是基类又是派生类)的力量并不发生在直接存取 object 这件事情上, 故 za 是一个 ZooAnimal 实例而非 Bear 实例. 此外, 编译器在 initialization 以及 assignment  of one class object with another 两件事情上做了折衷, 确保当某个对象有一个或者以上的 vptr 时候, ptr 的内容不会被源对象初始化或者改变.   
+当一个 base class boject 被直接初始化为(或者赋值为)一个 derived class object 时候, ==**derived object 就会被切割以便塞入较小的 base type 内存中, derived type 不会留下任何蛛丝马迹, 多态于是不在呈现**. 而 reference 和 pointer 致所有只支持多态, 是因为他们没有 involve any type-dependent commitment of resources, **只会改变所指向内存的大小和内容的解释方式**==.  
