@@ -254,3 +254,6 @@ cin << someInteger;
 `explicit` 关键词的引入, **制止了单一单数的 constructor 被当做是一个 conversion 运算符**, 即便如此 conversion 运算符实际上也很难在一种可预期的良好行为模式下使用(因此介绍 C++ best practice 的书籍都会建议我们尽量不要使用). 我们在这里挖掘编译器对于 对象构造过程 的干涉, 以及对于程序形式和程序效率上的冲击.
 
 ### Default Constructor 的构造操作
+对于class X, 如果没有任何 user-declared constructor, 那么会有一个 trivial default constructor 被暗中(implicitly) 声明出来.
+
+#### 带有默认构造器的成员类对象
