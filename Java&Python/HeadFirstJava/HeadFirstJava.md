@@ -64,3 +64,36 @@ Java 语言中变量有两种： ==**primitive** 和 **reference**==.并且 Java
 数组就像是一个杯架， 其中的每个元素是变量（可以位基础类型或者引用）， 数组本身也是一个对象， 一旦被声明出来只能装载所声明的类型的元素。 <div align=center><img src="https://i.imgur.com/aiIqLQv.png"/></div>
 
 ## Chap 04: 对象的行为
+对象的状态影响行为，同时行为也会影响状态。例如我们可以给在函数调用的参数中使用实例变量
+```Java
+class Song{
+    String title;
+    String artist;
+    void play(){
+        soundPlayer.playSound(title);
+    }
+}
+class Dog{
+    int size;
+    String name;
+    void bark(){
+        if(size >= 60){
+            //...
+        }
+        else if{
+            //...
+        }
+    }
+}
+```
+* 方法中可能会运用形参， 调用时有时候需要传入实参， 实参传入方法后就成了形参， 跟局部变量是一样的。 
+* 方法何以有返回值
+* 可以向方法中传入多个参数， 但是个数和类型以及顺序要和声明的一致
+* Java 是通过值传递， 就是拷贝传递
+
+在处理数据的时候需要注意封装， 就是将实例变量设置为 private, 然后提供 public 的 getter 和 setter 提供对它的访问和修改。   
+在 java 中注意局部变量和实例变量的区别：
+* 实例变量声明在类内
+* 局部变量声明在方法中
+* ==局部变量没有默认值， 适用之前必须初始化==
+* 实例变量的默认值， 根据类型不同可能为 flase/ 0/ null
