@@ -181,3 +181,133 @@ public class Dog extends Canine implements Pet{
 }
 ```
 我们适用类当作多态类型应用的时候， 相同的类型必须来自同一个继承树， 并且是该类的子类， ==使用接口作为多态类型时， 对象就可以来自任何地方， 只要该对象的类实现了该接口==。  
+## Chap 9: 构造器与垃圾收集器
+变量可能放在堆或者栈中， 具体取决于它是哪一种变量， 实例变量或者局部变量。
+* 实例变量： 被声明在类中而不是方法中
+* 局部变量和方法的参数都是声明在方法中， 是暂时的并且生命周期仅限于方法被放在栈上的这段时间
+
+方法会像栈一样被堆在一起,在栈顶的方法就是正在执行的方法：
+```Java
+public void doStuff() {
+   boolean b = true;
+   go(4);
+}
+public void go(int x) {
+   int z = x + 24;
+   crazy();
+   // imagine more code here
+}
+public void crazy() {
+   char c = 'a';
+}
+```
+<div align=center><img src="https://i.imgur.com/nFohCeb.png"/></div>
+
+而当我们新建一个对象的时候， Java 会在堆上找到一个位置， 该区域足以存放该对象所有实例变量。 如果实例是对象的引用时， 这个空间只是引用本身而不是引用的对象所需要的空间。 实际上， 对象的赋值过程是三个步骤： 声明引用变量， 创建对象， 连接引用和对象。  
+
+### 构造 Duck
+构造函数没有返回类型， 它**会在对象能够被赋值给引用之前就执行**， 这意味着我们可以在对象被引用之前就介入， 一个常见的做法就是初始化对象的状态， 它不会被继承， 但是我们可以在子类中调用父类的构造函数。   
+构造函数可以重载， 如果没有写的话**编译器就会生成一个默认构造函数（没有参数）**， 但是我们写出了有参数的构造函数之后， 编译器不再会帮我们生成。默认构造函数做的事情实际上就是给实例变量赋予初始值， 基本类型赋值为 `0/0.0/false`, 引用类型赋值为 `null`。  
+在概念上， 由于对象的实例变量包含一路继承下来的东西， 像个洋葱一样。 ==在创建新对象时，所有继承下来的构造函数都会执行==，这个连锁反应直到 Object 这个顶层类为止， 因为完整的对象当然需要完整的父类核心。<div align=center><img src="https://i.imgur.com/qCYgkLI.png"/></div>
+
+调用父类的构造函数应该使用 `super()` 而无法通过类名调用， 如果我们没有写， 编译器会帮我们加上 `super()` 调用， 编译器自动添加的一定是没有参数的版本， ==对 super 的调用必须是构造函数的第一个语句==， 因为我们无法在父辈没有构造之前去执行子类的相关操作。 <div align=center><img src="https://i.imgur.com/sgEQ1fY.png"/></div>
+
+如果想要调用父类有参数版本的构造函数， 需要显式写出 super 并传入参数：
+```Java
+public abstract class Animal{
+    private String name;
+    public Animal(String theName){
+        name = theName;
+    }
+}
+class Hippo extends Animal{
+    public Hippo(String theName){
+        super(theName);
+    }
+}
+```
+某个构造器可以通过 this 调用重载版本的另一个构造器， 但是它必须放在第一行， 而且不能和 `super()` 共存。 
+
+### 生命周期
+对象的生命周期完全取决于引用变量的生命周期
+* 局部变量仅限于声明该变量的方法中存活
+* 实例变量的寿命和对象相同
+
+在 Java 中 Life 和 Scope 是不同的， 例如`funcUp()` 调用 `funcButton()`, 在 `funcButton()` 的函数体中， funcUp() 中的局部变量还存活， 但是并不能使用, 就是说**只能使用栈顶函数的变量**。  
+引用的规则和 primitive 数据类型相同， 只要有活着的引用， 对象就会活着， 有三种方法可以释放对象的引用：
+* 引用永久性地离开了它的范围
+* 引用被赋值到了其他对象上
+* 直接将引用设定为 null
+
+## Chap 10: 数字与静态
+Java 中没有什么东西是 global 的， 但是我们有时候需要一种不依赖实例的变量值的方法， 特别是在数学相关的操作中。   
+`static` 可以标记这种**不依靠实例或者说不需要对象**的行为， 带有静态方法的类通常不打算要初始化， 对于静态的方法有很多限制：
+* 静态的方法<font color=red>不能调用非静态的变量</font>
+* 静态的方法<font color=red>不能调用非静态的方法</font>
+* 静态变量对于所有实例都相同，<font color=red>会在任何对象创建之前 & 任何静态方法执行之前就初始化</font>： 用于被同类的所有实例共享的变量， 如计数
+* 静态的 final 变量就是常数
+  * 静态的 final 变量值必须在声明或者静态初始化语句中赋值
+    ```Java
+    public class Foo{
+        public static final int FOO_CONST = 10;
+        public static final double BAR_SIN;
+        static{
+            BAR_SIN = (double)Math.random();
+        }
+    }
+    ```
+final:
+* 用于变量表示不能修改其值
+* 用于 method 表示不能覆盖掉该 method
+* 用于类表示不能从该类派生
+
+### primitive 数据类型的包装
+Java 5.0 开始加入的 autoboxing 能够自动地将 primitive 数据类型转化为包装过的对象， 而在 Java 中我们无法使用 primitive type 用于初始化容器。除了容器外， 我们可以在各个地方使用到 autoboxing:
+* 方法的参数
+* 返回值
+* boolean 表达式
+* 数值运算
+* 赋值
+
+除了上述场合， <font color=blue>包装类有实用的静态方法</font>,如将 primitive 数据和 String 的相互转换:
+```Java
+String s = "2";
+int x = Integer.parseInt(s);
+String result = Integer.toString(x);
+boolean b = new Boolean("true").booleanValue();
+```
+
+### 数字的格式化
+Java 5.0 把更具扩展性的功能通过 java.util 中的 Formatter 类提供， 基本上的格式化由两个部分组成：
+* 格式指令
+* 需要格式化的值
+
+如 `String.format("%,d",100000)`, 就是将 100000 以带逗号的整数方式表示， 格式化说明最多会有 5 个部分，其中只有类型是必须填的：<div align=center><img src="https://i.imgur.com/y4H68GB.png"/></div>
+
+实际上 format 并不是通过函数重载来实现， 而是使用可变参数列表。 而日期的格式化和数值的主要差别在于日期格式的类型是用 t 开头的两个字符来表示：
+<div align=center><img src="https://i.imgur.com/JiJFN52.png"/></div>
+<div align=center><img src="https://i.imgur.com/bBzlFdn.png"/></div>
+
+此外可以使用 `java.util.Calandar` 来操作日期, 它是抽象的无法获取实例，可以通过 `Calendar.getInstance()` 返回具体子类的实例（默认是 `java.util.GregorianCalendar` ）。  
+
+### 静态 Import
+Java 5.0 允许静态 Import: 让我们 import 静态的类， 变量 或者 enum ， 这种声明中也可以使用通配符 `*`:
+```Java
+// old-fasioned code
+import java.lang.Math;
+class NoStatic {
+  public static void main(String [] args) {
+   System.out.println("sqrt " + Math.sqrt(2.0));
+   System.out.println("tan " + Math.tan(60));
+  }
+}
+// with static import
+import static java.lang.Math.*;
+import static java.lang.System.out;
+class WithStaticImport {
+  public static void main(String [] args) {
+    out.println("sqrt " + sqrt(2.0));
+    out.println("tan " + tan(60));
+  }
+}
+```
