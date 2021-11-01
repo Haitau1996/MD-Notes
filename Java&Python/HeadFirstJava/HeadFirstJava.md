@@ -311,3 +311,59 @@ class WithStaticImport {
   }
 }
 ```
+## Chap 11: 异常处理
+我们在调用有风险的方法（大概率不是自己写的）时候需要注意：调用的方法执行某些有风险的任务， 可能会在运行期间出现状况， 我们<font color=red>必须意识到该方法是有危险的， 并且写出可以在发生状况时候加以处理的程序代码</font>，未雨绸缪。这要借助于 Java 的异常处理机制， 对于有风险的方法其声明有 throw 语句。<div align=center><img src="https://i.imgur.com/x3go1hf.png"/></div>
+ 
+对于有风险的代码， 放在 `try/catch` 语句块中编译器会放心许多:
+```Java
+try {
+    Sequencer s = MidiSystem.getSequencer();
+    System.out.println("got a sequencer");
+}
+catch(MidiUnavailableException ex){
+    System.out.println("No Object");
+}
+```
+其中 `throw` 的异常是一种 _Execption_ 类型的对象， 所以我们 `catch` 的也是对象。编写和调用有风险的方法时需要注意：
+1. 对于有风险、会抛出异常的程序代码
+   1. 必须声明中给出会抛出的异常类型
+   2. 在有问题的地方创建异常对象并且抛出
+2. 在调用端
+   1. 将调用风险方法部分写在 try 语句中
+   2. 如果无法恢复，至少用 `some_exception.printStrackTrace()` 列出有用的信息
+
+Java 语言异常相对于 C++ 有个优势就是编译器对于异常处理的保证除了`RuntimeExceptions`（又被称为不检查异常）外：
+1. 如果有抛出异常， 一定要在声明中使用 throw 来说明这件事
+2. 调用抛出异常的方法， 必须确认知道异常的可能性
+
+不检查 _RuntimeExceptions_ 的原因是它们大多数是程序的逻辑的问题， try-catch 用于处理真正的异常，那些我们无法预测或者防止的执行期失败。  
+```Java
+try {
+  turnOvenOn();
+  x.bake();
+  turnOvenOff();
+} catch (BakingException ex) {
+     ex.printStackTrace();
+     turnOvenOff();
+}
+```
+* 如果 try 失败， 马上转移到 catch 块， 当 catch 块完成时执行 finally， finally 完成之后才会继续执行其余的部分
+* 如果 try 成功， 跳过 catch 进入 finally， finally 完成后才会执行其他部分
+* <font color=red>就算 try/catch 中有 return 语句， finally 还是会执行</font>
+
+如果有必要的话， 方法可以抛出多个异常：
+1. 声明必须要含有全部可能的检查异常（如果是继承树中有共同父类则可以只声明父类）。  
+2. 异常是对象， 可以有多态的引用方式
+3. 可以用父类处理异常， 但是不应该这么做
+4. 为每个异常单独编写异常的 catch 块， 要从下到大， 不能把大篮子放在小篮子上面， 否则小篮子相当于没有
+
+不想处理异常的时候可以直接 dunk 掉， 具体做法就是将调用的函数也声明为会抛出此异常：
+<div align=center><img src="https://i.imgur.com/A5bWZjn.png"/></div>
+
+`main` 调用了会抛出异常的 `foo`, 因为本身声明了抛出此异常<div align=center><img src="https://i.imgur.com/e9ZdI40.png"/></div>
+
+1. catch 与 finally 不能没有 try
+2. try-catch 之间不能有程序
+3. try 一定要有 catch or finally
+4. 只有 finally 的 try 必须声明异常
+
