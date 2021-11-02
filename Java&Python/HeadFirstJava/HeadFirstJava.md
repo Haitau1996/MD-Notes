@@ -367,3 +367,59 @@ try {
 3. try 一定要有 catch or finally
 4. 只有 finally 的 try 必须声明异常
 
+## Chap 12: GUI
+Jframe 代表的是屏幕上的 windows 对象， 我们可以把 button/checkbox/text 等接口放在 windows 上面。于是创建 GUI 就可以简化成下面几步骤：
+1. 创建 JFrame
+2. 创建 Widget
+3. 将 widget 放到 frame 上
+4. 显示出来
+    ```Java
+    JFrame frame = new JFrame();
+    JButton button = new JButton("click me");
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    frame.getContentPane().add(button);
+    frame.setSize(300,200);
+    frame.setVisible(true);
+    ```
+
+### 监听事件
+在 Java 中， 处理与用户操作事件的过程被称为 even-handling, 想要知道按钮的事件， 就需要监听事件的接口（每个事件类型都有对应的监听者接口）。 java 事件几乎都是以对象来表示：事件源会在用户做出相应动作（如按下按钮） 产生事件对象。 这时候就会有监听者和事件源两个对象：<div align=center><img src="https://i.imgur.com/PLlJJt9.png"/></div>
+
+* 监听： 实现 ActionListener 接口， 调用按钮的 addActionListener(this) 传入引用向按钮注册
+* 事件源： 按钮是 ActionEvent 的来源， 有 `addActionListener()` 方法添加
+
+例如在最简单的[程序](code/chap11/SimpleGuiB.java) 中， main 函数所在的类有一个 JButton 实例变量，同时实现了 `ActionListener` 接口， 就可以通过实例变量调用 `addActionListener(this)` 。 
+
+### 图形
+GUI 中添加东西有三种
+1. 放置 Widget
+2. 绘制 2D 图形
+3. 绘制 JPEG 图
+
+创建绘图组件最好的方式是创建出有绘图功能的 Widget, 然后放到 Frame 上。 具体而言就是创建 JPanel 的子类并且覆盖掉 `paintComponent()` 方法。
+1. 显示 JPEG
+    ```Java
+    // 在从 JPanel 派生的类中
+    pubilc void paintComponent(Graphics g){
+        Imag imag = new ImagIcon("cat.jpg").getImag();
+        g.drawImag(imag,3,4,this);
+    }
+    ```
+2. 画图
+
+其中传入的 java.awt.Graphics 对象实际是 Graphics2D 对象（有更多的方法）。
+
+### 更多操作
+frame 有多个地方可以安放 Widget， 可以有参数指定位置：
+```Java
+frame.getContentPane().add(BorderLayout.CENTER,button);
+```
+如果我们有多个按钮， 每个按钮执行不同的工作，应该如何安排：
+1. ❌ 一个类中实现两个 `actionPerformed()` 方法
+2. 🙁 两个按钮注册同一个监听口，然后在其中使用 if-else 判断， 可以用但是不够 OO
+3. ❌ 创建不同的监听类， 但是无法存取到我们需要的变量
+
+<font color=red>可以使用内部类实现我们想要的功能</font>:
+* 内部类可以使用外部类的变量
+* 但是只能使用所属的外部类的变量
+
