@@ -23,9 +23,10 @@
 如果类之间有多重的继承关系， 并且每个父类都有虚函数， 那么子类的情况可能有所不同。  
 
 ### `this` 指针
-<div align=center><img src="https://i.imgur.com/7LTXVcd.png"  width="40%" height="40%"/></div>
+<div align=center><img src="https://i.imgur.com/7LTXVcd.png"  width="40%" height="40%"/></div><div align=center><img src="https://i.imgur.com/lPUFBkC.png"/></div>
 
-我们使用一个 C 类的对象调用三个函数， 发现 A 和 C 的 this 指针指向同一个位置而 B 则和他们相差一个 sizeof(int):<div align=center><img src="https://i.imgur.com/Zn6l0PX.png"/></div>
+我们使用一个 [C 类的对象](code/2.this_in_multi_inheritance.cpp)调用三个函数， 发现 A 和 C 的 this 指针指向同一个位置而 B 则和他们相差一个 sizeof(int):<div align=center><img src="https://i.imgur.com/Zn6l0PX.png"/></div>
+
 
 这是因为 C 对象有三个部分， 从 A B继承的和本身， 而先从 A 类继承因此 AC 都是从那个地方开始， 而 B 对象则是在中间部分。如果 C 中 override 了 funcB[^overrideFuncB]， 那么调用 c.funcB 结果会是 004FF8F4:
 [^overrideFuncB]: override non-virtual 实际上是一个非常不好的做法，因为override 一般是要实现动态绑定， 而 non-virtual 是静态绑定
@@ -35,5 +36,16 @@ c_obj.B::funcB();//004FF8E8
 ```
 
 ### 构造函数
-程序员如果没有定义任何构造函数， 编译器会隐式地生成一个默认的构造函数，但是实际上==只有在必要的时候编译器才会合成默认构造函数， 而不是必然或者必须合成==：
-1. 该类没有任何构造函数， 但包含一个类类型的成员变量
+程序员如果没有定义任何构造函数， 编译器会隐式地生成一个默认的构造函数，但是实际上==只有在必要的时候编译器才会合成默认构造函数， 而不是必然或者必须合成==, 我们有俩面两个类：
+<div align=center><img src="https://i.imgur.com/VSDahJ0.jpg"/></div>
+
+在 [mian 函数](code/2.default_ctor.cpp)中加入 `Obj_with_ctor obj1;` 和 `Obj_without_ctor obj2`, 再使用
+```shell
+g++  -Og -S 2.default_ctor.cpp 
+```
+可以得到汇编文件，从中查看可以发现， 及时我们使用
+1. 该类没有任何构造函数， 但**包含一个类类型的成员变量,同时该成员所属的类有一个默认的构造函数**， 例如下面的结构中，编译器就会为`ClassWithoutCtor`生成默认的构造函数， 同时在该构造函数中会调用数据成员的默认构造函数。 此外如果有多个数据成员对象并且所属类有默认构造函数， 那么调用构造函数顺序和声明他们的顺序一致。<div align=center><img src="https://i.imgur.com/ODdPBjC.png"/></div>
+2. 父类带有默认构造函数，子类没有任何构造函数<div align=center><img src="https://i.imgur.com/SCTPvAx.png"/></div>
+3. 类有虚函数， 并且没有任何构造函数： 因为虚函数的存在， 编译器为该类生成一个虚函数表， 在其中记录各个虚函数的地址。 而该构造函数做的事情就是把类的虚函数表地址赋给类的虚函数表指针（因为每个对象都有一个虚指针， 而实际的虚函数表只有一个）。 就算我们实现了构造函数， 编译器依旧会帮我们把虚函数表赋值的必要过程安插进去
+4. 如果一个类带有虚基类， 编译器也会为子类和父类都生成“合成默认构造函数”, 在下面的虚继承结构中， Grand 类被继承了两次， 因此在 Object 中有两个 Grand 子类对象， 引入虚继承后， 无论 Grand 类在结构中出现了多少次，  Object 中只有一个 Grand 子对象。<div align=center><img src="https://i.imgur.com/h8ekHqu.png"/></div>
+5. 在定义成员变量时赋初值之后
