@@ -48,7 +48,7 @@ g++  -Og -S 2.default_ctor.cpp
 2. 父类带有默认构造函数，子类没有任何构造函数<div align=center><img src="https://i.imgur.com/SCTPvAx.png"/></div>
 3. 类有虚函数， 并且没有任何构造函数： 因为虚函数的存在， 编译器为该类生成一个虚函数表， 在其中记录各个虚函数的地址。 而该构造函数做的事情就是把类的虚函数表地址赋给类的虚函数表指针（因为每个对象都有一个虚指针， 而实际的虚函数表只有一个）。 就算我们实现了构造函数， 编译器依旧会帮我们把虚函数表赋值的必要过程安插进去
 4. 如果一个类带有虚基类， 编译器也会为子类和父类都生成“合成默认构造函数”, 在下面的虚继承结构中， Grand 类被继承了两次， 因此在 Object 中有两个 Grand 子类对象， 引入虚继承后， 无论 Grand 类在结构中出现了多少次，  Object 中只有一个 Grand 子对象。<div align=center><img src="https://i.imgur.com/h8ekHqu.png"/></div>
-5. 在定义成员变量时赋初值之后
+5. 类中有成员变量在定义时赋初值`private: int val{0};`
 
 ### 拷贝构造和移动构造
 当我们用一个类对象初始化该类的另一个对象时候， 要调用类的拷贝构造函数。 在程序员没有定义自己的拷贝构造函数时， 编译器会在<font color=red>必要的时候</font> 合成一个拷贝构造函数。<div align=center><img src="https://i.imgur.com/OApuEWG.png"/></div>
@@ -141,3 +141,36 @@ X(const X& temp){
 1. 初始化列表中的代码可以看作被编译器安插在构造函数中的
 2. 初始化列表中的代码在构造函数的函数体执行之前就被执行
 3. 列表中变量的初始化顺序和**类之间定义的顺序相同**，而不是和初始化列表中出现的顺序一致（最好是两者顺序相同，避免误导）  
+
+## Chap 3: 虚函数
+如果一个类有虚函数， 针对该类产生一个虚函数表， 生成该类的对象的时候， 对象里就会有一个指针（虚指针）指向虚函数的起始地址， 这个指针可以看成是类中的一个成员变量， 其位置可能在对象的开头或者末尾。<div align=center><img src="https://i.imgur.com/vOlNYGT.png"/></div>
+
+此外， 虚函数是可以手动调用的， 在上面的继承结构（所有函数都是虚函数）中，我们可以将 Derived 对象的地址转为 `long*`(验证过虚指针放在开头)， 它指向的位置起始就是虚函数表：
+```c++
+Derived* d = new Derived();
+long* pvptr = (long*)d;
+long* vptr = (long*)(*pvptr); // 访问虚指针指向的位置， 起始就是虚函数表
+typedef void(*Func)(void);
+Func f = (Func)vptr[0];
+f();
+```
+上面的过程就是通过函数指针去调用虚函数。实际上它们在内存中的示意图如下：
+<div align=center><img src="https://i.imgur.com/jXmgc3i.jpg"width="40%"/></div> 
+
+1. 包含虚函数的类才会有虚函数表， 同属于一个类的对象共享，但是每个对象都有 vptr
+2. 父类有虚函数等于子类也有虚函数， 而且但继承下是一个虚函数表
+3. 子类没有新的虚函数的话， 其则两者的表内容相同， 但在内存中依旧是两张表而不是同一张
+4. 虚函数表越界后的行为是未定义的
+
+然后我们考察 derived 的对象赋值给 base 类， 发现通过新的对象调用的虚函数依旧是 base 类的， `Derived d;Base b = d;`中的后面一句做了两个事情：
+1. 生成一个 base 对象 b
+2. 使用 d 对象来初始化 b
+
+因此， 这个过程除了会有对象裁切（超出 Base 类的成员变量被裁切掉）， 而初始化过程就是将 vptr 值指向 Base 的 vptr, 而不是直接复制 d 中的 vptr 地址。  
+
+### 多重复合下虚函数表
+<div align=center><img src="https://i.imgur.com/TEfACMn.png"/></div>
+
+通过和上面类似的方法观察， 发现多继承下一个对象有多个包含虚函数的基类， 就会有多个虚函数表指针，各个 vptr 按照顺序放在内存空间中， 并且子类和第一个基类共用一个虚函数表指针,下图是 msvc 输出结果的一个示意图。<div align=center><img src="https://i.imgur.com/GkeuKFn.jpg" width="60%"/></div>
+
+而虚函数表地址赋值给对象的vptr的语句， 是编译时候会往类的构造函数安插的， 实际上编译期间就为每个类确定好了对应虚函数表的内容。 [CSAPP](../../ComputerSystem/CSAPP/CSAPP.Mooc.md##lecture-13-linking) Lecture 13 中介绍了执行程序
