@@ -173,4 +173,23 @@ f();
 
 通过和上面类似的方法观察， 发现多继承下一个对象有多个包含虚函数的基类， 就会有多个虚函数表指针，各个 vptr 按照顺序放在内存空间中， 并且子类和第一个基类共用一个虚函数表指针,下图是 msvc 输出结果的一个示意图。<div align=center><img src="https://i.imgur.com/GkeuKFn.jpg" width="60%"/></div>
 
-而虚函数表地址赋值给对象的vptr的语句， 是编译时候会往类的构造函数安插的， 实际上编译期间就为每个类确定好了对应虚函数表的内容。 [CSAPP](../../ComputerSystem/CSAPP/CSAPP.Mooc.md##lecture-13-linking) Lecture 13 中介绍了执行程序
+而虚函数表地址赋值给对象的vptr的语句， 是编译时候会往类的构造函数安插的， 实际上编译期间就为每个类确定好了对应虚函数表的内容。 [CSAPP](../../ComputerSystem/CSAPP/CSAPP.Mooc.md#lecture-13-linking) Lecture 13 中介绍了执行程序。如果我们将一个带有虚函数的类构造函数重新写成下面的形式：
+```c++
+X() {
+	memset(this, 0, sizeof(X));
+}	
+X(const X& temp) {
+	memcpy(this, &temp, sizeof(X));
+}
+// in main function
+X x1;
+x1.virtual_func();
+x1.normal_func();
+X* ptrX = new X();
+ptrX->virtual_func(); //errorMessage: 引发异常， 读取访问权限冲突， ptrX-> 是 nullptr
+ptrX->normal_func();// OK
+```
+这个现象出现的原因是， 函数地址起始是没有变的， 通过指针去访问虚函数， 做的是动态绑定， 需要查看虚函数表的信息， 而普通函数或者**通过对象去调用虚函数是静态绑定， 在编译的时候就可以将语句和函数的地址绑定在一起**， 因此用不到虚函数表， 使用 menset 将虚函数表指针清零并不影响函数调用。  
+实际上虚函数和多态是给指针和引用使用的， 对象调用虚函数做的也是静态绑定。  
+
+## Chap 4: 数据语义学

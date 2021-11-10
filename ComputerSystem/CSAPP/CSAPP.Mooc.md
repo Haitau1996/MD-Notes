@@ -46,7 +46,7 @@
   - [Lecture 9 : Machine-­‐Level Programming V - Advanced Topics](#lecture-9--machine-level-programming-v---advanced-topics)
     - [内存布局](#内存布局)
     - [Buffer Overflow](#buffer-overflow)
-  - [Union Allocation](#union-allocation)
+    - [Union Allocation](#union-allocation)
   - [Lecture 10: 程序优化(Chap 5)](#lecture-10-程序优化chap-5)
     - [Optimizing Compilers](#optimizing-compilers)
     - [利用指令级并行](#利用指令级并行)
@@ -593,7 +593,7 @@ Stack Pointer(`%rsp`) 保存着最下面的stack 的地址(逻辑上是top eleme
   * Check for corruption before exiting function
   * gcc 选项 `-fstack-protector`(现在已经默认)
 
-## Union Allocation
+### Union Allocation
 * 分配最大的 element 需要的内存
 * 一次只能使用一个 field
 
