@@ -38,8 +38,38 @@ Links 的种类：
     <div align=center><img src="https://i.imgur.com/mLEC8Vk.png"/></div>
 
 ### the Socket API
-Network-Application 接口定义了应用应该如何使用网络， 让 apps 通过 hosts 访问对象， 而**隐藏了 network 的细节**：<div align=center><img src="https://i.imgur.com/MZephjF.png"/></div>
+Network-Application 接口定义了应用如何使用网络， 让 apps 通过 hosts 访问对方， 而**隐藏了 network 的细节**：<div align=center><img src="https://i.imgur.com/MZephjF.png"/></div>
 
-对于一个简单的 client-server setup, 
+对于一个简单的 client-server setup,这是很多应用得基础, 如 文件传输/网页浏览 
 * 客户端向服务端发送一个请求
 * 服务端 returns a (longer) reply
+
+Socket API 是使用网络的抽象, 它是主流操作系统和编程语言的一部分,提供流和数据报两种服务,它有下面的 API:<div align=center><img src="https://i.imgur.com/TOnAHM5.png"/></div>
+
+它们的执行顺序如下, 首先要两边都要有一个 socket,然后服务端需要更多的准备,接下来就是 sent-reply, accept 比 sent 还要早, recvive 比 send 也要更早, 这是一个 call block, 相当于是对方要先做好接收准备, 这边才开始接收:
+<div align=center><img src="https://i.imgur.com/zDJt8sY.png"/></div>
+
+traceroute 是广泛使用的命令行工具, 使用 network-network 接口(IP) 窥探网络内部.<div align=center><img src="https://i.imgur.com/F4Dtwrh.png"/></div>
+
+### 协议与分层
+网络的功能非常多, 我们需要某种模块化的方式管理其中的复杂度. 协议和分层是分割网络功能地主要结构化方法, 每一个协议地实例都通过协议和其同位体(peer)virtually 对话, 并且只使用来自下一层的服务.<div align=center><img src="https://i.imgur.com/nrnq5ia.png"/></div>
+使用的一系列协议被称为协议栈(protocol stack):<div align=center><img src="https://i.imgur.com/GSkxf0q.png"/></div>
+
+Encapsulation 是实现高效协议分层的机制, 
+* 较低层次包装来自上层的内容, 并且添加自己的信息形成一条用于传输的新的消息
+* 有点像用信封送信, 邮政系统不会查看内部的信息<div align=center><img src="https://i.imgur.com/u1eCaOg.png"/></div>
+
+实际上 header 中有 demultiplexing key, 帮助我们做信号分解:<div align=center><img src="https://i.imgur.com/OGqWefB.png"/></div>
+
+有了分层之后, 就可以方便地做信息隐藏和组件复用, 甚至用于连接不同地系统:<div align=center><img src="https://i.imgur.com/QX5hQUV.png"/></div>
+
+同时, overhead 和 hide information 也是 Laying 的主要缺点.
+
+### 参考模型
+分层之后, 有一个关键的设计问题就是**在各个 Layer 中要实现哪些功能**,参考模型就给我们提供了一个指导框架(这些只是参考模型, 并不严格要求, 经常有多个协议同时在一个 Layer 上, 有时候也难以将一个特定的协议严格限制在一个 Layer) 
+**OSI 七层模型**:<div align=center><img src="https://i.imgur.com/64yvDmu.png"/></div>
+
+**common practice**:<div align=center><img src="https://i.imgur.com/0TSqrqf.png"/></div><div align=center><img src="https://i.imgur.com/k1xoHBf.png"/></div>
+
+不同层的数据单元有不同的名称:<div align=center><img src="https://i.imgur.com/9Y4FSuD.png"/></div>
+同样地,它们地设备名称也是不同, 但是它们长得都差不多:<div align=center><img src="https://i.imgur.com/eu0QluG.png"/></div>
