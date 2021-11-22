@@ -746,8 +746,49 @@ catch(Exception e){
 * `static String toString(int modifiers)` 将修饰符从 int 转为 string
 
 #### 在运行时使用反射分析对象
-知道想要查看域名和类型, 查看指定的域是很容易, **而利用反射机制可以查看在编译时候还不清楚的对象域**.
-
+在编写程序的时候就知道的想要查看域名和类型, 查看指定的域是很容易,**<font color=red>利用反射机制可以查看在编译时候还不清楚的对象域</font>**， 做到这一点关键是依靠 Field 类中的 get 方法：
+```Java
+var harry = new Employee("Harry Hacker", 50000, 10, 1, 1989);
+Class cl = harry.getClass();// 得到包含 harry 类信息的 Class 对象
+Field f = cl.getDeclaredField("name");   // 正常无参数的是返回一个 Fields array, 
+                                          //这里有参数， 返回一个 Field 对象
+Object v = f.get(harry);   // Field 实例调用 get 方法，并且传入 Employee 对象
+f.set(obj,val); // 还可以用这个方法修改 name 字段
+```
+对于私有字段， 直接调用 `get/set` 会抛出异常， 可以通过 `f.setAccessible(true)` 解除限制。
+#### 使用反射编写泛型数组代码
+如果我们扩充一个已经填满的数组， 实现 `copyOf()` 方法， 不好的实现如下：
+```java
+public static Object[] badCopyOf(Object[] a, int newLength) // not useful
+{
+    var newArray = new Object[newLength];
+    System.arraycopy(a, 0, newArray, 0, Math.min(a.length, newLength));
+    return newArray;
+}
+```
+这里面， 返回的为 `Object[]`, 转为 `Employee[]` 会有运行时异常， 我们可以使用 `java.lang.reflect` 包中 `Array` 类的 `newInstance(componentType, newLength)` 实现更好的 copyOf:
+```Java
+public static Object goodCopyOf(Object a, int newLength)
+{
+    Class cl = a.getClass();
+    if (!cl.isArray()) return null;
+    Class componentType = cl.getComponentType();
+    int length = Array.getLength(a);
+    Object newArray = Array.newInstance(componentType, newLength);
+    System.arraycopy(a, 0, newArray, 0, Math.min(length, newLength));
+    return newArray;
+}
+// in practical use
+int[] a = { 1, 2, 3, 4, 5 };
+a = (int[]) goodCopyOf(a, 10);
+```
+#### 调用任意方法和构造器
+Field 类的 set 方法允许我们查看对象的字段， Method 类的 invoke 方法也允许我们调用包装在 Method 类中的方法。
+```java
+Method m1 = Employee.class.getMethod("getName");
+String n = (String) m1.invoke(harry);
+```
+这实际上已经十分接近 C 中函数指针的动作。
 ## Chap 06: 接口与内部类
 接口技术, 主要用于描述类有怎样的功能, 而并不给出每个功能的具体实现. 
 
