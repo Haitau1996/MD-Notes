@@ -803,8 +803,7 @@ public interface Comparable<T> {
     int compareTo(T other); // parameter has type T 
 }
 ```
-接口中绝不能含有实例域, 也不能在接口中实现方法. 在接口中的所有方法都自动是 _public_, 不过在实现接口的时候必须把方法声明为 _public_. 具体接口的实现的例子如下:
-
+接口中绝不能含有实例域, 也不能在接口中实现方法. **在接口中的所有方法都自动是 _public_**, 并且要在实现接口时显式将方法声明为 _public_. 具体接口的实现的例子如下:
 ```Java
 // Before Java EE 5.0 , 需要使用转型实现
 public int compareTo(Object otherObject) { 
@@ -819,7 +818,6 @@ class Employee implements Comparable<Employee> {
     . . .
 }
 ```
-
 Java 是一种强类型语言, 调用方法的时候编译器会检查这个方法是否存在. 
 
 #### 接口的特性
@@ -839,8 +837,7 @@ public interface Powered extends Moveable{
 }
 ```
 
-此外需要注意的是, 接口中不能包含实例域(非 static 的域)或者静态方法, 但是却可以包含常量( 接口中的方法默认是 public, 同时接口中的域被自动设置为 `public static final`):
-
+此外需要注意的是, 过去接口中不能包含实例域(非 static 的域)或者静态方法, 但是却可以包含常量(**接口中的方法默认是 public, 同时接口中的域被自动设置为 `public static final`**):
 ``` Java
 public interface Powered extends Moveable{
     double milesPerGallon(); // 一个 public 的非静态方法
@@ -848,18 +845,31 @@ public interface Powered extends Moveable{
 }
 ```
 
-尽管 Java 中不允许多继承, 但是继承一个超类的同时可以实现多个接口, 这为语言带了了很大的灵活性, 例如 语言中有一个非常重要的内置接口 Cloneable, 实现该接口就可以调用 Object 类的 clone 方法创建对象的一个拷贝.  
+尽管 Java 中不允许多继承, 但是继承一个超类的同时可以实现多个接口, 这为语言带了了很大的灵活性, 例如 语言中有一个非常重要的内置接口 Cloneable, 实现该接口就可以调用 Object 类的 clone 方法创建对象的一个拷贝. 
+所以 Java 中适用抽象类表示通用属性就会有严重的问题， 因为每个类只能拓展一个类， 这是在灵活性和效率之间的一个折衷。     
 C++ 语言可以有多继承, 但是带来的一些 虚基类 / 控制规则 / 横向指针类型转换 等复杂特性, 很少有程序员使用多继承, 更多的是使用混合的风格, 一个主要的基类描述父类对象, 其他的基类扮演辅助的角色, 相当于现在 Java 的风格.   
 可以为接口方法提供一个默认实现,必须用 default 修饰符标记这样一个方法:
-
 ```Java
 public interface Comparable<T>{
     default int compareTo(T other) { return 0; }
     // By default, all elements are the same
 }
 ```
-
-### 对象克隆
+在 Java8 中允许在接口中增加静态方法， 但是这有违接口作为抽象规范的初衷， 通常的做法是将其放在伴随类中。 Java 9 中甚至可以是 private, 但是作用似乎不大。  
+在接口中定义了默认方法， 同时在超类或者另一个接口中定义重名方法， 就会出现冲突问题， java 规则如下
+* 超类优先：`class Student extends Person implements Name{...}` 就使用 Person 中的版本 
+* 接口冲突时候需要手动指定
+    ```Java
+    interface Person {
+        default String getName(){return "";}
+    }
+    interface Nameed{
+        default String getName(){return getClass().getName() + "_" + hashCode();}
+    }
+    class Student implements Person,Named{
+        public String getName(){return Person.super.getName();}
+    }
+#### 对象克隆
 拷贝一个对象和对象克隆有着本质的区别, 前者是两个引用变量引用同一个对象, 而后者默认的实现也是潜拷贝, 如果原始对象与潜克隆对象共享的子对象是不可变的(如String), 这样不会有任何问题. 但是更常见的情况可能是子对象可变, 这时候我们需要实现自己的版本:  
 ![](figure/Core6.1.png)  
 需要注意的是, Object 中的 clone 方法是 proctected的, 子类只能调用 clone 的方法克隆它自己, 为此我们需要重新定义 clone 方法, 并且将它声明为 public, 这样才能让所有的方法克隆对象.  值得注意的是, Cloneable 接口的出现并没有指定 clone 方法, 这个方法是从 Object 类继承而来的. 如果一个对象需要克隆, 但是没有实现 Cloneable 接口, 就会产生一个已检出的异常. 在 clone 默认实现已经满足需求时依旧需要实现这个接口, 并且调用 `super.clone()`, 不满足需求时,为了实现深拷贝, 我们必须克隆所有的可变实例域:
@@ -887,7 +897,7 @@ class Employee implements Cloneable{
 
 我们必须非常谨慎地实现子类的克隆, Manager 中可能存在一些需要深拷贝的类, 或者包含一些类没有实现 Cloneable 接口的实例域, 没有人保证子类的 clone 一定正确. 
 
-### 接口与回调
+#### 接口与回调
 回调 (callback) 是一种常见的程序设计模式。在这种模式中，可以指出某个特定事件发生时应该采取的动作。 在Java.swing 包中有一个 Timer 类，可以使用它在到达给定的时间间隔时发出通告。同时, Java 采用的是面向对象的方法, 将某个类的对象传递给定时器, 然后定时器调用该对象的方法. 由于对象可以携带一些附加的信息，所以传递一个对象比传递一个函数要灵活得多, 定时器需要知道自己调用的是哪个方法, 要求传递的对象实现某个接口:
 
 ```Java
@@ -904,6 +914,69 @@ class TimePrinter implements ActionListener{
 
 方法有一个 ActionEvent 参数, 提供了事件的相关信息. 
 
+### Lambda 表达式
+lambda表达式是一个可传递的代码块，可以在以后执行一次或多次。例如想要一个根据字符串长度排序的方法, 先实现一个类， 在其中实现自定义的排序， 然后传入到 sort 函数中（LengthComparator 有点像 C++ 中的函数对象）：
+```Java
+class LengthComparator implements Comparator<String> {
+    public int compare(String first, String second) {
+        return first.length() - second.length(); 
+    } 
+}
+// . . .
+Arrays.sort(strings, new LengthComparator());
+```
+目前为止， 实现都是通过构造对象， 然后在对象中包含所需要的代码。 而 lambda 表达式就是一个代码块， 以及必须传入代码的变量规范：
+```Java
+(String first, String second)->first.length()  - second.length();
+```
+* 具体的形式就是 参数 + 箭头（`->`）+ 一个表达式， 如果无法完全放到一个表达式中， 可以写成一个代码块， 并包含显式的 return 语句。
+* 没有参数也要提供括号
+* 如果可以推导出参数类型， 则可以忽略
+    ```Java
+    Comparator<String> com = (first, second) -> first.length() - second.length;
+    ```
+
+对于只有一个抽象方法的接口， 需要该接口对象的时（如上面的 LengthComparator 对象）可以提供一个 lambda 表达式，这种接口被称为**函数式接口**(functional interface)。  
+```Java
+Array.sort(words, (first, second)->first.length()-second.length()); 
+```
+Java 中对 lambda 表达式表达式是转换为接口， 没有增加函数类型， 并且在 `java.util.function` 中定义了很多通用的函数式接口， 如 `BiFunction<T,U,R>` 以 T/U 为参数类型， R 为返回类型。 
+```Java
+BiFunction<String, String, Integer> comp
+     = (first, second) -> first.length() - second.length();
+```
+#### 方法引用
+在需要的时候我们可以把方法传入到构造器中， 下面的 `System.out::println` 就被称为是**方法引用**， 和 lambda 表达式一样， 方法引用也不是一个对象， 但是在作为函数式接口的变量赋值时会生成一个对象（有点像 C++ 中传入函数对象那里传入了一个函数指针）：
+```Java
+// timeer 两个参数： 事件间隔 和 监听器对象
+var timer = new Timer(1000, System.out::println);
+```
+正如上面所写， 使用 `::` 分隔方法名与对象名或者类名:
+1. object::instanceMethod,等价于向方法传递参数的 lambda 表达式，`System.out::println` 相当于 `x -> System.out.println(x)`, 对象x 是 System.out
+2. Class::instanceMethod, 第一个参数会称为函数的隐式参数（this）`String::compareToIgnoreCase` 相当于 `(x, y) -> x.compareToIgnoreCase(y)`
+3. Class::staticMethod, 所有方法都传入到静态方法， `Math::pow` 相当于 `(x,y)-> Math.pow(x,y)`
+
+只有当 lambda 表达式主体值调用一个方法而不做其他操作时候， 才能重写为方法引用， 可以在方法引用中使用 this 参数， 如 `this::equals` 相当于 `x->this.equals(x)`。  
+**构造器引用**和方法引用类似， 不过方法名为 new, 如 `Person::new`.  
+lambda 表达式可以捕获外围作用域中变量的值， 但是只能引用值不会改变的变量(必须是**事实最终变量**，effectively final, 初始化之后就不会再为它赋新值)，因为**如果在 lambda 中修改值， 并发执行多个动作时候就会不安全**， 另外引用一个变量， 该变量可能在外部被修改，也是不合法的：
+```Java
+public static void countDown(int start, int delay) {
+    ActionListener listener = event -> {
+        start--; // ERROR: Can't mutate captured variable 
+        System.out.println(start);
+    }; 
+    new Timer(delay, listener).start();
+}
+public static void repeat(String text, int count) {
+    for (int i = 1; i <= count; i++) {
+        ActionListener listener = event -> {
+        System.out.println(i + ": " + text); // ERROR: Cannot refer to changing i
+        };
+        new Timer(1000, listener).start(); 
+    }
+} 
+```
+使用 lambda 表达式重点是**延迟执行**(deferred execution),因为如果要立即执行完全可以直接执行不用封装。
 ### 内部类
 
 内部类 (inner class) 是定义在另一个类中的类, 引入的原因主要有三个:
@@ -911,4 +984,28 @@ class TimePrinter implements ActionListener{
 2. 内部类可以对同一个包中的其他类隐藏起来。
 3. 当想要定义一个回调函数且不想编写大量代码时，使用匿名 (anonymous ) 内部类比较便捷。
 
+> Java 的内部类和 C++ 的嵌套类相似， 并且**提供了隐式引用指向实例化这个对象的外部类**， 因此可以访问外部类对象的全部状态。
 #### 使用内部类访问对象状态
+<div align=center><img src="https://i.imgur.com/doQzSpj.png"/></div>
+
+如上图， TalkingClock 中的内部类 TimerPrinter 可以直接访问其字段：
+```Java
+public class TalkingClock {
+    private int interval;
+    private boolean beep;
+    //..
+    public class TimePrinter implements ActionListener {
+        public void actionPerformed(ActionEvent event) {
+            System.out.println("At the tone, the time is " 
+                + Instant.ofEpochMilli(event.getWhen())); 
+            if (beep) Toolkit.getDefaultToolkit().beep();
+        }
+    }
+...
+}
+```
+如果使用正规语法， 相当于`OuterClass.this.someField`:
+```Java
+if(TalkingClock.this.beep) Toolkit.getDefaultToolkit().beep();
+```
+在外围类的作用域之外， 也可以这样引用内部类，`OuterClass.InnerClass`.  
