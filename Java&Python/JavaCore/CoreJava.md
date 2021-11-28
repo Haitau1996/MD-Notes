@@ -1068,5 +1068,119 @@ public void start(int interval, boolean beep) {
 
 ### 代理
 利用代理可以**在运行时创建一个实现了一组给定接口的新类**。这种功能只有在编译时无法确定需要实现哪个接口时才有必要使用。  
-// TODO: 代理有一些不理解
 
+todo: 代理
+
+## Chap 07: 异常、断言和日志
+### 错误处理
+在现实世界中却充满了不良的数据和带有问题的代码，Java 使用了一种被称为**异常处理**的错误捕获机制。 一个Java程序运行期间出现了一个错误， 程序应该做到下面两者之一：
+* 返回到一种安全状态，并能够让用户执行一些其他的命令
+* 允许用户保存所有操作的结果，并以妥善的方式终止程序
+
+传统的做法是返回一个错误代码， 而 Java 在某个方法无法通过正常途径完成其任务时， 方法并不返回任何值， 而是抛出一个**封装了错误信息的对象**（异常，该对象派生于 `Throwable` 类）， 异常处理机制开始搜索能够处理这种情况的**异常处理器**（exception handler）。<div align=center><img src="https://i.imgur.com/kK8N22d.png"/></div>
+
+设计程序时要关心 `Exception` 层次结构， 它有两个分支：
+* 派生于 _RuntiomException_, 一般由编程错误导致
+  * 错误的类型转换， 数组越界， 访问 null 等
+* 其他异常， 程序本身没有问题， 但是像 I/O 这类操作导致
+
+Java 语言规范将派生自 _Error_ 和 _RuntimeExcepiton_ 类的所有异常设置位非检查型。
+
+#### 声明检查类型
+方法不仅要告诉编译器要返回什么值， **还要告诉编译器可能的错误类型**。
+```Java
+public FileInputStream(String name) throws FileNotFoundException
+```
+在自己编写代码时， 需要记住下面四种会抛出异常的情况：
+*  **调用一个抛出受查异常的方法**，例如，_FileInputStream_ 构造器
+*  **程序运行过程中发现错误，并且利用throw语句抛出一个受查异常**(下一节将详细地介绍throw语句)。
+*  程序出现错误, 如 `a[-1]=0` _抛出 ArrayIndexOutOfBoundsException_
+*  Java 虚拟机或者运行时库出现内部错误
+
+我们不应该声明上面的第三、四种情况， 并且**必须声明所有可能抛出的检查型异常**。  
+
+#### 创建和抛出异常
+抛出异常只需要：
+1. 选择合适的异常类
+2. 创建该类的一个对象
+3. 将对象抛出
+
+异常抛出后将不会再回到调用者。 我们可以从内置的异常类中派生出我们想要的异常类， 自定义异常类**通常包含默认构造器和包含详细信息的构造器**。
+
+### 捕获异常
+想要捕获异常， 需要设计 try-catch 语句块：
+```Java
+try {
+    code 
+    more code
+}
+catch (ExceptionType e)
+{
+ handler for this type
+}
+```
+除此之外， 另一个做法是**什么也不做， 而是将异常传递给调用端**：
+```Java
+public void read(String filename) throws IOException {
+    var in = new FileInputStream(filename); 
+    int b; 
+    while ((b = in.read()) != -1) {
+        process input
+    }
+}
+```
+通常我们习惯于**捕获知道如何处理的异常， 而传播我们无法处理的异常**。  
+此外， 可以同时捕获多种异常， 在 Java7 中可以在同一个 catch 子句中捕获多个异常类型：
+```Java
+try {
+    code that might throw exceptions
+}
+catch (FileNotFoundException | UnknownHostException e) {
+    emergency action for missing files and unknown hosts
+}
+catch (IOException e) {
+    emergency action for all other I/O problems
+}
+```
+我们也可以在 catch 子句中重新抛出异常， 通常是在**希望改变异常类型的情况下这么做**。
+```Java
+try {
+    access the database
+}
+catch (SQLException original) {
+    var e = new ServletException("database error"); 
+    e.initCause(original); 
+    throw e;
+}
+```
+如果方法获得了一些本地资源，并且只有这个方法自己知道，又如果这些资源在退出方法之前必须被回收，那么可以使用 finally 语句。Since java7, **try-with-resources** 更加常用， 如果资源实现了 _AutoCloseable_ 接口， 其中有一个 `close()` 方法， try 块退出时， 会自动调用 res.close()。
+```Java
+class Resource implements AutoCloseable {
+    void close() throws Exception{}
+}
+// elsewhere
+try (Resource res = . . .) {
+    work with res
+}
+```
+**堆栈轨迹**(stack trace)是一个方法调用过程的列表，它包含了程序执行过程中方法调用的特定位置,当Java程序正常终止，而没有捕获异常时，这个列表就会显示出来,调用 Throwable 的 `printStackTrace` 就可以得到相关的文本描述信息。  
+
+### 使用异常的技巧
+1. 异常不能替代简单的测试： 异常捕获有相对高昂的成本， 只有在异常的时候使用
+2. 不要过分地细化异常
+3. 充分利用异常的层次结构
+4. 不要压制异常
+5. 在检测错误时， 苛刻要比放任更好
+6. 不要羞于传递异常
+
+### 使用断言
+Java 语言中引入了关键字 `assert`, 有两种形式：
+* `assert condition;`
+* `assert condition : expression;`: 表达式将传入 _AssertionError_ 的构造器， 唯一目的是产生一个消息字符串
+
+断言默认是禁用的， 启用和禁用是类加载器的功能。 可以在运行时使用 `-ea` 打开， 或者`-ea:ClassName/ -ea:package` 对某个类、包 启用。  
+通常而言， 断言失败是致命的、不可恢复的错误， 仅在于开发阶段和测试阶段打开， 可以用于完成**参数检查**（确保满足前置条件）和**提供假设文档**。
+
+### 日志
+日志 API 用于帮助观察程序的行为。
+todo: 重新看这部分
