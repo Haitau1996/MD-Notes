@@ -976,7 +976,21 @@ public static void repeat(String text, int count) {
     }
 } 
 ```
-使用 lambda 表达式重点是**延迟执行**(deferred execution),因为如果要立即执行完全可以直接执行不用封装。
+使用 lambda 表达式重点是**延迟执行**(deferred execution),因为如果要立即执行完全可以直接执行不用封装。  
+实际中使用 lambda 表达式常常射这样， 生成一个 lambda 表达式， 然后传入需要一个函数式接口的方法中。<div align=center><img src="https://i.imgur.com/0iVRvMO.png"/></div><div align=center><img src="https://i.imgur.com/CWhdNbz.png"/></div>
+
+```java
+class LambdaTest{
+    public static void repeat(int n, Runable r){
+        for(int i = 0; i< n; i++) r.run();
+    }
+    // in other methods
+    public static void someMethod(){ 
+        ...
+        repeat(10, () ->System.out.println("lambda test")); 
+    }
+}
+```
 ### 内部类
 
 内部类 (inner class) 是定义在另一个类中的类, 引入的原因主要有三个:
@@ -1008,4 +1022,51 @@ public class TalkingClock {
 ```Java
 if(TalkingClock.this.beep) Toolkit.getDefaultToolkit().beep();
 ```
-在外围类的作用域之外， 也可以这样引用内部类，`OuterClass.InnerClass`.  
+在外围类的作用域之外， 也可以这样引用内部类，`OuterClass.InnerClass`. 内部类是一个编译器现象， 与虚拟机无关，总之**如果内部类访问了私有数据域，就有可能通过附加在外围类所在包中的其他类访问它们**。  
+可以使用**局部内部类**， 在它们声明时候不能有访问说明符， 局部类的作用域被限定在声明这个局部的块中， **对外部世界完全隐藏**。局部内部类除了能访问外部类的字段， 还可以访问局部变量， 不过它们必须是事实最终变量（一旦赋值就不会改变）。<div align=center><img src="https://i.imgur.com/Xj3F7JR.png"/></div>
+```Java
+// in the TalkingClock class
+public void start(int interval, boolean beep) {
+    class TimePrinter implements ActionListener {
+        public void actionPerformed(ActionEvent event) {
+            System.out.println("At the tone, the time is " 
+                + Instant.ofEpochMilli(event.getWhen())); 
+            if (beep) Toolkit.getDefaultToolkit().beep(); 
+        }
+    }
+    var listener = new TimePrinter(); 
+    var timer = new Timer(interval, listener); 
+    timer.start();
+}
+```
+如果内部类只创建一个对象， 可以不指定名字， 这种被称为**匿名内部类**：过去这种类常常用于实现内部监听器和其他回调， 现在最好还是使用 lambda 表达式。
+```Java
+public void start(int interval, boolean beep) 
+{	
+    var listener = new ActionListener() 
+            { 
+                public void actionPerformed(ActionEvent event) 
+                { 
+                    System.out.println("At the tone, the time is " + 
+                    Instant.ofEpochMilli(event.getWhen())); 
+                    if (beep) Toolkit.getDefaultToolkit().beep(); 
+                } 
+            }；
+     var timer = new Timer(interval, listener); 
+     timer.start();
+}
+// refactoring with lambda expression
+public void start(int interval, boolean beep) {
+    var timer = new Timer(interval, event -> { 
+        System.out.println("At the tone, the time is " + 
+            Instant.ofEpochMilli(event.getWhen())); 
+        if (beep) Toolkit.getDefaultToolkit().beep(); });
+    timer.start();
+}
+```
+使用内部类只是为了**把一个类隐藏在另外一个类的内部，并不需要内部类引用外围类对象**。为此，可以将内部类声明为 _static_，以便取消产生的引用。
+
+### 代理
+利用代理可以**在运行时创建一个实现了一组给定接口的新类**。这种功能只有在编译时无法确定需要实现哪个接口时才有必要使用。  
+// TODO: 代理有一些不理解
+
