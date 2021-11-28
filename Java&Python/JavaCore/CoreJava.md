@@ -1184,3 +1184,7 @@ Java 语言中引入了关键字 `assert`, 有两种形式：
 ### 日志
 日志 API 用于帮助观察程序的行为。
 todo: 重新看这部分
+
+## Chap 08: 泛型程序设计
+### Why Generic Programming
+泛型程序设计(Generic programming)意味着**编写的代码可以被很多不同类型的对象所重用**。
