@@ -1187,4 +1187,88 @@ todo: 重新看这部分
 
 ## Chap 08: 泛型程序设计
 ### Why Generic Programming
-泛型程序设计(Generic programming)意味着**编写的代码可以被很多不同类型的对象所重用**。
+泛型程序设计(Generic programming)意味着**编写的代码可以被很多不同类型的对象所重用**。泛型的引入最早是为了支持强类型的集合， 在没有引入泛型之前， 类似的功能是使用继承实现的， 它有两个主要问题:
+```Java
+public class ArrayList // before generic classes 
+{
+    private Object[] elementData; 
+    . . .
+    public Object get(int i) { . . . }
+    public void add(Object o) { . . . } 
+}
+```
+* 获取一个值的时候必须做强制类型转换
+* 没有错误检查（可以向数组列表中添加任何类的值）
+
+使用泛型之后， 程序增加了易读性， 也更加安全。  
+```Java
+var files = new ArrayList<String>();
+// 如果有明确类型而不是 var, 可以忽略构造器中的类型参数
+ArrayList<String> files = new ArrayList<>();
+```
+
+### 简单泛型类
+**泛型类**(generic class)就是具有一个或多个类型变量的类（表面上看对应 C++ 中的类模板）。 
+```java
+public class Pair<T, U> { . . . }
+```
+使用的时候可以适用具体的类型替换类型变量来实例化泛型类型:`Pair<String, Integer>()`。
+
+### 泛型方法
+还可以定义一个带有类型参数的简单方法，如在简单类 `ArrayAlg` 中定义 `getMiddle`, 调用时可以把实例化类放在尖括号中， 也可以由编译器推断:
+```Java
+class ArrayAlg
+{
+    public static <T> T getMiddle(T... a)
+    {
+        return a[a.length / 2];
+    }
+}
+String middle = ArrayAlg.<String>getMiddle("John", "Q.", "Public");
+String middle = ArrayAlg.getMiddle("John", "Q.", "Public");
+```
+
+### 类型变量的限定
+有时，类或方法需要对类型变量加以约束， 例如我们要计算 ArrayList 中的最小元素， 这就需要类型实现了 _Comparable_ 接口：
+```Java
+public static <T extends Comparable> T min(T[] a) . . .
+```
+虽然这里用的关键词 `extends`, 但是 T 和 限定类型可以是类， 也可以是接口。
+
+### 泛型代码和虚拟机
+虚拟机没有泛型类型对象——所有对象都属于普通类。
+#### 类型擦除
+无论何时定义一个泛型类型，都自动提供了一个相应的**原始类型**(raw type)。原始类型的名字就是删去类型参数后的泛型类型名， 类型变量会被擦除， 并替换为其限定类型(没有限定则为 _Object_)。  
+```Java
+public class Interval<T extends Comparable & Serializable> implements Serializable
+{
+    private T lower;
+    private T upper;
+    . . .
+    public Interval(T first, T second)
+    {
+        if (first.compareTo(second) <= 0) { lower = first; upper = second; }
+        else { lower = second; upper = first; }
+    }
+}
+// raw type Interval looks like this
+public class Interval implements Serializable
+{
+    private Comparable lower;
+    private Comparable upper;
+    . . .
+    public Interval(Comparable first, Comparable second) { . . . }
+}
+```
+
+#### 转换泛型表达式
+当程序调用泛型方法时，如果擦除返回类型，编译器插入强制类型转换。
+```Java
+Pair<Employee> buddies = . . .;
+Employee buddy = buddies.getFirst();
+```
+第二句相当于两条虚拟机指令：
+1. 对原始方法 `Pair.getFirst()` 的调用
+2. 将返回的 Object 转为 Employee 类型
+
+#### 转换泛型方法
