@@ -124,9 +124,9 @@
     - [性能目标: throughput(吞吐量) 和 峰值利用率](#性能目标-throughput吞吐量-和-峰值利用率)
     - [碎片](#碎片)
 ### Several Reality of how the machine works
-1. **Ints are not Integers, Floats are not Reals**<br>
-    Example1: Is $x^2 \geq 0$ ? For Floats: yes. for Ints, there are overloading problems.<br>
-    Example2: Is (x+y)+z = x+(y+z) ? For ints: yes. For Floats:not. <br>
+1. **Ints are not Integers, Floats are not Reals**  
+    Example1: Is $x^2 \geq 0$ ? For Floats: yes. for Ints, there are overloading problems.  
+    Example2: Is (x+y)+z = x+(y+z) ? For ints: yes. For Floats:not.   
     ![Observation 1](figure/Mooc1.1.png)
 2. **You've got to know Assembly** 阅读编译器生成的汇编代码
 3. **Memory Matters** : Random Access Memory Is an Unphysical Abstraction:
@@ -143,26 +143,26 @@
     * 电脑使用网络相互通信
 
 ## Lecture 2 Bit,Byte and Integers
-Everything is bits. 存储一个bit的值比其他方式更容易实现.依然而言, 使用4个bit去用16进制能更简单地表示数据, 而8个bit就是一个Byte(字节).<br>
-在C语言中的各种数据大小:<br>
-![size in c](figure/Mooc1.4.png)<br>
+Everything is bits. 存储一个bit的值比其他方式更容易实现.依然而言, 使用4个bit去用16进制能更简单地表示数据, 而8个bit就是一个Byte(字节).  
+在C语言中的各种数据大小:  
+![size in c](figure/Mooc1.4.png)  
 ### 位操作
-布尔代数的运算规则,这些运算规则可以用来 Manipulating Sets:<br>
-![bool algebra](figure/Mooc1.5.png)<br>
+布尔代数的运算规则,这些运算规则可以用来 Manipulating Sets:  
+![bool algebra](figure/Mooc1.5.png)  
 需要注意的是这个C的 **bit operator和表达式的逻辑运算是不同的**, 注意区分, 而表达式地逻辑运算会有短路求值(Early Termination).
-shift Operations:<br>
-![shift](figure/Mooc2.1.png)<br>
+shift Operations:  
+![shift](figure/Mooc2.1.png)  
 注意的是右移是有两种,逻辑上的和算术上的.
 
 ### Integers 表示
-![encoding Integers](figure/Mooc2.2.png)<br>
-对于Unsigned 的数字,最高为是 $2^{w-1}$, 对于 Signed,是$- 2^{w-1}$, 就是上面的等式所描述的. <br>
-我们可以使用一个五位的数字来简化理解, w位数据能到的最小值和最大值:<br>
-![numeric Range](figure/Mooc2.3.png)<br>
-理解了之后, 就可以在T和U之间做 Map,以一个4bit的表示为例:<br>
-![mapping](figure/Mooc2.4.png)<br>
-在进行比较的时候, 这些signed可能会被casting成 unsigned, 就会出现我们意料之外的结果:<br>
-![casting](figure/Mooc2.5.png)<br>
+![encoding Integers](figure/Mooc2.2.png)  
+对于Unsigned 的数字,最高为是 $2^{w-1}$, 对于 Signed,是$- 2^{w-1}$, 就是上面的等式所描述的.   
+我们可以使用一个五位的数字来简化理解, w位数据能到的最小值和最大值:  
+![numeric Range](figure/Mooc2.3.png)  
+理解了之后, 就可以在T和U之间做 Map,以一个4bit的表示为例:  
+![mapping](figure/Mooc2.4.png)  
+在进行比较的时候, 这些signed可能会被casting成 unsigned, 就会出现我们意料之外的结果:  
+![casting](figure/Mooc2.5.png)  
 问题就是在于从signed到unsigned的 casting:
 * 操作是在bit level pattern
 * 但是这个结果是reinterpreted(重新解释)
@@ -174,33 +174,33 @@ for(unsigned i = n-1; i >= 0; --i){//error: i是unsigned的话,
 }
 ```
 
-__sign extension__: 对于一个w-bit的signed integer X,要转成(w+k)-bit的integer with the same value, 所需要做的就是 __make k copies of sign bit__, 前面的多个位之间可以相互抵消, 得到的结果是一样的:<br>
-![sign extention](figure/Mooc2.6.png)<br>
+__sign extension__: 对于一个w-bit的signed integer X,要转成(w+k)-bit的integer with the same value, 所需要做的就是 __make k copies of sign bit__, 前面的多个位之间可以相互抵消, 得到的结果是一样的:  
+![sign extention](figure/Mooc2.6.png)  
 __sign truncating__ : 对于unsigned, 有点类似于mod operation, 对于大的负数,也可以从mod上理解. 对于small的数字, 就会得到期望的相等结果.
 
 ## Lecture 3 : Bits, Bytes and Integers (Part 2)
 
-补码表示是我们最常见的编码表示, 在讨论补码的加法之前, 我们先讨论 Unsigned 的 加法 <br>
+补码表示是我们最常见的编码表示, 在讨论补码的加法之前, 我们先讨论 Unsigned 的 加法   
 ### Unsigned and Two's Complement Addition
-首先考虑的是最高位如果存在的话就直接丢弃, 相当于是 $s = UAdd_w( u, v) = u + v\ mod \ 2^w $, 下图是一个很好的可视化理解: <br>
-![overflow](figure/Mooc3.1.png)<br>
-TAdd 和 UAdd 有相同的 Bit-level 行为, 因此才会称为大多数系统中的首选方案, Overflow的case, 如一个4 bit的数据(从-8 到 7), -6 + (-3) 的结果是 7 (negetative overflow, 正常应该是 -9), 7+5 的结果是 -4 (positive overflow, 本来应该是12, 刚好是 -4 的 Unsigned 表达), 它可以用下面的图来表示:<br>
-![overflow](figure/Mooc3.2.png)<br>
+首先考虑的是最高位如果存在的话就直接丢弃, 相当于是 $s = UAdd_w( u, v) = u + v\ mod \ 2^w $, 下图是一个很好的可视化理解:   
+![overflow](figure/Mooc3.1.png)  
+TAdd 和 UAdd 有相同的 Bit-level 行为, 因此才会称为大多数系统中的首选方案, Overflow的case, 如一个4 bit的数据(从-8 到 7), -6 + (-3) 的结果是 7 (negetative overflow, 正常应该是 -9), 7+5 的结果是 -4 (positive overflow, 本来应该是12, 刚好是 -4 的 Unsigned 表达), 它可以用下面的图来表示:  
+![overflow](figure/Mooc3.2.png)  
 
 ### 乘法表示
-如果我们使用两个 w bit 的数据做乘法, 通常是需要 两倍(2w bit)的空间才能将结果容纳下来,不然会有各种溢出的问题. 对于 Unsigned的乘法, 结果就相当于 $UMult_w (u,v) = u \cdot v \ mod  \ 2^w $ <br>
-对于补码的乘法表示, 就更加复杂了, 在有的时候依旧可以得到想要的结果: 如 -3(相当于13的表示)乘以-2(相当于14的UnSigned 表示), 结果是 (13*14) mod 16, 是6 ,符合预期. <br>
+如果我们使用两个 w bit 的数据做乘法, 通常是需要 两倍(2w bit)的空间才能将结果容纳下来,不然会有各种溢出的问题. 对于 Unsigned的乘法, 结果就相当于 $UMult_w (u,v) = u \cdot v \ mod  \ 2^w $   
+对于补码的乘法表示, 就更加复杂了, 在有的时候依旧可以得到想要的结果: 如 -3(相当于13的表示)乘以-2(相当于14的UnSigned 表示), 结果是 (13*14) mod 16, 是6 ,符合预期.   
 
 #### power-of-2 Multiply with Shift
 * Operation u << k gives $u * 2^k $
 * Both Signed and unsigned
 
-在过去, 可能计算机可以在一个clock cycle做shift操作, 但是要 12~13 个 clock cycle 去做一个乘法,除法可能要30个clock cycle.现在可能要快一些, 但是依旧没有移位快. <br>
-同样的, 除法要做左移, 使用Unsigned 的话是逻辑左移, 使用补码未定义, 大概率是算术左移.<br>
+在过去, 可能计算机可以在一个clock cycle做shift操作, 但是要 12~13 个 clock cycle 去做一个乘法,除法可能要30个clock cycle.现在可能要快一些, 但是依旧没有移位快.   
+同样的, 除法要做左移, 使用Unsigned 的话是逻辑左移, 使用补码未定义, 大概率是算术左移.  
 
 #### 为什么要用 _Unsigned_
 - [x] 除非理解了implications, 否则不要用(容易犯错, 非常麻烦):
-    ![inf loop](figure/Mooc3.3.png)<br>
+    ![inf loop](figure/Mooc3.3.png)  
     这个时候或者直接将所有UINT直接显式转换成为一个signed数字使用,我们可以使用unsigned来做count,如
     ```C
     size_t i;
@@ -211,31 +211,31 @@ TAdd 和 UAdd 有相同的 Bit-level 行为, 因此才会称为大多数系统�
 - [x] 使用Bits表示集合的时候一定会用到
 
 ### 在内存中的表示(Pointers, Strings)
-![Bytes Org](figure/Mooc3.4.png)<br>
-现在很难看到前面那种组织方式了, 具体的表达方式如下,对于int和Pointer都是相反的:<br>
-![Bytes Org](figure/Mooc3.5.png)<br>
-对于String的表示, 两者都是相同的:<br>
-![String](figure/Mooc3.6.png)<br>
+![Bytes Org](figure/Mooc3.4.png)  
+现在很难看到前面那种组织方式了, 具体的表达方式如下,对于int和Pointer都是相反的:  
+![Bytes Org](figure/Mooc3.5.png)  
+对于String的表示, 两者都是相同的:  
+![String](figure/Mooc3.6.png)  
 
 ## Lecture 04: Floating point
 ### Fractional Binary Numbers
-![frac binary](figure/Mooc4.1.png)<br>
+![frac binary](figure/Mooc4.1.png)  
 * Divide by 2 by shifting right(unsigned)  
 * Multiply by 2 by shifting left
 * Can only exactly represent numbers of the form $x/2^k$(Other rational numbers have repeating bit representations,类似于10进制中的循环小数)
 
-标准的浮点数表示如下:<br>
-![frac rep](figure/Mooc4.2.png)<br>
-其中的S为标记位, 而 E是一个Exp 减去一个偏移量(单精度为127,双精度为1023),不用unsinged的原因是可以直接用其比较大小(最小的为00000000,最大的为11111111)<br>
-M被normalized称为 $1.f$ 的形式, get one more bit for free. 举一个通常的例子:<br>
-![fig](figure/Mooc4.3.png)<br>
+标准的浮点数表示如下:  
+![frac rep](figure/Mooc4.2.png)  
+其中的S为标记位, 而 E是一个Exp 减去一个偏移量(单精度为127,双精度为1023),不用unsinged的原因是可以直接用其比较大小(最小的为00000000,最大的为11111111)  
+M被normalized称为 $1.f$ 的形式, get one more bit for free. 举一个通常的例子:  
+![fig](figure/Mooc4.3.png)  
 1. 在 $exp$ 的part 和 $frac$ 的part 都是 0的时候, 就代表浮点数0.但是因为有signed bit, 因此可能出现正的0和负的0. 如果 这时候 $frac \neq 00...0$, 就是代表一个很小的数字
 2. $exp = 111…1$, $frac = 00...0$ , 代表的是无穷大
 3. $exp = 111…1$, $frac \neq 00...0$ , 代表 NaN(Not-a-Number)
 
-![frac rep](figure/Mooc4.4.png)<br>
-值得注意的是, 越接近0, 数字越密集, 以 6-bit 的 IEEE-like的数字为例:<br>
-![distribute](figure/Mooc4.5.png)<br>
+![frac rep](figure/Mooc4.4.png)  
+值得注意的是, 越接近0, 数字越密集, 以 6-bit 的 IEEE-like的数字为例:  
+![distribute](figure/Mooc4.5.png)  
 
 ### Rounding,addition,multiplication  
 Rounding(浮点数舍入称为整数) 有很多种做法:
@@ -244,23 +244,23 @@ Rounding(浮点数舍入称为整数) 有很多种做法:
 * Round up
 * <font color=blue>round Nearest Even</font> (default)
 
-同样的, 我们对于 Binary Number 也可以做类似的Round, 实际的做法就是 round to even:<br>
+同样的, 我们对于 Binary Number 也可以做类似的Round, 实际的做法就是 round to even:  
 如一个binary float: 1. ...y (to round)...,最末尾y为需要保留的最后一位
 1. 只要第一个1后续数字还包含有1,尾数y+1
 2. 如果第一个为1,但是后续的值均为0,则说明其后续的值 =$(1/2)^n * 1/2$ 则这时候说明舍入的距离都是相同的，这时候查看y的值，如果y为1,则y+1，如果y为0,则保持y为0
 3. 如果靠近y的那个为0, 则全部舍弃
 
 通过上面的做法, 如果值和上下两个数同样近, 向偶数舍入可以在在50% 的时间里，它将向上舍入，而在50% 的时间里，它将向下舍入。避免了平均值变化的统计偏差. 
-![FP add](figure/Mooc4.6.png)<br>
-![FP mul](figure/Mooc4.7.png)<br>
+![FP add](figure/Mooc4.6.png)  
+![FP mul](figure/Mooc4.7.png)  
 
 需要注意的是, 在 signed 和 Unsigned 之间做cast, 它的bit representation, 但是 **int 和 float/double 之间的cast 是会改变bit representation的**.
 
 ## Lecture 5: Machine-­‐Level Programming I: Basics
-在本课程中不讨论Microarchitecture(architecture 的实现), 在Assembly/Machine code的角度,计算机是下面的结构:<br>
-![Computer](figure/Mooc5.1.png)<br>
-编译生成汇编代码的方法:<br>
-`gcc -Og -S someSourceFile.c` (-S 选项生成汇编代码, -Og是启用用于debug的优化选项, 生成方便阅读的代码)<br>
+在本课程中不讨论Microarchitecture(architecture 的实现), 在Assembly/Machine code的角度,计算机是下面的结构:  
+![Computer](figure/Mooc5.1.png)  
+编译生成汇编代码的方法:  
+`gcc -Og -S someSourceFile.c` (-S 选项生成汇编代码, -Og是启用用于debug的优化选项, 生成方便阅读的代码)  
 Assembly 中的单个Operation只能做一个事情, 比如:
 * Perform arithmetic function on register or memory data  
 * Transfer data between memory and register
@@ -268,21 +268,21 @@ Assembly 中的单个Operation只能做一个事情, 比如:
     * Store register data into memory  
 * Transfer control  
 
-对于已有的二进制代码, 我们也可以用Disassembler:<br>
-    `objdump –d someObjectCode`<br>
-或者在GDB中使用(sumstore为可执行文件sum原码中的某个函数):<br>
+对于已有的二进制代码, 我们也可以用Disassembler:  
+    `objdump –d someObjectCode`  
+或者在GDB中使用(sumstore为可执行文件sum原码中的某个函数):  
 ```shell
 gdb sum 
 disassemble sumstore
 ```
 **Disassembler examines bytes and reconstructs assembly source** .
 #### Regisiter
-在过去IA32中只有8个寄存器, %e**, 在最早的使用中, 某些寄存器常用于特定的功能, 因此影响到了他们的名字,但是现在而言, 除了特定的 `%esp` 作为stack pointer(IA32/x86-64)和 `%ebp` 作为base pointer(IA32),其他都可以通用,具体指代的内容如下:<br>
-![figure](figure/Mooc5.2.png)<br>
+在过去IA32中只有8个寄存器, %e**, 在最早的使用中, 某些寄存器常用于特定的功能, 因此影响到了他们的名字,但是现在而言, 除了特定的 `%esp` 作为stack pointer(IA32/x86-64)和 `%ebp` 作为base pointer(IA32),其他都可以通用,具体指代的内容如下:  
+![figure](figure/Mooc5.2.png)  
 
 #### 寄存器上的操作
 ##### Moving Data
-`movq Source, Dest`<br>
+`movq Source, Dest`  
 面对的操作数有三种: 
 1. Immediate: Constant integer data  
     * Example: `$0x400`, `$-533` 
@@ -291,19 +291,19 @@ disassemble sumstore
 3. Memory: 8 consecutive bytes of memory at address given by register  
     * simplest example: `(%rax)` (有点像C中取寄存器指向的那个地方的内容) 
 
-![](figure/Mooc5.3.png)<br>
+![](figure/Mooc5.3.png)  
 此外, move也可以有displacement, 具体的做法就是
 * Register $R$ speciﬁes start of memory region 
 * Constant displacement $D$ speciﬁes offset  
 `movq 8(%rbp),%rdx`
-之后, 可以用这样的形式来实现一个array:<br>
-![](figure/Mooc5.4.png)<br>
+之后, 可以用这样的形式来实现一个array:  
+![](figure/Mooc5.4.png)  
 
 #### Arithmetic  &  logical  operations 
-![](figure/Mooc5.5.png)<br>
+![](figure/Mooc5.5.png)  
 
 ## Lecture 6: Machine-­‐Level  Programming  II:  Control  
-寄存器这个东西既不是内存的一部分也不是缓存的一部分,如果是用C语言编程,程序员感受不到它的存在.<br>
+寄存器这个东西既不是内存的一部分也不是缓存的一部分,如果是用C语言编程,程序员感受不到它的存在.  
 ### Condition codes
 * `%rsp` Current stack top 
 * `%rip` Instruction pointer
@@ -315,18 +315,18 @@ Single bit regisiters:
 * OF: Overflow Flag(for signed)
 
 例如
-1. 在arithmetic operations中 `add Src, Dest` => `t = a + b`:<br>
-    ![condition code](figure/Mooc6.1.png)<br>
-2. 在compare指令 `cmpq Src2, Src1`, 像是在计算 `Src1 - Src2` 但是不存储结果:<br>
-    ![condition code](figure/Mooc6.2.png)<br>
-3. 在test指令中, `testq Src1, Src2` 就像是在计算 `Src1 & Src2` 但是不存储结果:<br>
-    ![condition code](figure/Mooc6.3.png)<br>
-4. Set 指令就是根据前一行指令的 Condition code, 设置目标的low order byte是 0或者1, **不改变寄存器剩下的7个bytes:<br>
-    ![condition code](figure/Mooc6.4.png)<br>
+1. 在arithmetic operations中 `add Src, Dest` => `t = a + b`:  
+    ![condition code](figure/Mooc6.1.png)  
+2. 在compare指令 `cmpq Src2, Src1`, 像是在计算 `Src1 - Src2` 但是不存储结果:  
+    ![condition code](figure/Mooc6.2.png)  
+3. 在test指令中, `testq Src1, Src2` 就像是在计算 `Src1 & Src2` 但是不存储结果:  
+    ![condition code](figure/Mooc6.3.png)  
+4. Set 指令就是根据前一行指令的 Condition code, 设置目标的low order byte是 0或者1, **不改变寄存器剩下的7个bytes:  
+    ![condition code](figure/Mooc6.4.png)  
 
 ### Jumping
-实际上有两种类型的Jump, 一种是无条件的Jump, 直接跳到某个位置, 一种是有条件的 Jump, 根据condition code决定要不要Jump.<br>
-![condition code](figure/Mooc6.5.png)<br>
+实际上有两种类型的Jump, 一种是无条件的Jump, 直接跳到某个位置, 一种是有条件的 Jump, 根据condition code决定要不要Jump.  
+![condition code](figure/Mooc6.5.png)  
 一般这个算术指令接受两个参数, 是将结果复写在后面那个参数上.生成的汇编代码有一点像是使用 `goto` 去实现的, 如 C的代码 `val = test ? Then_expr : Else_expr;`, 它的goto version 就有点像是:
 ```C
 ntest = !Test;
@@ -340,7 +340,7 @@ Done:
 ```
 
 ### Using Conditional Move
-计算机就通过预测去加速, 因此对于前面的Jump来说, 对 pipeline中的 instruction flow 做分支带来的代价是比较大的, 因此condition Move的效果是支持类似的指令: `if(Test) Dest <- Src`.<br>
+计算机就通过预测去加速, 因此对于前面的Jump来说, 对 pipeline中的 instruction flow 做分支带来的代价是比较大的, 因此condition Move的效果是支持类似的指令: `if(Test) Dest <- Src`.  
 ```C++
 val = Test ? Then_expr
            : Else_expr;
@@ -351,9 +351,9 @@ nt = !Test;
 if(nt) result = val;
 return result;
 ```
-![condition move](figure/Mooc6.6.png)<br>
+![condition move](figure/Mooc6.6.png)  
 
-**一般而言, conditional Move 用于两只值都要计算, 但是计算相对简单的情形, 如果计算可能有非常高的代价/ 出现难以接受的后果后者side effect, 则不建议使用** . <br>
+**一般而言, conditional Move 用于两只值都要计算, 但是计算相对简单的情形, 如果计算可能有非常高的代价/ 出现难以接受的后果后者side effect, 则不建议使用** .   
 
 ### Loop
 #### Do-While 循环例子
@@ -423,12 +423,12 @@ done:
 For Loop Form 可以和while相互转换.
 
 ### Switch statement
-实际上并不是用if-else实现的, 而是用一个被称为Jump table的结构:<br>
-![Jump table](figure/Mooc6.7.png)<br>
+实际上并不是用if-else实现的, 而是用一个被称为Jump table的结构:  
+![Jump table](figure/Mooc6.7.png)  
 
 ## Lecture 7 : Machine-Level Programming: Procedures
 
-ABI(Application Binary Interfaces): 系统的各个组分管理资源时候的约定.<br>
+ABI(Application Binary Interfaces): 系统的各个组分管理资源时候的约定.  
 <font size=4> Mechanisms in Procedures</font>
 * Passing control  
     * 控制流到了procdeure code 的开头
@@ -441,8 +441,8 @@ ABI(Application Binary Interfaces): 系统的各个组分管理资源时候的�
     * 返回的时候deallocate
 
 ### x86-64 Stack
-Stack 是用来管理内存的一种方式, 在函数调用过程中十分有用(Last in First out)<br>
-Stack Pointer(`%rsp`) 保存着最下面的stack 的地址(逻辑上是top element), stack 要这 grow 的时候实际上是 `%rsp` 向下移(address grows from top to Bottom)<br>
+Stack 是用来管理内存的一种方式, 在函数调用过程中十分有用(Last in First out)  
+Stack Pointer(`%rsp`) 保存着最下面的stack 的地址(逻辑上是top element), stack 要这 grow 的时候实际上是 `%rsp` 向下移(address grows from top to Bottom)  
 
 #### Push 
 `pushq Src` (Src为寄存器)做的事情是:
@@ -579,7 +579,7 @@ Stack Pointer(`%rsp`) 保存着最下面的stack 的地址(逻辑上是top eleme
     }
     ```
     ![](figure/Mooc9.2.png)
-    在输入超过 24 个字符时候, 就会 crash return address.下面就是一个代码注入攻击的例子, 我们将返回地址付下之后, Q 返回会跳转到 exploit code 处(Buffer overflow bugs can allow remote machines to execute arbitrary code on victim machines):<br>
+    在输入超过 24 个字符时候, 就会 crash return address.下面就是一个代码注入攻击的例子, 我们将返回地址付下之后, Q 返回会跳转到 exploit code 处(Buffer overflow bugs can allow remote machines to execute arbitrary code on victim machines):  
     ![](figure/Mooc9.3.png)
 
 避免 Buffer Overflow 的方法:
@@ -629,10 +629,10 @@ Stack Pointer(`%rsp`) 保存着最下面的stack 的地址(逻辑上是top eleme
 
 最基础的优化, 将取 vector length 的操作放到循环外面, 避免边界检查, 并且将累加放到临时变量中.
 
-超标量处理器(可以在一个时钟周期中分发执行多个指令):<br>
-![](figure/Mooc10.5.png)<br>
-流水线功能单元<br>
-![](figure/Mooc10.6.png)<br>
+超标量处理器(可以在一个时钟周期中分发执行多个指令):  
+![](figure/Mooc10.5.png)  
+流水线功能单元  
+![](figure/Mooc10.6.png)  
 
 Loop Unrolling(在其中的一个循环中, 每次步进多个step, 每个 step 做多个 OP):
 ```C++
@@ -654,7 +654,7 @@ void unroll2a_combine(vec_ptr v, data_t *dest)
     *dest = x;
 }
 ```
-![](figure/Mooc10.7.png)<br>
+![](figure/Mooc10.7.png)  
 Loop Unrolling with Reassociation
 ```C++
 void unroll2aa_combine(vec_ptr v, data_t *dest)
@@ -675,20 +675,20 @@ void unroll2aa_combine(vec_ptr v, data_t *dest)
     *dest = x;
 }
 ```
-![](figure/Mooc10.8.png)<br>
+![](figure/Mooc10.8.png)  
 
 #### 使用 AVX2 编程
-YMM 寄存器是 XMM 寄存器的升级, 它有16个, 每个为 32 byte.<br>
-![](figure/Mooc10.9.png)<br>
+YMM 寄存器是 XMM 寄存器的升级, 它有16个, 每个为 32 byte.  
+![](figure/Mooc10.9.png)  
 
 #### 分支
-分支中可能会有预测, 如果预测正确则提前执行再 fetch 结果,错误的话就重置.<br>
+分支中可能会有预测, 如果预测正确则提前执行再 fetch 结果,错误的话就重置.  
 ![](figure/Mooc10.10.png)
 
 ## Lecture 11: 存储器层次结构
 ### 存储器技术和发展趋势
 #### 随机访问存储器
-随机访问存储器, 有动态和静态 RAM, 传统上被打包成 chip, 多个 chip 形成一个内存. 他们都是易失性存储器(断电后会丢失信息),非易失性存储即使在断电后也能保持其值.  传统的CPU 和内存通过总线连接. <br>
+随机访问存储器, 有动态和静态 RAM, 传统上被打包成 chip, 多个 chip 形成一个内存. 他们都是易失性存储器(断电后会丢失信息),非易失性存储即使在断电后也能保持其值.  传统的CPU 和内存通过总线连接.   
 Memory 读取的过程有三步:
 * CPU places address A on the memory bus
 * Main memory reads A from the memory bus, retrieves word x, and places it on the bus.
@@ -701,9 +701,9 @@ Memory 读取的过程有三步:
 * Main memory reads data word y from the bus and stores it at address A.
 
 #### 机械硬盘
-机械硬盘的几何结构:<br>
-![](figure/Mooc11.2.png)<br>
-![](figure/Mooc11.3.png)<br>
+机械硬盘的几何结构:  
+![](figure/Mooc11.2.png)  
+![](figure/Mooc11.3.png)  
 上面是一个典型的读取过程, 我们从中得到盘的访问时间组成为 $T_{access} = T_{avg seek} + T_{avg rotation} + T_{avg transfer}$ :
 * Seek time (Tavg seek)
   * Time to position heads over cylinder containing target sector.
@@ -716,7 +716,7 @@ Memory 读取的过程有三步:
   * Time to read the bits in the target sector.
   * Tavg transfer = 1/RPM x 1/(avg # sectors/track) x 60 secs/1 min.
 
-总的来说, access 时间是由 seek time 和旋转颜值决定的, 总速度比 DRAM 慢约 2500倍. <br>
+总的来说, access 时间是由 seek time 和旋转颜值决定的, 总速度比 DRAM 慢约 2500倍.   
 现在的disk 提供一个逻辑 Block 的抽象, 扇区被抽象成逻辑 blocks, 逻辑区块和扇区之间有一个 Mapping. 从一个 Disk 扇区读取数据的过程分三个部分: 
 * CPU initiates a disk read by writing a command, logical block number, and destination memory address to a port (address) associated with disk controller.
 * Disk controller reads the sector and performs a direct memory access (DMA) transfer into main memory.
@@ -730,18 +730,18 @@ Memory 读取的过程有三步:
 可以看到内存和硬盘之间有很大的 gap.
 
 ### Locality
-Locality 原则: 程序更倾向于使用他们最近使用过位置临近的指令或者地址. <br>
-![](figure/Mooc11.5.png)<br>
-**对 Locality 的量化评估**, 下面就是一个很不好的例子:<br>
-![](figure/Mooc11.6.png)<br>
+Locality 原则: 程序更倾向于使用他们最近使用过位置临近的指令或者地址.   
+![](figure/Mooc11.5.png)  
+**对 Locality 的量化评估**, 下面就是一个很不好的例子:  
+![](figure/Mooc11.6.png)  
 
 ### 内存层次结构
-![](figure/Mooc11.7.png)<br>
+![](figure/Mooc11.7.png)  
 #### Caches
 * Cache: A smaller, faster storage device that acts as a staging area for a subset of the data in a larger, slower device.(有点像是背着书包去上学, 这样需要某个东西时候在包里找而不用直接回去拿)
 * The memory hierarchy creates a large pool of storage that costs as much as the cheap storage near the bottom, but that serves data to programs at the rate of the fast storage near the top.
 
-![](figure/Mooc11.8.png)<br>
+![](figure/Mooc11.8.png)  
 * Cold (compulsory) miss
     * Cold misses occur because the cache is empty.
 * Conflict miss
@@ -755,14 +755,14 @@ Locality 原则: 程序更倾向于使用他们最近使用过位置临近的指
 ## Lecture 12: Cache Memories
 ### Cache 组成和操作
 Cache Memory 是硬件自动管理的容量小\基于静态随机存储器的内存, CPU 首先在 cache 中查找资源, 然后才是在main memory中找, 典型的结构如下:
-![](figure/Mooc12.1.png)<br>
+![](figure/Mooc12.1.png)  
 其具体的缓存结构如下图所示, 每个 set 依旧可能有多行. 最低的几个位是在 block 中的偏移量, s 为 set 的下标, 剩下的几位为 tag:
-![](figure/Mooc12.2.png)<br>
+![](figure/Mooc12.2.png)  
 #### Example: Direct Mapped Cache(E=1)
 每个 set 只有一行, 在 Cache 模拟中发现 hit 的概率非常低. 
 #### E-­‐way Set Associative Cache(这里E=2)
-![](figure/Mooc12.3.png)<br>
-![](figure/Mooc12.4.png)<br>
+![](figure/Mooc12.3.png)  
+![](figure/Mooc12.4.png)  
 
 #### Cache 的 Write
 Data 在不同的层次中有多个拷贝, L1/L2/L3,主内存/硬盘..., 在 Hit 和 miss 的时候有不同的策略:
@@ -800,11 +800,11 @@ Data 在不同的层次中有多个拷贝, L1/L2/L3,主内存/硬盘..., 在 Hit
 
 ### cache对性能的影响
 #### The Memory Mountain
-![](figure/Mooc12.5.png)<br>
+![](figure/Mooc12.5.png)  
 #### Rearranging loops to improve spatial locality
-![](figure/Mooc12.6.png)<br>
-![](figure/Mooc12.7.png)<br>
-![](figure/Mooc12.8.png)<br>
+![](figure/Mooc12.6.png)  
+![](figure/Mooc12.7.png)  
+![](figure/Mooc12.8.png)  
 
 #### using bolcking to improve temporal locality
 ```C++
@@ -831,13 +831,13 @@ for (i = 0; i < n; i+=B)
             c[i1*n+j1] += a[i1*n + k1]*b[k1*n + j1];
 }
 ```
-![](figure/Mooc12.12.png)<br>
-![](figure/Mooc12.9.png)<br>
-![](figure/Mooc12.10.png)<br>
-![](figure/Mooc12.11.png)<br>
+![](figure/Mooc12.12.png)  
+![](figure/Mooc12.9.png)  
+![](figure/Mooc12.10.png)  
+![](figure/Mooc12.11.png)  
 
 ## Lecture 13: Linking
-![](figure/Mooc13.1.png)<br>
+![](figure/Mooc13.1.png)  
 翻译的过程其实是三步, 首先调用预处理器(cpp)然后调用编译器(cc1)然后调用汇编器(as), 生成目标文件 `*.o`, 我们为什么需要链接器:
 * 模块化: 将程序写成一系列的小源文件, 而不是一个巨无霸,同时可以构建库文件
 * 效率:
@@ -860,9 +860,9 @@ for (i = 0; i < n; i+=B)
 3. 共享目标文件(.so): 一种特殊类型的可重定位目标文件，可以在加载或者运行时被动态地加载进内存并链接。
 
 可执行和可链接格式(ELF)对于上面的三种目标文件是一样的,其格式如下:
-![](figure/Mooc13.2.png)<br> 
-![](figure/Mooc13.3.png)<br>
-`.bss` 来表示未初始化的数据是很普遍的, `.data` 和`.bss` 节之间区别的简单方法是把"bss" 看成是”更好地节省空间(Better Save Space)"的缩写。<br>
+![](figure/Mooc13.2.png)   
+![](figure/Mooc13.3.png)  
+`.bss` 来表示未初始化的数据是很普遍的, `.data` 和`.bss` 节之间区别的简单方法是把"bss" 看成是”更好地节省空间(Better Save Space)"的缩写。  
 ### Symbols
 #### Local Symbols 
 * local non-static 变量 和 local static 变量的区别
@@ -878,7 +878,7 @@ for (i = 0; i < n; i+=B)
 2. Rule 2: 给定一个强符号和若干弱符号, 选择强符号
    1. 弱符号的references 也是弱符号
 3. Rule 3: 如果有多个弱符号, 选择任意一个(可以用 `gcc -fno-common` 覆盖)
- ![](figure/Mooc13.4.png)<br>
+ ![](figure/Mooc13.4.png)  
 
 因此, 尽可能去避免全局变量, 如果实在无法避免:
 1. 尽可能使用 static
@@ -886,7 +886,7 @@ for (i = 0; i < n; i+=B)
 3. 使用 `extern` 如果引用一个外部的全局变量
 
 ### Relocation
-callq 用的是一个绝对的地址表示函数, 链接的时候会更新 pc - relative 地址:`0x4004e8 = 0x4004e3 + 0x5`. <br>
+callq 用的是一个绝对的地址表示函数, 链接的时候会更新 pc - relative 地址:`0x4004e8 = 0x4004e3 + 0x5`.   
 编译生成的二进制文件可以直接加载在内存中, `.init, .text , .rodata` 这些会加载在只读代码部分, `.data, .bss` 加载在读写数据部分, heap 向上增长, stack 向下增长.两者之间是 shared libraries. heap 之上是内核的虚拟内存,对于 code 是 invisible. 
 
 ### Linking and Libraries
@@ -898,7 +898,7 @@ callq 用的是一个绝对的地址表示函数, 链接的时候会更新 pc - 
 * `.a` archive 文件是其他可重定位目标合成带有 index 的单个文件
 * 如果archive 的某个文件被引用了, 只需要将对应的 .o 链接到可执行文件中
 
-![](figure/Mooc13.5.png)<br>
+![](figure/Mooc13.5.png)  
 
 它决定外部引用的算法如下:
 * 按照命令行的顺序扫描 .o 和 .a 文件
@@ -909,8 +909,8 @@ callq 用的是一个绝对的地址表示函数, 链接的时候会更新 pc - 
 带来的问题就是命令行的顺序会影响结果, 好的做法是将库放在命令行的后面.
 
 #### 动态库
-动态库并不是在编译的时候链接到二进制文件中, 而是在程序加载甚至运行的时候动态链接到应用中. `.DLL(for Windoes) .so`<br>
-![](figure/Mooc13.6.png)<br>
+动态库并不是在编译的时候链接到二进制文件中, 而是在程序加载甚至运行的时候动态链接到应用中. `.DLL(for Windoes) .so`  
+![](figure/Mooc13.6.png)  
 ```C++
 #include <stdio.h>
 #include <stdlib.h>
@@ -954,7 +954,7 @@ int main()
 ```
 
 ### Case Study: Library Interpositioning
-给函数中使用 wrapper 函数, 这样的话调用某函数的时候实际上是调用其wrapper<br>
+给函数中使用 wrapper 函数, 这样的话调用某函数的时候实际上是调用其wrapper  
 在 安全/测试/Monitoring 和 Profiling 中可以使用.
 * 编译期 Interpositioning
   ![](figure/Mooc13.7.png)
@@ -1044,7 +1044,7 @@ int main()
 ![](figure/Mooc14.1.png)
 
 对于不同的异常,它们放在 Exception Table 中, 每个元素执行一个 exception handler.下面是部分异常的分类:
-![](figure/Mooc14.2.png)<br>
+![](figure/Mooc14.2.png)  
 #### 异步异常
 * 由处理器外部的时间导致,具体类型由处理器中断pin的设置给出,Handler 返回到下一个指令
 * 例如: Timer 中断, 外设的I/O 中断
@@ -1064,8 +1064,8 @@ int main()
    *  Examples:illegal instruction, parity error, machine check
    *  Aborts current program
 
-Fault Example: 错误的内存引用<br>
-![](figure/Mooc14.3.png)<br>
+Fault Example: 错误的内存引用  
+![](figure/Mooc14.3.png)  
 
 ### Processes(进程)
 定义: 进程是一个正在运行程序的实例(和程序或者处理器都不同).进程给程序提供两个抽象:
@@ -1078,8 +1078,8 @@ Fault Example: 错误的内存引用<br>
 
 #### 进程并发
 每个进程都是一个独立的逻辑控制流, 如果两个进程在时间上有重叠我们就称它为并发运行(这个定义是和处理器数无关, 多核同时运行也是并发). 如下面的 A&B, A&C 都是并发运行, 而 B&C 是顺序执行.
-![](figure/Mooc14.5.png)<br>
-进程是又驻留在shared chunk of memory 的 OS code (kernel) 管理. <br>
+![](figure/Mooc14.5.png)  
+进程是又驻留在shared chunk of memory 的 OS code (kernel) 管理.   
 
 ### 进程控制
 #### 系统调用错误处理
@@ -1127,7 +1127,7 @@ int main()
 * 两者分享相同的已经打开文件(如这里的 stdout)
 
 #### 使用进程图模拟 fork
-![](figure/Mooc14.6.png)<br>
+![](figure/Mooc14.6.png)  
 
 #### 回收子进程
 当进程终止时, 内核并不是立即把它从系统中清除。相反，进程被保持在一种已终止的状态中，直到被它的父进程回收(reaped) :
@@ -1180,7 +1180,7 @@ int main()
         printf("Bye\n");
     }
     ```
-    ![](figure/Mooc14.7.png)<br>
+    ![](figure/Mooc14.7.png)  
 * `waitpid`: 等待一个特定的进程 
     ```C++
     void fork11() {
@@ -1206,7 +1206,7 @@ int main()
 
 ## Lecture 15: Excep&onal Control Flow: Signals and Nonlocal Jumps
 ### Shell
-![](figure/Mooc15.1.png)<br>
+![](figure/Mooc15.1.png)  
 Shell 是一个应用程序, 它代表用户运行其他程序. 在实现 Shell 的时候我们发现简单的实现存在一个问题: 后台的 job 可能无法正常地回收, 解决的办法就被称为 signal.
 
 ### Signal
@@ -1299,8 +1299,8 @@ int main()
     return 0;
 }
 ```
-![](figure/Mooc15.3.png)<br>
-此外, Signal Handler 可以嵌套, 它可以被别的信号打断, 但是不能被同类型的信号打断. <br>
+![](figure/Mooc15.3.png)  
+此外, Signal Handler 可以嵌套, 它可以被别的信号打断, 但是不能被同类型的信号打断.   
 
 #### 阻塞和解除阻塞信号
 Linux 有两种阻塞机制:
@@ -1350,7 +1350,7 @@ Linux 有两种阻塞机制:
 #include <fcntl.h>
 int open(char *filename, int flags, mode_t mode);
 ```
-它的返回值是一个文件描述符, 如果是 -1 则表明有错误发生, 每个由 Linux Shell 创建的进程都有和终端关联的三个文件, 0(stdin),1(stdout),2(stderr).<br>
+它的返回值是一个文件描述符, 如果是 -1 则表明有错误发生, 每个由 Linux Shell 创建的进程都有和终端关联的三个文件, 0(stdin),1(stdout),2(stderr).  
 关闭文件是使用`close()`和文件描述符fd:
 ```C++
 #include <unistd.h>
@@ -1387,7 +1387,7 @@ RIO 包提供了方便、健壮和高效的I/O, 它提供两类不同的函数:
     ssize_t rio_readnb(rio_t *rp, void *usrbuf, size_t n);
     // 若成功则为读的字节数，若EOF 则为o, 若出错则为一1 。
     ```
-    ![](figure/Mooc16.1.png)<br>
+    ![](figure/Mooc16.1.png)  
 
 ### 读取文件元数据
 关千文件的信息也被称为文件的元数据(metadata), 可以通过调用 `stat` 和 `fstat` 函数得到. 
@@ -1398,16 +1398,16 @@ int stat(const char *filename, struct stat *buf);
 int fstat(int fd, struct stat *buf);
 //返回值: 若成功则为0, 若出错则为— l 。
 ```
-**Unix 内核是如何表示 Open 的文件**?<br>
-![](figure/Mooc16.2.png)<br>
-如果有两个 Table Emtry 指向同一个文件:<br>
-![](figure/Mooc16.3.png)<br>
-更大的问题在于如果一个进程打开了两个文件, 子进程有一个父进程描述表的副本:<br>
-![](figure/Mooc16.4.png)<br>
+**Unix 内核是如何表示 Open 的文件**?  
+![](figure/Mooc16.2.png)  
+如果有两个 Table Emtry 指向同一个文件:  
+![](figure/Mooc16.3.png)  
+更大的问题在于如果一个进程打开了两个文件, 子进程有一个父进程描述表的副本:  
+![](figure/Mooc16.4.png)  
 
 ### IO 重定向
 实际上shell 的 I/O 重定向是通过调用 `dup2(oldfd,newfd)` 函数实现的, `dup2(4,1)`:
-![](figure/Mooc16.5.png)<br>
+![](figure/Mooc16.5.png)  
 
 ### 标准 I/O 函数
 标准 I/O 库将一个打开的文件模型化为一个流。类型为FILE 的流是对文件描述符和流缓冲区的抽象。流缓冲区的目的和 RIO 读缓冲区的一样：**就是使开销较高的Linux I/O 系统调用的数量尽可能得小**.
@@ -1417,13 +1417,13 @@ extern FILE *stdin; /* Standard input (descriptor 0) */
 extern FILE *stdout; /* Standard output (descriptor 1) */
 extern FILE *stderr; /* Standard error (descriptor 2) */
 ```
-![](figure/Mooc16.6.png)<br>
+![](figure/Mooc16.6.png)  
 Standard I/O 和 RIO 是使用底层的 Unix I/O 实现的
 // TODO: 插入 选择不同IO 函数的场景
 
 ## Lecture 17: Virtual Memory - Concepts
 ### 地址空间
-![](figure/Mooc17.1.png)<br>
+![](figure/Mooc17.1.png)  
 * 地址空间(address space) 是一个非负整数地址的有序集合：$\{ 0,1,2,\cdots \}$
 * CPU 从一个有 $N = 2^n$ 个地址的地址空间中生成虚拟地址，这个地址空间称为虚拟地址空间(virtual address space)
 * 一个系统还有一个物理地址空间(physical address space) , 对应于系统中物理内存的 M 个字节.
@@ -1434,8 +1434,8 @@ Standard I/O 和 RIO 是使用底层的 Unix I/O 实现的
 * 隔离地址空间
 
 ### VM as a Tool for Caching
-概念上, 虚拟内存被组织为一个由存放在磁盘上的 N 个连续的字节大小的单元组成的数组。从下面可以看到, 虚拟内存中的有三种状态<br>
-![](figure/Mooc17.2.png)<br>
+概念上, 虚拟内存被组织为一个由存放在磁盘上的 N 个连续的字节大小的单元组成的数组。从下面可以看到, 虚拟内存中的有三种状态  
+![](figure/Mooc17.2.png)  
 * 未分配的： VM 系统还未分配（或者创建）的页。未分配的块没有任何数据和它们相关联，因此也就不占用任何磁盘空间。
 * 缓存的：当前已缓存在物理内存中的已分配页。
 * 未缓存的：未缓存在物理内存中的已分配页。
@@ -1447,7 +1447,7 @@ DRAM 比 SRAM 要慢大约10 倍，而磁盘要比 DRAM 慢大约 100 000 倍。
 * 对磁盘的访问时间很长， DRAM 缓存总是使用写回，而不是直写
 #### 页表
 页表是一个由 page table entries(PTEs) 构成的 array,将虚拟页映射到物理页, 虚拟地址空间中的每个页在页表中一个固定偏移量处都有一个PTE. 
-![](figure/Mooc17.3.png)<br>
+![](figure/Mooc17.3.png)  
 * Page hit(页命中): reference to VM word that is in physical memory(DRAM cache hit)
 * Page fault(缺页): reference to VM word that is not in physical memory (DRAM cache miss)
   * Page miss causes page fault (an exception)
@@ -1455,8 +1455,8 @@ DRAM 比 SRAM 要慢大约10 倍，而磁盘要比 DRAM 慢大约 100 000 倍。
   * 如果牺牲页被更改则会复制回磁盘, 然后从磁盘中将未缓存的页放入物理内存中, 然后将新内容从磁盘复制到内存中更新 PTE
 
 #### 局部性
-了解了虚拟内存的概念之后, 我们的第一印象是它的效率应该很低, 但实际上虚拟内存工作得相当好，这主要归功于我们的老朋友局部性(locality)。<br>
-它保证了任意时刻, 程序将趋向于在一个较小的活动页面(active page) 集合上工作，这个集合叫做工作集, 将工作集页面调度到内存中之后，接下来对这个工作集的引用将导致命中，而不会产生额外的磁盘流量. <br>
+了解了虚拟内存的概念之后, 我们的第一印象是它的效率应该很低, 但实际上虚拟内存工作得相当好，这主要归功于我们的老朋友局部性(locality)。  
+它保证了任意时刻, 程序将趋向于在一个较小的活动页面(active page) 集合上工作，这个集合叫做工作集, 将工作集页面调度到内存中之后，接下来对这个工作集的引用将导致命中，而不会产生额外的磁盘流量.   
 工作集的大小超出了物理内存的大小，那么程序将产生一种不幸的状态，叫做抖动(thrashing),这时页面将不断地换进换出。
 
 ### 虚拟内存作为内存管理的工具
@@ -1495,7 +1495,7 @@ DRAM 比 SRAM 要慢大约10 倍，而磁盘要比 DRAM 慢大约 100 000 倍。
 |CI|  Cache index|
 |CT|  Cache tag |
 
-![](figure/Mooc17.5.png)<br>
+![](figure/Mooc17.5.png)  
 Page Hit 情况下的地址翻译:
 1. 处理器将虚拟地址发给 MMU
 2. MMU 生成PTE 地址，并从高速缓存／ 主存请求得到它
@@ -1504,21 +1504,21 @@ Page Hit 情况下的地址翻译:
 5. 高速缓存／ 主存返回所请求的数据字给处理器。
 ![](figure/Mooc17.7.png)
 
-如果是 Page Fault, 还需要多一些异常处理的过程:<br>
-![](figure/Mooc17.8.png)<br>
+如果是 Page Fault, 还需要多一些异常处理的过程:  
+![](figure/Mooc17.8.png)  
 
 #### 利用TLB 加速地址翻译
-很多系统在MMU 中包括了一个关于 PTE 的小的缓存，称为翻译后备缓冲器(Translation Lookaside Buffer, TLB) 。它是一个小的、虚拟寻址的缓存,每一行都保存着一个由单个PTE 组成的块. <br>
-![](figure/Mooc17.9.png)<br>
+很多系统在MMU 中包括了一个关于 PTE 的小的缓存，称为翻译后备缓冲器(Translation Lookaside Buffer, TLB) 。它是一个小的、虚拟寻址的缓存,每一行都保存着一个由单个PTE 组成的块.   
+![](figure/Mooc17.9.png)  
 
 #### 多级页表
-![](figure/Mooc17.10.png)<br>
+![](figure/Mooc17.10.png)  
 
 ## Lecture 18: Virtual Memory - Systems
 // TODO: 这部分听不太懂
 
 ## Lecture 19: Dynamic Memory Allocation - Basic Concepts
-程序员使用动态内存分配器(例如 C 中的 `malloc`) 在运行时请求虚拟内存, 动态内存分配器维护着一个进程的虚拟内存区域，称为堆(heap).<br>
+程序员使用动态内存分配器(例如 C 中的 `malloc`) 在运行时请求虚拟内存, 动态内存分配器维护着一个进程的虚拟内存区域，称为堆(heap).  
 分配器将堆视为一组不同大小的块(block) 的集合来维护。每个块就是一个连续的虚拟内存片(chunk),要么是已分配的，要么是空闲的。分配器有两种类型, 都要求显式分配块, 区别在于谁负责释放已分配的块:
 * 显式分配器(explicit allocator) , 要求应用显式地释放任何已分配的块。
 * 隐式分配器(implicit allocator), 另一方面，要求分配器检测一个已分配块何时不再被程序所使用，那么就释放这个块。
@@ -1542,7 +1542,7 @@ sbrk 函数通过将内核的 brk 指针增加 incr 来扩展和收缩堆。
 #include <stdlib.h>
 void free(void *ptr);
 ```
-程序通过调用 free 函数来释放已经分配的堆块, ptr 参数必须指向一个从malloc 、calloc 或者 realloc 获得的巳分配块的起始位置。**如果不是，那么free 的行为就是未定义的, 同时 void 函数不反悔值, 无法告诉你应用出现了错误.**<br>
+程序通过调用 free 函数来释放已经分配的堆块, ptr 参数必须指向一个从malloc 、calloc 或者 realloc 获得的巳分配块的起始位置。**如果不是，那么free 的行为就是未定义的, 同时 void 函数不反悔值, 无法告诉你应用出现了错误.**  
 malloc 对应用端以及分配器端的约束:
 * 应用端
   * 可以随意提出一个 malloc 和 free 请求的序列
