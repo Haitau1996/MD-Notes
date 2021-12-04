@@ -73,7 +73,7 @@
     - [map 元素的插入](#map-元素的插入)
     - [访问 map 元素](#访问-map-元素)
     - [删除元素](#删除元素-2)
-  - [pair<> & tuple<> 的用法](#pair--tuple-的用法)
+  - [`pair<>` & `tuple<>` 的用法](#pair--tuple-的用法)
     - [pair 的操作](#pair-的操作)
 ## Chapter 1: intruction to STL
 STL为一个功能强大且可扩展的工具集,用于组织和处理数据,STL可以划分为四个概念库:
@@ -84,7 +84,7 @@ STL为一个功能强大且可扩展的工具集,用于组织和处理数据,STL
 4. 数值库
 
 ### 模板
-__模板并不是可执行的代码, 而是用于生成代码的蓝图或者配方__.在程序中, 如果一个模板从来没有被实例化过, 那么它将被编译器忽略.当模板的实例化类型存在歧义的时候, 可以显式指定消除多义性.(一般而言, 定义类模板的时候喝定义其他类一样, 需要拷贝构造,移动构造,拷贝赋值运算符,移动赋值运算符以及析构函数五个成员)<br>
+__模板并不是可执行的代码, 而是用于生成代码的蓝图或者配方__.在程序中, 如果一个模板从来没有被实例化过, 那么它将被编译器忽略.当模板的实例化类型存在歧义的时候, 可以显式指定消除多义性.(一般而言, 定义类模板的时候喝定义其他类一样, 需要拷贝构造,移动构造,拷贝赋值运算符,移动赋值运算符以及析构函数五个成员)  
 类的模板类型参数需要一个实参,除非有默认实参.实例化一个模板的时候, 发生了三个事情:
 1. 确定了参数类型
 2. 生成了构造函数的定义
@@ -96,7 +96,7 @@ STL 提供了下面的三种容器:
 2. 关联容器: 可以用 key 去得到对应的 value
 3. 容器适配器: 提供了替换机制的适配器模板, 可以用来访问基础的序列容器或者关联容器
 
-__容器在堆上存放对象__,并且自动管理他们所占用的内存. 默认的内存分配器(allocator)性能还是不错的, 在这里不讨论自定义的内存分配器相关的话题.<br>
+__容器在堆上存放对象__,并且自动管理他们所占用的内存. 默认的内存分配器(allocator)性能还是不错的, 在这里不讨论自定义的内存分配器相关的话题.  
 
 ### 迭代器
 是一种类似于指针的模板类对象, 使用STL算法的时候, 迭代器将容器和算法联系在了一起, 通常使用一对迭代器表示一段数据(from begin to end),通常使用 _c.begin() / c.end()_ 或者 _std::begin(c) / std::end(c)_ 得到对象的两个典型迭代器. 
@@ -124,10 +124,12 @@ std::cout << "\nThe sum of the values you entered is "
 #### 迭代器适配器
 这是一个类模板, 为标准的迭代器提供了一些特殊的行为, 使得他们能够从迭代器模板得到派生, 下面分别介绍这三种适配器模板.
 ##### 反向迭代器
-工作机制和标准迭代器相反, 可以创建双向或者随机访问迭代器的反向迭代器:<br>
-![](figure/1.1.png)<br>
-容器元素的反向迭代器相对于标准迭代器, 向左偏移了一个 Object. 每个反向迭代器都有一个成员函数 `base()`, 返回一个基础迭代器, 指向 rIter 的下一个位置:<br>
-![](figure/1.2.png)<br>
+工作机制和标准迭代器相反, 可以创建双向或者随机访问迭代器的反向迭代器:  
+<div align=center><img src="https://i.imgur.com/V691ucM.png"/></div>
+
+容器元素的反向迭代器相对于标准迭代器, 向左偏移了一个 Object. 每个反向迭代器都有一个成员函数 `base()`, 返回一个基础迭代器, 指向 rIter 的下一个位置:  
+<div align=center><img src="https://i.imgur.com/Py38b3A.png"/></div>
+
 ##### 插入迭代器
 一般的迭代器只能访问或者改变序列中存在的元素, **插入迭代器通常用于在容器的任何位置添加新的元素, 不能作用在`array<T,n>`这种 fixed-size 容器上**:
 * 向后插入迭代器: 通过调用成员函数`push_back()` 将一个新的元素添加到容器的尾部, 如果容器没有定义 `push_back()` 函数,向后插入迭代器将无法使用(`vector, list, deque` 都有这个函数)
@@ -234,8 +236,9 @@ Box box{1.0, 2.0, 3.0};
 double roomOfBox{ volume(box)};
 ```
 #### Lambda 表达式
-用于定义匿名函数, 可以捕获他们作用域内的变量,然后使用他们, 函数的返回值为默认返回类型, 当然也可用在 return_type 中定义. <br>
-![](figure/1.1.jpg)<br>
+用于定义匿名函数, 可以捕获他们作用域内的变量,然后使用他们, 函数的返回值为默认返回类型, 当然也可用在 return_type 中定义.   
+<div align=center><img src="https://i.imgur.com/nnmOej2.jpg"/></div>
+
 我们常常使用自动类型推导命名 lambda 表达式, 例如 `auto cube = [](double length)->double {return length* length * length; };`.
 ##### 将 lambda 表达式传给函数
 对于编程人员,一个十分困难的问题就是**如何确定 lambda 表达式的类型**, 然后写入函数的参数列表, 简单的回答是定义一个函数模板, 让编译器特话后处理不同的 lambda 表达式:
@@ -248,7 +251,7 @@ void change(ForwardIter first, ForwardIter last, F fun){
 int data[] {1, 2, 3, 4};
 change(std::begin(data), std::end(data), [] (int value){ return value*value; });
 ```
-在这种情况下, `fun` 就是一个函数模板,可以接受一个函数对象/一个函数指针或者一个 lambda 表达式. <br>
+在这种情况下, `fun` 就是一个函数模板,可以接受一个函数对象/一个函数指针或者一个 lambda 表达式.   
 标准库中有一个模板类型`std::function<>` 对任意类型的函数指针的封装, 包含了参数类型和返回值, 这也就包含了 lambda 表达式, 可以写成一个:
 ```C++
 std::function<double(double)> op { [] (double value) { return value*value*value; } };
@@ -261,7 +264,7 @@ lambda 的引入符不一定为空, 可以有捕获子句, 指定一些封闭范
 * 方括号中加入 `&`, 用引用的方式使用封闭范围中的变量, 都能改变且不需要 `mutable` 关键字
   
 
-不能将 auto 用于任何使用了正在定义变量的变量的 lambda 表达式, auto 不能用于自引用. 为了捕获指定变量,只要在捕获子句中列出他们的名称, 用 `&` 的话是引用传递,如`[&, factor]` 表示其他所有变量都是按引用传递, factor 使用值, 而且要加 `mutable` 才能改变 lambda 表达式中 factor 的值.<br>
+不能将 auto 用于任何使用了正在定义变量的变量的 lambda 表达式, auto 不能用于自引用. 为了捕获指定变量,只要在捕获子句中列出他们的名称, 用 `&` 的话是引用传递,如`[&, factor]` 表示其他所有变量都是按引用传递, factor 使用值, 而且要加 `mutable` 才能改变 lambda 表达式中 factor 的值.  
 
 ## Chapter 2: 使用序列容器
 序列容器用线性的方式存取元素, 主要有五种标准的序列容器:
@@ -281,12 +284,12 @@ lambda 的引入符不一定为空, 可以有捕获子句, 指定一些封闭范
 #### 访问元素
 * 可以使用`opetator[]`访问, 这种实现没有做边界检查, 性能要好一些. 
 * 使用 `at()` 访问, 当越界的时候抛出 `std::out_of_range` 异常
-* 为了保持和其他容器的一致性操作, 也有成员函数 `empty()`(意义不大).<br>
+* 为了保持和其他容器的一致性操作, 也有成员函数 `empty()`(意义不大).  
 * 函数模板 `std::get<n>()` 的实参必须是一个在编译期能确定的常量表达式, 提供了一个不需要在运行时检查, 但是能安全访问元素的方式(编译期检查, 别的容器无法编译期间检查大小, 故无法这么做)
 
 #### 使用数组容器的迭代器
-模板定义了成员函数 `begin()` 和 `end()`, 分别返回首元素和最后元素后一个位置的迭代器. 我们一般使用 auto 做自动类型推导, 实际上迭代器被定义在容器类型种, 类型类似于这种: `std::array<unsigned int, 19>::iterator`. 最好不用成员函数, 而是用全局的 `std::begin()`, 因为它们是通用的,例如普通的数组无法使用成员函数, 但是可以使用全局的非成员函数获取迭代器.<br>
-算法是独立于容器类型的, 对于任何具有指定类型迭代器的容器来说, 算法都可以运用到他们的元素上. 只想访问元素而不做修改时候, 最好使用函数`cbegin()` 和 `cend()`.<br>
+模板定义了成员函数 `begin()` 和 `end()`, 分别返回首元素和最后元素后一个位置的迭代器. 我们一般使用 auto 做自动类型推导, 实际上迭代器被定义在容器类型种, 类型类似于这种: `std::array<unsigned int, 19>::iterator`. 最好不用成员函数, 而是用全局的 `std::begin()`, 因为它们是通用的,例如普通的数组无法使用成员函数, 但是可以使用全局的非成员函数获取迭代器.  
+算法是独立于容器类型的, 对于任何具有指定类型迭代器的容器来说, 算法都可以运用到他们的元素上. 只想访问元素而不做修改时候, 最好使用函数`cbegin()` 和 `cend()`.  
 #### 比较数组容器
 两个数组容器只要大小相同/保存的元素类型相同而且重载了比较云算符, 就可以支持比较操作:
 ```C++
@@ -302,9 +305,9 @@ if (them > those) std::cout << "them are greater than those." << std::endl;
 ### 使用 `vector<T>` 容器
 `vectory<T>` 大小可以自动增长, 从而可以包含任意数量的元素, 因此只需要类型信息一个参数.
 #### 创建 `vector<T>`容器
-一般情况下, 可以这样生成一个存放元素类型的vector容器: `std::vector<double> weightOfPeople;`,这时候没有元素也就没有分配空间, 我们可以使用成员函数 `reserve(n)`来指定内存分配保证至少可以容纳 n 个元素.<br>
-当然也可以用初始化列表指定初值和元素个数:`std::vector<int> idOfStudents{ 1, 3, 4,5,6};`. <br>
-还可以使用其构造函数来创建 vector 对象: `std::vector<double> vecOfZeros(10. 0.0);`. 这里需要注意的是, **使用小括号创建 vector 对象和使用大括号指定的初始化列表出来的结果是完全不同的**.<br>
+一般情况下, 可以这样生成一个存放元素类型的vector容器: `std::vector<double> weightOfPeople;`,这时候没有元素也就没有分配空间, 我们可以使用成员函数 `reserve(n)`来指定内存分配保证至少可以容纳 n 个元素.  
+当然也可以用初始化列表指定初值和元素个数:`std::vector<int> idOfStudents{ 1, 3, 4,5,6};`.   
+还可以使用其构造函数来创建 vector 对象: `std::vector<double> vecOfZeros(10. 0.0);`. 这里需要注意的是, **使用小括号创建 vector 对象和使用大括号指定的初始化列表出来的结果是完全不同的**.  
 使用元素类型相同的容器也可以初始化 vector 对象:
 ```C++
 std::array<std::string, 5> words {"one", "two", "three", "four", "five"};
@@ -314,7 +317,7 @@ std::vector<std::string> words_copy {std::make_move_iterator(std::begin(words)),
                                      std::make_move_iterator(std::end(words))};
 ```
 #### 容量和大小
-vector 对象可以通过调用 `.size()`/`.capacity()` 来获取相应的大小和容量. 显然其大小不能超过容量, 当两者相等的时候, 向 vector 中插入元素就会导致更多的内存分配(例如 gcc 的实现是容量翻倍). `vector<T>` 对象的容量和大小的数据类型是`vector<T>::size_type`, 需要用变量保存的大小的时候最好使用自动类型推导. <br>
+vector 对象可以通过调用 `.size()`/`.capacity()` 来获取相应的大小和容量. 显然其大小不能超过容量, 当两者相等的时候, 向 vector 中插入元素就会导致更多的内存分配(例如 gcc 的实现是容量翻倍). `vector<T>` 对象的容量和大小的数据类型是`vector<T>::size_type`, 需要用变量保存的大小的时候最好使用自动类型推导.   
 此外可以调用 `resize()` 来改变容量的大小,区别在于使用这个成员函数的话会导致元素个数的变化:
 ```C++
 std::vector<int> values {1,2,3}; // 1 2 3 : size is 3
@@ -339,7 +342,7 @@ std::copy(std::istream_iterator<double>(std::cin), std::istream_iterator<double>
           std::back_inserter(data)); // 将流迭代器中的数据通过back_insert_iterator 写入 data
 std::copy(std::begin(data), std::end(data), std::ostream_iterator<double>(std::cout, " "));
 ```
-这里我们做的就是两个事情, 第一个是从输入流中将数据写到 data, 然后再将 data 的数据写到 输出流中.<br>
+这里我们做的就是两个事情, 第一个是从输入流中将数据写到 data, 然后再将 data 的数据写到 输出流中.  
 
 #### 向 vector 容器中添加元素
 向容器中添加元素的唯一方式是使用它的成员函数.
@@ -349,7 +352,7 @@ std::copy(std::begin(data), std::end(data), std::ostream_iterator<double>(std::c
 std::vector<std::string> words;
 words.push_back(string("adiabatic")); // Move string("adiabatic") into the vector
 ```
-还有一种更好的方式: `emplace_back()`, <font color=red>直接使用 vector 中的元素构造函数所需要的参数直接在容器中构造对象</font>:
+还有一种更好的方式: `emplace_back()`, <font color=red>直接使用 _vector_ 中的元素构造函数所需要的参数直接在容器中构造对象</font>:
 ```C++
 words.emplace_back("abstemious"); 
 std::string str {"alleged"};
@@ -392,7 +395,8 @@ words.emplace_back(str, 2, 3); // Create string object corresponding to "leg" in
   std::vector<std::string> words { "one", "none", "some", "all", "none", "most", "many"};
   auto iter = std::remove(std::begin(words), std::end(words), "none");
   ```
-  ![](figure/2.1.png)<br>
+  <div align=center><img src="https://i.imgur.com/cwGd2Ka.png"/></div>
+
   如果需要删除剩下空的位置, 还是需要调用上面的.erase():
   ```C++
   words.erase(iter, std::end(words)); // Remove surplus elements, 两部合起来相当于下面一句
@@ -403,8 +407,9 @@ words.emplace_back(str, 2, 3); // Create string object corresponding to "leg" in
 是模板的特例化, 通常一个 bool 只需要一个 Bit, 如果不特例化的化需要一个 Byte. 这个没有成员函数 `.data()`, 一些成员函数的行为也和一般模板的实例不同.在要用布尔值而且知道用多少的时候, 使用`bitset<N>` 相对是个好的选择.
 
 ### 使用 `deque<T>` 容器
-当应用包含先入先出的事务处理时, 都应该使用 deque, 这种容器可以在头部和尾部高效地添加或者删除对象. <br>
-![](figure/2.2.png)<br>
+当应用包含先入先出的事务处理时, 都应该使用 deque, 这种容器可以在头部和尾部高效地添加或者删除对象.   
+<div align=center><img src="https://i.imgur.com/fZvEYpe.png"/></div>
+
 #### 生成 deque 容器
 * 默认构造生成 `deque<T>` 容器没有任何元素, 添加第一个元素之后才会导致内存的分配, 这点和 vector 是一样的. 
 * 也可以指定元素个数生成容器(`std::deque<int> my_deque(10);`,这种定义之下每个元素保存的都是默认值0)
@@ -447,8 +452,9 @@ words.assign(8, "eight"); // Assign eight instances of string("eight")
 值得注意的是 case 1 中需要用 `std::string` 生成 string 对象, init_list 被推导为 `initializer_list<const char*>` 后面assign 就会报错, 当然可以不单独定义 init_list 直接将初始化列表放入参数中(`words.assign({"seven", "eight", "nine"});`). 
 
 ### 使用 `list<T>` 容器
-这是一个包含 T 类型对象的双向链表, 可以在常规时间内在序列已知的任何位置插入或者删除元素, 但是**不能索引元素**, 如果需要访问内部的一个元素, 必须从头/尾 开始遍历:<br>
-![](figure/2.3.png)<br>
+这是一个包含 T 类型对象的双向链表, 可以在常规时间内在序列已知的任何位置插入或者删除元素, 但是**不能索引元素**, 如果需要访问内部的一个元素, 必须从头/尾 开始遍历:  
+<div align=center><img src="https://i.imgur.com/C0KRxix.png"/></div>
+
 可以和其他容器一样获得list的迭代器, 但是**无法随机访问list中的元素,故获取的都是双向迭代器**.
 #### 生成 list 容器
 list的构造函数用法类似于 vector 或者 deque. 
@@ -497,7 +503,7 @@ names.emplace_front("Ian"); // Create string("Ian") in place at the front of the
 ```C++
 names.sort(std::greater<>()); // Function object uses perfect forwarding
 ```
-`merge()`成员函数接受另一个相同类型的 list 作为参数, 两个容器中所有的元素都必须为升序, 参数 List 中所有元素会被合并到当前的 list 中. 这种操作之后 List 节点在内存中的位置不变, 但是操作他们的指针变了. <br>
+`merge()`成员函数接受另一个相同类型的 list 作为参数, 两个容器中所有的元素都必须为升序, 参数 List 中所有元素会被合并到当前的 list 中. 这种操作之后 List 节点在内存中的位置不变, 但是操作他们的指针变了.   
 list 容器的 `splice()` 有几个版本, 将参数 list 容器中的元素移动到当前容器中指定元素的前面.它可以移动单个元素/一段元素或者源容器的全部元素. 
 
 #### 访问元素
@@ -531,7 +537,7 @@ list 的成员函数 `front()`/`back()` 可以返回第一个元素和最后一�
 
 ### 自定义迭代器
 
-STL 对定义了迭代器类的类型有一些特定的要求, **这是为了保证所有接受这种迭代器的算法都能正常工作**.<br>
+STL 对定义了迭代器类的类型有一些特定的要求, **这是为了保证所有接受这种迭代器的算法都能正常工作**.  
 使用迭代器模板的时候经常会出现一个问题, 就是我们通常不知道迭代器容器的数据类型, 于是我们就可以使用 `value_type` 的别名来指定类型:
 ```C++
 template <typename Iter> void my_swap(Iter a, Iter b)
@@ -541,7 +547,7 @@ template <typename Iter> void my_swap(Iter a, Iter b)
   *b = tmp;
 }
 ```
-但是, 问题又出现了:**算法既可以使用指针, 也可以使用迭代器, 而指针不是类, 无法包含定义的别名**. 就是说上面的代码 Iter 为迭代器的时候能用, 传入一个指针的时候, `int*::value_type` 是没有意义的.  STL 用模板优雅地解决了这个问题.<br>
+但是, 问题又出现了:**算法既可以使用指针, 也可以使用迭代器, 而指针不是类, 无法包含定义的别名**. 就是说上面的代码 Iter 为迭代器的时候能用, 传入一个指针的时候, `int*::value_type` 是没有意义的.  STL 用模板优雅地解决了这个问题.  
 `iterator_traits`模版的定义如下:
 ```C++
 template<class Iterator>
@@ -619,7 +625,7 @@ class My_Iterator : public std::iterator<std::random_access_iterator_tag, int>
 
 ### 创建和使用 `stack<T>` 容器适配器
 
-![](figure/3.1.png)<br>
+<div align=center><img src="https://i.imgur.com/nP86yM6.png"/></div> 
 
 `stack<T>` 容器适配器模板有两个参数, 第一个 T 存储元素的类型, 第二个是使用的底层容器的类型, 只要支持`back() push_back() pop_back() empty() size()` 这些操作,默认是 `deque<T>`.例如我们可以使用一个 list 作为底层的容器:
 
@@ -654,8 +660,9 @@ std::stack<double, std::list<double>> copy_stack(my_stack);
 
 ### 创建和使用 `queue<T>`容器适配器
 
-只能访问`queue<T>`容器适配器的第一个和最后一个元素. **只能在头部添加元素, 在尾部移除元素**. <br>
-![](figure/3.2.png)<br>
+只能访问`queue<T>`容器适配器的第一个和最后一个元素. **只能在头部添加元素, 在尾部移除元素**.   
+<div align=center><img src="https://i.imgur.com/wVEIcKd.png"/></div>
+
 同样的, 我们也可以通过第二个参数指定底层的容器类型, 只要它能提供以下类型的操作:`front(), back(), push_back(), pop_front, empty() , size()`. 
 #### queue 的操作
 * `front()`/`back()` 同样的返回第一个元素最后一个元素的引用, 如果 queue 是常量则返回常引用
@@ -667,7 +674,8 @@ std::stack<double, std::list<double>> copy_stack(my_stack);
 
 ### 使用优先队列
 `priority_queue<T>` 容器适配器定义了一个元素有序排列的队列, 默认**队列头部的元素优先级最高**. 这个处理过程有点类似于急救室抢救病人, 它并不总是先到先处理. 适配器模板有三个参数, 存储对象类型, 底层容器类型(默认是一个向量) 和 一个函数对象(用于决定元素的顺序). 
-![](figure/3.3.png)
+<div align=center><img src="https://i.imgur.com/w23Xiwf.png"/></div>
+
 #### 创建优先队列
 **初始化列表中的序列可以来自任何容器，并且不需要有序**。 优先队列会对他们进行排序:
 ```C++
@@ -731,7 +739,6 @@ std::make_heap(std::begin(numbers), std::end(numbers)); // Result: 12 10 3.5 6.5
 * `is_heap()/is_heap_until()` 检查迭代器区间中的元素排列是否构成一个堆, 后者是检查第一个不构成堆的元素
 * `sort_heap()` 将元素段作为堆来排序, 如果不是堆, 就会在运行时崩溃
 > 我们可以直接使用 _algorithm_ 头文件中的函数模板 `sort` 排序, 但是 sort_heap 是充分利用堆的局部有序性可以使得排序变得更快
-
 ### 在容器中保存指针
 在容器中存在智能指针比存放对象要好, 保存智能指针比保存原生指针要好. 我们在使用的时候常常是用临时对象调用 `push_back()` 的右值引用版本, 或者使用 `std::move()` 将智能指针移动到容器中. 
 ## Chapter 4: map 容器
@@ -796,7 +803,7 @@ auto iter = people.emplace_hint(pr.first, Name{"Cal", "Cutta"}, 62);
 * `erase()` 用于删除键和参数匹配的元素
 * `clear()` 用于删除容器中的所有元素
 
-### pair<> & tuple<> 的用法
+### `pair<>` & `tuple<>` 的用法
 一般来说, pair 可以封装一对不同的任意类型的对象, 例如可以封装两个序列容器或者两个序列容器的指针, 在 _\<utility>_ 头文件中定义. `tuple<>` 是 `pair` 的返化, 可以封装不同类型的任意数量的对象, 定义在 _\<tuple>_ 头文件中. 
 #### pair 的操作
 pair 是比较简单的数据类型, 只有两个 public 数据成员 `first`/`second`. 和右值引用一样, 可以有各种版本的引用参数:
