@@ -317,7 +317,7 @@ long exchange(long *xp, long y)
     return x;
 }
 ```
-```assembly
+```x86asm
 exchange:
 	movq	(%rdi), %rax   # Get x at xp.  Set as return value # line:asm:exchange:getx
 	movq	%rsi, (%rdi)   # Store y at xp. # line:asm:exchange:storey
@@ -337,7 +337,7 @@ movq %rbp,(%rsp)
 ```
 
 前者编码只需要一个字节, 而后者需要八个字节, 同样的, `popq %rax`相当于
-```assembly
+```x86asm
 movq (%rsp),%rax
 addq $8, %rsp
 ```
@@ -384,7 +384,7 @@ void store_uprod(uint128_t *dest, uint64_t x, uint64_t y){
 }
 ```
 
-```assembly
+```x86asm
 store_uprod:
 	.seh_endprologue
 	movq	%rdx, %rax 
