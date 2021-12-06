@@ -6,13 +6,13 @@
 * 作为一种通用的编程语言, 擅长在下列场景中使用:
   * 需要运行时的速度
   * 需要内存安全
-  * 更好地利用多处理器
+  * 更好地利用多处理器8
 * 比 C/C++ 等高性能的编程语言相比更加安全, 比拥有 GC 的 Java/C# 更加高效
 
 Rust 有很多独有的概念, 和现在大多数主流的语言都不同. 
 
 ## 安装
-从命令行运行[官网]`https://www.rust-lang.org/tools/install`中的相关代码:
+从命令行运行[官网](https://www.rust-lang.org/tools/install)中的相关代码:
 * 更新 : `rustup update`
 * 卸载 : `rustup self uninstall`
 * 添加新的插件: `rustup component add [some component]`, 如 `rustup component add rust-analysis`
@@ -148,3 +148,90 @@ rust 中布尔类型有两个可能的值 `true`和 `false`, 并且使用一个�
     let z = 'ℤ';
     let heart_eyed_cat = '😻';
 ``` 
+
+### 复合类型
+复合类型可以将多个值组合成一个类型。Rust 有两个原生的复合类型：元组（tuple）和数组（array）。
+#### tuple
+创建 tuple
+* 在小括号里， 将值用逗号分开
+* 各个元素的类型可以不同
+    ```Rust
+    let tup:(i32,f64, u8) = (4, 5.0,1);
+    let (x, y, z) = tup; //destructure
+    ```
+在使用的时候可以使用**模式匹配**（pattern matching）来**解构**（destructure）元组值,或者使用 `.` 标记法来访问对应位置的元素， 如 `tup.0`。  
+
+#### array
+* 在中括号中， 将值用逗号分开用于创建数组，如果元素相同可以使用 `[elem_val; size]`
+* 数组中每个元素的类型必须相同
+* 数组的长度也是固定的
+
+使用数组是将数据存放在 **_stack_** 而非 _heap_ 中， 或者想要固定数量的元素， Vector 更加灵活， 可以改变长度。  
+数组的类型是 `[element_type, size]`, 如 `let a:[i32;4] = [0, 1, 2, 3];`, 使用索引访问数组的元素， 索引超出范围能够通过编译(并不绝对)， 但是运行时会引发 _panic_。  
+
+## 函数
+* rust 中使用关键字 `fn` 声明函数
+* 函数和变量名命名都是适用 snake case
+* rust 不关心函数声明的先后
+
+### 参数
+函数有形参(parameter) 和实参(argument) 的区别， 在声明参数的时候， 必须声明每个参数的类型， 多个参数之间适用逗号(`,`) 分开。 
+```Rust
+fn main() {
+    print_labeled_measurement(5, 'h');
+}
+
+fn print_labeled_measurement(value: i32, unit_label: char) {
+    println!("The measurement is: {}{}", value, unit_label);
+}
+```
+
+### 语句和表达式
+Rust 中区分语句和表达式，语句（Statements）是执行一些操作但不返回值的指令。**表达式（Expressions）计算并产生一个值**。
+* 函数由一系列语句组成， 可选的由一个表达式结束
+* 函数的定义也是语句
+* 语句不返回值， 所以**不能使用 `let` 将语句赋值给一个变量**
+    ```Rust
+    let x = (let y =6); // expected expression, found statement
+    let y = {
+        let x = 1;
+        x + 3    // Ok: 块表达式的值值相当于最后一个表达式求值
+        // 如果最后一行加了逗号， 则是一个表达式， 求值后是一个空的 tuple, ()
+    }
+    ```
+
+### 函数的返回值
+* 使用 `->` 后面跟返回值的类型， 但是不能为返回值命名
+* Rust 中返回值就是最后一个表达式求值
+* 想要提前返回的话使用 `return` 关键字并且指定一个值
+
+## 控制流
+### `if` 表达式
+`if` 表达式允许我们根据条件来执行不同的代码分支
+* 条件必须是 bool 类型
+* 与表达式相关联的代码就叫分支(arm)
+* 可以有 else 块
+* 连续使用多个 `else if`, 最好使用 `match` 重构
+* if 代码块也是一个表达式， 可以使用 `let` 赋值, 但是所有可能执行的 arm 中表达式求值后应该是相同的类型
+
+#### 循环
+rust 中提供了三种循环 `loop`,`while` 和 `for`。
+* `loop` 关键字告诉 Rust 一遍又一遍地执行一段代码直到你明确要求停止(使用 `breck` 后面可选一个表达式作为 loop 表达式的值)
+* `while condition{...}`当条件为真，执行循环。
+* `for` 用于紧凑地遍历容器
+    ```Rust
+    let a = [10, 20, 30, 40, 50];
+    for element in a.iter() {
+        println!("the value is: {}", element);
+    }
+    ```
+
+Range 搭配 for 循环可以更好地遍历：
+* `Range` 由标准库提供
+* 指定开始数字和结束数字， 左闭右开地生成它们之间的数字
+* `rev` 方法可以反转 `Range`
+    ```Rust
+    for number in (1..4).rev() {
+        println!("{}!", number);
+    }
+    ```
