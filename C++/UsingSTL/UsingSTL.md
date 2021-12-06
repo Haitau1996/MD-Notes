@@ -819,4 +819,4 @@ std::pair<std::string, std::string> her_pair{"test", "that"};
 * 第二个移动参数
 * 第三个第四个包含了从 `const char*` 到 `std::string` 的隐式类型转换
 
-此外, 我们可以使用辅助函数 `std::make_pair<T1,T2>` 生成并且返回一个 pair 对象, 函数模板的参数值可以手动指定也可以由编译器推断.  
+此外, 我们可以使用辅助函数 `std::make_pair<T1,T2>` 生成并且返回一个 _pair_ 对象, 函数模板的参数值可以手动指定也可以由编译器推断.  
