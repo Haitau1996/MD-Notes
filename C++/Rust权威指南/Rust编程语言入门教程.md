@@ -266,9 +266,30 @@ Range 搭配 for 循环可以更好地遍历：
 
 Scope 就是程序中一个项目的有效范围。 
 String 类型比基础数据类型更加复杂， 它是 heap based, 可以帮助我们理解所有权。
-* 字符串字面值： 程序中写死的那些字符串值， 它们是不可变的
-* Rust 中提供了 `String`: 可以在heap 中存放那些在编译时未知的字符串
-  * 使用 `from` 函数从字符串字面量创建 `String` 类型 let s = `String::from("hello")`
+* 字符串字面值： 程序中写死的那些字符串值， 它们是不可变的,并不是所有字符串值都能在编写代码时候确定，所以使用场景有限
+* Rust 中提供了 `String`: 可以在 heap 中存放那些在编译时未知的字符串
+  * 使用 `from` 函数从字符串字面量创建 `String` 类型 `let s = String::from("hello")`
   * 这些字符串是可以修改的， 如调用 `push_str`
-* Rust 中， 对于某值而言， 当拥有它的变量走出作用范围时， 内存就会立即自动交还给操作系统
+* Rust 中， 对于某值而言， 当拥有它的变量走出作用域时， 内存就会立即自动交还给操作系统
 * 这实际上是将这个过程卸载 drop 函数中
+
+#### 变量和数据的交互方法
+多个变量可以与同一个数据使用一种独特的方式进行交互。
+```Rust
+let s1 = String::from("hello");
+let s2 = s1;
+```
+<div style="text-align:center"><img src="https://s2.loli.net/2021/12/15/hLZQ3yEoF6Se1WM.png"width="30%" hight="30%" /></div>
+
+一个 String 有三个部分组成，指针， 长度和容量， 它们是放在 stack 上的， 而字符串的内容部分放在 heap 上。当 s1 赋值给 s2 时， stack 上的部分被复制了一份， 但是 heap 上的数据只有一份。因此可能有 double free 问题， Rust 的解决办法是让 s1 失效。<div style="text-align:center"><img src="https://s2.loli.net/2021/12/15/bAoOSWMYZDK6UVn.png" width="30%" hight="30%" /></div>
+
+* 浅拷贝
+* 深拷贝
+* Rust 让 s1 失效了， 我们使用移动（move） 描述这种行为
+
+因为不会自动创建数据的深拷贝， 就运行时性能而言， 任何自动赋值的操作都是廉价的。  
+如果真的想要对 heap 上的数据进行深度拷贝， 可以使用 `clone` 方法。 
+* rust 提供来了 copy 这个 trait, 就可以像整数这样在 stack 上复制。
+* **copy 和 drop 这两个 trait 不能共存**， 如果类型或者类型的一部分实现了 drop, 就不能实现 copy trait
+    * 简单标量和他们的组合都是可以 copy 的(如 i8 构成的元组)
+    * 任何需要分配内存或者某种资源的都无法实现 copy trait
