@@ -370,4 +370,48 @@ fn first_word(s: &str) -> &str {
 // in the caller
 let word = first_word(&my_string[..]);
 ```
-Rust还有其他更加通用的切片类型。
+Rust还有其他更加通用的切片类型。  
+
+# 结构体
+## 定义 _struct_
+* 使用 `struct` 关键字， 并为整个 struct 命名
+* 在花括号内， 为所有字段(field) 定义名称和类型，不同字段之间用逗号隔开
+* 创建 struct 实例时， 要为每个字段指定具体值
+  * 无需按照声明的顺序进行指定
+* 使用点标记法(`.`) 访问字段
+* 一旦 struct 的实例是可变的， 那么实例的所有字段都是可变的
+* struct 可以作为函数的返回值
+* 如果字段名与值对应的变量名相同时候可以简写
+    ```Rust
+    fn build_user(email: String, username: String) -> User {
+        User {
+            email,
+            username,
+            active: true,
+            sign_in_count: 1,
+        }
+    }
+    ```
+* 基于现有实例创建时候可以使用更新语法
+   ```Rust
+    let user2 = User {
+        email: String::from("another@example.com"),
+        username: String::from("anotherusername567"),
+        ..user1
+    };
+    ```
+* rust 可以定义 tuple struct(整体有名字但是字段没有名字)
+    ```Rust
+    struct Color(i32, i32, i32);
+    let black = Color(0, 0, 0);
+    ```
+    * 行为像元组， 可以使用模式匹配和`.`索引元素
+* 可以定义没有字段的结构体
+    * 通常用于在某个类型上实现一个 trait
+
+### struct 数据的所有权
+* 如果字段中使用的是类似于 `String` 这种非引用的数据， 结构体的实例拥有自身全部数据的所有权。**只要结构体是有效的，那么它携带的全部数据也就是有效的**。
+* 可以在结构体中存储指向其他数据的引用，不过这需要用到Rust中独有的生命周期功能
+
+## Struct 使用实例
+我们可以通过 直接使用变量，包装为元组和包装为 struct 等方式去求
