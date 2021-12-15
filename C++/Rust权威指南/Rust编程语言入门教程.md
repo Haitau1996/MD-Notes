@@ -293,3 +293,81 @@ let s2 = s1;
 * **copy 和 drop 这两个 trait 不能共存**， 如果类型或者类型的一部分实现了 drop, 就不能实现 copy trait
     * 简单标量和他们的组合都是可以 copy 的(如 i8 构成的元组)
     * 任何需要分配内存或者某种资源的都无法实现 copy trait
+
+### 所有权与函数、返回值
+* 将值传递给函数在**语义上类似于对变量进行赋值**。将变量传递给函数将会触发移动或复制，就像是赋值语句一样。
+* 函数在返回值的过程中也会发生所有权的转移。  
+
+一个变量的所有权总是遵循下面的模式：
+* 把一个值赋给其他变量的时候就会发生移动
+* 当一个包含 heap 数据的变量离开作用域的时候， 其值就会被 drop 函数清理， 除非已经转移的所有权
+
+## 引用与借用
+Rust 有一个被称为引用(reference)的特性， 在调用函数的时候传入的参数有 `&` 符号，就是引用语义，它们允许你在**不获取所有权的前提下使用值**。
+```Rust
+// 函数声明中
+fn calculate_length(s: &String) -> usize { 
+    s.len() 
+} 
+// 在调用端
+let len = calculate_length(&s1);
+``` 
+<div style="text-align:center"><img src="https://i.imgur.com/xCrGUAb.png" /></div>
+
+从上图可以看出， 变量 s 并没有堆上数据的所有权，所以在离开作用域之后不会调用 `drop` 函数。把引用作为参数的行为叫做**借用**（borrowing）。
+### 可变引用
+```Rust
+fn main() { 
+    let mut s = String::from("hello");  
+    change(&mut s); 
+} 
+ 
+fn change(some_string: &mut String) { 
+    some_string.push_str(", world"); 
+}
+```
+我们可以在引用中修改数据（可变引用）， 但是它的使用有特定的限制：
+* 在特定作用域中， 一次只能声明一个可变引用。
+* 不能同时拥有一个可变引用和不可变引用
+
+这是为了避免数据竞争，数据竞争在满足下面的条件下会发生：
+1. 有两个或者多个指针同时方位一个数据
+2. 至少有一个指针用于写入数据
+3. 没有任何机制来同步数据的访问
+
+### 悬空引用
+悬垂指针是说指向曾经存在的某处内存地址，但该内存已经被释放掉甚至是被重新分配另作他用了。而在Rust语言中，编译器会**确保引用永远不会进入这种悬垂状态**。
+```Rust
+fn dangle()->&String{
+    let s = String::from("hello");
+    &s //error[E0106]: missing lifetime specifier
+}
+```
+
+## 切片(slice)
+除了引用，Rust还有另外一种不持有所有权的数据类型：切片 （slice）。切片允许我们**引用集合中某一段连续的元素序列**，而不是整个集合。  
+字符串切片是指向 String 对象中某个连续部分的引用:
+```Rust
+let s = String::from("hello world");
+let hello = &s[0..5];
+let world = &s[6..11];
+```
+* 形式是 `&some_str[start..end]`, 左闭右开
+* 如果开头是0 或者结束在末尾则可以省略
+* 字符串切片的边界必须位于有效的UTF-8字符边界内。尝试从一个多字节字符的中间位置创建字符串切片会导致运行时错误。
+* 字符串字面值也是一个切片,将字符串切片作为参数使我们的API更加通用，且不会损失任何功能
+```Rust
+fn first_word(s: &str) -> &str { 
+    let bytes = s.as_bytes(); 
+ 
+    for (i, &item) in bytes.iter().enumerate() { 
+        if item == b' ' { 
+            return &s[0..i]; 
+        } 
+    }  
+    &s[..] 
+}
+// in the caller
+let word = first_word(&my_string[..]);
+```
+Rust还有其他更加通用的切片类型。
