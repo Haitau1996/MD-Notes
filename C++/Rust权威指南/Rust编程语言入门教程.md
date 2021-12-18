@@ -446,3 +446,147 @@ Rust还有其他更加通用的切片类型。
     * 如 `String::from()` 
     * 通常用于构造器
 * `::` 用于关联函数或者命名空间
+
+# 枚举与模式匹配
+## 定义枚举
+枚举允许我们列举所有可能的值来定义一个类型， 声明枚举需要列出所有可能的种类（**枚举变体**， variant）：
+```Rust
+enum IpAddrKind {
+    V4,
+    V6,
+}
+let ipv4 = IpAddrKind::V4;
+```
+### 嵌套
+枚举类型是自定义的数据类型， 可以嵌套到 struct 中：
+```Rust
+struct IpAddr{
+    kind:IpAddrKind,
+    address: String,
+}
+// 在使用端
+let localhost = IpAddr{
+    kind:IpAddrKind::V4;
+    address: String::from("127.0.0.1");
+};
+```
+**Rust 允许数据直接附加到枚举的变体中**,其中可以嵌套任意类型的数据， 甚至是另一种枚举类型：
+* 不需要使用额外的 struct 存储数据
+* 每个变体可以拥有不同的类型以及关联的数据量
+    ```Rust
+    enum IpAddrKind{
+        V4(u8,u8,u8,u8),
+        V6(String),
+    }
+    let localhost = IpAddrKind::V4(127.0.0.1);
+    let loopback = IpAddrKind::V6(String::from("::1"));
+    ```
+
+可以使用 `impl` 块为枚举定义方法。
+
+## `Option` 枚举
+* 位于标准库的预导入模块(Preclude)中
+* 描述某个值可能存在(某种类型)或者不存在的情况
+
+在其他的编程语言中， 有 Null 这个概念：
+* 它是一个值， 表示没有值
+* 一个变量可能处于两种状态， 空值(`null`)、非空
+
+**但是 Rust 语言没有 `Null`**:
+* 当我们想要像使用非空值那样使用 Null(如向某个空字符串调用 push_str 类似的方法)， 就会引发某种错误
+* 但是 Null 的概念是有用的，因此 Rust 引入的类似的枚举类型 `Option<T>`.
+    ```Rust
+    enum Option<T> {
+        Some(T),
+        None,
+    }
+    let some_string = Some("a string");
+    let absent_number: Option<i32> = None;//编译器无法推断， 要显式声明
+    ```
+    * `Option<T>`和 `T` 是不同的类型， 不可以把 `Option<T>` 当 T 使用
+    * 想要使用其中的 T, 必须先将 `Option<T>` 转换为 T
+
+## `match` : 控制流运算符
+* match 作为一种强大的**控制流运算符**，允许将一个值与一系列的模式相比较，并根据匹配的模式执行相应代码。  
+* 模式可由字面量、变量名、通配符和许多其他东西组成
+    ```Rust
+    enum Coin {
+        Penny,
+        Nickel,
+        Dime,
+        Quarter,
+    }
+
+    fn value_in_cents(coin: Coin) -> u32 {
+        match coin {
+            Coin::Penny => {
+                println!("Lucky penny!");
+                1
+            },
+            Coin::Nickel => 5,
+            Coin::Dime => 10,
+            Coin::Quarter => 25,
+        }
+    }
+    ```
+### 绑定值的模式
+匹配分支另外一个有趣的地方在于它们可以**绑定被匹配对象的部分值**，而这也正是我们用于从枚举变体中提取值的方法。
+```Rust
+enum UsState {
+    Alabama,
+    Alaska,
+    // --略
+}
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter(UsState),
+}
+fn value_in_cents(coin: Coin) -> u32 {
+    match coin {
+        Coin::Penny => 1,
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        Coin::Quarter(state) => { // 在这里将 State 取出来了
+            println!("State quarter from {:?}!", state);
+            25
+        },
+    }
+}
+```
+我们可以用类似的方式去匹配 `Option<T>` 这个枚举：
+```Rust
+fn plus_one(x: Option<i32>) -> Option<i32> {
+    match x {
+        None => None,
+        Some(i) => Some(i + 1),
+    }
+}
+```
+<font color=red>match 匹配的时候必须穷尽所有的可能</font>, 这样才能确保代码合法有效， 如果可能情况比较多可以使用 `_` 通配符代替其他的情况：
+```Rust
+let v = 0u8;
+match v{
+    1 => println!("one"),
+    2 => println!("two"),
+    _ => (),
+}
+```
+
+## `if let`
+处理那些只用关心某一种匹配而忽略其他匹配的情况，也可以搭配 else 使用：
+```Rust
+// 使用 match 
+    let some_val = Some(1);
+    match some_val{
+        Some(1) => println!("hello from one"),
+        _ => println!("hello from other val"),
+    }
+// 使用 if let 
+    if let Some(1) = some_val{
+        println!("hello from one");
+    } else{
+        println!("hello from other val");
+    }
+```
