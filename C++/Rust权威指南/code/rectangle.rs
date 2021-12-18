@@ -18,6 +18,7 @@ println!("{}",aera(rectangle))
 
 
 // struct 实现
+#[derive(Debug)]
 struct Rectangle{
     width: usize,
     height: usize,
@@ -28,3 +29,4 @@ fn aera(rectangle: &Rectangle)->usize{
 
 let rect = Rectangle{width: 30, height: 40};
 println!("{}", aera(&rect));
+println!("{:#?}", &rect);
