@@ -6,7 +6,7 @@
 * 作为一种通用的编程语言, 擅长在下列场景中使用:
   * 需要运行时的速度
   * 需要内存安全
-  * 更好地利用多处理器8
+  * 更好地利用多处理器
 * 比 C/C++ 等高性能的编程语言相比更加安全, 比拥有 GC 的 Java/C# 更加高效
 
 Rust 有很多独有的概念, 和现在大多数主流的语言都不同. 
@@ -565,6 +565,7 @@ fn plus_one(x: Option<i32>) -> Option<i32> {
 }
 ```
 <font color=red>match 匹配的时候必须穷尽所有的可能</font>, 这样才能确保代码合法有效， 如果可能情况比较多可以使用 `_` 通配符代替其他的情况：
+
 ```Rust
 let v = 0u8;
 match v{
@@ -590,3 +591,45 @@ match v{
         println!("hello from other val");
     }
 ```
+
+# 包、单元包及模块
+* 代码组织包括下面的部分
+  * 哪些细节可以暴露， 哪些细节是私有的
+  * 作用域中什么名称是有效的
+* Rust 的模块系统
+  * Package: Cargo 的特性， 让我们构建、测试和功效 crate
+  * Crate(单元包)： 一个模块树，可以产生一个库或者可执行文件
+  * Module: 让我们控制代码的组织、作用域和私有路径
+  * Path: 为 Struct、function 或者 module 等命名的方式
+## 包与单元包
+* Crate 要么是 Binary, 要么是 Library。
+* Crate 的根是源代码文件， 编译器从这里开始
+* 一个Package 包含一个 Cargo.toml, 描述了如何构建这些 Crates
+  * 只能报验 0-1 个 library crate
+  * 可以包含任意数量的 binary crate
+  * 至少要有一个 crate
+### Cargo 的惯例
+* `src/main.rs`:
+  * binary crate 的 crate root
+  * crate 名与 package 名相同
+* `src/lib.rs`
+  * package 包含一个 library crate
+  * 这是 library crate 的 root
+  * crate 名和包名相同他
+* 一个 Package 可以同时有 `src/main.rs` 和 `src/lib.rs`
+* 一个 Package 可以有多个 binary crates:
+  * 文件放在 `src/bin` 下
+  * 每个文件都是单独的 binary crate
+
+Crate 的作用是将相关的功能放到一个作用域中， 方便在项目之间共享，防止冲突。
+
+### 定义 module 控制作用域和私有性
+* Module:
+  * 在一个 crate 中对代码进行分组
+  * 增加可读性， 易于复用
+  * 控制项目的私有性， public\private
+* 建立 module
+  * 使用 mod 关键字
+  * 可以嵌套，可以包含其他项的定义
+  
+## 路径 Path
