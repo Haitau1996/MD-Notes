@@ -718,4 +718,49 @@ let row = vec![
 ```
 
 ## String 类型
-在 rust 中， 字符串是
+在 rust 中， 字符串 Byte 的集合，提供一些方法， 可以将字节解析为文本。
+* 在核心语言层面提供字符串切片`str`(或`&str`)
+* 标准库中提供了 String 类型
+  * 可以增长， 可以修改， 可以获得所有权
+  * 同样采用 UTF-8 编码
+
+Rust 标准库还提供了很气其他的字符串类型
+* `String` vs `str` 后缀： 前者可获得所有权， 后者可借用
+* 可以使用不同的编码或者内存布局
+
+创建一个新的字符串(String)
+* 许多对于 `Vec<T>` 可用的操作也同样可用于 `String`
+  * `let mut s = String::new(); `
+  * 对那些实现了 Display trait 的类型调用 `to_string`方法
+  * `String::from()` 从字面值得到 `String`
+
+更新 String: 
+* `push_str()` 方法添加字符串切片，并且不获得所有权
+* `push()` 单个字符添加到 String 后
+* `+` 运算符可以拼接字符串(第一个要是 String, 第二个要是切片)
+  * 使用了类似于 `fn add(self, s:&str)->String` 的签名，第一个传入后丢失了所有权
+  * 使用了解引用强制转换（s2的所有权保留了）
+    ```Rust
+    let s1 = String::from("Hello, ");
+    let s2 = String::from("world!");
+    let s3 = s1 + &s2; // 注意这里的s1已经被移动且再也不能被使用了
+    ```
+* `format!` 宏可以更灵活地拼接字符串， 和 `println!` 很像,返回一个 String 并且不会取得任何参数的所有权
+    ```Rust
+    let s1 = String::from("tic");
+    let s2 = String::from("tac");
+
+    let s = format!("{}-{}", s1, s2);
+    ```
+
+按照索引的语法访问 String 的元素会报错，String 是对 `Vec<u8>` 的包装：
+```Rust
+let len = String::from("Здравствуйте").len();
+```
+上面的字符串中每个 unicode 标量值占用了两个字节， 因此字节索引并不总是有效地对应一个标量值。  
+Rust 有三种看待字符串的方式**字节，标量值，字形簇**，第三个更接近所谓的字母，索引操作因该消耗常量时间， 但是 String 无法保证， 它需要遍历所有内容来确定合法字符。  
+使用 `&some_str[begin..end]` 获得一个切片， 切割时候必须沿着 `char` 的边界， 否则程序就会 panic。  
+遍历String 的方法：
+* 对于标量值， 使用 `some_string.chars()` 方法
+* 对于字节， 使用 `some_string.bytes()` 方法
+* 对于字形簇， 标准库没有提供
