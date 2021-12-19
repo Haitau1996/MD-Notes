@@ -819,3 +819,79 @@ let scores: HashMap<_, _> = teams.iter().zip(initial_scores.iter()).collect();
     ```
 ### Hash 函数
 默认可以抵抗 DoS 攻击， 可以中不同的 hasher 来切换到另一个函数, hasher 是实现了 BuildHasher Trait 的类型。
+
+# 错误处理
+Rust 的可靠性延伸到了错误处理领域， 在大多数情况下在编译时候就能提示错误并且处理。错误分类
+* 可恢复错误，可以再次尝试
+* 不可恢复错误（bug, 如访问索引超出范围）
+
+很多语言不刻意区分这两种错误统一使用异常处理， Rust 没有异常处理机制
+* 可恢复错误： `Result<T,E>`
+* 不可恢复错误： `panic!` 宏
+
+## 不可恢复错误
+Rust提供了一个特殊的 `panic!` 宏, 它执行时:
+* 程序会答应一个错误信息
+* 展开(unwind) 、清理调用栈(stack)
+* 退出程序
+
+当panic发生时，程序会默认开始栈展开，清理遇到函数的数据， 可以选择不进行清理直接停止程序， 内存需要由操作系统进行清理。
+* 在 `cargo.toml` 中加入
+    ```toml
+    [profile.release]
+    panic = 'abort'
+    ```
+
+`panic!` 可能出现在我们写的代码或者我们依赖的代码中， 通过 `panic!` 调用函数的回溯信息来定位代码出现问题的地方。
+* 为了获取回溯信息,必须在 debug 模式下(build 时候不带 `--release`)
+* 设置环境变量`RUST_BACKTRACE`后再执行 `cargo run`， 如 powershell 中 <div align=center><img src="https://i.imgur.com/eMoOz4Z.png" /></div>
+
+## 可恢复的错误和 `Result` 枚举
+```Rust
+enum Result<T, E> {
+    Ok(T),
+    Err(E),
+}
+```
+* T 代表了 Ok 变体中包含的值类型，该变体中的值会在执行成功时返回；
+* E 则代表了 Err 变体中包含的错误类型，该变体中的值会在执行失败时返回。<div align=center><img src="https://i.imgur.com/PZC2c14.png" /></div>
+
+可以使用 match 表达式处理 Result：
+```Rust
+let f = File::open("hello.txt");
+    let f = match f{
+        Ok(file) => file,
+        Err(err) => {
+            panic!("Error opening file {:?}", err)
+        },
+    };
+```
+### 匹配不同的错误
+但我们想要的其实是根据不同的失败原因做出不同的反应， 这时候可以根据不同的错误再做 match:
+```Rust
+//--- snip
+ Err(error) => match error.kind() {
+            ErrorKind::NotFound => match File::create("hello.txt") {
+                Ok(fc) => fc,
+                Err(e) => panic!("Tried to create file but there was a problem: {:?}", e),
+            },
+            other_error => panic!("There was a problem opening the file: {:?}", other_error),
+        },
+```
+* match 很有用但是十分原始
+* `Result<T,E>`实现（使用 match 表达式实现的）了许多接收闭包的方法, 我们使用这些方法可以让代码更加简洁
+
+### unwrap 和 expect
+`unwrap`就是 match 表达式的一个快捷方法：
+* Result 返回值是Ok变体时，unwrap就会返回Ok内部的值
+* Result 的返回值是Err变体时，unwrap则会替我们调用panic! 宏。
+```Rust
+let f = File::open("hello.txt").unwrap();
+```
+
+`expect` 在 `unwarp` 基础上附加错误信息:
+```Rust
+let f = File::open("hello.txt").expect("Failed to open hello.txt");
+```
+
+### 传播错误
