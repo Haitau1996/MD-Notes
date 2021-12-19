@@ -682,3 +682,40 @@ pub use crate::front_of_house::hosting;
 ## 拆分模块为不同的文件
 * 在 mod 定义后使用分号而不是代码块会让Rust前往与当前模块同名的文件中加载模块内容。
 * 目录的层级结构和模块的要相匹配
+
+# 通用集合类型
+Rust 标准库包含了一系列的集合， 它们将自己持有的数据存储在堆上， 因此无需在编译时确定数据的大小， 并且可以动态扩容。
+## 动态数组
+`Vec<T>` 被称为动态数组， 允许在其中存储多个相同类型的值，这些值会彼此相邻地排布在内存中。
+* 调用关联函数`Vec::new()` 创建空的动态数组
+* `vec!` 宏从指定的初始值创建新的动态数组
+* `push` 方法在尾部添加元素(编译器可以根据上下文推断)
+
+有两种方法可以得到动态数组的值：
+* 使用索引（越界时候会 panic）
+* 使用 get 方法， 返回一个 `Option<T>`,可以使用 match 匹配
+    ```Rust
+    let v = vec![1,2,3];
+    match v.get(2){
+        Some(third)=> println!("the third element is {}", third),
+        None => println!("element out of range"),
+    }
+    ```
+所有权和借用规则在引用 Vec 元素的时候保持不变。例如我们声明一个不可变的引用 `let first_ref = &some_vec[0]`, 如果要向 some_vec 添加元素， 和 C++ 中的 vector 一样， 如果空间不够， 这时候会向操作系统要更多内存， 将数组复制过去， 而原来的引用就失效了， 在 Rust 中这种操作是不合法的。  
+枚举的变体可以附加不同类型的数据， 并且这些变体本身的类型是相同的， 因此可以配合动态数组使用：
+```Rust
+enum SpreadsheetCell {
+    Int(i32),
+    Float(f64),
+    Text(String),
+}
+
+let row = vec![
+    SpreadsheetCell::Int(3),
+    SpreadsheetCell::Text(String::from("blue")),
+    SpreadsheetCell::Float(10.12),
+];
+```
+
+## String 类型
+在 rust 中， 字符串是
