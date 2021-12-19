@@ -764,3 +764,58 @@ Rust 有三种看待字符串的方式**字节，标量值，字形簇**，第�
 * 对于标量值， 使用 `some_string.chars()` 方法
 * 对于字节， 使用 `some_string.bytes()` 方法
 * 对于字形簇， 标准库没有提供
+
+## 哈希映射
+### `HashMap<K,V>` 创建和使用
+* 用 key-val 对的形式存储数据， 一个 key 对应一个 value 
+* Hash 函数决定了如何在内存中存放 K 和 V
+
+使用方式(同样可以基于上下文推断类型)：
+* 通过 `HashMap::new()` 创建
+* 通过 `insert()` 方法插入新的元素
+
+不在预导入模块中， 标准库对它的支持比较少， 没有内置的宏来创建
+* 同构的：所有的 K 必须为同一种类型，所有的 V 必须为同一种类型
+  
+另外一个构建哈希映射的方法是，在一个由键值对组成的元组动态数组上使用 collect 方法， collect 方法可以把数据整合成很多种不同的集合， 所以要指明其类型：
+```Rust
+let teams  = vec![String::from("Blue"), String::from("Yellow")];
+let initial_scores = vec![10, 50];
+
+let scores: HashMap<_, _> = teams.iter().zip(initial_scores.iter()).collect();
+```
+
+### HashMap 和所有权
+* 对于实现了 copy trait 的类型， 值会复制到 HashMap 中 
+* 对于拥有所有权的值， 所有权会移动转移给 HashMap
+    ```Rust
+    let field_name = String::from("Favorite color");
+    let field_value = String::from("Blue");
+
+    let mut map = HashMap::new();
+    map.insert(field_name, field_value);
+    // filed_name和field_value从这一刻开始失效，
+    ```
+* 将值的引用插入到 HashMap 中，值本身不会移动(在 HashMap 的生命周期内引用的值要保持有效)
+
+### 访问和修改元素
+* get 方法， 参数为 K 类型， 返回值为 `Option<V>`  
+* 使用 for 循环可以遍历值， 用模式匹配可以祛除 K,V
+* HashMap 大小可以变化， 但是每个 K 只能对应一个 V 
+  * K 已经存在， 更新 V
+  * K 不存在， 添加新的键值对
+* entry 方法检查指定的 K 是否对应的一个 v 
+  * K 为参数
+  * 返回值是一个枚举类型， Entry
+* Entry 有 `or_insert()` 方法, K 存在就返回对应 V 的可变引用， 不存在则插入新值再返回这个值的可变引用
+    ```Rust
+    let text = "hello world wonderful world";
+    let mut map = HashMap::new();
+
+    for word in text.split_whitespace() {
+        let count = map.entry(word).or_insert(0);
+        *count += 1;
+    }
+    ```
+### Hash 函数
+默认可以抵抗 DoS 攻击， 可以中不同的 hasher 来切换到另一个函数, hasher 是实现了 BuildHasher Trait 的类型。
