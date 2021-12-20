@@ -895,3 +895,75 @@ let f = File::open("hello.txt").expect("Failed to open hello.txt");
 ```
 
 ### 传播错误
+可以将这个错误返回给调用者，将结果包裹到 Result 这个枚举中然后返回:
+```Rust
+use std::io;
+use std::io::Read;
+use std::fs::File;
+
+fn read_username_from_file() -> Result<String, io::Error>{}
+// 在调用端
+let result = read_username_from_file();
+match result{
+    //code snip---
+}
+```
+#### `?` 运算符
+可以通过将操作符 `?` 放在 Result 值之后来实现简化（只在返回值为 Result 枚举的函数中使用）
+* 如果表达式的 Result 为 Ok, 那么 Ok 变体中包含的值将作为表达式的结果，接着执行后续代码，
+* 如果是 Err， 那么 Err 就是<font color=red>整个函数</font>的返回值，相当于直接 return
+```Rust
+let mut f = File::open("hello.txt")?;
+//相当于
+let mut =  match File::open("hello.txt"){
+    Ok(file) => file,
+    Err(e) => return Err(e),
+}
+// 可以链式调用
+File::open("hello.txt")?.read_to_string(&mut s)?;
+```
+被`？`运算符所接收的错误值会隐式地被 `from` 函数处理, from 是 Trait `std::convert::From` 上的函数， 用于错误之间的转换
+* 当？运算符调用from函数时，它就开始尝试将传入的错误类型转换为当前函数的返回错误类型。
+* 用于针对不同错误原因返回同一种错误类型（需要实现相应的 from 函数）
+
+## 何时使用 `panic!`
+* 在定义个可能失败的函数时， 优先返回 Result,将选择权交给调用者
+* 认为Err是不可恢复的，使用`panic!`
+
+可以使用 panic!:
+* 演示某些概念 ： unwarp
+* 原型代码 unwarp, expect
+* 测试 unwarp, expect
+
+比编译器拥有更多信息时, 调用 unwarp 十分合理（它一定不会出现 Err 变体）
+
+### 指导性建议
+* 当某个错误可能会导致代码处于损坏状态时，最好使用 `panic!` 来处理错误
+  * bad state: 某些假设， 保证或者不变性被打破
+
+场景建议：
+* 调用你的代码传入无意义的参数值: panic
+* 调用外部不可控代码， 返回非法状态， 无法修噶 : panic
+* 失败是可以预期的： Result
+* 你的代码对值进行操作， 应该首先验证这些值: panic
+
+### 创建自定义类型验证有效性
+我们可以创建新的类型， 把验证逻辑放到构造实例的函数中。
+```Rust
+pub struct Guess {
+    value: i32,
+}
+impl Guess {
+    pub fn new(value:i32)->Guess {
+        if value < 1 || value > 100 {
+            panic!("Guess value must be between 1 and 100, got {}.", value);
+        }
+        Guess {
+            value
+        }
+    }
+    pub fn value(&self)->i32{
+        self.value
+    }
+}
+```
