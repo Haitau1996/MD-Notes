@@ -1023,7 +1023,146 @@ Rust 语言会在编译的时候做单态化， 将泛型类型替换为具体�
 ## Trait
 trait（特征）被用来向Rust编译器描述某些特定类型拥有的且能够被其他类型共享的功能：
 * trait 抽象的定义共享行为
-* trait bounds: 泛型类型参数指定为实现了特定行为的类型
-* 和其他语言的接口类似
+* trait bounds: 泛型类型参数指定为实现了特定行为的类型(实现了某些 trait)
+* 和其他语言的接口类似(不完全相同)
 
-### 定义
+### 定义和实现
+trait 提供了一种将特定方法签名组合起来的途径，它定义了为达成某种目的所必需的行为集合。
+* 使用关键字 trait
+* 只有方法的签名， 没有具体的实现
+* 可以有多个方法， 每个方法签名各占一行， 以 `;` 结尾
+* 实现该 trait 的类型必须提供方法的具体实现
+    ```Rust
+    pub trait Summary{
+        fn summarize(&self)-> String;        
+    }
+
+接下来要做的就是**在类型上实现 _trait_**:
+* 与为类型实现方法（`impl SomeType{}` ）类似
+* 不同在于要写入 tarit 的信息
+  * impl <font color=red> SomtTrait for</font> SomeType{...}
+  * impl 块中要对函数有具体的实现 
+    ```Rust
+    pub struct Tweet {
+        pub username: String,
+        pub content: String,
+        pub reply: bool,
+        pub retweet: bool,
+    }
+
+    impl Summary for Tweet {
+        fn summarize(&self) -> String {
+            format!("{}: {}", self.username, self.content)
+        }
+    }
+    ```
+
+实现 trait 的约束条件：
+* 这个类型 或者 这个 trait 是在本地 crate 中定义的
+* 无法为外部类型来实现外部的 trait
+  * 孤儿原则，如果没有这个规则， 两个 crate 可以为同一个类型实现同一个 trait
+
+默认实现：有时为 trait 中的某些或所有方法都提供默认行为非常有用，它使我们无须为每一个类型的实现都提供自定义行为。
+* 默认实现中可以调用其他方法， 及时它们没有默认实现(这时候有点像 Template Method 设计模式)
+```Rust
+pub trait Summary {
+    fn summarize(&self) -> String {
+        String::from("(Read more...)")
+    }
+}
+impl Summary for Tweet {
+    // no implementation of summarize, use default
+}
+```
+
+### trait 作为参数和返回值
+如果想让函数的参数为实现指定 Trait 的类型， 可以这样写:
+* impl trait 语法： 适用于简单情况
+    ```Rust
+    pub fn notify(item: impl Summary) {
+        println!("Breaking news! {}", item.summarize());
+    }
+    ```
+* trait bound 语法,在复杂情况下更简洁， 如有多个参数
+    ```Rust
+    pub fn notify<T:Summary>(item: T， next_item:T) {
+        println!("Breaking news! {}", item.summarize());
+    }
+    ```
+* `+` 指定多个 Trait Bound:
+    ```Rust
+    pub fn notify(item: impl Summary + Display) {}
+    pub fn notify<T: Summary + Display>(item: T) {}
+    ```
+* 可以在函数签名后使用 where 子句：
+    ```Rust
+    fn some_function<T: Display + Clone, U: Clone + Debug>(t: T, u: U) -> i32 {}
+    // 使用 where 子句
+    fn some_function<T, U>(t: T, u: U) -> i32
+        where 
+            T: Display + Clone,
+            U: Clone + Debug
+    {}
+    ```
+
+Trait 也可以作为返回类型：
+* impl trait 语法：`fn returns_summarizable() -> impl Summary{}`
+  * 只能返回确定的通一种类型， 如果是两种不同但实现了 trait 的类型， 代码会报错
+* trait bound 
+    ```Rust
+    fn largest<T: PartialOrd + Copy>(list: &[T]) -> T {
+        let mut largest = list[0];
+        for &item in list.iter() {
+            if item > largest {
+                largest = item;
+            }
+        }
+        largest
+    }
+    ```
+
+使用 trait bound **有条件地实现方法**：
+* 通过在带有泛型参数的 impl 代码块中使用 trait约束，我们可以单独为实现了指定trait的类型编写方法。
+    ```Rust
+    use std::fmt::Display;
+    struct Pair<T> {
+        x: T,
+        y: T,
+    }
+    impl<T> Pair<T> {
+        fn new(x: T, y: T) -> Self {
+            Self {
+                x,
+                y,
+            }
+        }
+    }
+
+    impl<T: Display + PartialOrd> Pair<T> {
+        fn cmp_display(&self) {
+            if self.x >= self.y {
+                println!("The largest member is x = {}", self.x);
+            } else {
+                println!("The largest member is y = {}", self.y);
+            }
+        }
+    }
+    ```
+* 同样可以为实现了某个trait的类型有条件地实现另一个trait(覆盖实现),如下面这段来自标准库的代码， 作用就是为所有实现 Display 和 Sized Trait 的类型实现 `ToString` Trait
+    ```Rust
+    #[cfg(not(no_global_oom_handling))]
+    #[stable(feature = "rust1", since = "1.0.0")]
+    impl<T: fmt::Display + ?Sized> ToString for T {
+        #[inline]
+        default fn to_string(&self) -> String {
+            let mut buf = String::new();
+            let mut formatter = core::fmt::Formatter::new(&mut buf);
+            // Bypass format_args!() to avoid write_str with zero-length strs
+            fmt::Display::fmt(self, &mut formatter)
+                .expect("a Display implementation returned an error unexpectedly");
+            buf
+        }
+    }
+    // 因此如 2 作为整型实现了 display ， 就可以调用 toString 方法
+    let s:String = 2.to_string();
+    ```
