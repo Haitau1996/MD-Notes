@@ -1316,3 +1316,115 @@ Rust 语言中的测试是一个函数， 包含三个部分
 * `assert!`：第一个参数必选， 自定义消息为第二个参数
 * 剩下两个断言前两个参数必选， 第三个参数作为自定义消息
 * 自定义消息参数会传给 `format!` 宏，可以使用 `{}` 占位符
+
+### 使用 should_panic 检查 panic
+检查代码是否返回了正确的结果，确认代码能否按照预期处理错误状况同样重要。
+* 编写测试在某些特定情况下是否发生 painc
+* `should_panic`属性，使代码 panic 时候测试通过， 不发生 panic 时候执行失败
+    ```Rust
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        #[test]
+        #[should_panic]
+        fn greater_than_100() {
+            Guess::new(200);
+        }
+    }
+    ```
+* 在其中添加一个可选的 expected 参数
+  * 检查失败的错误信息中是否包含有指定的文字
+    ```Rust
+    #[test]
+    #[should_panic(expected = "Guess value must be less than or equal to 100")]
+    fn greater_than_100() {
+        Guess::new(200);
+    }
+    ```
+### 测试中使用 `Result<T,E>`
+我们也可以不使用上面三个 assert 宏，无需 painc， 可以使用 `Result<T,E>` 作为返回类型编写测试
+  * 返回 Ok: 测试通过
+  * 返回 Err: 测试失败
+    ```Rust
+    #[test]
+    fn it_works() -> Result<(), String> {
+        if 2 + 2 == 4 {
+            Ok(())
+        } else {
+            Err(String::from("two plus two does not equal four"))
+        }
+    }
+    ```
+* 不要在 `Result<T,E>`编写测试时候添加 `should_panic` 属性， 因为它们返回 Result,不会发生恐慌
+
+## 控制测试的运行方式
+可以添加命令行参数改变 cargo test 的行为：
+* 默认行为
+  * 并行运行
+  * 所有测试
+  * 不显示所有输出（指测试通过的情况下），读取相关的输出更容易
+* 命令行参数
+  * 针对 cargo test的参数紧跟 cargo test之后`cargo test --help`
+  * 针对可执行程序， 放在 `-- ` 之后（有空格）`cargo test -- --help`。
+
+**串行或者并行地测试**:
+* 默认使用多个线程运行：
+  * 测试之间不会相互依赖
+  * 不会依赖于某个共享的状态（工作目录、环境变量等）
+* `--test-thread` 参数跟着线程的数量
+
+**显式函数输出**：
+* 默认情况下，Rust的测试库会在测试通过时捕获所有被打印至标准输出中的消息（不显示）
+  * 只要测试顺利通过，它所打印的内容就无法显示在终端上
+  * 在测试失败时，我们才能在错误提示信息的上方观察到打印至标准输出中的内容
+* `cargo test -- --nocapture` 
+
+**按测试名称运行测试**：
+* 将测试的名称（一个或者多个）作为 cargo test 的参数
+  * `cargo test one_handrad`:单个测试， 指定名称
+  * `cargo test add`: 多个测试，指定测试名的一部分或者模块名称
+    ```Rust
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn add_two_and_two() {
+            assert_eq!(4, add_two(2));
+        }
+        #[test]
+        fn add_three_and_two() {
+            assert_eq!(5, add_two(3));
+        }
+        #[test]
+        fn one_hundred() {
+            assert_eq!(102, add_two(100));
+        }
+    }
+    ```
+
+**忽略测试**：
+`[ignore]` 属性用于某些非常耗时的测试，排除在正常的测试运行之外：
+* `cargo test -- --ignored` 添加针对二进制程序的参数覆盖默认行为
+
+## 测试的组织和结构
+Rust 对测试分为单元测试和集成测试
+* 单元测试： 小， 专注， 针对某个模块进行隔离的测试，可以测试 private 函数
+  * test 模块上的 `#[cfg(test)]` 标注（cfg 为 configuration缩写）
+    * 只有在运行 cargo test 才编译和运行代码
+    * 运行 cargo build 则不会
+* 集成测试： 在库外部， **只能访问公共接口**， 在测试中可能使用多个模块
+  * 目的是验证被测试的多个部分是否能够**正确地一起工作**
+  * 覆盖率非常重要
+  * 使用的时候要创建和 src 并列的 tests 目录
+  * 目录下的每个文件都是一个单独的 crate
+    * 需要将被测试库导入
+    * 无需 `cfg`
+  * 运行指定的集成测试
+    * 运行单个测试: `cargo test [test_func_name]`
+    * 对测试文件的所有函数测试: `cargo test --test [file_name]`
+  * 可以建立文件夹， 将我们需要的公共部分（非测试文件）放入其中， Rust就不会再将文件夹的模块视作一个集成测试文件了
+* 针对 binary crate 的集成测试（将主要内容放到 lib.rs 中）
+  * 不能在 tests 目录下建立集成测试
+  * 也无法把 main.rs 的函数导入作用域
+  * 因为只有 library crate 才能暴露给其他 crate 使用 
