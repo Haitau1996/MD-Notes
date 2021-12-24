@@ -1443,3 +1443,22 @@ Rust 对测试分为单元测试和集成测试
 
 我们首先做的就是将读取命令行的部分[分离](code/minigrep_v2.rs),改进了模块化。然后可以使用 Result 枚举来[实现](code/minigrep_v3.rs)错误的处理，接下来将剩余的部分也提取到[函数](code/minigrep_v4.rs)中,接下来要将代码迁移到 [lib.rs](code/minigrep_src_v1/lib.rs) 中, 同时修改 [main.rs](code/minigrep_src_v1/main.rs)。
 ## TDD 开发库功能
+1. 编写一个会失败的测试， 运功该测试， 确保它是按照预期的原因失败
+2. 编写或修改刚足够的代码， 让新测试通过
+3. 重构刚刚添加/修改的代码， 确保测试始终能够通过
+4. 返回步骤1，继续
+
+使用 TDD 实现一个 [search](code/tdd.rs).
+## 使用环境变量
+使用环境变量可以允许用户只配置一次环境变量，就能让配置的选项在整个终端会话中一直有效。
+```Rust
+// in lib.rs , implements both senstive case and insenstive case
+// then add a boolean in Config...
+use std::env;
+let case_sensitive = env::var('CASE_SENSITIVE').is_err();
+// code snip
+```
+## 将错误信息写入标准错误
+* 标准输入 `stdout`
+* 标准错误 `stderr`
+    * `eprintln!` 将信息输出到 stderr
