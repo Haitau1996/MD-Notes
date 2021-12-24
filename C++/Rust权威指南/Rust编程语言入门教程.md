@@ -1428,3 +1428,18 @@ Rust 对测试分为单元测试和集成测试
   * 不能在 tests 目录下建立集成测试
   * 也无法把 main.rs 的函数导入作用域
   * 因为只有 library crate 才能暴露给其他 crate 使用 
+
+# 编写一个命令行程序
+**读取命令行**：  
+使用Rust标准库提供的`std::env::args`函数读取命令行的参数值， 它返回一个迭代器， 调用迭代器上的 `.collect()`方法得到参数值的集合。  
+**读取文件**：  
+引入标准库中的`std::fs`模块读取文件,`fs::read_to_string()` 接受文件名作为参数， 返回一个 `Result<String>`, 因此可以加上 `expect()` 做错误处理。
+
+## 重构： 增强模块化程度和错误处理能力
+[前面的实现](code/minigrep_v1.rs)有很大的问题，需要拆分 main 函数， 需要将 query 和 filename 封装到一个结构体中， 需要更好地处理不合法的输入信息，二进制程序关注点分离有下面的指导原则：
+1. 将程序拆分为 main.rs 和 lib.rs ，并将实际的业务逻辑放入 lib.rs 
+2. 当命令行解析逻辑相对简单时，将它留在 main.rs 中也无妨
+3. 当命令行解析逻辑开始变得复杂时，同样需要将它从 main.rs 提取至 lib.rs 中
+
+我们首先做的就是将读取命令行的部分[分离](code/minigrep_v2.rs),改进了模块化。然后可以使用 Result 枚举来[实现](code/minigrep_v3.rs)错误的处理，接下来将剩余的部分也提取到[函数](code/minigrep_v4.rs)中,接下来要将代码迁移到 [lib.rs](code/minigrep_src_v1/lib.rs) 中, 同时修改 [main.rs](code/minigrep_src_v1/main.rs)。
+## TDD 开发库功能
