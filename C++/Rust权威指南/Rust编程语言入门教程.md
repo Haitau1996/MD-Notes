@@ -1462,3 +1462,92 @@ let case_sensitive = env::var('CASE_SENSITIVE').is_err();
 * 标准输入 `stdout`
 * 标准错误 `stderr`
     * `eprintln!` 将信息输出到 stderr
+
+# 函数式语言特性： 迭代器和闭包
+## 闭包：能够捕获环境的匿名函数
+* 是匿名函数
+* 可以保存为变量， 作为参数或者函数的返回值
+* 可以在一个地方创建闭包， 然后再另一个上下文中调用来完成运算
+* 可以从其定义的作用域中捕获值
+
+如我们模拟一个耗时比较多的操作， 希望在必要的时候才调用， 并且只调用一次， 就可以将它封装在一个闭包中：
+```Rust
+let expensive_closure = |num| {
+    println!("calculating slowly...");
+    thread::sleep(Duration::from_secs(2));
+    num
+};
+```
+### 闭包的类型推断和标注
+* **不强制要求标准参数和返回值类型**，类型信息是暴露给用户的显式接口的一部分，闭包被存在变量中，不会暴露给用户。
+* 通常很短小， 在狭小上下文中工作， 编译器通常能推断出来
+* 闭包的参数和返回值会被推倒为具体类型， 因此不能用不同参数调用同一个闭包或者同一个闭包返回不同的类型
+
+### 使用泛型参数和Fn trait来存储闭包
+我们还可以将闭包的结果存储到一个结构体中， 这种模式被称为记忆化或惰性求值
+* 需要结果的时候才执行该闭包
+* 将运行的结果缓存下来
+
+Struct 需要直到字段的类型（因此要指明闭包类型）， 每个闭包实例都有自己唯一的匿名类型， 即使签名完全一样， 所以需要使用泛型和 trait bound.  
+标准库定义了 fn trait， 所有的闭包至少实现了下面其中一个：
+* Fn
+* FnMut
+* FnOnce
+
+```Rust
+struct Cacher<T>
+    where T: Fn(u32) -> u32 // 闭包接受一个 u32 返回一个 u32s
+{
+    calculation: T,//闭包
+    value: Option<u32>,//缓存
+}
+// 缓存的逻辑不是自动生成， 需要我们自己实现
+impl<T> Cacher<T>
+where T: Fn(u32) -> u32
+{
+    fn new(calculation: T) -> Cacher<T> {
+        Cacher {
+            calculation,
+            value: None,
+        }
+    }
+
+  fn value(&mut self, arg: u32) -> u32 {
+        match self.value {
+            Some(v) => v,
+            None => {
+                let v = (self.calculation)(arg);
+                self.value = Some(v);
+                v
+            },
+        }
+    }
+}
+```
+上面的 Cacher 有局限性：
+* 假设 value 方法为不同的 arg 返回相同的值
+  * value 存一个 HashMap， key 为 arg, val 为执行结果
+* 只能接收一个获取u32类型参数并返回u32类型的值的闭包。
+
+### 捕获上下文环境
+闭包**可以捕获自己所在的环境并访问自己被定义时的作用域中的变量**。
+* 会产生内存开销
+```Rust
+let x = 4;
+let equal_to_x = |z| z == x; //Ok
+fn equal_to_x(z: i32) -> bool { z == x }//can't capture dynamic environment in a fn item
+let y = 4;
+assert!(equal_to_x(y));
+```
+捕获值的方式有三种：
+1. 取得所有权: FnOnce
+2. 可变借用： FnMut
+3. 不可变借用： Fn 
+
+Rust 会自动推导出它需要使用的trait
+* 所有闭包都实现了 FnOnce
+* 没有移动捕获变量的实现了 FnMut
+* 无需可变访问捕获变量的闭包实现了 Fn
+
+move 关键字可以强制闭包取得它所使用环境值的所有权。
+* 闭包传入新线程时相当有用，它可以将捕获的变量一并移动到新线程中去
