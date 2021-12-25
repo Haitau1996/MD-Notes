@@ -1551,3 +1551,39 @@ Rust 会自动推导出它需要使用的trait
 
 move 关键字可以强制闭包取得它所使用环境值的所有权。
 * 闭包传入新线程时相当有用，它可以将捕获的变量一并移动到新线程中去
+
+## 迭代器
+迭代器模式： 为序列中的每一个元素执行某些任务。
+* 迭代器负责两个事情
+  * 遍历每个项
+  * 确定序列的遍历何时完成
+* Rust 中的迭代器
+  * 惰性（layzy）：除非你主动调用方法来消耗并使用迭代器，否则它们不会产生任何的实际效果。
+    ```Rust
+    let v1 = vec![1, 2, 3];
+    let v1_iter = v1.iter();
+    for val in v1_iter {
+        println!("Got: {}", val);
+    }
+    ```
+
+### Iterator Trait
+* 所有迭代器都实现了 Iterator trait
+    ```Rust
+    pub trait Iterator {
+        type Item;
+        fn next(&mut self) -> Option<Self::Item>;
+        // 这里省略了由Rust给出的默认实现方法
+    }
+    ```
+* type item 和 Self::Item 定义和 trait 的关联类型
+  * 必须要定义一个具体的 Item 类型，而这个Item类型会被用作 next 方法的返回值类型。
+  * 只要求实现者手动定义一个方法：next方法。
+    * 每次返回一项， 包裹在 `Some` 中，直到返回 `None`
+
+几个迭代的方法：
+* `iter` 方法： 在不可变引用上创建迭代器
+* `into_iter` 方法： 创建的迭代器会获得所有权
+* `iter_mut` 方法： 迭代可变引用
+
+### 消耗迭代器的方法
