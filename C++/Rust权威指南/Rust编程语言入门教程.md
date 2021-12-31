@@ -1587,3 +1587,48 @@ move 关键字可以强制闭包取得它所使用环境值的所有权。
 * `iter_mut` 方法： 迭代可变引用
 
 ### 消耗迭代器的方法
+标准库为 Iterator trait提供了多种包含默认实现的方法，其中的一部分会在定义中调用 next 方法：
+* 需要在实现Iterator trait时手动定义 `next` 方法
+* 调用 `next` 的方法叫做消耗型适配器
+
+### 产生其他迭代器的方法
+Iterator trait 还定义了另外一些被称为迭代器适配器（iterator adaptor）的方法
+* 可以使你将已有的迭代器转换成其他不同类型的迭代器
+* 可以链式地调用多个迭代器适配器完成一些复杂的操作，同时保持代码易于阅读。
+
+### 使用闭包捕获环境
+* `filter` 方法
+  * 接受一个闭包
+  * 在遍历迭代器的每个元素的时候返回 bool 类型
+    * 如果结果为 true， 则包含在新的适配器中
+    * 否则不包含
+    ```Rust
+    #[derive(PartialEq, Debug)]
+    struct Shoe {
+        size: u32,
+        style: String,
+    }
+    fn shoes_in_my_size(shoes: Vec<Shoe>, shoe_size: u32) -> Vec<Shoe> {
+        shoes.into_iter()
+        .filter(|s| s.size == shoe_size)
+        .collect()
+    }
+    ```
+
+### 创建自定义迭代器
+* 要实现 next 方法
+  * 先定义一个结构体（实现相应的构造器...）
+  * 然后实现 next 方法
+    ```Rust
+    impl Iterator for Counter {
+        type Item = u32;
+        fn next(&mut self) -> Option<Self::Item> {
+            self.count += 1;
+            if self.count < 6 {
+                Some(self.count)
+            } else {
+                None
+            }
+        }
+    }
+    ```
