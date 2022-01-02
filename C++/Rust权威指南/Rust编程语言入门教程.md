@@ -1632,3 +1632,104 @@ Iterator trait 还定义了另外一些被称为迭代器适配器（iterator ad
         }
     }
     ```
+
+# _cargo, cartes.io_
+## 通过 release profile 发布构建
+Rust中的发布配置 （release profile）是一系列**预定义**好的配置方案
+* 可以自定义：使用不同的配置， 对代码编译有更多控制
+* 每个 profile 配置都独立于其他的 profile
+* 两个主要的 profile
+  * dev profile: 适用于开发， `cargo build`
+  * release profile: 默认在正式发布时使用 `cargo build --release`
+
+### 自定义 profile
+可以在 cargo.toml 中添加 `[profile.xxxx]`, 覆盖我们想要修改的子集,配置的默认值和完整选项参考官网的[文档](https://doc.rust-lang.org/cargo/reference/profiles.html).
+```toml
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3
+```
+## 将包发布到 _crates.io_ 上
+_crates.io_ 可以通过发布包来共享你的代码：
+* crate的注册表在 [crates.io](https://crates.io) 上
+* 托管的包大部分都是开源的
+
+### 文档注释
+* 文档注释： 用于生成文档
+  * 文档为 html 格式
+  * 显示公共 API 的文档注释： 如何使用 API
+  * 使用三斜线，并且支持 markdown 语法
+* `cargo doc` 生成 HTML 文档
+  * 运行 rustdoc 工具
+  * 生成文档在 target/doc 中
+  * `cargo doc --open` 可以直接打开
+* 比较常用的区域有 
+  * Examples
+  * Panics
+  * Errors
+  * Safety 
+* 文档注释可以作为测试
+  * `cargo test` 会在执行时将文档注释中的代码示例作为测试去运行
+* `//!`
+  * 它可以为包裹当前注释的外层条目（而不是紧随注释之后的条目）添加文档
+  * 这种文档注释通常被用在包的根文件
+
+### `pub use` 导出方便使用的公共 API
+在开发过程中建立起来的 cartes 组织结构对于使用者并不是特别友好
+* 代码模块可能是一个包含多个层次的树状结构, 使用者难以找到
+* 引用也困难，如 `use my_crate::some_module::another_module::UsefulType;`
+
+解决的办法就是使用 `pub use`:
+* 不需要重新组织内部代码结构
+* 重新导出操作会取得某个位置的公共条目并将其公开到另一个位置
+
+### 创建账号并且发布
+* 发布之前需要创建账号并且获得 API token
+* 运行命令： `cargo login [API token]`
+  * API令牌存入 _～/.cargo/credentials_ 文件
+* 在发布之前，我们需要在Cargo.toml 文件的[package]区域中为这个包添加一些元数据（metadata）。 
+  * 独一无二的名称
+  * description：会出现在搜索结果中
+  * license
+  * version
+  * auth
+* 发布： 使用 `cargo publish`命令
+* crate 一旦发布， 就是永久性的：该版本无法覆盖， 对应代码无法删除
+  * 保证所有依赖于 _crates.io_ 的包都能一直被正常构建
+* 修改 crate 之后，修改 toml 文件中的 version
+* 不能移除某一个老版本的包，但我们仍然可以阻止未来的新项目将它们引用为依赖
+  * `cargo yank --vers 1.0.1` 
+  * `cargo yank --vers 1.0.1 --undo` 取消撤回
+
+## cargo 工作空间
+但随着项目规模逐渐增长，你也许会发现自己的代码包越来越臃肿，并想要将它进一步拆分为多个代码包。
+* cargo 工作空间：帮助开发者管理多个相互关联且需要协同开发的包。
+  * 其实就是一套共享 cargo.lock 和输出文件夹的包
+
+在工作中间下的 `Cargo.toml` 中写入：
+```toml
+[workspace]
+
+members = [
+    "adder",
+    "add-one",
+    "add-two",
+]
+```
+Cargo 不会默认工作空间中的包互相依赖，我们需要在 adder `Cargo.toml` 中写入依赖：
+* `cargo run -p adder` 就可以运行指定包
+```toml
+[dependencies]
+add-one = { path = "../add-one" }
+```
+工作空间中只有一个 `Cargo.lock` 文件， 在顶层目录下
+* 保证 所有 crate 使用的依赖版本都相同
+* 工作空间内所有的 crate 都互相兼容
+
+## 安装二进制的 crates
+* cargo install 安装来自 `crates.io` 的 crate
+  * 只能安装具有二进制目标的 crate 
+  * 拥有 `src/main.rs` 或者其他被指定为二进制入口的文件
+  * 安装在 `$HOME/.cargo/bin` 中
