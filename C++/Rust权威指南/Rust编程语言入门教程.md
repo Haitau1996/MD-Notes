@@ -1733,3 +1733,104 @@ add-one = { path = "../add-one" }
   * 只能安装具有二进制目标的 crate 
   * 拥有 `src/main.rs` 或者其他被指定为二进制入口的文件
   * 安装在 `$HOME/.cargo/bin` 中
+
+# 智能指针
+指针（pointer）是一个通用概念，它指代那些包含内存地址的变量。智能指针是这样的数据结构：
+* 行为和指针类似
+* 有额外的元数据和功能
+
+引用计数智能指针类型：
+* 通过记录所有者的数量来使一份数据被多个所有者同时持有
+* 在没有任何所有者时自动清理数据
+
+之前介绍的引用和智能指针不同， 引用只是借用数据， 而智能指针很多时候都拥有它所指向的数据。  
+**智能指针的实现**：
+* 智能指针通常使用 struct 实现，并且实现了 
+  * Deref(拥有引用一致的行为) 和 Drop(自定义智能指针离开作用域时候运行的代码) 这两个 trait
+
+## 使用 `Box<T>` 在堆上分配数据
+`Box<T>` 是最简单的智能指针：
+* 允许我们在 heap 上存储数据
+* stack 上存放指向 heap 数据的指针
+* 适用于需要“间接存储”的场景
+* 没有性能开销
+* 没有额外的功能<div align=center><img src="https://i.imgur.com/pk8t3HT.png" width="30%"/></div>
+
+它在下面这些场景中常用：
+* 当你拥有一个无法在编译时确定大小的类型，但又想要在一个要求固定尺寸的上下文环境中使用这个类型的值时。
+* 当你需要传递大量数据的所有权，但又不希望产生大量数据的复制行为时
+* 当你希望拥有一个实现了指定trait的类型值，但又不关心具体的类型时
+
+使用`Box<T>`在堆上存储数据：
+```Rust
+fn main() {
+    let b = Box::new(5);
+    println!("b = {}", b);
+}
+```
+### 使用装箱赋能递归类型
+* 在编译的时候， Rust 需要直到一个类型所占用的空间大小
+* 而递归类型的大小无法在编译的时候确定<div align=center><img src="https://i.imgur.com/3ySJ9BC.png" width="30%"/></div>
+* Box<T> 类型的大小是确定的
+
+关于 Cons List
+* 链接列表是一种来自Lisp编程语言与其方言的数据结构
+* Cons List 的每个成员由两个元素组成
+  * 当前项的值
+  * 下一个元素
+* Cons List 最后一个成员只包含一个 Nil 值，没有下一个元素
+
+我们接下来想要实现这样的链表,最符合直觉的实现是不对的（error info: recursive type List has infinite size）：
+```Rust
+enum List {
+    Cons(i32, List),
+    Nil,
+}
+```
+* 对于非递归类型， Rust 对于枚举使用的是占用空间最大的那个变体的尺寸
+* `Box<T>` 是一个指针， Rust 知道它所占用的空间大小<div align=center><img src="https://i.imgur.com/cWEVQua.png" width="20%"/></div>
+    ```Rust
+    enum List{
+        Cons(i32, Box<List>),
+        Nil,
+    }
+    fn main() {
+        let list = Cons(1,
+            Box::new(Cons(2,
+                Box::new(Cons(3,
+                    Box::new(Nil))))));
+    }
+    ```
+
+## Deref Trait
+* 实现 Deref 这个trait 让我们可以==自定义解引用运算符`*`的行为==
+* 智能指针可以像常规引用一样行为
+
+常规的引用也是一种指针：
+```Rust
+let x = 5;
+let y = &x;
+let z = Box::nex(x);
+assert_eq!(5,x);
+assert_eq!(5,*y);
+assert_eq!(5,*z);
+```
+### 定义自己的智能指针
+* `Box<T>` 实际上被定义成一个拥有一个元素的 tuple strut，我们在一个 tuple 上实现 Deref 这个 Trait 就可以实现解引用运算符
+    ```Rust
+    use std::ops::Deref;
+    struct MyBox<T>(T);
+    impl<T> MyBox<T>{
+        fn new(x:T)->MyBox<T>{
+            MyBox(x)
+        }
+    }
+    impl<T> Deref for MyBox<T>{
+        type Target = T;
+        fn deref(&self)->&T{
+            &self.0
+        }
+    }
+    ```
+
+### 函数和方法的隐式解引用转换
