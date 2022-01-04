@@ -1834,3 +1834,46 @@ assert_eq!(5,*z);
     ```
 
 ### 函数和方法的隐式解引用转换
+deref coercion(kəʊˈɜːʃn, 强制) 是Rust为函数和方法的参数提供的一种便捷特性， 其原理如下：  
+* 假设 T 实现了 Deref trait:
+  * Deref coercion 可以把 T 的引用转化为 T 经过 Deref 操作后生成的引用
+* 当某个类型的引用传递给函数或者方法， 但是类型和定义的参数类型不匹配：
+  * Deref coercion 就会自动发生
+  * 编译器会对 deref 进行一系列调用， 来把它转为所需要的参数类型
+    * 编译时完成， 没有性能开销
+    ```Rust
+    // 省略上面已经有的 myBox 实现的代码
+    fn hello(name:&str){
+        println!("hello {}",name);
+    }
+    fn main(){
+        let m = MyBox::new(String::from("Rust"));
+        hello(&m);
+        // &m 实际为 &MyBox<String>
+        // deref &String
+        // deref &str ， 这样类型就匹配了, 上面一行相当于下面这个复杂且难以理解的调用
+        hello(&(*m)[..]);
+    }
+    ```
+### 解引用转换与可变性
+使用 DerefMut trait 能够重载可变引用的 `*` 运算符:
+* 当T: Deref<Target=U> 时，允许 &T 转换为 &U。
+* 当T: DerefMut<Target=U> 时，允许 &mut T 转换为 &mut U。
+* **当 T: Deref<Target=U> 时，允许 &mut T 转换为 &U**(反过来不行)
+
+## Drop trait
+实现 Drop trait，允许我们在**变量离开作用域时执行某些自定义操作**
+* 如 文件、网络资源的释放
+* 任何类型都可以实现 Drop trait(它在预导入模块)
+* `drop()` 方法不能直接调用
+    ```Rust
+    struct CustomSmartPointer {
+        data: String,
+    }
+
+    impl Drop for CustomSmartPointer {
+        fn drop(&mut self) {
+           println!("Dropping CustomSmartPointer with data `{}`!", self.data);
+        }
+    }
+    ```
