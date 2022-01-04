@@ -1865,7 +1865,7 @@ deref coercion(kəʊˈɜːʃn, 强制) 是Rust为函数和方法的参数提供�
 实现 Drop trait，允许我们在**变量离开作用域时执行某些自定义操作**
 * 如 文件、网络资源的释放
 * 任何类型都可以实现 Drop trait(它在预导入模块)
-* `drop()` 方法不能直接调用
+* `drop()` **方法**不能手动调用(Drop trait 的目的就是自动释放)，想提前清理使用`drop()`**函数**
     ```Rust
     struct CustomSmartPointer {
         data: String,
@@ -1877,3 +1877,64 @@ deref coercion(kəʊˈɜːʃn, 强制) 是Rust为函数和方法的参数提供�
         }
     }
     ```
+
+## `Rc<T>`
+有时候， 单个值会被多个数据所有， 如 Graph 中， 需要保存邻节点。
+* `Tc<T>` 支持了多重所有权
+* 可以追踪所有到值的引用
+* 引用为0 ： 可以安全地清理
+* 不在预导入模块中
+
+使用场景：
+* 希望将堆上的一些数据分享给程序的多个部分同时使用，而又无法在编译期确定哪个部分会最后释放这些数据时
+* 只能用于单线程场景
+
+使用实例：
+* `Rc::clone(&a)` 增加引用计数(没有深度拷贝操作)
+* `Rc::strong_count(&a)` 获得引用计数
+  * 对应的有 `Rc::weak_count` 函数<div align=center><img src="https://i.imgur.com/tqjk4av.png" width="80%"/></div>
+* 实际上是通过**不可变引用**共享只读的数据
+    ```Rust
+    enum List {
+        Cons(i32, Rc<List>),
+        Nil,
+    }
+
+    use crate::List::{Cons, Nil};
+    use std::rc::Rc;
+
+    fn main() {
+        let a = Rc::new(Cons(5, Rc::new(Cons(10, Rc::new(Nil)))));
+        let b = Cons(3, Rc::clone(&a));
+        let c = Cons(4, Rc::clone(&a));
+    }
+    ```
+
+## `RefCell<T>` 和内部可变性模式
+内部可变性允许你在只持有不可变引用的前提下对数据进行修改， 在它的数据结构中使用了unsafe（不安全）代码来绕过Rust正常的可变性和借用规则。
+* `RefCell<T>`类型代表了其持有数据的唯一所有权。<div align=center><img src="https://i.imgur.com/a2oLKVb.png" width="70%"/></div><div align=center><img src="https://i.imgur.com/8qGlmrN.png" width="70%"/></div>
+* 只能用于单线程的场景，相当于是支持一个可变或者不可变的借用
+* 内部可变性就是可变借用一个不可变的值（只是将检查延后到运行时）
+
+使用的时候有两个方法
+* borrow, 返回智能指针 `Ref<T>`， 实现了 Deref
+* borrow_mut, 返回智能指针 `RefMut<T>`, 也实现了 Deref
+
+而 `RefCell<T>` 会在运行时记录借用信息
+* 调用 borrow： 不可变借用数 +1，`Ref<T>`离开作用域被释放时候，可变借用计数 -1
+* 调用 borrow_mut： 可变借用数 +1，`RefMut<T>`离开作用域被释放时候，可变借用计数 -1
+* 在任意时间内， 只能有一个可变借用和多个不可变借用， 否则会触发 panic
+
+`Rc<T>` 和 `RefCell<T>` 结合使用可以实现一个拥有多重所有权的可变数据：
+```Rust
+#[derive(Debug)]
+enum List {
+    Cons(Rc<RefCell<i32>>, Rc<List>),
+    Nil,
+}
+```
+标准库还提供了其他一些类型来实现内部可变性:
+* `Cell<T>` 选择了通过复制来访问数据。
+* `Mutex<T>` 被用于实现跨线程情形下的内部可变性模式。
+
+## 循环引用会造成内存泄漏
