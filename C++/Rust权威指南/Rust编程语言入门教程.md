@@ -1938,3 +1938,26 @@ enum List {
 * `Mutex<T>` 被用于实现跨线程情形下的内部可变性模式。
 
 ## 循环引用会造成内存泄漏
+Rust的内存安全机制使我们很难在程序中意外地制造出永远不会得到释放的内存空间， 但并非不可能。
+* 能够创建出互相引用成环状的实例
+  * 每个引用计数都不可能回到 0<div align=center><img src="https://i.imgur.com/BVnMK3m.png" width="40%"/></div>
+
+防止内存泄漏的解决办法：
+* 依靠开发人员自己保证， 不能依靠 Rust
+* 重新组织数据结构： 一些引用表达所有权， 一些引用不表达
+  * 把 `Rc<T>` 换成 `Weak<T>`
+  * `Rc::clone` 为 `Rc<T>` 实例的 strong_count 加 1， 只有当它为 0 的时候才会被清理
+  * `Rc::downgrade` 方法可以创建 Weak Reference
+    * 返回类型为 `Weak<T>`
+    * 调用的时候 weak_count 会加 1， weak_count 不影响实例的清理，强引用数量为 0 的时候回自动断开
+    ```Rust
+    use std::rc::{Rc,Weak};
+    use std::cell::RefCell;
+
+    #[derive(Debug)]
+    struct Node {
+        value: i32,
+        parent: RefCell<Weak<Node>>,
+        children: RefCell<Vec<Rc<Node>>>,
+    }
+    ```
