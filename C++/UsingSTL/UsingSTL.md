@@ -81,6 +81,11 @@
     - [`greater<T>`](#greatert)
     - [使用函数对象](#使用函数对象)
   - [哈希](#哈希)
+  - [`unordered_map` 容器](#unordered_map-容器)
+    - [生成和管理`unordered_map`](#生成和管理unordered_map)
+    - [调整格子个数](#调整格子个数)
+    - [插入元素](#插入元素-1)
+    - [访问元素](#访问元素-4)
 # Chapter 1: intruction to STL
 STL为一个功能强大且可扩展的工具集,用于组织和处理数据,STL可以划分为四个概念库:
 
@@ -914,3 +919,71 @@ decltype(a) b = a; //all good though
     auto upbox = std::make_unique<Box>(1,2,3);
     std::cout << "hash val of box pointer is " << box_hash(upbox.get()) << std::endl;
     ```
+## `unordered_map` 容器
+`unordered_map` 包含的是有唯一键的键、值对元素， 元素不是有序的， 存放位置由哈希值确定。<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220109165427.png" width="80%"/></div>  
+
+* 容器的个子个数有默认值， 也可以手动指定
+* 载入因子是每个格子平均保存的元素的个数，最大值默认是 1.0， 也可以修改
+
+### 生成和管理`unordered_map`
+生成 `unordered_map` 需要 key 可以实例化 `hash<K>`,并且必须能用 oprerator`==` 比较 key, 我们也可以指定格子个数：
+* 可以用 initializer_list 生成
+* 也可以使用两个指向 pair 的迭代器
+    ```C++
+    std::unordered_map<std::string, size_t> people 
+        {{{"Jan", 44}, {"Jim", 33}, {"Joe", 99}}, 10};
+    std::vector<std::pair<string, size_t>> folks {{"Jan", 44}, {"Jim", 33}, 
+        {"Joe", 99}, {"Dan", 22}, {"Ann", 55}, {"Don", 77}}; 
+    std::unordered_map<string, size_t> neighbors 
+        {std::begin(folks), std::end(folks), 500};
+    ```
+如果是自定义类型， 我们需要实现 hash 和 operator == : 
+```C++
+class Name {
+// Private and public members and friends as in Ex4_01...
+public: 
+    size_t hash() const { 
+        return std::hash<std::string>()(first+second); 
+    } 
+    bool operator==(const Name& name) const { 
+        return first == name.first && second== name.second; 
+    } 
+};
+```
+`unordered_map` 的哈希函数只能接受和键同类型的单个参数， 返回一个 size_t 值， 而上面实现的是一个成员函数版本的hash, 因此需要定义一个仿函数然后传入（如果我们定义了一个判断相等的函数对象， 也可以选择传入）：
+```C++
+class Hash_Name {
+public: 
+    size_t operator()(const Name& name) const { return name.hash(); } 
+};
+std::unordered_map<Name, size_t, Hash_Name> people 
+    {{{{"Ann", "Ounce"}, 25}, {{"Bill", "Bao"}, 46}, {{"Jack", "Sprat"}, 77}}, 
+    500,                    // Bucket count 
+    Hash_Name()};           // Hash function for keys
+```
+
+### 调整格子个数
+如果载入因子超过最大值， 容器将增加格子， 元素值会被再次哈希，这时候迭代器会失效， 我们也可以手动改变格子个数或者载入因子：
+```C++
+people.rehash(15);   // Make bucket count 15
+people.max_load_factor(1.2*people.max_load_factor());      // Increse max load factor by 20%
+```
+也可以给出一个元素个数大小， 使得个数不超过的时候负载因子始终维持在最大数之内：
+```C++
+size_t max_element_count {100}; 
+people.reserve(max_element_count);
+```
+
+### 插入元素
+`unordered_map` 的成员函数 `.insert()` 提供的能力和 map 容器相同
+* 通过复制或者移动来插入一个元素
+* 使用或者不使用提示符来指明插入位置
+* 插入多个元素的版本（如接受初始化列表、两个迭代器的版本）没有返回值
+* `.emplace()`/`.emplace_hint()` 在适当的位置生成元素，后者的第一个参数是提示位置的迭代器
+
+### 访问元素
+* 通过下标运算符`[]` 获得对应 val 的引用
+* `.at()`功能类似， 但是 key 不存在时候抛出 `std::out_of_range`
+* `find()`/`euqal_range()` 工作方式和 map 一样
+* 迭代器可以使用
+
