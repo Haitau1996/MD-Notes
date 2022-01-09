@@ -89,6 +89,11 @@
     - [移除元素](#移除元素)
     - [访问格子](#访问格子)
     - [unordered_multimap](#unordered_multimap)
+- [set](#set)
+  - [使用 `set<T>` 容器](#使用-sett-容器)
+    - [添加和移除元素](#添加和移除元素)
+    - [访问元素](#访问元素-5)
+    - [set 迭代器](#set-迭代器)
 # Chapter 1: intruction to STL
 STL为一个功能强大且可扩展的工具集,用于组织和处理数据,STL可以划分为四个概念库:
 
@@ -1013,3 +1018,44 @@ people.reserve(max_element_count);
 `.at()` 和 operator[] 不再可用， 只能选择
 * `find()`: 容器中只有一个 key 
 * `equal_range()`: 访问一段元素
+
+# set
+| 底层数据结构          | rb_tree | hash_table |
+|:-----------:|:---------:| :---------:|
+|允许重复键  | multiset|unodeared_multiset|
+|不允许重复键|set|unordered_set|
+
+set/multiset 默认使用的比较函数是 `less<T>`, unordered_set/unordered_multiset 默认使用 `equal_to<T>` 来判断元素是否相等。 
+* 我们可以从有序 set 得到正向和反向迭代器
+* 无序容器只能得到正向迭代器
+
+## 使用 `set<T>` 容器
+* 可以用初始化列表来初始化 set 容器
+    ```C++
+    std::set<int> numbers{3,7,9,6,5,1};
+    ```
+* 可以提供默认之外的比较函数
+    ```C++
+    std::set<std::string, std::greater<string>> words 
+        {"one", "two", "three", "four", "five", "six", "seven", "eight"};
+    ```
+    <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220109230752.png" width="40%"/></div>
+* 也可以使用两个迭代器来生成 set
+
+### 添加和移除元素
+set 中没有实现成员函数`.at()`, 也没有实现 `operator[]()`, 除此之外实现了大部分操作：
+* `.insert()`:
+  * 插入单个元素返回 `pair<iterator,bool>` 对象
+  * 插入一段元素或者初始化列表不会有返回值
+* `.emplace()`:
+  * 返回一个 `pair<iterator, bool>`
+* `.emplace_hint()`:第一个参数是迭代器，随后的参数会传入构造器
+* `.clear()` 会删除所有元素
+* `.erase()`: 删除迭代器指定位置的元素或者与对象匹配的元素
+
+### 访问元素
+* `.find()`: 返回第一个和参数匹配的迭代器
+* `.count()`:返回元素在 set 中的个数， 0或者 1，（因为元素唯一）
+* `.equal_range()`/`.lower_bound()`/`.upper_bound()` 和 multiset 容器很大程度一致
+
+### set 迭代器
