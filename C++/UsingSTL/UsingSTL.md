@@ -86,6 +86,9 @@
     - [调整格子个数](#调整格子个数)
     - [插入元素](#插入元素-1)
     - [访问元素](#访问元素-4)
+    - [移除元素](#移除元素)
+    - [访问格子](#访问格子)
+    - [unordered_multimap](#unordered_multimap)
 # Chapter 1: intruction to STL
 STL为一个功能强大且可扩展的工具集,用于组织和处理数据,STL可以划分为四个概念库:
 
@@ -987,3 +990,26 @@ people.reserve(max_element_count);
 * `find()`/`euqal_range()` 工作方式和 map 一样
 * 迭代器可以使用
 
+### 移除元素
+使用`.erase()` 成员函数来移除元素
+* 接收一个 key 值： 返回一个整数（移除的元素个数）
+* 接收一个迭代器： 返回删除元素后一个位置的迭代器
+* 接收两个迭代器， 删除特定范围： 返回值同上
+
+### 访问格子
+使用容器的成员函数 `.begin()`/`.end()` 的重载版本获取指向格子的迭代器，如 `some_unordered_map.begin(1)` 返回第二个篮子的迭代器。 同样的，`.cbegin()` 重载版本返回 const 迭代器。  
+* `.bucket_conut()` 返回格子的个数  
+* `.bucket_size()` 返回参数指定的格子的元素个数
+* `.bucket()` 返回的是格子的索引值  
+    ```C++
+    string key {"May"}; 
+    if(people.find(key) != std::end(people)) 
+        std:: cout << "The number of elements in the bucket containing " 
+        << key << " is " << people.bucket_size(people.bucket(key)) << std::endl;
+    ```
+
+### unordered_multimap
+是一个允许有重复键的无序map,和 unordered_map 的 `.insert()`/`.emplace()`/`.emplace_hint()` 很像， 区别在于使用前两个， 会返回一个 `pair` 对象说明插入是否成功。  
+`.at()` 和 operator[] 不再可用， 只能选择
+* `find()`: 容器中只有一个 key 
+* `equal_range()`: 访问一段元素
