@@ -80,6 +80,7 @@
   - [改变比较函数](#改变比较函数)
     - [`greater<T>`](#greatert)
     - [使用函数对象](#使用函数对象)
+  - [哈希](#哈希)
 # Chapter 1: intruction to STL
 STL为一个功能强大且可扩展的工具集,用于组织和处理数据,STL可以划分为四个概念库:
 
@@ -856,9 +857,9 @@ std::tie(name, std::ignore, phone) = my_tuple;
 
 ## multimap 容器的用法
 因为允许 Key 重复， multimap 使用和 map 有一些区别。 
-* `insert()` 可以插入一个或者多个元素， **插入总是成功**，并且返回指向插入元素的迭代器
-* `emplace()` 可以在适当位置构造元素
-  * `emplace_hint()` 可以提供一个迭代器形式的提示符， 控制元素的生成位置
+* `.insert()` 可以插入一个或者多个元素， **插入总是成功**，并且返回指向插入元素的迭代器
+* `.emplace()` 可以在适当位置构造元素
+  * `.emplace_hint()` 可以提供一个迭代器形式的提示符， 控制元素的生成位置
 * 不支持下标运算符（**因为 _key_ 不能唯一确定元素**）,可以使用 `find()`返回一个键和参数匹配的元素迭代器
   * `.equal_range(parameter)` 成员函数返回两个迭代器构成的 _pair_, 所确定的范围中键和参数的值相等
   * `.equal_range()` 的参数可以是不同类型**但是可以和键相互比较的对象**， 返回的 first 是指向第一个大于等于参数的元素（如果存在，需要检查是否等于尾后迭代器）， second 是键值大于参数的的第一个元素的迭代器
@@ -879,6 +880,7 @@ bool operator>(const Name& name) const
 {
  return second > name.second || (second == name.second && first > name.first);
 }
+// outside Name Class
 std::map<Name, size_t, std::greater<Name>> people
  { {Name{"Al", "Bedo"}, 53}, {Name{"Woody", "Leave"}, 33}, {Name{"Noah", "Lot"}, 43} }
 ```
@@ -887,10 +889,10 @@ std::map<Name, size_t, std::greater<Name>> people
 ```C++
 class Functor{
 public:
-  bool operator()(const std::unique_ptr<std::string> first,
-                  const std::unique_ptr<std::string> second){
-                    return *first > *second;
-                  }
+    bool operator()(const std::unique_ptr<std::string>& first,
+                    const std::unique_ptr<std::string>& second){
+        return *first -> *second;
+    }
 }
 std::map<std::unique_ptr<string>, std::string, Functor> phonebook;
 ```
@@ -901,3 +903,14 @@ auto a = [sz](){ return sz;};
 decltype(a) b(10); //compiler error
 decltype(a) b = a; //all good though
 ```
+## 哈希
+哈希是用给定范围的基本类型的数据项， 生成整数值的过程, 不仅可以在容器中保存对象， 也被用于密码和加密数据的安全系统中。哈希算法很多， 但却没有通用的。  
+`<functional>` 头文件中定义了 `hash<K>` 模板，不同类型的专用算法取决于实现， C++14 标准需要满足下列具体条件：
+* 不能抛出异常
+* 对于相同的键值必须产生相等的哈希值
+* 对于不相等的键产生碰撞的可能性必须最小接近 `numeric_limits<size_t>::max()` 的倒数
+    ```C++
+    std::hash<Box*> box_hash; // Box class is implemented elsewhere
+    auto upbox = std::make_unique<Box>(1,2,3);
+    std::cout << "hash val of box pointer is " << box_hash(upbox.get()) << std::endl;
+    ```
