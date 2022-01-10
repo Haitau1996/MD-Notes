@@ -94,6 +94,7 @@
     - [添加和移除元素](#添加和移除元素)
     - [访问元素](#访问元素-5)
     - [set 迭代器](#set-迭代器)
+    - [在 set 容器中保存指针](#在-set-容器中保存指针)
 # Chapter 1: intruction to STL
 STL为一个功能强大且可扩展的工具集,用于组织和处理数据,STL可以划分为四个概念库:
 
@@ -1059,3 +1060,7 @@ set 中没有实现成员函数`.at()`, 也没有实现 `operator[]()`, 除此�
 * `.equal_range()`/`.lower_bound()`/`.upper_bound()` 和 multiset 容器很大程度一致
 
 ### set 迭代器
+`set<T>` 容器的成员返回的迭代器都是双向迭代器， 有的类型包括 iterator, reverse_iterator, const_iterator 和 const_reverse_iterator。实际上 `set<T>` 返回的迭代器都是 const T 类型， 意味着我们**不能直接修改set元素**。如果想要修改元素， 必须要先删除它然后再插入修改后的版本。  
+
+### 在 set 容器中保存指针
+在 set 中存放 `shared_ptr<T>` 或者 `weak_ptr<T>` 时，并不关心指针的顺序， 但依旧要提供比较函数（推荐使用 memory 头文件中的 `owner_less<T>`）， 它允许 `weak_ptr<T>` 和 `shared_ptr<T>` 对象比较， 通过调用智能指针的成员函数 `owner_before()` 函数实现了一个 `owner_before<T>` 实例， 甚至可以将指向不同类型对象的智能指针相互比较。 
