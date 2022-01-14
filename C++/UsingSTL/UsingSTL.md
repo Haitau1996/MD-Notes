@@ -97,6 +97,11 @@
     - [在 set 容器中保存指针](#在-set-容器中保存指针)
   - [使用 `multiset<T>` 容器](#使用-multisett-容器)
 - [chapter 6 : 排序、合并、搜索和分区](#chapter-6--排序合并搜索和分区)
+  - [序列排序](#序列排序)
+    - [排序以及相等的元素的排序](#排序以及相等的元素的排序)
+    - [部分排序](#部分排序)
+    - [测试排序序列](#测试排序序列)
+  - [合并序列](#合并序列)
 # Chapter 1: intruction to STL
 STL为一个功能强大且可扩展的工具集,用于组织和处理数据,STL可以划分为四个概念库:
 
@@ -1079,3 +1084,37 @@ multiset 和 set 类似， 但是可以保存重复的元素， 默认用 `less<
 // TODO: 保存指针的细节要白天看
 
 # chapter 6 : 排序、合并、搜索和分区
+## 序列排序
+函数模板`sort<Iter>()` 默认会将元素排列成升序，
+* 对象类型要支持 `<` 操作符，
+* 同时必须是可交换的， 
+* Iter 必须为支持随机访问的迭代器， 而 list(提供双向迭代器)、forward_list(提供正向迭代器)用的是成员函数的 `.sort()`。
+* 可以提供函数对象作为第三个参数
+
+### 排序以及相等的元素的排序
+`sort<Iter>()` 使用快排实现， **可能改变相等元素的位置**， 这时候 `stable_sort` 可以满足我们的要求。
+
+### 部分排序
+* 提供特殊的 `partial_sort()` 算法做部分排序， 需要三个随机访问迭代器，  first/second/last， 之后 `[first,second)` 会包含降序序列中最小的 $second - first$ 个元素。
+  * 可以提供比较函数
+    ```C++
+    size_t count{ 5 }; // Number of elements to be sorted
+    std::vector<int> numbers{ 22, 7, 93, 45, 19, 56, 88, 12, 8, 7, 15, 10 };
+    std::partial_sort(std::begin(numbers), std::begin(numbers) + count, std::end(numbers)，std::greater<int>());
+    // after : 93, 88, 56, 45, 22, 7, 19, 12, 8, 7, 15, 10,
+    ```
+* `partial_sort_copy()` 可以将排序元素复制到不同的元素段（另一个容器）中， 前两个参数指定范围， 第三个第四个指定结果存放位置， 同样可以指定比较函数。
+* `nth_element()` 算法的应用范围由第一个第三个元素指定， 第二个参数是指向第 n 个元素的迭代器（结果有点像快排中的 partition）
+
+### 测试排序序列
+* `is_sorted(beg, end, cmp)` 判断某个区间是否有序
+* `is_sorted_until()`: 返回一个元素中升序列上边界元素的迭代器
+    ```C++
+    std::vector<string> pets {"dog", "coati", "cat", "chicken", "pig", "llama", "goat"};
+    std::cout << "The pets in descending sequence are:\n";
+    std::copy(std::begin(pets),
+              std::is_sorted_until(std::begin(pets), std::end(pets), std::greater<>()),
+                                    std::ostream_iterator<string>{std::cout, " "});
+    ```
+
+## 合并序列
