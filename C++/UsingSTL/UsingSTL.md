@@ -102,6 +102,9 @@
     - [部分排序](#部分排序)
     - [测试排序序列](#测试排序序列)
   - [合并序列](#合并序列)
+  - [搜索序列](#搜索序列)
+    - [在序列中查找元素](#在序列中查找元素)
+    - [在序列中查找任意范围的元素](#在序列中查找任意范围的元素)
 # Chapter 1: intruction to STL
 STL为一个功能强大且可扩展的工具集,用于组织和处理数据,STL可以划分为四个概念库:
 
@@ -1118,3 +1121,35 @@ multiset 和 set 类似， 但是可以保存重复的元素， 默认用 `less<
     ```
 
 ## 合并序列
+合并操作会合并两个有**相同顺序的序列**中的元素，结果是一个包含两个序列的元素副本的序列：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220115010009.png" width="80%"/></div>
+
+* 没有关于合并后容器的信息， 不能创建元素，只能使用第五个参数提供的迭代器来保存元素 
+* 返回的迭代器指向合并序列末尾的后一个位置
+* 同样可以使用自定义比较函数
+
+`inplace_merge()`算法可以合并**同一个序列中**两个连续有序的序列， 三个参数分别是 first/second/last, last 是双向迭代器，第一个输入序列`[first,second)`, 第二个`[second, last)`，结果 `[first,last)`：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220115010643.png" width="70%"/></div>
+
+## 搜索序列
+STL 提供了多种用来搜索序列的方法， 大多用于无序序列， 部分要求有序。
+### 在序列中查找元素
+有三种可以在输入迭代器所定义的范围中查找单个对象的算法：
+* `find(first, second, elem)`: 在 `[first, second)` 中查找第一个和 elem 相等的对象
+* `find_if(first, second, functor)`: 在范围内查找第一个使得第三个参数指定的谓词（谓词是指**条件表达式的求值返回真或假的过程**）为 true 的对象， 谓词不能修改传给它的对象
+* `find_if_not(first, second, functor)`
+
+### 在序列中查找任意范围的元素
+`find_first_of()`: 在序列1 中搜索第二个序列第一次出现的任何元素,例如在一个字符串中查找第一个元音：
+```C++
+string text{ "The world of searching" };
+string vowels{ "aeiou" };
+auto iter = std::find_first_of(std::begin(text), std::end(text), 
+                               std::begin(vowels),std::end(vowels));
+```
+* 另一个版本可以指定谓词：
+    ```C++ 
+    std::vector<long> numbers {64L, 46L, -65L, -128L, 121L, 17L, 35L, 9L, 91L, 5L};
+    int factors[] {7, 11, 13};
+    auto iter = std::find_first_of(std::begin(numbers),std::end(numbers), // The range to be searched
+                        std::begin(factors), std::end(factors), // Elements sought
+                        [](long v, long d) { return v % d == 0;}); // Predicate - true for a match
+    ```
