@@ -116,6 +116,8 @@
     - [`binary_search()` 算法](#binary_search-算法)
     - [`lower_bound()` 算法](#lower_bound-算法)
     - [`equal_range()` 算法](#equal_range-算法)
+- [Chapter 7: 更多的算法](#chapter-7-更多的算法)
+  - [检查元素的属性](#检查元素的属性)
 # Chapter 1: intruction to STL
 STL为一个功能强大且可扩展的工具集,用于组织和处理数据,STL可以划分为四个概念库:
 
@@ -1166,7 +1168,7 @@ auto iter = std::find_first_of(std::begin(text), std::end(text),
     ```
 
 ### 在序列中查找多个元素
-`adjacent_find` 可以用来搜索序列中两个连续相等的元素，用`==`运算符比较一对元素， 返回指向第一个元素的迭代器：
+`adjacent_find()` 可以用来搜索序列中两个连续相等的元素，用`==`运算符比较一对元素， 返回指向第一个元素的迭代器：
 ```C++
 string saying {"Children should be seen and not heard."};
 auto iter = std::adjacent_find(std::begin(saying), std::end(saying));
@@ -1268,3 +1270,23 @@ if(std::is_partitioned(std::begin(temperatures), std::end(temperatures),predicat
 查找有序序列中所有和给定元素相等的元素， 返回一个 pair 对象：
 * first 是指向第一个不小于第三个参数的第一个元素
 * second 指向第一个大于第三个参数的元素
+
+# Chapter 7: 更多的算法
+通常 STL 算法可以分成两类：
+* 会改变所运用序列的算法
+* 不改变所应用序列的算法
+
+## 检查元素的属性
+`<algorithm>` 头文件中定义了三种算法， 检查在算法应用到序列上时， 什么时候使得谓词返回 true:
+* `all_of()`: 在所有元素都使得谓词返回 true 的时候返回 true 
+* `any_of()`: 存在任一元素使得谓词返回 true 的时候返回 true 
+* `none_of()`: 没有元素使得谓词返回 true 时候返回 true  
+    ```C++
+    std::cout << "There are "
+        << (std::any_of(std::begin(ages), std::end(ages),
+                        [min_age](int age) { return age < min_age; }) ? "some": "no")
+        << " people under " << min_age << std::endl;
+    ```
+
+进一步的， 可以使用 `count()`/`count_if()` 可以找出有多个元素和第三个参数等价/使得谓词返回 true。 
+
