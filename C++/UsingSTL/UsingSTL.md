@@ -89,14 +89,14 @@
     - [移除元素](#移除元素)
     - [访问格子](#访问格子)
     - [unordered_multimap](#unordered_multimap)
-- [set](#set)
+- [Chapter 5: set 容器](#chapter-5-set-容器)
   - [使用 `set<T>` 容器](#使用-sett-容器)
     - [添加和移除元素](#添加和移除元素)
     - [访问元素](#访问元素-5)
     - [set 迭代器](#set-迭代器)
     - [在 set 容器中保存指针](#在-set-容器中保存指针)
   - [使用 `multiset<T>` 容器](#使用-multisett-容器)
-- [chapter 6 : 排序、合并、搜索和分区](#chapter-6--排序合并搜索和分区)
+- [Chapter 6 : 排序、合并、搜索和分区](#chapter-6--排序合并搜索和分区)
   - [序列排序](#序列排序)
     - [排序以及相等的元素的排序](#排序以及相等的元素的排序)
     - [部分排序](#部分排序)
@@ -105,6 +105,17 @@
   - [搜索序列](#搜索序列)
     - [在序列中查找元素](#在序列中查找元素)
     - [在序列中查找任意范围的元素](#在序列中查找任意范围的元素)
+    - [在序列中查找多个元素](#在序列中查找多个元素)
+      - [`find_end()` 算法](#find_end-算法)
+      - [`search()` 算法](#search-算法)
+      - [`search_n()` 算法](#search_n-算法)
+  - [分区序列](#分区序列)
+    - [`partition_copy()` 算法](#partition_copy-算法)
+    - [`partition_point()` 算法](#partition_point-算法)
+  - [二分查找算法](#二分查找算法)
+    - [`binary_search()` 算法](#binary_search-算法)
+    - [`lower_bound()` 算法](#lower_bound-算法)
+    - [`equal_range()` 算法](#equal_range-算法)
 # Chapter 1: intruction to STL
 STL为一个功能强大且可扩展的工具集,用于组织和处理数据,STL可以划分为四个概念库:
 
@@ -1030,7 +1041,7 @@ people.reserve(max_element_count);
 * `find()`: 容器中只有一个 key 
 * `equal_range()`: 访问一段元素
 
-# set
+# Chapter 5: set 容器
 | 底层数据结构          | rb_tree | hash_table |
 |:-----------:|:---------:| :---------:|
 |允许重复键  | multiset|unodeared_multiset|
@@ -1086,7 +1097,7 @@ multiset 和 set 类似， 但是可以保存重复的元素， 默认用 `less<
 
 // TODO: 保存指针的细节要白天看
 
-# chapter 6 : 排序、合并、搜索和分区
+# Chapter 6 : 排序、合并、搜索和分区
 ## 序列排序
 函数模板`sort<Iter>()` 默认会将元素排列成升序，
 * 对象类型要支持 `<` 操作符，
@@ -1153,3 +1164,107 @@ auto iter = std::find_first_of(std::begin(text), std::end(text),
                         std::begin(factors), std::end(factors), // Elements sought
                         [](long v, long d) { return v % d == 0;}); // Predicate - true for a match
     ```
+
+### 在序列中查找多个元素
+`adjacent_find` 可以用来搜索序列中两个连续相等的元素，用`==`运算符比较一对元素， 返回指向第一个元素的迭代器：
+```C++
+string saying {"Children should be seen and not heard."};
+auto iter = std::adjacent_find(std::begin(saying), std::end(saying));
+```
+* 同样也可以自定义谓词
+    ```C++
+    std::vector<long> numbers {64L, 46L, -65L, -128L, 121L, 17L, 35L, 9L, 91L, 5L};
+    auto iter = std::adjacent_find(std::begin(numbers), std::end(numbers),            
+                                            [](long n1, long n2){ return n1 % 2 && n2 % 2; });
+    ```
+
+#### `find_end()` 算法
+`find_end()` 会在一个序列中查找最后一个和另一个**元素段**的匹配项， 他会返回一个指向最后一个匹配的段第一个元素的迭代器， 或者返回指向 end 的迭代器。
+```C++
+string text {"Smith, where Jones had had \"had\", had had \"had had\"."
+             " \"Had had\" had had the examiners\' approval."};
+string phrase {"had had"};
+auto iter = std::find_end(std::begin(text), std::end(text), 
+                          std::begin(phrase), std::end(phrase));
+```
+* 可以自定义谓词
+
+#### `search()` 算法
+和 `find_end()` 类似， 只是返回第一个匹配项第一个元素的迭代器， 也可以自定义谓词。 
+
+#### `search_n()` 算法
+前两个参数是定义搜索范围的正向迭代器， 第三个参数是想要搜索第四个参数的**连续匹配次数**,同样可以自定义谓词：
+```C++
+std::vector<double> values {2.7, 2.7, 2.7, 3.14, 3.14, 3.14, 2.7, 2.7};
+double value {3.14};
+int times {3};
+auto iter = std::search_n(std::begin(values), std::end(values), times, value);
+// 返回的是指向第一个 3.14 的迭代器
+```
+
+## 分区序列
+`partition()`算法在序列中分区（即对元素重新排列）， 谓词返回 true 的元素会放在返回 false 的元素前面：
+```C++
+std::vector<double> temperatures{ 65, 75, 56, 48, 31, 28, 32, 29, 40, 41, 44, 50 };
+auto average = std::accumulate(std::begin(temperatures),
+        std::end(temperatures), 0.0) / temperatures.size();
+std::partition(std::begin(temperatures), std::end(temperatures),
+        [average](double t) { return t < average; });
+std::cout << average << std::endl;
+std::copy(std::begin(temperatures), std::end(temperatures), 
+            std::ostream_iterator<double>{std::cout, "->"});
+//44.9167
+//44->41->40->29->31->28->32->48->56->75->65->50->
+```
+* `partition()` 算法并不保证这个序列原始元素的相对顺序， 想要保证稳定的话可以使用 `stable_partition()` 算法
+
+### `partition_copy()` 算法
+和 `stable_partition()` 相同的方式进行分区， 使谓词返回 true 的元素会**被复制到另一个单独的序列**， 返回 false 的元素会被复制到**第三个序列中**， 操作不改变原序列的顺序。
+* 如果输入序列和输出序列重叠， 那么算法将无法工作
+```C++
+std::vector<double> temperatures {65, 75, 56, 48, 31, 28, 32, 29, 40, 41, 44, 50};
+std::vector<double> low_t; // Stores below average temperatures
+std::vector<double> high_t; // Stores average or above temperatures
+auto average = std::accumulate(std::begin(temperatures),std::end(temperatures), 0.0) 
+              / temperatures.size();
+std::partition_copy(std::begin(temperatures), std::end(temperatures),
+                    std::back_inserter(low_t), std::back_inserter(high_t),
+                    [average](double t) { return t < average; });
+```
+
+### `partition_point()` 算法
+这个算法返回第一个分区的结束迭代器， 参数和 partition 类似, 在使用之前， 需要确保分区已经被 partition。
+* 可以使用 `is_partitioned()` 先判断是否已经分区
+```C++ 
+std::vector<double> temperatures {65, 75, 56, 48, 31, 28, 32, 29, 40, 41, 44, 50};
+auto average = std::accumulate(std::begin(temperatures),std::end(temperatures), 0.0)
+             / temperatures.size();
+auto predicate = [average](double t) { return t < average; };
+std::stable_partition(std::begin(temperatures), std::end(temperatures), predicate);
+if(std::is_partitioned(std::begin(temperatures), std::end(temperatures),predicate))
+    auto iter = std::partition_point(std::begin(temperatures), 
+                                     std::end(temperatures), predicate);
+```
+
+## 二分查找算法
+### `binary_search()` 算法
+查找的序列必须是有序的或者至少相对于所查找的元素是有序的，在前两个参数确定的范围内查找是否存在等同于第三个参数的元素， 找到则返回 true。想要知道元素的位置需要使用 `lower_bound()`/`upper_bound()` 或者 `equal_range()`。
+* 另一个重载版本接受额外的参数， 用于查找元素
+    ```C++
+    std::list<int> values {17, 11, 40, 36, 22, 54, 48, 70, 61, 82, 78, 89, 99, 92, 43};
+    auto predicate = [](int a, int b){ return a > b; };
+    values.sort(predicate); // Sort into descending sequence
+    int wanted {22};
+    if(std::binary_search(std::begin(values), std::end(values), wanted, predicate))
+        std::cout << wanted << " is definitely in there - somewhere..." << std::endl;
+    else
+        std::cout << wanted << " cannot be found - maybe you got it wrong..." << std::endl;
+    ```
+
+### `lower_bound()` 算法
+在前两个参数指定的范围内查找不小于第三个参数的第一个元素。 
+
+### `equal_range()` 算法
+查找有序序列中所有和给定元素相等的元素， 返回一个 pair 对象：
+* first 是指向第一个不小于第三个参数的第一个元素
+* second 指向第一个大于第三个参数的元素
