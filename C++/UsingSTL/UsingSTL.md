@@ -120,6 +120,19 @@
   - [检查元素的属性](#检查元素的属性)
   - [序列的比较](#序列的比较)
     - [查找序列的不同之处](#查找序列的不同之处)
+    - [按字典查找序列](#按字典查找序列)
+    - [序列的排列](#序列的排列)
+  - [复制序列](#复制序列)
+    - [复制一定数目的元素](#复制一定数目的元素)
+    - [条件复制](#条件复制)
+  - [复制和反向元素顺序](#复制和反向元素顺序)
+  - [复制一个删除相邻重复元素的序列](#复制一个删除相邻重复元素的序列)
+  - [从序列中移除相邻的重复元素](#从序列中移除相邻的重复元素)
+  - [旋转序列](#旋转序列)
+  - [移动序列](#移动序列)
+  - [从序列中移除元素](#从序列中移除元素)
+  - [设置和修改序列中的元素](#设置和修改序列中的元素)
+    - [用函数生成元素的值](#用函数生成元素的值)
 # Chapter 1: intruction to STL
 STL为一个功能强大且可扩展的工具集,用于组织和处理数据,STL可以划分为四个概念库:
 
@@ -1300,4 +1313,120 @@ if(std::is_partitioned(std::begin(temperatures), std::end(temperatures),predicat
 * 后面两个版本可以接受一个额外的谓词作为参数
 
 ### 查找序列的不同之处
-`mismatch()` 算法和 equal 同样有四个版本， 它可以告诉我们不匹配的位置。
+`mismatch()` 算法和 equal 同样有四个接受不同参数的版本， 它可以告诉我们不匹配的位置。
+* 返回的 pair 对象包含两个迭代器，指向两个序列中不匹配的元素位置，如第n 个不匹配， 则返回 `pair<iter1+n, iter2+n>`
+* 如果是接受三个迭代器的版本， 即 `mismatch<iter1, end_iter1,iter2>`, 情况就有一些复杂：
+  * 返回 `pair<end_iter1, (iter2+end_iter1-iter1)>`: 如果第一个序列比第二个序列长， 结果是未定义的
+
+### 按字典查找序列
+字典序是字母排序思想的泛化， 就是从两个序列的第一个元素开始依次比较各个元素， 这适用 `lexicographical_compare()`, 前两个参数定义第一个序列， 三四两个参数定于第二个序列， 默认使用 `<` 操作符来比较元素， 在需要的时候提供第五个参数作为比较的函数对象：
+* 如果第一个更小返回 true, 否则返回 false
+```C++
+std::vector<string> phrase1 {"the", "tigers", "of", "wrath"};
+std::vector<string> phrase2 {"the", "horses", "of", "instruction"};
+auto less = std::lexicographical_compare(std::begin(phrase1), std::end(phrase1),
+                                         std::begin(phrase2), std::end(phrase2),
+                                         [](const string& s1, const string& s2){ return s1.length() < s2.length(); });
+```
+
+### 序列的排列
+`next_permutation()` 生成一个序列的重排列， 他的结果是字典序的下一个排列， 默认使用 `<` 来做比较。
+* 返回一个 bool 值， 新排列大于上一个排列时候返回true
+* 就排列如果已经是最大的， 返回 false, 同时排列变为最小的
+* 同样可以通过传入 lambda 表达式作为第三个参数
+    ```C++
+    std::vector<int> range{ 1, 2, 3, 4 };
+	do {
+		std::copy(std::begin(range), std::end(range), std::ostream_iterator<int>{std::cout, " "});
+		std::cout << " -> ";
+	} while (std::next_permutation(std::begin(range), std::end(range)));
+    ```
+    <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220117004246.png" width="90%"/></div>
+
+`prev_permutation()` 参数和前者类似， 只不过返回值以及对序列的操作刚好相反。  
+`is_permutation()` 检查一个序列是不是另一个序列的排列， 如果是就返回true:
+* 同样允许使用一个开始迭代器指定第二个序列， 并不推荐使用
+
+`shuffle()` 生成序列的随机排列。 
+
+## 复制序列
+### 复制一定数目的元素
+`copy_n()` 从源容器复制指定个数的元素到目的容器中， 
+* 第一个参数是指定源的输入迭代器
+* 第二个参数是个数
+* 第三个参数是指定目的地第一个位置的输出迭代器
+    ```C++
+    std::vector<string> names {"Al", "Beth", "Carol", "Dan", "Eve",
+            "Fred", "George", "Harry", "Iain", "Joe"};
+    std::unordered_set<string> more_names {"Janet", "John"};
+    std::copy_n(std::begin(names) + 1, 3, std::inserter(more_names, std::begin(more_names)));
+    ```
+
+上面的 `inserter`是一个函数模板， 生成的 insert_iterator 对象调用成员函数 insert 向容器添加元素。目的地址可以是流迭代器：
+```C++
+std::copy_n(std::begin(more_names), more_names.size()-1,
+            std::ostream_iterator<string> {std::cout, " "});
+```
+
+### 条件复制
+`copy_if()` 复制使得谓词返回 true 的元素。前两个输入迭代器定义源， 第三个是指向目的序列第一个位置的输出迭代器， 第四个参数是一个谓词。  
+**反向复制**： `copy_backward()` 并不是逆转元素顺序， 只是从后往前复制， 前两个参数定义序列， 第三个参数定义输出序列的结束迭代器， **这样是在序列重叠时候会有一定优势**。<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220117010108.png" width="50%"/></div>
+
+## 复制和反向元素顺序
+`reverse_copy()` 可以将源序列复制到目的序列中， 并且目的序列中的元素是逆序的。
+* 定义序列的前两个迭代器必须是**双向迭代器**
+* 第三个参数是目的序列开始位置的输出迭代器
+* 序列如果重叠， 输入结果是未定义的
+
+`std::reverse()` 算法可以在原地逆序双向迭代器所指定的范围。
+
+## 复制一个删除相邻重复元素的序列
+`unique_copy()` 将一个序列复制到另一个序列中， 同时移除连续的重复元素， 默认使用 `==` 操作符决定元素是否相等，前两个参数定义源序列， 第三个是指向目的序列第一个位置的**输出迭代器**， 可选第四个判断相等的函数对象。例如去除字符串中多余的空格：
+```C++
+string text{ "Have    you    seen     eny duplicated spaces here" };
+string result{};
+std::unique_copy(std::begin(text), std::end(text), std::back_inserter(result),  
+    [](const char& beg, const char& end) {
+		return beg == ' ' && end == ' ';
+	});
+std::cout << result << std::endl;
+```
+
+## 从序列中移除相邻的重复元素
+`unique()` 可以在序列中原地移除重复的元素， 返回一个正向迭代器作为新的结束迭代器， 无法保证它之后的元素状态，配合 `.erase()` 成员函数可以将后面的部分删除：
+```C++
+std::vector<std::string> words{ "A","A","BB","BB","CCC" };
+auto new_end = std::unique(std::begin(words), std::end(words));
+words.erase(new_end, std::end(words));
+std::copy(std::begin(words), std::end(words), 
+          std::ostream_iterator<std::string>{std::cout, " "});
+```
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220117012448.png" width="30%"/></div>
+
+## 旋转序列
+`rotate()` 算法像左边旋转序列元素， 有点像转手镯上的珠子：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220117012708.png" width="70%"/></div>
+
+`rotate_copy()` 则在新序列生成旋转之后的副本。
+
+## 移动序列
+`move()` 算法将前两个参数定义的序列移动到第三个参数指定的序列处，**这是一个移动操作， 无法保证操作之后输入序列不变**。  
+`swap_ranges()` 交换两个序列， 需要三个正向迭代器作为参数。
+```C++
+using Name = std::pair<string, string>; // First and second name
+std::vector<Name> people {Name{"Al", "Bedo"}, Name{"Ann", "Ounce"}, Name{"Jo", "King"}};
+std::list<Name> folks {Name{"Stan", "Down"}, Name{"Dan", "Druff"}, Name{"Bea", "Gone"}};
+std::swap_ranges(std::begin(people), std::begin(people) + 2, ++std::begin(folks));
+```
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220117013706.png" width="50%"/></div>
+
+## 从序列中移除元素 
+很容易从函数名中直到其功能和参数：
+* `remove()`
+* `remove_cop()`
+* `remove_if()`
+* `remove_copy_if()`
+
+## 设置和修改序列中的元素
+`fill()`/`fill_n()` 提供了向序列填入给定值的简单方式。
+### 用函数生成元素的值
+`for_each()` 算法将一个函数对象应用到序列的每一个元素上
