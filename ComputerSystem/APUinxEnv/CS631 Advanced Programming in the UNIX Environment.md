@@ -53,4 +53,45 @@
 * sh:<div align=center><img src="https://s2.loli.net/2022/01/24/XOU96h1KspegaIZ.png" width="50%"/></div>
 * zsh，在`~/.zshrc`添加下面两行: <div align=center><img src="https://s2.loli.net/2022/01/24/9oi536HAOgMpNTE.png" width="50%"/></div>
 
-**shell**：shell 做的事情其实很简单， 外面是一个死循环， 然后读取用户输入， 执行输入的命令。
+**shell**：[shell](code/cs631/week01/simple-shell.c) 做的事情其实很简单， 外面是一个死循环， 然后读取用户输入， 执行输入的命令。
+
+### Unix Basics: 管道
+通常我们从键盘读取输入， 将结果显示到屏幕上， 而管道（Pipeline）是一系列将标准输入输出链接起来的进程，其中每一个进程的输出被直接作为下一个进程的输入, 这时候标准输出是作为下一个软件的输入， 而标准错误依旧可以显示：
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220124230034.png" width="50%"/></div>
+
+### 文件和目录
+* UNIX 文件系统是一个**树形结构**，所有分区都安装在根(`/`) 目录下。文件名可以由除 `/` 和 `NUL` 之外的任何字符组成，因为路径名是由 `/ `分隔的零个或多个文件名的序列。
+* 目录是包含目录项特殊的文件， 目录项中有索引和文件名的映射(mapping)
+* 所有的进程都有一个当前工作目录， 它是相对路径的起点
+
+### 用户标识
+用户ID 和 组ID 是用于标识系统上不同用户并且赋予不同权限的数值。使用 id 命令可以查看。<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220124232442.png" width="60%"/></div>
+
+### Unix 时间值
+* 日历时间。该值是自 UNIX epoch(1970年1月1日00:00:00)以来所经过的秒数累计值, 使用 `time_t` 保存
+  * 底层如果是 int32, 那么就会出现 [2038年问题](https://zh.wikipedia.org/zh-hans/2038%E5%B9%B4%E9%97%AE%E9%A2%98)
+* 进程时间。也被称为CPU时间, 使用 `clock_t` 保存， 有三个值
+  * 时钟时间(clock time)
+  * 用户 CPU 时间
+  * 系统 CPU 时间<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220124233407.png" width="70%"/></div>
+
+### 标准 I/O
+* **文件描述符**： 一个小的非负整数， 标识进程正在访问的文件， shell 可以重定向任意的文件描述符
+* 内核提供了两种 I/O
+  * buffered I/O : e.g. `fopen(3)`/`getc(3)`/`putc(3)`
+  * unbuffered I/O: e.g. `open(2)`/`lseek(2)`
+
+### 进程
+* 在内存中运行的程序被称为进程
+* 通过使用 `exec(3)` 或者 `execve(2)` 函数将程序放入内存运行
+* 每个进程都有唯一非负的标识符(进程ID)
+* 只有使用 `fork(2)` 系统调用可以创建新的进程
+* 使用 `fork(2)`/`exec(3)`/`waitpid(2)` 控制进程
+
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220124235255.png" width="50%"/></div>
+
+### 信号
+信号通知一个进程发生了某种情况，有三种处理方式：
+* 允许它触发默认动作
+* 显式忽略
+* 捕获并且将控制转换到一个用户自定义函数
