@@ -1,4 +1,18 @@
-# [CS631: Advanced Programming in the UNIX Environment](https://stevens.netmeister.org/631/)
+# [CS631: Advanced Programming in the UNIX Environment](https://stevens.netmeister.org/631/)<!-- omit in toc -->
+- [Week 1](#week-1)
+  - [Introduction](#introduction)
+    - [This class in a nutshell: the "what"](#this-class-in-a-nutshell-the-what)
+    - [This class in a nutshell: the "why"](#this-class-in-a-nutshell-the-why)
+    - [This class in a nutshell: the "how"](#this-class-in-a-nutshell-the-how)
+  - [Unix 基础](#unix-基础)
+    - [OS 设计](#os-设计)
+    - [Unix Basics: 管道](#unix-basics-管道)
+    - [文件和目录](#文件和目录)
+    - [用户标识](#用户标识)
+    - [Unix 时间值](#unix-时间值)
+    - [标准 I/O](#标准-io)
+    - [进程](#进程)
+    - [信号](#信号)
 # Week 1
 ## Introduction
 ### This class in a nutshell: the "what"

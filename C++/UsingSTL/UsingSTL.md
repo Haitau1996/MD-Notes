@@ -1,6 +1,5 @@
-<font size=10> Using The C++ Standard Template Libraries</font>  
-<font size=6>**Ivor Hortan**</font>
-***
+#  Using The C++ Standard Template Libraries<!-- omit in toc -->
+### Ivor Hortan<!-- omit in toc -->
 
 - [Chapter 1: intruction to STL](#chapter-1-intruction-to-stl)
   - [模板](#模板)
