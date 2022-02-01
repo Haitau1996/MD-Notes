@@ -15,6 +15,7 @@
 ### Java & Python
 * 一开始感觉Java编程思想太上头(指菜，看不动), 我就看了一下梁勇老师的书([笔记](Java&Python/JavaLiangY/IntroductionJavaAndDataStructure.md)), 大佬们说这本书很啰嗦, 我个人觉得还是对新手很友好的
 * 然后就是喜闻乐见的 [Core Java](Java&Python/JavaCore/CoreJava.md)
+* 看一点 Python, 包括 [cs61a](Java&Python/CS61a/cs61a.md) 和 [fluent python](Java&Python/FluentPython/FluentPython.md)
 
 ## 数据结构与算法
 

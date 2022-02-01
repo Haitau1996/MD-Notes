@@ -1,4 +1,4 @@
-#  Using The C++ Standard Template Libraries<!-- omit in toc -->
+# Using The C++ Standard Template Libraries<!-- omit in toc -->
 ### Ivor Hortan<!-- omit in toc -->
 
 - [Chapter 1: intruction to STL](#chapter-1-intruction-to-stl)
