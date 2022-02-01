@@ -13,6 +13,8 @@
     - [标准 I/O](#标准-io)
     - [进程](#进程)
     - [信号](#信号)
+- [Week 2](#week-2)
+  - [文件描述符](#文件描述符)
 # Week 1
 ## Introduction
 ### This class in a nutshell: the "what"
@@ -109,3 +111,9 @@
 * 允许它触发默认动作
 * 显式忽略
 * 捕获并且将控制转换到一个用户自定义函数
+
+# Week 2
+## 文件描述符
+* 文件描述符(aka. 文件句柄)是内核用于标识文件的小的非负整数。
+  * 取值范围为 $0 \sim OPEN\_MAX - 1$
+* 通常 shell 把文件描述符 0 (STDIN_FILENO)关联到标准输入, 1 (STDOUT_FILEIO) 关联为标准输出， 2 (STDERR_FILENO)关联到标准错误。<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220125191251.png" width="70%"/></div>
