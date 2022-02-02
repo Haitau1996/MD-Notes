@@ -116,4 +116,11 @@
 ## 文件描述符
 * 文件描述符(aka. 文件句柄)是内核用于标识文件的小的非负整数。
   * 取值范围为 $0 \sim OPEN\_MAX - 1$
-* 通常 shell 把文件描述符 0 (STDIN_FILENO)关联到标准输入, 1 (STDOUT_FILEIO) 关联为标准输出， 2 (STDERR_FILENO)关联到标准错误。<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220125191251.png" width="70%"/></div>
+* 通常 shell 把文件描述符 0 (STDIN_FILENO)关联到标准输入, 1 (STDOUT_FILEIO) 关联为标准输出， 2 (STDERR_FILENO)关联到标准错误(通常我们不使用 magic number, 而是使用常量)。<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220202231806.png" width="80%"/></div>  
+
+我们可以用[代码](code/cs631/week02/openmax.c)看有没有 OPEN_MAX 宏的定义或者从 `sysconf(_SC_OPEN_MAX)` 看其值的大小， 后者是可以在运行时修改的。
+* 我们有时候无法依赖定义的值， 他们可能和进程实际应用的不同
+* 标准中要求定义的常数在当下可能不适用
+* 使用 `sysconf(3)`/`getrlimits(2)` 可能在运行时修改这些值， 下次调用值可能就变了
+* 要习惯于写代码检查测试我们的理解
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/202202022332897.png" width="70%"/></div>
