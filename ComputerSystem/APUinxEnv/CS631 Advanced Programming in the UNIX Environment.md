@@ -15,6 +15,19 @@
     - [信号](#信号)
 - [Week 2](#week-2)
   - [文件描述符](#文件描述符)
+  - [open(2) 和 close(3)](#open2-和-close3)
+    - [`creat(2)`](#creat2)
+    - [`open(2)`](#open2)
+    - [`close(2)`](#close2)
+  - [read,write,lseek](#readwritelseek)
+    - [`read(2)`](#read2)
+    - [`write(2)`](#write2)
+    - [`lseek(2)`](#lseek2)
+  - [文件共享](#文件共享)
+    - [原子操作](#原子操作)
+    - [文件描述符复制](#文件描述符复制)
+    - [缓存 `sync`/`fsync`/`fdatasync`](#缓存-syncfsyncfdatasync)
+    - [File Descriptor Control](#file-descriptor-control)
 # Week 1
 ## Introduction
 ### This class in a nutshell: the "what"
@@ -124,3 +137,158 @@
 * 使用 `sysconf(3)`/`getrlimits(2)` 可能在运行时修改这些值， 下次调用值可能就变了
 * 要习惯于写代码检查测试我们的理解
 <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/202202022332897.png" width="70%"/></div>
+
+## open(2) 和 close(3)
+基础的文件 I/O 可以通过下面五个函数(都是系统调用)实现：
+* open
+* close
+* read
+* write
+* lseek
+
+### `creat(2)`
+```C
+#include<fcntl.h>
+int creat(const char* pathname, mode_t mode);
+// return file descriptor if ok, -1 on error
+```
+* `creat(2)` 返回一个 write-only 模式的文件句柄，在早期的 unix 系统中 open 无法直接创建文件， 我们就先要 `creat` 然后退出再 `open`。
+* 这个接口后面就过时了， 现在相当于`open(path, O_CREAT|O_TRUNC|O_WRONLY,mode)`.
+
+### `open(2)`
+```C++
+#include <fcntl.h>
+int open(const char *pathname, int oflag, ... /* mode_t mode */);
+// Returns: file descriptor if OK, -1 on error
+```
+oflag 应该是下面情况之一：
+* O_RDONLY
+* O_WRONLY
+* O_WDWR
+
+还有一些可选的选项：
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220210195229.png" width="70%"/></div>
+除了 posix 外， 有的平台也支持一些额外的 ofalg。
+
+* `openat(2)` 用于原子化处理其他工作目录中的相对路径名。 
+* open 函数在失败的时候回返回相应的失败代码， 因此我们每次调用都要判断是否打开成功：
+    ```C
+    if(fd = open(path,O_RDWR)<0){
+        /* error*/
+    }
+    ```
+
+### `close(2)`
+```C++
+#include <unistd.h>
+int close(int fd);//Returns: 0 if OK, -1 on error
+```
+* 用文件描述符关闭时会释放所有记录该文件的锁
+* 如果没有显式调用， 内核会在进程终止的时候关闭它
+* 为了避免文件描述符泄漏， 我们应该总是在同一个 scope 关闭文件
+
+## read,write,lseek
+### `read(2)`
+```C
+#include <unistd.h>
+ssize_t read(int fd, void *buf, size_t num);
+//Returns: number of bytes read; 0 on EOF, -1 on error
+```
+函数会从当前的偏移量开始阅读， 并且将偏移量增加读取的 byte 数。在很多情况下返回的字节数可能比请求的少，例如：
+* 提前遇到了 EOF， 如想要读取 200个字节，32个后就遇到了 EOF, 这时候返回 32, 下次 read 就返回 0
+* 从网络读取， buffering 可能导致数据的延迟
+* 被信号中断了
+
+### `write(2)`
+```C
+#include <unistd.h>
+ssize_t write(int fd, void *buf, size_t num);
+//Returns: number of bytes written if OK; -1 on error
+```
+* write 返回的是已经写入的比特数，如果小于预期需要重写剩余部分
+* 通常从某个 offset 开始写入的时候， 会覆盖原来的内容， 遇到 EOF 之后依旧会继续写入
+
+### `lseek(2)`
+```C
+#include <sys/types.h>
+#include <fcntl.h>
+off_t lseek(int fd, off_t offset, int whence);
+//Returns: new offset if OK; -1 on error
+```
+由 whence 决定 offset 如何使用：
+* SEEK_SET 从开始
+* SEEK_CUR 从当前位置开始
+* SEEK_END 从文件结束开始
+
+有时候使用起来有一点怪：
+* seek to 一个负的偏移量： 相当于磁带倒带
+* seek 0 就是当下的位置
+* seek 越过文件结束符（可能会产生一个中间内容很多为空（`\0`）的文件， 不同的系统对它的支持不同，有的是直接将大量的 nul 写入磁盘，而有的文件系统支持[稀疏文件](https://zh.wikipedia.org/zh-cn/%E7%A8%80%E7%96%8F%E6%96%87%E4%BB%B6)）<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220211195224.png" width="70%"/></div>上图中文件系统支持稀疏文件，所以生成的 file.hole 很小，`cp` 命令拷贝也支持，拷贝的副本空间占用也很小， 但是`cat`不支持 sparse file, 因此生成的却特别大。
+
+## 文件共享
+因为 UNIX 是多用户、多任务的操作系统， 多个进程可以方便地同时操作同一个文件。为了方便，我们了解一些相关的数据结构：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220211201811.png" width="80%"/></div>
+
+* 每个进程的 table entry 都有一个文件描述符的表，包含
+  * 文件描述符flag(如 FD_CLOEXEC)
+  * 一个指向文件表项的指针
+* 内核维护了一个文件表，每个文件表项目包含
+  * 文件的状态标志（读、写、同步和非阻塞）
+  * 当前的偏移量
+  * 指向该文件 vNode 表项的指针
+* vNode 中包含
+  * vNode 的信息
+  * inode 的信息（如当前文件大小）
+
+这时候两个进程打开同一个文件就如下图所示：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220211202441.png" width="60%"/></div>
+这时候我们理解 lseek 的操作就更容易了， 它实际上只修改了文件表项中的偏移量， 并没有直接修改磁盘的文件。
+
+### 原子操作
+例如两个进程都想要向文件末尾写入字符串， 一个初始长度为 128 byte的字符串写完后就可能如下图所示：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220211203051.png" width="80%"/></div>
+
+pread 和 pwrite 允许原子性地定位并且执行 I/O:
+> 原子操作指的是多个步骤组成的一个操作， 要么一步执行所有操作， 要么不执行， 不能只执行所有步骤的一个子集
+```C
+#include <unistd.h>
+ssize_t pread(int fd, void *buf, size_t num, off_t offset);
+ssize_t write(int fd, void *buf, size_t num, off_t offset);
+//Returns: number of bytes read/written, -1 on erro
+```
+调用之后 current offset 并没有变化。
+
+### 文件描述符复制
+```C
+#include <unistd.h>
+int dup(int oldfd);
+int dup2(int oldfd, int newfd);
+//Returns: 新的文件描述符, -1 on error
+```
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220211205326.png" width="30%"/></div>
+
+在上图中， 由于将 2(stderr) 重定向到了 /dev/null, 因此没有 err 信息输出，`dup2(STDOUT_FILENO, STDERR_FILENO)` 之后， stderr 就和 stdout 有了同样的文件描述符， 并且在终端输出。
+
+### 缓存 `sync`/`fsync`/`fdatasync`
+大多数 io 都通过缓存区进行， 为保证实际文件系统中与缓存区的内容一致， Unix 提供了三个函数
+```C
+#include<unistd.h> 
+int fsync(int fd);
+int fdatasync(int fd);
+void sync(void);//返回值：若成功，返回0；若出错，返回−1
+```
+* sync : 将所有修改过的块缓存区排入队列， 然后返回（不等待实际磁盘操作结束）
+* fsync 只对 fd 指定的文件起作用， 并且操作结束才返回
+* fdatasync 类似于 fsync, 但只影响文件的数据部分， 前者会同步更新文件的属性
+### File Descriptor Control
+```C
+#include <fcntl.h>
+int fcntl(int fd, int cmd, ...);
+//Returns: depends on cmd, -1 on error
+```
+这个函数可以改变已经打开的文件的属性， cmd 为不同值的时候有不同的效果。  
+```C
+#include <sys/ioctl.h>
+int ioctl(int fd, unsigned long request, ...);
+//Returns: depends on request, -1 on error
+```
+是一个工具箱， 不能用其他函数表示的 i/O 操作通常可以用 `ioctl` 表示。 
+
+现在很多系统都将可以将标准输入、输出和错误作为文件，可以使用文件名 `/dev/std[in,out,err]`访问：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220211210642.png" width="40%"/></div><div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220211210837.png" width="40%"/></div>
