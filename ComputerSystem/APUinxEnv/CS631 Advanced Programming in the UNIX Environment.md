@@ -28,6 +28,8 @@
     - [文件描述符复制](#文件描述符复制)
     - [缓存 `sync`/`fsync`/`fdatasync`](#缓存-syncfsyncfdatasync)
     - [File Descriptor Control](#file-descriptor-control)
+- [Week 3](#week-3)
+  - [`stat(2)`](#stat2)
 # Week 1
 ## Introduction
 ### This class in a nutshell: the "what"
@@ -293,3 +295,32 @@ int ioctl(int fd, unsigned long request, ...);
 
 现在很多系统都将可以将标准输入、输出和错误作为文件，可以使用文件名 `/dev/std[in,out,err]`访问：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220211210642.png" width="40%"/></div><div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220211210837.png" width="40%"/></div>
 
+# Week 3
+## `stat(2)`
+```C
+#include <sys/stat.h>
+int stat(const char *path, struct stat *sb);
+int lstat(const char *path, struct stat *sb);// 和 stat 区别在于文件是符号链接时，
+                                             // 写入符号链接有关的信息而不是链接引用的文件信息
+int fstat(int fd, struct stat *sb);
+
+#include <sys/stat.h>
+#include <fcntl.h>
+int fstatat(int fd, const char *path, struct stat *sb, int flag);
+//Returns: 0 if OK, -1 on error
+```
+这4个 stat 函数都要传入一个结构体指针， 将信息写到指针指向的结构体中。下面是 stat 这个结构体 metadata 的最低要求， 不同的操作系统实现可能有更多的域：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220212224005.png" width="70%"/></div>  
+
+实际上使用 stat 结构体最频繁的可能是 `ls -l` 命令(filename 并不在 stat 结构体中)：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220212224523.png" width="70%"/></div>  
+系统可能提供 `stat(1)` 命令以显示文件的信息， 结果取决于不同的系统实现：
+* reference system: <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220212225149.png" width="70%"/></div>
+* ArchLinux in WSL2,没有 -r 选项，有类似的<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220212225238.png" width="70%"/></div>
+
+事实上 `st_mode` 不仅包含文件的 permission, 还包含文件类型
+* 普通文件：最常用， 其内容的解释由处理该文件的应用决定
+* 目录： 包含其他文件的名字和指向相关信息的指针
+* 字符特殊(character special)文件： 用于特定类型的设备， 如终端
+* 块特殊(block special)文件: 通常用于磁盘
+* FIFO: 有时候被称为命名管道，用于进程间通信
+* 套接字： 用于网络通信
+* 符号链接： pointer to another file
