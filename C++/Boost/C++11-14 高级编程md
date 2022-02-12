@@ -1,0 +1,257 @@
+# C++ 11/14 高级编程 : Boost 程序库探秘
+
+## Chap 1 : 全新的C++语言
+### 左值和右值
+* 左值是一个函数或者对象的实例
+* 失效值是生命期即将结束的对象
+* 右值包括失效值\临时对象以及不关联对象的值(如字面值)
+* 纯右值是指非失效的那些右值
+
+简单解释: 左值是一个**可以用来储存数据的变量, 有实际的内存地址(即有变量名而且可以取地址), 表达式结束后依旧存在**. 非左值是一个 **"匿名"的"临时"变量,在表达式结束时生命周期终止**,不能存放数据, 可以被修改也可以不被修改.<br>
+**右值引用**: 对一个对象使用右值引用, 显式标记这个对象是一个右值, 可以被转移来优化, 同时对象不会在表达式结束时候消失,与右值引用绑定在了一起, 可以用const修饰, 但是没有意义.<br>
+**转移语义**: rvalue对象可以被转移进而优化代码,在C++2.0 `<utility>`定义了便捷函数`std::move()`来转移对象,相当于`static_cast<T&&>(t)`,将一个对象明确地转换为右值引用,该对象确认是右值对象,可以被安全地转移,如一个moveable类中一个工厂函数, 返回函数内部的局部变量obj,是一个rvalue, 可以直接用临时变量的值来创建对象, 避免了拷贝的代价.
+```C++
+    moveable m1;
+    moveable m2(std::move(m1));
+    moveable m3 = moveable::create();//转移赋值
+```
+
+**完美转发**: `<utility>`中还有一个函数,`std::forward()`,可以把函数参数原封不动地转给其他函数.
+```C++
+void check(int&){
+    cout << "lvalue" << endl;
+}
+
+void check(int&&){
+    cout << "rvalue" << endl;
+}
+template<typename T>
+void print(T&& v){ // print的参数是一个rvalue引用,但是依旧可以将原来的lvalue提取出来
+    check(std::forward<T>(v));
+}
+void case5()
+{
+    int x = 10;
+    print(x);
+    print(std::move(x)); // 传入的是一个左值
+}
+```
+### 自动类型推导
+**auto**:
+- auto只能用于赋值语句的类型推导, 声明变量(无表达式无法推导)
+- auto总是推断出值类型(非引用)
+- auto允许使用"`const/volatile/&/*`"修饰, 得到新的类型
+- auto&& 总是推断出引用类型
+
+**decltype**: `auto`能实现 __赋值__ 语句中的类型推导, 但是在实际使用中,这是很少的场景,在任意时候都能得到表达式类型要使用`decltype`, 其形式像是函数调用:
+```C++
+    decltype(expression)
+    // 如在下面的场景中
+    decltype(std::less<int>()) functor; // declear a functor
+    decltype(0.0f) func(decltype(0L) x){// in function parameter and return type
+        return x*x;
+    }
+    typedef decltype(func)* func_ptr;
+```
+用法和`auto`一样简单,但是需要注意以下细节:
+- decltype(e) 获得表达式值的类型
+- decltype((e)) 获得表达式计算结果的**引用类型**
+
+since c++ 14, 出现了`decltype(auto)`, 用法简单不再介绍.
+
+### 面向过程编程
+
+**nullptr**:可以隐式转换成其他任何指针类型,但是不能转化成非指针类型, 此外它是**强类型的**,并不能转为`int`或者`void*`,而是专门的'nullptr_t'.<br>
+**列表初始化**: 统一使用`{ }`初始化变量,语法将括号内生成一个`std::initializer_list`对象,具有类似于标准容器的接口.<br>
+**range-based for loop**: 使用auto 推导值类型的时候为了避免出现值拷贝的开销可以使用`auto&`, 只是语法糖,相当于使用iterator实现的.<br>
+**新式的函数声明**: 将返回值后置, 使用`auto` 和 `decltype`的类型推导能力,基本形式是`auto func(...) -> type{...}`, 因为在泛型编程的时候, 函数的返回值类型可能需要实际的参数来决定, 因此必须将返回值类型声明后置,
+```C++
+template<typename T, typename U>
+auto calc(T t, U u) -> decltype(t + u){
+//typename std::common_type<T,U>::type calc(T t, U u)
+    return t+u;
+}
+```
+
+### OO 编程
+**default/delete**:显示地生成/禁用编译器可能自己生成的函数,如类的构造/析构函数,使用的方法如下:
+```C++
+class default_demo{
+public:
+    default_demo() = default;
+    ~default_demo() = default;
+
+    default_demo(const default_demo&) = default;
+    default_demo& operator=(const default_demo&) = default;
+
+    default_demo(default_demo&&) = default;
+    default_demo& operator=(default_demo&&) = default;
+public:
+    default_demo(int x) {}
+};
+class delete_demo{
+public:
+    delete_demo() = default;
+    ~delete_demo() = default;
+
+    delete_demo(const delete_demo&) = delete;
+    delete_demo& operator=(const delete_demo&) = delete;
+};
+```
+
+**override**, 在C++中, 如果一个member function是virtual的, 那么它的所有派生出来的子类中所有的同名函数也会是虚函数,无需`virtual`修饰, 因此在阅读时候可能会有一点困难,无法区别哪些函数是继承自父类,哪些函数是自己写测,同时可能使用一个同名但是签名不同的函数,为了解决这个问题, 2.0中引入了一个新的关键字, **显式标记虚函数的重载**:
+```C++
+struct abstract : public interface{
+    virtual ~abstract() = default;
+
+    void f() override final {}
+    void g() override {}
+};
+
+struct last final : public abstract{
+    virtual ~last() = default;
+
+    //void f() override {}
+    void g() override {}
+};
+```
+
+**final** 用于控制类的继承和虚函数:
+- 在类名后使用final, 显示禁止类被继承, **无法继续派生**
+- 虚函数名后使用final, **显示禁止该函数在子类里面被重载**
+
+**成员初始化**, C++ 2.0 标准放松了成员变量初始化的要求, 允许类在声明时使用赋值或者花括号的方式直接初始化,而无需在构造函数中特别指定.<br>
+**委托沟造**: 过去的程序中,为了避免代码重复, 往往会使用特殊的初始化函数供构造函数调用, 在2.0中引入了委托构造函数,可以**将对象的构造过程"委托"给其他构造函数来使用**:
+```C++
+class demo
+{
+private:
+    int x,y;
+
+public:
+    demo() : demo(0, 0) {}
+    demo(int a) : demo(a, 0) {}
+    demo(int a, int b){
+        x=a;y=b;        //相当于过去private的初始化函数init(a, b);
+    }
+};
+```
+
+### 泛型编程
+
+**类型别名** 2.0引入了`using alias = type` 形式的类型别名, 超越了原来`typedef`的范围, 可以结合template作为模板类声明"偏特化"的别名:
+```C++
+template<typename T>
+using int_map = std::map<int, T>;
+int_map<std::String> intStrMap;
+```
+**编译期常量** 在C++中用关键词`const`限定的量只是一个运行期不可修改的常量, 在泛型编程中可能需要编译期不可修改的常量,c++新增 __constexpr__, 相当于编译期的常量, 可以让编译器更好地优化代码,C++11中constexpr函数用法比较严格, 只允许一个return, 但是在14中有一些放宽.<br>
+
+**静态断言** 可以在编译期加入诊断信息, 提前检查可能发生的错误,使用的基本形式如下,一般需要配合type_traits库使用, 检查各种编译期的条件.
+```C++
+    static_assert(condition, message);
+    //如判是多少位的int
+    static_assert(sizeof(int)==4,"int must be 32bit");
+```
+**可变参数模板** 基本使用的方式如下(用`...`声明不确定的参数):
+* 模板函数 `template<typename ... T> void some_fun{};`
+* 模板类 `template<typename ... T> class some_class{};`
+
+声明了可变模板参数之后, 还需要解包之后才能使用:
+```C++
+    template<typename ... Args>
+    int print( const char *format, const Args& ... args){
+        return printf(format, args...);
+        //return printf(format, std::forward<Args>(args)...);
+    }
+```
+
+### 函数式编程
+functional programming是一种编程范式, 基于$\lambda$演算理论,**把计算过程视为数学函数的组合运算**.
+:star: //TODO: 1.7~1.9 
+
+### 其他特性
+* __cplusplus宏
+* 超长整型(long long),至少64位
+* 原始字符串,`R"(somt string here)"`, 例如`string s = R"(this is a "\string\")"`
+* 自定义字面值, 允许用户为字面值添加后缀, 从而简化代码(注意后缀中的下划线是必要的)
+    ```C++
+    long operator"" _kb(unsigned long long v){
+        return v * 1024;
+    }
+    auto x = 2_kb;
+    // 一般形式为
+    return_type operator"" _suffix(argument);
+    ```
+
+## Chap 2: Intro to 模板元编程
+
+### 常用语言元素
+
+:smile: enum \ static用于定义编译期的整数变量<br>
+:smile: typedef \ using 最重要的元编程关键字， 用于定义数据<br>
+:smile: template,模板元编程的起点，主要用于定义元函数<br>
+:cry: “::”, 用于解析类型作用域获取计算结果
+
+### 元数据
+
+C++编译器在编译期可以操作的数据， 不可变，不能就地修改，常见的为整型和c++的类型，它不是普通的运行时变量， 而是如int\double\class(非模板类) 这样的抽象数据类型。since C++ 11/14， 常用using和typedef关键字和 using关键字声明元数据：
+```C++
+    using meta_data1 = int;
+    using meta_data2 = std::vector<float>;
+```
+
+### 元函数
+
+模板元编程中用于操作元数据的“构件”， 可以在编译期被调用, **编写元函数就像是一个普通的运行时函数, 但在形式上确实一个模板类**.
+
+* 函数参数列表由圆括号"()"变成了模板列表声明的尖括号"< >"
+* 函数的形参变成了模板参数,并且要使用 `typename`修饰
+* 元函数本质上是一个类,用";"结束
+* 不能使用运行时关键字, 所以不能用return计算返回值,而是在其中用`typedef`/`using`定义一个名为type或者value值作为返回
+```C++
+templata<int N, int M>
+struct meta_fun{
+    static const int value = N + M; // 编译期计算整数之和,since c++11
+};
+cout << meta_fun<10,10>::value << endl;
+```
+这个实际上是编译期常量, 以下过程发生在运行时, 所以代码不成立:
+```C++
+int i =10, j = 10;
+meta_fun<i,j>::value; // ERROR: 元函数无法处理运行时的普通数据
+```
+### 元函数的转发
+相当于运行时的函数转发调用,在模板类元编程中使用public继承实现, 模板参数传递给父类完成函数的"调用",子类自动获得父类`::type`定义, 就完成了元函数的返回.
+```C++
+template<typename T1, typename T2>
+struct select1st{
+    typedef T1 type;
+};
+
+template<typename T1, typename T2>
+struct forward : select1st<T2, T1>//相当于完成了select2nd的功能
+{};
+```
+### 易用工具宏
+分别把template \ typename \ struct 和typedef 进行了重命名, 使得他们与普通的泛型代码区别开来.
+```C++
+#define mp_arglist      template
+#define mp_arg          typename
+#define mp_function     struct
+#define mp_data         typedef
+#define mp_return(T)        mp_data T type
+//#define mp_return(T)  using type=T
+#define mp_exec(Func)   Func::type
+#define mp_eval(Func)   Func::value
+```
+### summary
+元编程是一种超越普通程序的程序, 可以由C++编译器在编译期执行, 提高程序的运行效率,更大的用途是类型推导, 实现普通程序无法实现的功能.
+* 元数据是元编程的操作对象, 可以是整数(含boolean)或任意c++类型.
+* 元函数是元编程的核心, 表现为c++的模板类,可以内部定义`::type`or `::value`返回计算结果.
+
+## Chap 3 : 类型特征萃取
+在这里我们讨论模板元编程工具type_traits,它以库的形式实现了类型的特性萃取功能, 是**泛型编程和模板元编程所必须的基础设施**.
+### Intro
+type_traits 库提供的一组特征(traits)类, <font color=red> 可以在编译器确定类型时候具有某种特征</font>, 例如是否是原生数组, 是否是整数,是否重载了operator<等,这些东西都是compile-time检查, 不会有任何运行时效率损失.type_traits库中的元函数有两大类,
+
