@@ -30,6 +30,7 @@
     - [File Descriptor Control](#file-descriptor-control)
 - [Week 3](#week-3)
   - [`stat(2)`](#stat2)
+  - [UID & GID](#uid--gid)
 # Week 1
 ## Introduction
 ### This class in a nutshell: the "what"
@@ -300,8 +301,8 @@ int ioctl(int fd, unsigned long request, ...);
 ```C
 #include <sys/stat.h>
 int stat(const char *path, struct stat *sb);
-int lstat(const char *path, struct stat *sb);// 和 stat 区别在于文件是符号链接时，
-                                             // 写入符号链接有关的信息而不是链接引用的文件信息
+int lstat(const char *path, struct stat *sb);
+// 和 stat 区别在于文件是符号链接时，写入符号链接有关的信息而不是链接引用的文件信息
 int fstat(int fd, struct stat *sb);
 
 #include <sys/stat.h>
@@ -324,3 +325,5 @@ int fstatat(int fd, const char *path, struct stat *sb, int flag);
 * FIFO: 有时候被称为命名管道，用于进程间通信
 * 套接字： 用于网络通信
 * 符号链接： pointer to another file
+
+## UID & GID

@@ -2253,4 +2253,4 @@ C++ 2.0 可能会提供一些有趣的语言特性和语法糖, 但是大部分�
 
 ### Item 55 : 让自己熟悉Boost
 
-refer to : C++ 11/14 高级编程 - [Boost程序库探秘](../HoujieC11/HouJieC11.md).
+refer to : C++ 11/14 高级编程 - [Boost程序库探秘](../Boost/C++11-14%20高级编程.md)
