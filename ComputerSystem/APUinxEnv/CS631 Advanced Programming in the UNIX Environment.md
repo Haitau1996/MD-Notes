@@ -23,7 +23,7 @@
     - [`read(2)`](#read2)
     - [`write(2)`](#write2)
     - [`lseek(2)`](#lseek2)
-  - [文件共享](#文件共享)
+  - [文件共享&其他操作](#文件共享其他操作)
     - [原子操作](#原子操作)
     - [文件描述符复制](#文件描述符复制)
     - [缓存 `sync`/`fsync`/`fdatasync`](#缓存-syncfsyncfdatasync)
@@ -82,7 +82,7 @@
 * sh:<div align=center><img src="https://s2.loli.net/2022/01/24/XOU96h1KspegaIZ.png" width="50%"/></div>
 * zsh，在`~/.zshrc`添加下面两行: <div align=center><img src="https://s2.loli.net/2022/01/24/9oi536HAOgMpNTE.png" width="50%"/></div>
 
-**shell**：[shell](code/cs631/week01/simple-shell.c) 做的事情其实很简单， 外面是一个死循环， 然后读取用户输入， 执行输入的命令。
+**shell**：[shell](code/cs631/week01/simple-shell.c) 做的事情其实很简单， 外面是一个死循环， 然后读取用户输入， 执行输入的命令(REPL,Read–Eval–Print Loop)。
 
 ### Unix Basics: 管道
 通常我们从键盘读取输入， 将结果显示到屏幕上， 而管道（Pipeline）是一系列将标准输入输出链接起来的进程，其中每一个进程的输出被直接作为下一个进程的输入, 这时候标准输出是作为下一个软件的输入， 而标准错误依旧可以显示：
@@ -225,7 +225,7 @@ off_t lseek(int fd, off_t offset, int whence);
 * seek 0 就是当下的位置
 * seek 越过文件结束符（可能会产生一个中间内容很多为空（`\0`）的文件， 不同的系统对它的支持不同，有的是直接将大量的 nul 写入磁盘，而有的文件系统支持[稀疏文件](https://zh.wikipedia.org/zh-cn/%E7%A8%80%E7%96%8F%E6%96%87%E4%BB%B6)）<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220211195224.png" width="70%"/></div>上图中文件系统支持稀疏文件，所以生成的 file.hole 很小，`cp` 命令拷贝也支持，拷贝的副本空间占用也很小， 但是`cat`不支持 sparse file, 因此生成的却特别大。
 
-## 文件共享
+## 文件共享&其他操作
 因为 UNIX 是多用户、多任务的操作系统， 多个进程可以方便地同时操作同一个文件。为了方便，我们了解一些相关的数据结构：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220211201811.png" width="80%"/></div>
 
 * 每个进程的 table entry 都有一个文件描述符的表，包含
@@ -292,3 +292,4 @@ int ioctl(int fd, unsigned long request, ...);
 是一个工具箱， 不能用其他函数表示的 i/O 操作通常可以用 `ioctl` 表示。 
 
 现在很多系统都将可以将标准输入、输出和错误作为文件，可以使用文件名 `/dev/std[in,out,err]`访问：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220211210642.png" width="40%"/></div><div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220211210837.png" width="40%"/></div>
+
