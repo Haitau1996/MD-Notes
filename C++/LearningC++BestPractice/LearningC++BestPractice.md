@@ -107,7 +107,7 @@ int main(){
     print_strings(4, "a","b","c");
 }
 ```
-C 语言中的可变长参数函数是使用宏实现的, 在上面会引发 segmentation fault 代码中, 没有任何代码检测工具可以帮我们发现非法内存引用的错误. 替代的做法是 C++11 中引入的新语法, [Variadic Templates](../侯捷C++11/HouJieC11.md#variadic-templates-intro):
+C 语言中的可变长参数函数是使用宏实现的, 在上面会引发 segmentation fault 代码中, 没有任何代码检测工具可以帮我们发现非法内存引用的错误. 替代的做法是 C++11 中引入的新语法, [Variadic Templates](../侯捷C++/HouJieC11.md#variadic-templates):
 * 新特性更安全
 * 可以在编译期做优化得到更好地 runtime 效率
 * 可以使用 runtime sanitizers 

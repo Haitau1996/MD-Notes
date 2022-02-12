@@ -53,7 +53,7 @@
 ## 软件工程
 
 * 李老师讲的[设计模式](SoftwareEngineering/李建忠-C++设计模式/C++设计模式.md)讲的真是好, 可惜写的代码不够多， 很难有深刻的理解
-* 用 [clean c++](C++/CleanC++/CleanC++.md) 学习一些怎样写好简洁的代码
+* 用 [clean c++](C++/CleanC++/CleanC++.md) 学习一些怎样写好简洁的代码， 还有一个讲 [C++ Best Practice](C++/LearningC++BestPractice/LearningC++BestPractice.md) 的视频
   
 :memo: TODO:
 - [ ] GoF, 懂的都懂
