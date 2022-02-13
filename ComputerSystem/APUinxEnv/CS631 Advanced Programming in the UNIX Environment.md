@@ -33,6 +33,8 @@
   - [UID & GID](#uid--gid)
     - [`access(2)`](#access2)
   - [`st_mode`](#st_mode)
+  - [`chmod(2)` 和 `chown(2)`](#chmod2-和-chown2)
+  - [`umask(2)`](#umask2)
 # Week 1
 ## Introduction
 ### This class in a nutshell: the "what"
@@ -380,3 +382,42 @@ int faccessat(int fd, const char *path, int mode, int flags);
 4. 其他用户的访问结果取决于访问权限位的设置
 
 理解了这个测试过程就能理解反直觉的结果， 如 用户所有的文件， 通过 chmod 设置权限为 0， 即使加上了组读取权限，该用户依旧不能读取（但是同组的其他用户可以）：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220213174220.png" width="70%"/></div>  
+
+## `chmod(2)` 和 `chown(2)`
+```C
+#include <sys/stat.h>
+#include <fcntl.h>
+int chmod(const char *path, mode_t mode);
+int lchmod(const char *path, mode_t mode);
+int fchmod(int fd, mode_t mode);
+int fchmodat(int fd, const char *path, mode_t mode, int flag);
+//Returns: 0 if OK, -1 on error
+```
+同样地， `chmod` 有四个版本， 分别对应基础版，操作符号链接本身，使用 file id 作为输入和原子版本。一个简单的[例子](code/cs631/week03/chmod.c), 先使用 `stat` 系统调用将信息写入一个stat 结构体subf中，然后进行一些修改。 <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220213192359.png" width="70%"/></div>  
+`chown` 可以更改文件的用户id 和组id:
+```C
+#include <unistd.h>
+#include <fcntl.h>
+int chown(const char *path, uid_t owner, gid_t group);
+int lchown(const char *path, uid_t owner, gid_t group);
+int fchown(int fd, uid_t owner, gid_t group);
+int fchownat(int fd, const char *path, uid_t owner, gid_t group, int flag);
+//Returns: 0 if OK, -1 on error
+```
+BSD 系统规定只有超级用户才能更改文件的所有者（避免有人借此逃脱磁盘限额）， System V 允许任一用户更改他们所拥有文件的所有者。 POSIX.1 中允许二选一， 如果_POSIX_CHOWN_RESTRICTED对指定的文件生效：
+1. 只有超级用户可以更改该文件的 uid
+2. 如果进程拥有此文件， 参数 owner 为 -1 or 文件的 uid,且 参数 group 为进程的 effective guid 或者进程附属 gid 之一， 那么一个非超级用户也可以修改文件的组 id.
+
+## `umask(2)`
+下面考虑新文件的所有权问题， 当我们创建一个新文件的时候，它会继承：
+* st_uid == effective UID
+* st_gid 可能是下面两者之一
+  1. 进程的 effective gid
+  2. 所在目录的 gid
+
+除了所有权外， 还有其他权限问题， `umask` 函数为设置文件模式创建屏蔽字。
+```C
+#include <sys/stat.h>
+mode_t umask(mode_t numask);
+//Returns: previous umask
+```
