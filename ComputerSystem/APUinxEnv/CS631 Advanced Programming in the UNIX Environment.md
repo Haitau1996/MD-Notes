@@ -31,6 +31,8 @@
 - [Week 3](#week-3)
   - [`stat(2)`](#stat2)
   - [UID & GID](#uid--gid)
+    - [`access(2)`](#access2)
+  - [`st_mode`](#st_mode)
 # Week 1
 ## Introduction
 ### This class in a nutshell: the "what"
@@ -327,3 +329,31 @@ int fstatat(int fd, const char *path, struct stat *sb, int flag);
 * 符号链接： pointer to another file
 
 ## UID & GID
+与一个进程关联的 ID 至少有六个：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220213124420.png" width="70%"/></div>  
+* 文件在 setuid 的时候， 是将 effective user ID 写入 `st_uid`, setgid 的时候同样是这样。
+
+有效用户 id 背后的思想是 least priviledge ，即只给用户他们需要的权限， not more。euid 的存在使得用户在必要的时候可以提升自己的权限，例如我们想要 ping 一个网站，自己复制一个 ping 的副本就无法使用，因为 ping 的背后有 socket 操作需要 root 权限：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220213130550.png" width="70%"/></div><div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220213130953.png" width="70%"/></div>  
+* 这个理念对于 gid 依旧适用
+
+```C
+#include <unistd.h>
+int setuid(uid_t uid);
+int seteuid(uid_t uid);
+// Returns: 0 if OK, -1 on error
+uid_t getuid(void);
+uid_t geteuid(void);
+// Returns: uid_t; never errors
+```
+* setuid 不但会设置 uid, 同时也会设置 euid(之前提升的 prililedge 也会消失)
+
+### `access(2)`
+```C
+#include <unistd.h>
+int access(const char *path, int mode);
+int faccessat(int fd, const char *path, int mode, int flags);
+//Returns: 0 if OK, -1 on error
+```
+* 按实际 uid 和 gid 测试访问能力
+
+## `st_mode`
+`st_mode` 同样编码了文件的访问权限。
