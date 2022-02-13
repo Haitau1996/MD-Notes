@@ -356,4 +356,27 @@ int faccessat(int fd, const char *path, int mode, int flags);
 * 按实际 uid 和 gid 测试访问能力
 
 ## `st_mode`
-`st_mode` 同样编码了文件的访问权限。
+`st_mode` 同样编码了文件的访问权限位， 每个文件有 9 个权限位：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220213171447.png" width="60%"/></div>  
+> 上表的 第一列为 sd_mode mask, mask 是一种字符模式,用来控制字符另一种模式某些部分的保留或删除  
+
+`chmod(1)` 可以修改这九个权限位，这三类权限以各种方式给不同函数使用， 规则如下：
+* 打开文件， 需要名字中包含的每个目录（包括隐藏的当前目录）的执行权限
+* 用 `O_REONLY` or `O_RDWR` 模式打开文件， 需要 read permission
+* 对于 `O_WRONLY` or `O_RDWR` 模式打开文件， 需要 write permission
+* open 中指定 `O_TRUNC` 标志， 需要 write permission
+* 创建一个新文件， 需要文件目录的 write + execute permission
+* 删除一个文件， 同样需要目录的 w+e 权限， 但是**并不需要对该文件本身的读写权限**
+* 如果需要执行文件(via `exec` family), 需要执行权限(**并不需要读权限**)
+
+我的理解访问一个目录，相当于是执行它， 添加和修改文件就是写入+访问。  
+内核的文件访问测试：
+1. `effect-uid == 0`(超级用户): 允许访问
+2. `e-uid == st_uid`(当前进程拥有此文件)
+   1. 如果设置了合适的用户权限位， 允许访问
+   2. 否则拒绝
+3. `e-gid = st_gid`
+   1. 如果设置了合适的组权限位， 允许访问
+   2. 否则拒绝
+4. 其他用户的访问结果取决于访问权限位的设置
+
+理解了这个测试过程就能理解反直觉的结果， 如 用户所有的文件， 通过 chmod 设置权限为 0， 即使加上了组读取权限，该用户依旧不能读取（但是同组的其他用户可以）：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220213174220.png" width="70%"/></div>  

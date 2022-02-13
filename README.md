@@ -11,6 +11,7 @@
   *  [Effective Modern C++](C++/EffectiveModernCPP/EffectiveModernC++.md)
 * 听过一段时间 [侯捷老师讲解的 C++11](C++/侯捷C++/HouJieC11.md) 和 [STL体系结构与内核分析](C++/侯捷STL/STL体系结构与内核分析.md)
 * 在此基础上学习 Ivor Horton 的 [Using the C++ STL](C++/UsingSTL/UsingSTL.md)
+* 借王建伟的 C++新经典 理解[C++对象模型](C++/InsideC++ObjectModel/C++新经典%20-%20对象模型.md)
 
 :memo: TODO: 
 * C++ 并发编程相关的书
