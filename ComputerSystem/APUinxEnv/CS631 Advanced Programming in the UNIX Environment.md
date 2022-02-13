@@ -35,6 +35,8 @@
   - [`st_mode`](#st_mode)
   - [`chmod(2)` 和 `chown(2)`](#chmod2-和-chown2)
   - [`umask(2)`](#umask2)
+- [Week 4](#week-4)
+  - [Unix 文件系统](#unix-文件系统)
 # Week 1
 ## Introduction
 ### This class in a nutshell: the "what"
@@ -421,3 +423,11 @@ BSD 系统规定只有超级用户才能更改文件的所有者（避免有人�
 mode_t umask(mode_t numask);
 //Returns: previous umask
 ```
+# Week 4 
+## Unix 文件系统
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220213211535.png" width="70%"/></div>
+
+* 磁盘可以有很多分区， 每个分区可以包含一个文件系统（不同分区可以有不同的 FS）
+* iNode 是固定长度的记录项， 包含有关文件的大部分信息（不含文件名）
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220213211626.png" width="70%"/></div>  
+* data 
