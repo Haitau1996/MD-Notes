@@ -430,4 +430,5 @@ mode_t umask(mode_t numask);
 * 磁盘可以有很多分区， 每个分区可以包含一个文件系统（不同分区可以有不同的 FS）
 * iNode 是固定长度的记录项， 包含有关文件的大部分信息（不含文件名）
 <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220213211626.png" width="70%"/></div>  
+
 * data 
