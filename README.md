@@ -29,7 +29,6 @@
 * 普林斯顿的 Algorithms 算法课讲的真好
   * [part I](Algorithms/Alogrithm4ed/AlgorithmOCW.md)
   * [part II](Algorithms/Alogrithm4ed/AlgorithmOCW.2nd.md)
-  * [Algorithms Book](Algorithms/Alogrithm4ed/Algorithm4ed.md)
 * 这些东西太理论, 为了更好的写 leetcode 题目, 我又看了[剑指Offer](Algorithms/剑指Offer/剑指Offer.md),后续笔记停了将刷题的题解放到[仓库中](https://gitee.com/Haitau1996/leetcode)
 
 :memo: TODO:
