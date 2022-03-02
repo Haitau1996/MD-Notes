@@ -33,8 +33,7 @@
 
 :memo: TODO:
 - [ ] 这一套学完, 将来有时间拿 Mark A. Weiss 的书补漏
-- [ ] 食 [Algorithm Design](Algorithms/AlgorithmDesign/AlgorithmDesign.md)
-- [ ] CLRS: 不要着急， 随手带着， 没事翻翻
+- [ ] [CLRS](Algorithms/CLRS/CLRS.md): 不要着急， 随手带着， 没事翻翻
 
 ## 计算机系统
 * 上来想直接啃 CSAPP, 牙口不好, 就看了 Yale N. Patt 写的这本[Introduction to Computing Systems_ From Bits & Gates to C & Beyond](ComputerSystem/CSAPP/Yale.Patt.Intro.Computer.System.md) 的前半部分
