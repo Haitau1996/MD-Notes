@@ -30,9 +30,9 @@
 
 负数表示:
 1. One's Complement(正数保持不变, 负数翻转):
-    ![](CS61c/2.1.png)
+    <div align=center><img src="https://i.imgur.com/wOKlFZg.png" width="70%"/></div>
 2. Two's Complement(翻转后再加一)
-    ![](CS61c/2.2.png)
+    <div align=center><img src="https://i.imgur.com/vVC5wAK.png" width="70%"/></div>
 3. Bias 编码 : 数字代表的值 = Signed + bias(例如-15)
  
 ## Lecture 3: Introduction to C 
