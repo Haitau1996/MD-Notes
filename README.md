@@ -22,6 +22,7 @@
 * 一开始感觉Java编程思想太上头(指菜，看不动), 我就看了一下梁勇老师的书([笔记](Java&Python/JavaLiangY/IntroductionJavaAndDataStructure.md)), 大佬们说这本书很啰嗦, 我个人觉得还是对新手很友好的
 * 然后就是喜闻乐见的 Core Java [vol.1](Java&Python/JavaCore/CoreJava.md)
 * 看一点 Python, 包括 [cs61a](Java&Python/CS61a/cs61a.md) 和 [fluent python](Java&Python/FluentPython/FluentPython.md)
+* 看[视频](C++/Rust权威指南/Rust编程语言入门教程.md)和[书](C++/Rust权威指南/Rust权威指南.md)学习 Rust, 准备来一发大的
 
 ## 数据结构与算法
 
