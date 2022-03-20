@@ -1,7 +1,7 @@
 # The Rust Programming Language
 ## Chap 1 : Getting Started
-在 Linux/MacOS/msys2 中都可以使用命令安装 _rustup_ 工具, 如果网络不好的话可以参考 TUNA 上的[使用帮助](https://mirrors.tuna.tsinghua.edu.cn/help/rustup/)用国内源加速. 为了编译执行程序还需要一个链接器, 一般安装一个 C 语言编译器就能解决. <br>
-安装工具会在本地生成离线文档, 使用 `rustup doc ` 可以在浏览器中使用它,里面甚至有本书的英文版.<br>
+在 Linux/MacOS/msys2 中都可以使用命令安装 _rustup_ 工具, 如果网络不好的话可以参考 TUNA 上的[使用帮助](https://mirrors.tuna.tsinghua.edu.cn/help/rustup/)用国内源加速. 为了编译执行程序还需要一个链接器, 一般安装一个 C 语言编译器就能解决.     
+安装工具会在本地生成离线文档, 使用 `rustup doc ` 可以在浏览器中使用它,里面甚至有本书的英文版.  
 Rust 中的函数体被花括号包裹起来, 有一个 `rustfmt` 的工具可以格式化代码风格(`rustfmt someFile.rs`).
 ```rust
 #![allow(unused)]
@@ -9,7 +9,7 @@ fn main() {
     println!("Hello, world!");
 }
 ```
-其中的一个 `println!` 并不是一个普通函数而是宏, **rust 中所有以 感叹号 `!` 结尾的调用都是宏**.最后需要注意的是 Rust 代码大部分都会用分号来结尾.<br>
+其中的一个 `println!` 并不是一个普通函数而是宏, **rust 中所有以 感叹号 `!` 结尾的调用都是宏**.最后需要注意的是 Rust 代码大部分都会用分号来结尾.    
 Rust 是一种预编译语言, 随着代码量变多团队变大, 管理项目依赖和代码构建就会变得十分复杂和琐碎, Rust 使用一个构建工具 _Cargo_ 来简化问题.
 
 ### Cargo
@@ -57,7 +57,7 @@ spaces = spaces.len(); /// Error: mismatched types
 #### 标量类型
 Rust 中内建4种基本的标量类型, 整数/浮点数/布尔值 和 字符. 
 ##### 整数类型
-会明确自身是否存在符号(描述负数的能力), 并且拥有明确的大小. 另外还有取决于体系结构的两种特殊的整数类型`isize`/`usize`, 在 64 位架构上就是 64 位, 在 32 位架构上就是 32 位. <br>
+会明确自身是否存在符号(描述负数的能力), 并且拥有明确的大小. 另外还有取决于体系结构的两种特殊的整数类型`isize`/`usize`, 在 64 位架构上就是 64 位, 在 32 位架构上就是 32 位.     
 需要注意的是, 整数是会溢出的, Rust 对这种行为规则十分有趣, **在 debug 模式下在整数发生溢出的时候会触发 panic(某种异常)**, 在发布模式下, 就会自动 [rounding](../../ComputerSystem/CSAPP/CSAPP.Book.md).
 
 ##### 浮点数类型
