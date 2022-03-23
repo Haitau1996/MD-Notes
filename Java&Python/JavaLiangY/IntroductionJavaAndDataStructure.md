@@ -1,4 +1,5 @@
 # Java语言程序设计与数据结构<!-- omit in toc -->
+[Y. Daniel Liang](https://yongdanielliang.github.io)
 - [Chap 1: 计算机、程序和java概述](#chap-1-计算机程序和java概述)
   - [创建\编译\运行 java程序](#创建编译运行-java程序)
 - [Chap 2: 基本程序设计](#chap-2-基本程序设计)
@@ -60,7 +61,7 @@
   - [线性表](#线性表)
     - [List 接口中的通用方法](#list-接口中的通用方法)
     - [数组线性表类 和 链表类](#数组线性表类-和-链表类)
-[Y. Daniel Liang](https://yongdanielliang.github.io)
+
 ***
 ## Chap 1: 计算机、程序和java概述
 计算机包含软件和硬件两个部分，硬件的组件通过一个总线(bus)子系统连接。<br>
