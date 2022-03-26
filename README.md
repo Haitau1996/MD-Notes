@@ -56,4 +56,4 @@
 * 用 [clean c++](C++/CleanC++/CleanC++.md) 学习一些怎样写好简洁的代码， 还有一个讲 [C++ Best Practice](C++/LearningC++BestPractice/LearningC++BestPractice.md) 的视频
   
 :memo: TODO:
-- [ ] GoF, 懂的都懂
+- [ ] GoF
