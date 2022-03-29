@@ -35,8 +35,9 @@
 暴力搜索的时间复杂度是指数级的： 
 $$
 P(n) =  \begin{cases}
-        1 \qquad \qquad \qquad \qquad \qquad \quad \ \,\text{if n = 1}\\
-        \sum_{k=1}^{n-1} P(k)\times P(n-k) \qquad \text{if n}\geq 2
+        1 & \text{if n = 1}\\
+        \sum_{k=1}^{n-1} P(k)\times P(n-k) \qquad &\text{if n}\geq 2
         \end{cases}
 $$
 
+#### 应用动态规划
