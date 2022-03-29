@@ -31,3 +31,11 @@
 如果我们需要重构解本身，可以创建一个数组 s, 在求解规模为 j 的子问题时候将第一段钢条的最优切割长度保存在 s[j] 中。<div align=center><img src="https://i.imgur.com/iChAYKo.png" width="40%"/></div>
 
 ### 矩阵链乘法
+求解 $A_1 A_2\cdots A_n$ 需要标量乘法最少次数的完全括号方案， 如果 $A$ 是 $p \times q$ 的矩阵， $B$ 是 $q\times r$ 矩阵， $A B$ 的计算需要 $pqr$ 次。  
+\[
+P(n) = \{
+    \begin{aligned}
+    1 \\
+    \sum_{k-1}^{n-1} P(k)\times P(n-k)
+    \end{aligned}
+\]
