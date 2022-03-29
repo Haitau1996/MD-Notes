@@ -19,3 +19,25 @@
 * `char8_t` 字符类型(since C++20): char类型来处理 UTF-8 字符可能有问题， 引入后 char8_t 和 char 无法相互转换， 需要使用库函数
 
 ## Chap 2: 内联和嵌套命名空间
+* C++11标准增强了命名空间的特性， **内联命名空间**可以把空间内的函数和类型导出到父命名空间中：
+    ```C++
+    #include <iostream>
+
+    namespace Parent {
+        inline namespace Child2
+        {
+            void foo() { std::cout << "Child2::foo()" << std::endl; }
+        }
+    }
+    int main()
+    {
+        Parent::foo();
+    }
+    ```
+* C++17标准允许使用一种更简洁的形式描述嵌套命名空间,但是依旧没有办法简洁地定义内联命名空间，这个问题直到C++20标准才得以解决。:
+    ```C++
+    namespace A::B::C {
+        int foo() { return 5; }
+    }
+    ```
+
