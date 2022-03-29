@@ -21,11 +21,8 @@
 ## Chap 2: 内联和嵌套命名空间
 * C++11标准增强了命名空间的特性， **内联命名空间**可以把空间内的函数和类型导出到父命名空间中：
     ```C++
-    #include <iostream>
-
     namespace Parent {
-        inline namespace Child2
-        {
+        inline namespace Child2{//since C++11
             void foo() { std::cout << "Child2::foo()" << std::endl; }
         }
     }
@@ -36,7 +33,10 @@
     ```
 * C++17标准允许使用一种更简洁的形式描述嵌套命名空间,但是依旧没有办法简洁地定义内联命名空间，这个问题直到C++20标准才得以解决。:
     ```C++
-    namespace A::B::C {
+    namespace A::B::C {// since C++17
+        int foo() { return 5; }
+    }
+    namespace A::inline B::C {//since C++20
         int foo() { return 5; }
     }
     ```
