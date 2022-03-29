@@ -32,10 +32,10 @@
 
 ### 矩阵链乘法
 求解 $A_1 A_2\cdots A_n$ 需要标量乘法最少次数的完全括号方案， 如果 $A$ 是 $p \times q$ 的矩阵， $B$ 是 $q\times r$ 矩阵， $A B$ 的计算需要 $pqr$ 次。  
-\[
+$$
 P(n) = \{
     \begin{aligned}
     1 \\
     \sum_{k-1}^{n-1} P(k)\times P(n-k)
     \end{aligned}
-\]
+$$
