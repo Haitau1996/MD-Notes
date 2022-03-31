@@ -30,4 +30,6 @@
     CREATE DATABASE IF NOT EXISTS crash_course;
     USE crash_course;
     ```
+* VSCode 中使用 <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220331211321.png" width="60%"/></div>
+  * 还有[登陆的问题](https://github.com/formulahendry/vscode-mysql/issues/79)， 在 MySQL 命令行中运行`ALTER USER '<your_user>'@'localhost' IDENTIFIED WITH mysql_native_password BY '<your_password>';` 解决
 ## Chap 04: 检索数据
