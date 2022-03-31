@@ -24,4 +24,10 @@
   1. mysql命令行实用程序
   2. MySQL Administrator 图形交互客户机
   3. MySQL Query Browser
-
+* 使用 USE 关键词选择数据库
+  * 如果不存的话就需要先使用 CREATE DATABASE 命令创建数据库
+    ```sql
+    CREATE DATABASE IF NOT EXISTS crash_course;
+    USE crash_course;
+    ```
+## Chap 04: 检索数据
