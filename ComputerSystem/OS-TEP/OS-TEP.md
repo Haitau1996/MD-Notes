@@ -467,3 +467,7 @@ VM 系统有很多目标:
 为了方便理解, 我们需要先假设用户的地址空间必须连续地放在物理内存中, 并且不是很大, 每个地址空间的大小完全一样.  
 <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210521151602.png"width="60%"/></div>
 
+//todo: 后面再回过头来看内存虚拟化， 先跟着 CS162 学习并发
+
+# 第二部分： 并发
+## Chap 26: 并发 - 介绍
