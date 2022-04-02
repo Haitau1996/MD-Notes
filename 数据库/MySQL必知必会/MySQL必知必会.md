@@ -76,7 +76,7 @@
 * **通配符**（wildcard） 用来匹配值的一部分的特殊字符。
 * **搜索模式**（search pattern） 由字面值、通配符或两者组合构成的搜索条件。
 
-常用的通配符：
+使用 `LIKE` 子句实现通配符匹配：
 1. `%` 匹配任何字符串，但是**不包括空字符串**：
     ```sql
     SELECT prod_id, prod_name
@@ -90,3 +90,27 @@
 1. 谨慎使用， 如果不使用通配符也能达到相同的目的， 优先使用其他操作
 2. **除非绝对必要， 否则不要放到搜索模式的开始处**（放在后面对相对少的结果使用通配符总是效率高些）
 3. 注意通配符的位置， 放错位置会导致搜索结果不正确
+
+## Chap 09: 使用正则表达式进行搜索
+正则表达式是用来匹配文本的特殊的串（字符集合），MySQL仅支持多数正则表达式实现的一个很小的子集。
+* 基本字符匹配： LIKE 变成了 REGEXP, **LIKE 要求全部匹配**， 如 LIKE 1000 只匹配 1000， 而 **REGEXP 只要模式在字符串中出现就可以匹配**， 如 REGEXP 1000 可以匹配 JetPack 1000
+    ```sql
+    SELECT prod_name
+    FROM products
+    WHERE prod_name REGEXP '1000'
+    ORDER BY prod_name;
+    ```
+* `.` 表示任何单个字符，如 `.000` 可以匹配 `JetPack 1000`/`JetPack 2000`
+* `|` 用于正则表达式的或关系
+    ```sql
+    SELECT prod_name
+    FROM products
+    WHERE prod_name REGEXP '1000|2000'
+    ORDER BY prod_name;
+    ```
+* `[]` 表示从几个字符之一进行匹配`WHERE prod_name REGEXP '[123] Ton'`
+  * 可以使用 `-` 来简化范围：`[0-9]`
+* 特殊字符应该使用 `\\` 作为前导符，如 `\\.` 可以匹配 `.`
+* 有自定义的字符集，称为字符类：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220402215522.png" width="60%"/></div>
+* 有时候需要对匹配的数目进行更强的控制：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220402215800.png" width="50%"/></div>
+* 为了匹配特定位置的文本， 可以使用**定位符**：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220402220010.png" width="40%"/></div>
