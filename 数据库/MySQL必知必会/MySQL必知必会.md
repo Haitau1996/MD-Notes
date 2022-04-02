@@ -51,3 +51,14 @@
 * 按多个列排序，只要指定列名，列名之间用逗号分开即可
 * `DESC` 指定降序排序， `ASC`（默认） 指定升序排序
 * `ORDER BY` 配合 `LIMIT` 子句，可以找出指定列的最大/小值
+
+## Chap 06: 过滤数据
+只检索所需数据需要指定**搜索条件**（search criteria），搜索条件也称为**过滤条件**（filter condition），在 SELECT 语句中， 数据根据 WHERE 子狙中指定的搜索天剑进行过滤。
+* 同时使用ORDER BY 和 WHERE 子句时，应该让 ORDER BY 位于 WHERE 之后
+* WHERE 子句支持一系列的操作符， 可以支持单个值、范围和不匹配的检查：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220402143213.png" width="40%"/></div>
+  * 一个列不包含值的时候被称为包含 空值（NULL）, 未知具有特殊的含义，数据库不知道它们是否匹配，所以在匹配过滤或不匹配过滤时不返回它们,**需要额外附加**。
+    ```sql
+    SELECT cust_id
+    FROM customers
+    WHERE cust_email IS NULL;
+    ```
