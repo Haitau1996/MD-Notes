@@ -42,3 +42,10 @@
   * `SELECT prod_name FROM products LIMIT 5` 只检索前 5条记录
   * `SELECT prod_name FROM products LIMIT 5，5` 检索从第 5条记录开始的 5条记录
 * 完全限定的名字：同时使用表名和列名 `SELECT crash_course.prod_name FROM crash_course.products`
+
+## Chap 05: 排序检索数据
+**如果不明确控制的话，不能（也不应该）依赖该排序顺序**, 子句（clause） SQL语句由子句构成，有些子句是必需的，而有的是可选的, 我们可以使用 ORDER BY 子句对输出进行排序：
+* 用非检索的列排序数据是完全合法的
+* 按多个列排序，只要指定列名，列名之间用逗号分开即可
+* `DESC` 指定降序排序， `ASC`（默认） 指定升序排序
+* `ORDER BY` 配合 `LIMIT` 子句，可以找出指定列的最大/小值
