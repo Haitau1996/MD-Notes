@@ -33,3 +33,12 @@
 * VSCode 中使用 <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220331211321.png" width="60%"/></div>
   * 还有[登陆的问题](https://github.com/formulahendry/vscode-mysql/issues/79)， 在 MySQL 命令行中运行`ALTER USER '<your_user>'@'localhost' IDENTIFIED WITH mysql_native_password BY '<your_password>';` 解决
 ## Chap 04: 检索数据
+* `SELECT` 语句： 一定要说明从 **哪里** 选择 **什么数据**
+  * 检索单个列： `SELECT column_name FROM table_name`
+  * 检索多个列： 中间用逗号分隔， `SELECT column_name1, column_name2, ... FROM table_name`
+  * 使用 `DISTINCT` 关键字，可以检索不重复的值， `SELECT DISTINCT column_name FROM table_name`
+  * 使用 `*` 可以做通配符匹配，相当于检索所有列
+* 限制结果： 使用 `LIMIT` 子句
+  * `SELECT prod_name FROM products LIMIT 5` 只检索前 5条记录
+  * `SELECT prod_name FROM products LIMIT 5，5` 检索从第 5条记录开始的 5条记录
+* 完全限定的名字：同时使用表名和列名 `SELECT crash_course.prod_name FROM crash_course.products`
