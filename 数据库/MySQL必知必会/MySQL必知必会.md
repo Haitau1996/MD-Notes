@@ -52,7 +52,7 @@
 * `DESC` 指定降序排序， `ASC`（默认） 指定升序排序
 * `ORDER BY` 配合 `LIMIT` 子句，可以找出指定列的最大/小值
 
-## Chap 06: 过滤数据
+## Chap 06&07: 过滤数据
 只检索所需数据需要指定**搜索条件**（search criteria），搜索条件也称为**过滤条件**（filter condition），在 SELECT 语句中， 数据根据 WHERE 子狙中指定的搜索天剑进行过滤。
 * 同时使用ORDER BY 和 WHERE 子句时，应该让 ORDER BY 位于 WHERE 之后
 * WHERE 子句支持一系列的操作符， 可以支持单个值、范围和不匹配的检查：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220402143213.png" width="40%"/></div>
@@ -62,3 +62,11 @@
     FROM customers
     WHERE cust_email IS NULL;
     ```
+
+组合 WHERE 子句可以 创建复杂的搜索条件：
+* `AND` 和 `OR` 子句，用于组合多个搜索条件
+  * 不同的操作符有顺序的问题（SQL在处理 `OR` 操作符前，优先处理 `AND` 操作符）， 正确的做法是明确**使用括号来组合多个搜索条件**.
+* `IN` 操作符用来指定条件范围, 取出由逗号分隔的清单，所有项目都括在圆括号中
+  * `IN` 操作符一般比 `OR` 操作符清单执行更快。
+  * `IN` 的最大优点是**可以包含其他 `SELECT` 语句**，使得能够更动态地建立 `WHERE` 子句
+* `NOT` 操作符： `WHERE` 子句中的 `NOT` 操作符有且只有一个功能，那就是否定它之后所跟的任何条件。
