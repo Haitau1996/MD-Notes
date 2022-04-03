@@ -135,3 +135,11 @@
     ORDER BY prod_name;
     ```
     <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220403113351.png" width="50%"/></div>
+
+## Chap 11: 使用数据处理函数
+>相对来说，多数SQL语句是可移植的,而函数的可移植性却不强,几乎每种主要的 DBMS 的实现都**支持其他实现不支持的函数，而且有时差异还很大**,因此使用函数，应该保证做好代码注释。
+
+大多数 DBMS 支持以下几种数据处理函数：
+1. 文本处理函数，需要特殊说明 SOUNDEX， 它是一个将任何文本串转换为描述其语音表示的字母数字模式的算法。<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220403193805.png" width="70%"/></div>其他的常用文本处理函数如下：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220403193321.png" width="30%"/></div>
+2. 日期和时间处理函数，在涉及日期的时候使用函数调用（如`Date(order_date) = '2005-09-01'`) 比直接判断(`order_date = '2005-09-01'`)要好,因为存储的项除了日期可能还包含时间值<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220403194007.png" width="60%"/></div>
+3. 数值处理函数(在主要的 DBMS 函数中最统一的部分)<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220403194647.png" width="70%"/></div>
