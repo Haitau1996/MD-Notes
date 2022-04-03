@@ -143,3 +143,41 @@
 1. 文本处理函数，需要特殊说明 SOUNDEX， 它是一个将任何文本串转换为描述其语音表示的字母数字模式的算法。<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220403193805.png" width="70%"/></div>其他的常用文本处理函数如下：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220403193321.png" width="30%"/></div>
 2. 日期和时间处理函数，在涉及日期的时候使用函数调用（如`Date(order_date) = '2005-09-01'`) 比直接判断(`order_date = '2005-09-01'`)要好,因为存储的项除了日期可能还包含时间值<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220403194007.png" width="60%"/></div>
 3. 数值处理函数(在主要的 DBMS 函数中最统一的部分)<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220403194647.png" width="70%"/></div>
+
+## Chap 12: 汇总数据
+我们经常需要**汇总数据而不用把它们实际检索出来**，为此 MySQL 提供了专门的函数。常见的汇总检索有：
+* 确定表中行数（或者满足某个条件或包含某个特定值的行数）。
+* 获得表中行组的和。
+* 找出表列（或所有行或某些特定的行）的最大值、最小值和平均值。
+
+为此， MySQL 提供了以下几种函数：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220403200919.png" width="70%"/></div>
+
+* `AVG()` 函数，计算表中列的平均值, 也可以限定特定的范围：
+    ```sql
+    SELECT AVG(prod_price) AS avg_price
+    FROM products
+    WHERE vend_id = 1003;
+    ```
+* `COUNT()` 函数进行计数,也可以设置条件。 它有两种使用的方式：
+  * 使用 `COUNT(*)` 对表中行的数目进行计数，不管表列中包含的是空值（NULL）还是非空值。
+  * 使用 `COUNT(column)` 对特定列中具有值的行进行计数，**忽略 NULL 值**。
+    ```sql
+    SELECT COUNT(*) AS num_cust
+    FROM customers;
+    ```
+* `MAX()` 和 `MIN()` 函数，计算表中列的最大值和最小值, 它不但用于数值类型， 也可以用于文本类型， 并且忽略为 `NULL` 的行。
+    ```sql
+    SELECT MAX(prod_price) AS max_price
+    FROM products
+    WHERE vend_id = 1003;
+    ```
+* `SUM()` 函数，计算表中列的和，也可以用来处理计算值， 如 `SELECT SUM(item_price*quantity) AS total_price`, 它也会忽略 `NULL`。
+* 聚集不同的值： 使用 `DISTINCT` 关键字，`DISTINCT` 必须使用列名，不能用于计算或表达式。
+* 组合聚集函数：`SELECT` 语句可根据需要包含多个聚集函数。 
+    ```sql
+    SELECT COUNT(*) AS num_items,
+       MIN(prod_price) AS price_min,
+       MAX(prod_price) AS price_max,
+       AVG(prod_price) AS price_avg
+    FROM products;
+    ```
