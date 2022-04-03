@@ -113,4 +113,25 @@
 * 特殊字符应该使用 `\\` 作为前导符，如 `\\.` 可以匹配 `.`
 * 有自定义的字符集，称为字符类：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220402215522.png" width="60%"/></div>
 * 有时候需要对匹配的数目进行更强的控制：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220402215800.png" width="50%"/></div>
-* 为了匹配特定位置的文本， 可以使用**定位符**：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220402220010.png" width="40%"/></div>
+* 为了匹配特定位置的文本， 可以使用**定位符**：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220402220010.png" width="30%"/></div>
+
+## Chap 10: 创建计算字段
+很多时候，**存储在表中的数据都不是应用程序所需要的**，我们需要直接从数据库中检索出转换、计算或格式化过的数据， 而不是在客户机中重新格式化。
+>但一般来说，在数据库服务器上完成这些操作比在客户机中完成要快得多，因为DBMS是设计来快速有效地完成这种处理的。
+
+* **拼接字段**:将值联结到一起构成单个值,在 `SELECT` 语句中使用 `CONCAT` 函数拼接串，即把多个串连接起来形成一个较长的串。
+  * **Trim 函数** MySQL支持`RTrim()` （去掉串右边的空格），`LTrim()`（去掉串左边的空格）以及`Trim()` （去掉串左右两边的空格）。
+    ```sql
+    SELECT CONCAT(prod_name, '->', prod_desc)
+    FROM products
+    ORDER BY prod_name;
+    ```
+    <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220403112148.png" width="80%"/></div>
+* `AS` 关键字赋予别名(alias),别名是一个字段或值的替换名。
+* SQL 还支持对检索出的数据做算术运算， 支持 `+`,`-`,`*`,`/`
+    ```sql
+    SELECT prod_name, prod_price * 0.8 AS discount 
+    FROM products
+    ORDER BY prod_name;
+    ```
+    <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220403113351.png" width="50%"/></div>
