@@ -1,5 +1,5 @@
- # [COMPUTER SYSTEM: A Programmer's Perspective](http://www.csapp.cs.cmu.edu/)
-<font size=5> **Randal Bryant & David Hallaron** </font>
+# [COMPUTER SYSTEM: A Programmer's Perspective](http://www.csapp.cs.cmu.edu/)
+**Randal Bryant & David Hallaron**
 
 ## Chap 1: A Tour to Computer System
 In a sense, the goal of this book is to help you understand what happens and why when you run hello on your system.
@@ -8,7 +8,8 @@ The source program is a sequence of bits, each with a value of 0 or 1, organized
 
 ### Programs Are Translated by Other Programs into Different Forms
 C语言是一种高级语言,它的语句将被翻译成 low-level machine-language 指令, 然后打包成Binary Disk file 的可执行程序,在Unix系统中的过程如下图:  
-![compile](figure/Book1.1.png)  
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/Book1.1.png" width="70%"/></div>
+
 1. __预处理阶段__: 根据字符 _#_ 开头的命令,修改原始的C程序
 2. __编译阶段__: 将文本文件.c翻译成包 __含汇编语言程序的文本文件__ `.s`
 3. __汇编阶段__: 汇编器将 `.s` 翻译成可重定位目标程序格式(relocatable object
@@ -23,39 +24,42 @@ program) `.o`
 
 ### Processors Read and Interpret Instructions Stored in Memory
 #### Hardware Organization of a System
-![orgination](figure/Book1.2.png)  
+<div align=center><img src="https://i.imgur.com/QoAjiR1.png" width="60%"/></div>
+
 __Bus__ 总线是用于不同组件沟通的electrical conduits, 一般用于传输fixed-size chunk of bytes(words,一般是4个字节(32位)或者8个(64位)).  
 __Main memory__ 临时存储系统, 一般是由一系列动态随机存储器构成,逻辑上它是Linear array of bytes, 每个都有自己的地址.  
 __Processor__ A processor appears to operate according to a very simple instruction execution model, deﬁned by its _instruction set architecture_, 比如下面四种操作: **Load Store Operate** and **Jump**.
 
 ### Caches Matter
 A major goal for system designers is __to make these copy operations run as fast as possible__.To deal with the processor–memory gap, system designers include smaller, faster storage devices called cache memories.One of the most important lessons in this book is that application programmers who are aware of cache memories can exploit them to improve the performance of their programs by an order of magnitude. 一般而言, 每个设备中的存储组织成了一个存储层次结构,__The main idea of a memory hierarchy is that storage at one level serves as a cache for storage at the next lower level__:  
-![memory hierarchy](figure/Book1.3.png)  
+<div align=center><img src="https://i.imgur.com/I4xMass.png" width="70%"/></div> 
 
 ### 操作系统管理硬件
-![OS](figure/Book1.4.png)  
+<div align=center><img src="https://i.imgur.com/GJkg3kZ.png" width="70%"/></div>
+
 操作系统有两个作用:
 1. to protect the hardware from misuse by runaway applications
 2. to provide applications with simple and uniform mechanisms for manipulating complicated and often wildly different low-level hardware devices. 
 #### 进程
 一个进程是操作系统给运行程序的的抽象, 多个进程可以同时在系统中运行, 进程似乎是独占处理器\主存和IO设备.  
 在任何一个时刻，单处理器系统都只能执行一个进程的代码。当操作系统决定要把控制权从当前进程转移到某个新进程时，就会进行 _上下文(context)_ 切换，即保存当前进程的上下文、恢复新进程的上下文，然后将控制权传递到新进程。新进程就会从它上次停止的地方开始。  
-![swith](figure/Book1.5.png)  
+<div align=center><img src="https://i.imgur.com/VF1xgGb.png" width="70%"/></div> 
 
 #### 线程
 尽管通常我们认为一个进程只有单一的控制流，但是在现代系统中，一个进程实际上可以由多个称为线程的执行单元组成，每个线程都 __运行在进程的上下文中，并共享同样的代码和全局数据__。由于网络服务器中对并行处理的需求，线程成为越来越重要的编程模型，因为 __多线程之间比多进程之间更容易共享数据__，也因为线程一般来说都比 __进程更高效__。  
 #### 虚拟内存
-![virtual memory](figure/Book1.6.png)  
+<div align=center><img src="https://i.imgur.com/8EzS1sJ.png" width="50%"/></div>
+
 虚拟内存是一个抽象概念，它为每个进程提供了一个假象，即每个进程都在独占地使用主存。每个进程看到的内存都是一致的，称为虚拟地址空间。
 #### Files
 A ﬁle is a sequence of bytes, nothing more and nothing less. 
 
 ### 重要主题
 #### Amdahl 定律 
-$T_{new} = (1-\alpha) T_{old} + \frac{\alpha T_{old}}{k}$   
-$S= T_{old} / T_{new} = \frac{1}{(1-\alpha) + \alpha /k}$   
+$$T_{new} = (1-\alpha) T_{old} + \frac{\alpha T_{old}}{k}$$
+$$S= T_{old} / T_{new} = \frac{1}{(1-\alpha) + \alpha /k}$$
 要想显著加速整个系统，必须提升全系统中占用资源大的部分的速度.  
-$S_{\inf} = \frac{1}{1 - \alpha}$
+$$S_{\inf} = \frac{1}{1 - \alpha}$$
 #### 并发和并行
 并发(concurrency)是一个通用的概念，指一个同时具有多个活动的系统;并行(parallelism)指的是 __用并发来使一个系统运行得更快__, 并发可以在计算机系统的多个抽象层次上运用, 从高到低重点强调三个层次:
 ##### 线程级并发
@@ -68,7 +72,8 @@ $S_{\inf} = \frac{1}{1 - \alpha}$
 在最低层次上，许多现代处理器拥有特殊的硬件，允许一条指令产生多个可以并行执行的操作，这种方式称为单指令、多数据，即 SIMD 并行。
 
 #### 计算机系统中抽象的重要性
-![abstraction](figure/Book1.7.png)  
+<div align=center><img src="https://i.imgur.com/nLPOkTO.png" width="50%"/></div>
+
 抽象的使用是计算机科学中最为重要的概念之一,在处理器里，指令集架构(ISA)提供了对实际处理器硬件(微结构)的抽象。在学习操作系统时，我们介绍了三个抽象：__文件是对 I/0 设备的抽象，虚拟内存是对程序存储器的抽象，而进程是对一个正在运行的程序的抽象__。
 
 # Part I: 程序结构和执行
@@ -85,7 +90,8 @@ $S_{\inf} = \frac{1}{1 - \alpha}$
 大多数 64 位机器也可以运行为 32 位机器编译的程序，这是一种向后兼容。计算机和编译器支持多种不同方式编码的数字格式，如不同长度的整数和浮点数。为了避免由于依赖＂典型"大小和不同编译器设置带来的奇怪行为，ISO C99 引入了一类数据类型，其数据大小是固定的，不随编译器和机器设置而变化,这是程序员准确控制数据表示的最佳途径。__可移植性的一个方面就是使程序对不同数据类型的确切大小不敏感__,许多程序的编写都假设为32 位程序的字节分配,随着 64 位机器的日益普及，在将这些程序移植到新机器上时，许多隐藏的对字长的依赖性就会显现出来，成为错误。
 #### 寻址和字节顺序
 In virtually all machines, 多字节对象都被存储为连续的字节序列，对象的地址为所使用字节中最小的地址。某些机器选择在内存中按照从最低 有效字节到最高有效字节的顺序存储对象，而另一些机器则按照从最高有效字节到最低有效字节的顺序存储:  
-![figure](figure/Book2.1.png)  
+<div align=center><img src="https://i.imgur.com/rRvYssp.png" width="70%"/></div>
+
 there is no technological reason to choose one byte ordering convention over the other, for most application programmers, the byte orderings used by their machines are totally invisible.有以下例外:
 1. 不同类型的机器之间通过网络传送二进制数据时
 2. 当阅读表示整数数据的字节序列时字节顺序也很重要
@@ -93,12 +99,14 @@ there is no technological reason to choose one byte ordering convention over the
 
 实际上, 可执行文件也是一系列的二进制代码序列, 只是一般而言 **Binary code is seldom portable across different combinations of machine and operating system**,它依赖于体系结构.  
 #### Intro to Boolen Algebra
-![boolean](figure/Book2.2.png)  
+<div align=center><img src="https://i.imgur.com/nYIz4N0.png" width="50%"/></div>
+
 最简单的布尔代数就是在双元素集合{0,1}上的operation.然后香农提出将这个布尔代数和数字逻辑结合起来, 将布尔代数的东西推广到两个bit vector $[a_{w−1}, a_{w−2}, ..., a_0]$ 和 $[b_{w−1}, b_{w−2},..., b_0]$ 之间:  
-![boolean](figure/Book2.3.png)  
-<font size=4> Bit-level operation in C </font>
+<div align=center><img src="https://i.imgur.com/QEUQIBK.png" width="50%"/></div>
+
+##### Bit-level operation in C
 在C语言中,需要注意区分bit-level的操作符,` &, |, ^, ~` ,和逻辑运算符 `&&, ||, !` , 一般而言, 只有当值限制成{0,1}的时候两者才有可比性, 并且逻辑运算符有短路求值的特点.  
-<font size=4> 移位运算 </font> 在C中提供了移位运算,对于左移运算, 就是丢弃最高的k位, 然后在右端补k个0. 而右移动作则有两种,逻辑右移和算术右移.  
+**移位运算** 在C中提供了移位运算,对于左移运算, 就是丢弃最高的k位, 然后在右端补k个0. 而右移动作则有两种,逻辑右移和算术右移.  
 1. 逻辑右移在左端补 k 个 0, 得到的结果是$[0, …, 0,x_{w-1},x_{w-2},..., x_k]$
 2. 算术右移在左端补 k 个最高位的有效值, 得到的结果是 $[x_{w-1}, …, x_{w-1},x_{w-1},x_{w-2},..., x_k]$
 
@@ -109,12 +117,12 @@ there is no technological reason to choose one byte ordering convention over the
 
 #### Unsigned 编码
 对于向量 $\hat{x} =  [x_{w−1}, x_{w−2}, . . . , x{0}]:$   
-    $B2U_w(\hat{x}) \doteq \sum_{i=0}^{w-1} x_i 2^i$  
+    $$B2U_w(\hat{x}) \doteq \sum_{i=0}^{w-1} x_i 2^i$$  
 可以轻易的观察到, 这是一个 **双向单射**.
 
 #### 补码
 对于向量 $\hat{x} =  [x_{w−1}, x_{w−2}, . . . , x{0}]:$   
-    $B2T_w(\hat{x}) \doteq -x_{w-1} 2^{w-1} + \sum_{i=0}^{w-2} x_i 2^i$  
+    $$B2T_w(\hat{x}) \doteq -x_{w-1} 2^{w-1} + \sum_{i=0}^{w-2} x_i 2^i$$ 
 同样的, 这也是一个 **双向单射**: For a number x, such that $TMin_w ≤ x ≤ TMax_w$, $T2B_w(x)$ is the (unique) w-bit pattern that encodes x.  
 值得注意的是,C语言**没有强制要求 _signed_ number用2's 补码表示**,但是几乎所有的平台都是这么做的.同时, 我们可以使用C library `<limits.h>` 查看所支持的最大最小值, 避免出现因为默认这种补码带来的问题.  
 对于Java语言而言, 它对数据格式的要求更为具体:two’s-complement representation with the exact ranges shown for the 64-bit case.  
@@ -125,12 +133,13 @@ C语言允许在各种不同的数字数据类型之间做强制类型转换, �
 $$
 T2U_w(x) = \{ \begin{matrix} x+2^w ,& x<0 \\ x,& x>0 \end{matrix}
 $$
-![T2U](figure/Book2.4.png)  
+<div align=center><img src="https://i.imgur.com/9Fib2sR.png" width="50%"/></div> 
+
 同样的, 我们可以得到Unsigned到signed的结果:
 $$
 U2T_w(x) = \{ \begin{matrix} u, & u\leq TMax_w \\ u - 2^w , & u > Tmax_u \end{matrix}
 $$
-![T2U](figure/Book2.5.png)  
+<div align=center><img src="https://i.imgur.com/w3XAyG4.png" width="50%"/></div>  
 
 #### C 语言中的有符号数与无符号数
 大多数数字都默认为是有符号的, 要创建一个无符号常量，必须加上后缀字符 'U' 或者 'u'.值得注意的是, 在相互赋值的时候, signed和Unsigned会发生隐式类型转换:
@@ -156,7 +165,8 @@ uy = ty; /* Cast to unsigned */
 $$
 x + _w^u y = \{ \begin{matrix} x+y,& x+y < 2^w & \text{Normal case} \\ x+y-2^w,& x+y\geq 2^w & \text{Overflow}\end{matrix}
 $$
-![overflow](figure/Book2.6.png)  
+<div align=center><img src="https://i.imgur.com/kJncYmO.png" width="60%"/></div>
+
 当执行 C 程序时，**不会将溢出作为错误而发信号**。我们可以从结果判断溢出是否发生, 如果两个unsigned之和小于其中任何一个数, 那就说明发生了溢出.  
 模数加法和算术意义的加法结果不同,但是它依旧形成一个阿贝尔群(可交换).  
 #### signed Addition(这里讨论补码)
@@ -174,7 +184,8 @@ x+_{w}^{\mathrm{t}} y &=U 2 T_{w}\left(T 2 U_{w}(x)+_{w}^{\mathrm{u}} T 2 U_{w}(
 &=U 2 T_{w}\left[(x+y) \bmod 2^{w}\right]
 \end{aligned}
 $$
-![overflow](figure/Book2.7.png)  
+<div align=center><img src="https://i.imgur.com/aPS419y.png" width="60%"/></div>
+
 而对于做相反数这个问题, 除了 $TMin_w$ 的相反数是它本身, 其他数字的相反数都和数学上是相同的. (例如对于4bit的补码 1000 + 1000 = 0/ 1111 + 0001 =0, 他们都互为相反数).
 
 #### Unsigned multiplication
@@ -207,18 +218,17 @@ $$
 d = \sum_{i = -n}^{m} 10^i \times d_i
 $$
 这个表示的方式同时也适用于二进制系统:  
-![](figure/Book2.8.png)  
+<div align=center><img src="https://i.imgur.com/yaoaODu.png" width="40%"/></div> 
 将binary point向右移相当于值乘以2.由于编码的长度有限, 对大多数数字都不能精确编码.
 
 #### IEEE 浮点数表示
 IEEE 浮点标准用 $ V = (-1)^s \times M \times 2^E $ 表示一个数:
 * 符号位: 用于表示它是正数还是负数, 对于数值为 0 的符号位解释作为特殊情况处理
 * 尾数: M 为一个二进制小数, 范围是 $1 \sim 2 - \epsilon $ 或者是 $0 \sim 1 - \epsilon$
-* 阶码: 对浮点数赋予 2 的 E 次幂作为权重
-  ![](figure/Book2.9.png)  
+* 阶码: 对浮点数赋予 2 的 E 次幂作为权重<div align=center><img src="https://i.imgur.com/1f0oz0g.png" width="70%"/></div>  
 
-根据 E 那个部分的数字发现有下面几种情况:
-![](figure/Book2.10.png)  
+根据 E 那个部分的数字发现有下面几种情况:<div align=center><img src="https://i.imgur.com/KP60F9N.png" width="70%"/></div>
+
 1. 规格化情况, exp 的位模式不全是 0 也不全为 1, 阶码用偏置的方式表示有符号的整数, 实际代表的幂次为 $E = e_{unsigned} - Bias$, 小数部分可以通过约定使得尾数 M 为 1 + f, 在 1,2 这个左闭右开区间中.
 2. 当阶码全为0时候是非规格话情况, M 的值是 f, 此时没有隐含有的开头1, 它有两个好处
    1. 一个是用来表示 0, 刚好全部都是0
@@ -226,8 +236,8 @@ IEEE 浮点标准用 $ V = (-1)^s \times M \times 2^E $ 表示一个数:
 3. 特殊值,阶码全为 0的时候, 两种情况, 如果小数部分全为0则表示无穷大, 否则表示NaN(Not a Number)
 
 #### 舍入
-因为表示方法限制了浮点数的范围和精度，所以浮点运算只能近似地表示实数运算, 这时候我们就需要做舍入运算, IEEE 浮点格式定义了四种不同的舍入方式, 其中 Round-to-even 是默认的方式.  
-![](figure/Book2.11.png)  
+因为表示方法限制了浮点数的范围和精度，所以浮点运算只能近似地表示实数运算, 这时候我们就需要做舍入运算, IEEE 浮点格式定义了四种不同的舍入方式, 其中 Round-to-even 是默认的方式. <div align=center><img src="https://i.imgur.com/1qNi6ak.png" width="70%"/></div> 
+
 向偶数舍入在大多数现实情况中避免了统计偏差, 相对于一般的四舍五入带来平均值略高的结果, 这种舍入在 50% 的时间里,它将向上舍入，而在 50% 的时间里，它将向下舍入。在二进制中可以这么做, 最后 `X.Y1000000` , 根据 Y 的最后一位判断是要向上还是向下舍入.  
 
 #### 浮点运算
@@ -274,8 +284,8 @@ Intel一般把两个Byte称为一个word, 在64位系统中, 在long和pointer�
 大多数GCC生成的汇编代码都有一个字符的后缀, 表明操作数的大小.例如数据传送指令, movb(传送字节),movw(传送字) movl(传送双字) movq(传送4字). 
 
 ### 访问信息
-x86-64 的中央处理器包含了一组16个存储64位值的通用目的寄存器, 用于存储 **整数** 和 **指针**, 他们的命名有不同的规则(历史演化的结果).在过去8086时代有8个16位寄存器, 每个有特定的用途.  
-![figure](figure/Book3.1.png)  
+x86-64 的中央处理器包含了一组16个存储64位值的通用目的寄存器, 用于存储 **整数** 和 **指针**, 他们的命名有不同的规则(历史演化的结果).在过去8086时代有8个16位寄存器, 每个有特定的用途.<div align=center><img src="https://i.imgur.com/9nnw6ri.png" width="60%"/></div>  
+ 
 指令可以对这 16 个寄存器的低位字节中存放的不同大小的数据进行操作。字节级操作可以访问最低的字节，16 位操作可以访问最低的 2 个字节， 32 位操作可以访问最低的 4 个字节，而 64 位操作可以访问整个寄存器。  
 * 生成 1 字节和 2 字节数字的指令会保持剩下的字节不变；
 * 生成 4 字节数字的指令会把高位 4 个字节置为 0。后面这条规则是作为从 IA32 到x86-64 的扩展的一部分而采用的。 
@@ -286,14 +296,13 @@ x86-64 的中央处理器包含了一组16个存储64位值的通用目的寄存
 大多数指令有一个或多个操作数(operand), 指示出执行一个操作中要使用的源数据值，以及放置结果的目的位置。 x86-64的操作数可以分成三种类型:
 * **立即数(immediate)**: 用来表示const value, 如 `$-577` 或者 `$0x1F`
 * **寄存器**: 用来表示某个寄存器的的内容
-* **内存引用**: 根据计算出来的地址访问某个内存的位置(有多种addressing mode,如下表)
-    ![数据格式](figure/Book3.2.png)  
+* **内存引用**: 根据计算出来的地址访问某个内存的位置(有多种addressing mode,如下表)<div align=center><img src="https://i.imgur.com/EKS3ipu.png" width="70%"/></div> 
 
 #### 数据传送指令
 **最频繁使用的指令是将数据从一个位置复制到另一个位置的指令**, 再此我们将介绍不同的数据传送指令, 他们或者源类型和目的类型不同, 或者执行的转换不同, 或者具有不同的副作用.   
 最简单的数据移动指令就是 mov 类, 使用的形式为 `mov Source, Destination`, 包括 `movb`, `movw`, `movl`, `movq`, 分别对应 Move byte/ word/ long(double word)/ quad word.  
-Source 可以在 immediate/ 寄存器值/ 内存上, Destination 可以是 寄存器或者内存上.**<font color=red> 但是两个operand 不能都是 refer to memory location</font>**, 这需要分成两个指令.   
-![](figure/Book3.3.png)  
+Source 可以在 immediate/ 寄存器值/ 内存上, Destination 可以是 寄存器或者内存上.**<font color=red> 但是两个operand 不能都是 refer to memory location</font>**, 这需要分成两个指令.<div align=center><img src="https://i.imgur.com/RVVyklV.png" width="70%"/></div>
+ 
 此外 `movabsq` 可以操作任意的 64 位立即数, 而且只能以寄存器作为 Destination.   
 还有另外两种移动数据的指令, 将较小的源值复制到较大的目的的时候使用, 这些指令都是从源(内存或寄存器) 复制到寄存器. MOVZ 类中的指令把目的中剩余的字节填充为0, 而MOVS 类中的指令通过符号扩展来填充，把源操作的最高位进行复制.每条指令名字的最后两个字符都是大小指示符：第一个字符指定源的大小，而第二个指明目的的大小.   
 我们可以从一个简单的例子看不同的数据传输如何改变目标寄存器:
@@ -328,8 +337,8 @@ exchange:
 2. 像 x 这样的局部变量通常是保存在寄存器中，而不是内存中。访问寄存器比访问内存要快得多。
 
 #### 压入和弹出栈数据
-栈在函数/过程/方法调用中起到至关重要的作用,它遵循先进后出原则。栈可以实现为一个数组，总是从数组的一端插入和删除元素,这一端被称为栈顶。在 x86-64 中, 栈向下增长，这样一来，栈顶元素的地址是所有栈中元素地址中最低的。  
-![](figure/Book3.4.png)  
+栈在函数/过程/方法调用中起到至关重要的作用,它遵循先进后出原则。栈可以实现为一个数组，总是从数组的一端插入和删除元素,这一端被称为栈顶。在 x86-64 中, 栈向下增长，这样一来，栈顶元素的地址是所有栈中元素地址中最低的。<div align=center><img src="https://i.imgur.com/lQGIDCN.png" width="70%"/></div>
+
 这样的话指令 `pushq %rbp`相当于
 ```x86asm
 subq $8, %rsp
@@ -345,7 +354,8 @@ addq $8, %rsp
 
 ### 算术和逻辑操作
 大多数操作都分成了指令类, 对不同的操作数有不同的变种(b for byte, w for word, l for double words, q for quad words).  
-![](https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210421150524.png)  
+<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210421150524.png"/></div>
+
 #### 加载有效地址
 加载有效地址(load effective address, `leaq`) 实际上就是 `movq` 指令的变形.  它的指令形式是从内存读数据到寄存器，但实际上它根本就没有引用内存. 指令将有效地址写入目标的操作数中,实际上就是为后面内存引用产生指针.此外, **`leaq` 指令能执行加法和有限形式的乘法**. 我们用下面做一个简单得例子:，如果寄存器 `%rdx` 的值为x, 那么指令`leaq 7 (%rdx, %rdx , 4), %rax` 将设置寄存器`%rax` 的值为 5x+7. 
 ```C++
@@ -373,7 +383,7 @@ scale:
 总之, 上面图中的大多数指令, 既可以用于无符号运算, 也可以用于二进制补码运算, 只有右移操作要求区分有符号和无符号数. 
 
 #### 特殊的算术操作
-![](https://i.loli.net/2021/04/22/1keFJKy9nbMxcBL.png)  
+<div align=center><img src="https://i.loli.net/2021/04/22/1keFJKy9nbMxcBL.png"/></div>  
 
 x86-64 指令集可以计算两个 64 bit 值的 full 128-bit 乘积(`imulq` for signed, `mulq` for unsigned), 结果分别存在 `%rdx`(高64位)`%rax`(低 64 位)中.其中一个参数一定要放在`%rax`中:
 ```C++
@@ -408,4 +418,3 @@ store_uprod:
 * ZF: Zero flag, 最近的操作得出的结果为0 
 * SF: Sign flag, 最近的操作得到的结果为负数。
 * OF: Overflow flag, 最近的操作导致一个补码溢出
-
