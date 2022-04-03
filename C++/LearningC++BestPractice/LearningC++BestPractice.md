@@ -1,4 +1,4 @@
-# Learning C++ Best Practive Training
+# Learning C++ Best Practice Training
 ## Introduction
 C++ 使用有不同的风格, 如传统的
 ```C++
