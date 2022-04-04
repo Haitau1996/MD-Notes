@@ -181,3 +181,30 @@
        AVG(prod_price) AS price_avg
     FROM products;
     ```
+## Chap 13: 分组数据
+分组允许把数据分为多个逻辑组，以便能对每个组进行聚集计算。
+* 使用 `GROUP BY` 子句建立分组
+    ```sql
+    SELECT vend_id, COUNT(*) AS num_prods
+    FROM products
+    GROUP BY vend_id;
+    ```
+    * `GROUP BY` 子句可以包含任意数目的列: 方便进行分组嵌套。
+    * `GROUP BY` 子句必须出现在 `WHERE` 子句之后，`ORDER BY` 子句之前。
+    * 列中有多行 `NULL` 值， 他们将分为一组。
+    * 除聚集计算语句外，`SELECT` 语句中的每个列都必须在 `GROUP BY` 子句中给出, 如上面的 vend_id 
+* 使用 `HAVING` 过滤分组：`WHERE` 过滤指定的是行而不是分组, 而 `HAVING` 过滤分组,并且**HAVING 支持所有WHERE 操作符**。区别在于**WHERE 在数据分组前进行过滤，HAVING 在数据分组后进行过滤**。
+    ```sql
+    SELECT cust_id, COUNT(*) AS orders
+    FROM orders
+    GROUP BY cust_id
+    HAVING COUNT(*) >= 2;
+
+    SELECT vend_id, COUNT(*) AS num_prods
+    FROM products
+    WHERE prod_price >= 10
+    GROUP BY vend_id
+    HAVING COUNT(*) >= 2;
+    ```
+* 分组 VS 排序<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220404112233.png" width="80%"/></div>
+* `SELECT` 语句的顺序：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220404112338.png" width="50%"/></div>
