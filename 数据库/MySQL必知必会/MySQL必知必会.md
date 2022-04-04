@@ -208,3 +208,54 @@
     ```
 * 分组 VS 排序<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220404112233.png" width="80%"/></div>
 * `SELECT` 语句的顺序：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220404112338.png" width="50%"/></div>
+
+## Chap 14: 使用子查询
+**查询（query）** 任何SQL语句都是查询，但此术语一般指SELECT 语句。SQL还允许创建**子查询** （subquery），即嵌套在其他查询中的查询。
+### 利用子查询进行过滤
+如果我们需要列出订购物品 TNT2 的所有客户， 而客户信息和订购信息在不同的表中：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220404143145.png" width="30%"/></div>
+
+这时候一个符合直觉的思路就是分成不同的步骤：
+1. 检索包含物品TNT2的所有订单的编号
+2. 检索具有前一步骤列出的订单编号的所有客户的ID
+3. 检索前一步骤返回的所有客户ID的客户信息
+    ```sql
+    # step 1: 
+    SELECT order_num
+    FROM orderitems
+    WHERE prod_id = 'TNT2';
+    # step 2:
+    SELECT cust_id
+    FROM orders
+    WHERE order_num IN (20005,20007);
+    # step 3:
+    SELECT cust_name, cust_contact
+    FROM customers
+    WHERE cust_id IN (10001,10004);
+    ```
+
+把把第一个查询变为子查询组合两个查询,在把前两个查询作为子查询组合进第三个查询：
+```sql
+SELECT cust_name, cust_contact
+FROM customers
+WHERE cust_id IN (SELECT cust_id
+                  FROM orders
+                  WHERE order_num IN (SELECT order_num
+                                      FROM orderitems
+                                      WHERE prod_id = 'TNT2'));
+```
+虽然子查询一般与IN 操作符结合使用，但也可以用于测试等于（`=`）、不等于（`<`）等。
+### 作为计算字段使用的子查询
+使用子查询的另一方法是创建计算字段， 如计算每个客户的订单总数，可以分成两步：
+1. 从 customers 表中检索客户列表。
+2. 对于检索出的每个客户，统计其在 orders 表中的订单数目。
+    ```sql
+    SELECT  cust_name,
+            cust_state,
+            (SELECT COUNT(*)
+            FROM orders
+            WHERE orders.cust_id = customers.cust_id) AS orders
+    FROM customers
+    ORDER BY cust_name;
+    ```
+
+上面这种涉及外部查询的子查询被称为**相关子查询**（correlatedsubquery），这时候必须注意限制有歧义性的列名。
