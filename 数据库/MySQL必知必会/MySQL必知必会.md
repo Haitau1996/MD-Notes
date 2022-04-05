@@ -259,3 +259,37 @@ WHERE cust_id IN (SELECT cust_id
     ```
 
 上面这种涉及外部查询的子查询被称为**相关子查询**（correlatedsubquery），这时候必须注意限制有歧义性的列名。
+
+## Chap 15: 联结表
+关系表的设计就是要保证**把信息分解成多个表，一类数据一个表**，各表通过某些常用的值（即关系设计中的关系，relational）互相关联。
+* 外键（foreignkey） 外键为某个表中的一列，它包含另一个表的主键值，定义了两个表之间的关系。
+* 可伸缩性（scale） 能够适应不断增加的工作量而不失败
+
+数据存储在多个表中， 联结允许用单条 `select` 语句检索出数据：
+* **联结**是一种机制，用来在一条 `SELECT` 语句中关联表
+* 联结不是物理实体, 但是简历联结后， SQL 会维护引用的完整性
+
+### 创建联结
+```sql
+SELECT vend_name, prod_name, prod_price
+FROM vendors, products
+WHERE vendors.vend_id = products.vend_id
+ORDER BY vend_name, prod_name;
+```
+* 最大的区别在于**指定的列并不完全在同一个表中**
+* 在一条 `SELECT` 语句中联结几个表时，**相应的关系是在运行中构造的**, `WHERE` 子句就是配对的过滤条件， 使得 `SELECT` 只包含符合联结条件的行：
+  * **应该保证所有联结都有 WHERE 子句**，否则MySQL将返回比想要的数据多得多的数据(笛卡尔积)
+* 上面的联结称为等值联结(equal join， 也叫内部联结),可以使用稍微不同的语法指定(ANSI SQL规范首选INNER JOIN 语法)
+    ```sql
+    SELECT vend_name, prod_name, prod_price
+    FROM vendors INNER JOIN products
+    ON vendors.vend_id = products.vend_id;
+    ```
+* SQL对一条 `SELECT` 语句中可以联结的表的数目没有限制:
+    ```sql
+    SELECT prod_name, vend_name, prod_price, quantity
+    FROM orderitems, products, vendors
+    WHERE   products.vend_id = vendors.vend_id
+            AND orderitems.prod_id = products.prod_id
+            AND order_num = 20005;
+    ```
