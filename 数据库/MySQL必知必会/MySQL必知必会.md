@@ -31,7 +31,7 @@
     USE crash_course;
     ```
 * Windows 系统中的使用
-  * VSCode <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220331211321.png" width="60%"/></div>
+  * VSCode <div align=center><img src="https://i.imgur.com/BPaAk8K.png" width="70%"/></div>
     * 可能有[登陆的问题](https://github.com/formulahendry/vscode-mysql/issues/79)， 在 MySQL 命令行中运行`ALTER USER '<your_user>'@'localhost' IDENTIFIED WITH mysql_native_password BY '<your_password>';` 解决
   * 在 powershell 中可以使用命令行`mysql -u root -p<your_passwd> -h 127.0.0.1 -P <mysql_port_no>` 来连接数据库
 ## Chap 04: 检索数据
@@ -293,3 +293,4 @@ ORDER BY vend_name, prod_name;
             AND orderitems.prod_id = products.prod_id
             AND order_num = 20005;
     ```
+## Chap 16: 创建高级联结
