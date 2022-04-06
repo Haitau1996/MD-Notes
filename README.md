@@ -4,7 +4,7 @@
 
 ## 编程语言
 ### C++
-* 一个被老板画饼想要给托卡马克写大型 MHD 模拟程序而又毫无编程经验的彩笔，蹭科研经费买了本叫 [学习和使用C指针](C++/UnderstandAndUsingCPointers/UnderstandAndUsingCPointers.md) 的书,  打开了新世界的大门
+* 一个被老师画饼想要给托卡马克写 MHD 模拟程序而又毫无编程经验的彩笔，蹭科研经费买了本叫 [学习和使用C指针](C++/UnderstandAndUsingCPointers/UnderstandAndUsingCPointers.md) 的书,  打开了新世界的大门
 * Effective 三件套
   *  [Effective C++](C++/EffectiveCPP/EffectiveCPlusPlus.md) 
   *  [More Effective C++](C++/EffectiveMoreCPP/MoreEffectiveCPP.md)
