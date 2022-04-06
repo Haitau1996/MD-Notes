@@ -1,5 +1,5 @@
 # 操作系统(RISC-V ed) 清华大学 [Spring 2020](http://os.cs.tsinghua.edu.cn/oscourse/OS2020spring)
-<font size = 4> 向勇 & 陈渝 </font>
+Teaching by 向勇 & 陈渝
 
 ## 第 1 讲：操作系统概述
 预备知识:   
@@ -13,29 +13,28 @@
 * 操作系统概念
 * 操作系统:精髓与设计原理
 
-教学内容: 主要与操作系统的内核有关,实验使用QEMU模拟器写一个教学操作系统   
-![contents](figure/1.1.png)   
+教学内容: 主要与操作系统的内核有关,实验使用QEMU模拟器写一个教学操作系统<div align=center><img src="https://i.imgur.com/HzHQId2.png" width="70%"/></div>   
 
 ### 什么是操作系统
-* 没有公认的定义, 从wiki看,操作系统是管理硬件资源、控制程序运行、改善人机界面和为应用软件提供支持的一种系统软件.   
-    ![](figure/1.2.png)   
+<div align=center><img src="https://i.imgur.com/JpctYJM.png" width="60%"/></div>
+
+* 没有公认的定义, 从wiki看,操作系统是管理硬件资源、控制程序运行、改善人机界面和为应用软件提供支持的一种系统软件.<div align=center><img src="https://i.imgur.com/QTvrf25.png" width="50%"/></div>  
 * 操作系统是一个控制程序
     * 一个系统软件,控制程序执行过程, 防止错误
     * 执行用户程序, 给程序提供服务,方便用户使用计算机系统
 * 操作系统是一个资源管理程序
     * 应用程序与硬件之间的中间层,管理各种软硬件资源
     * 提供访问软硬件资源的高效手段,解决访问冲突, 确保公平使用
+   
+实际上, 操作系统就是一种抽象, 将CPU抽象成了进程...:<div align=center><img src="https://i.imgur.com/WR953sc.png" width="50%"/></div> 
 
-![system heri](figure/1.3.png)   
-实际上, 操作系统就是一种抽象, 将CPU抽象成了进程...:   
-![abstraction](figure/1.4.png)   
 内核的特征:   
 * 并发：计算机系统中同时存在多个运行程序
 * 共享：程序间**同时**访问互斥共享各种资源(CPU一段时间给这个进程,一段时间给另一个,而内存则是不同段内存分给了不同的进程,他们的共享方式是不一样的)
 * 虚拟：每个程序**看上去独占**一个完整的计算机(内存和磁盘都有这个问题, 看上去独立, 实际上是共享的)
 * 异步：服务的完成时间不确定，也可能失败(不能用时钟去数运行了多久)
 
-<font size=4 > 为什么学习操作系统</font>
+#### 为什么学习操作系统
 它是一门综合的课程, 同时在计算机科学中一个基础的部分.操作系统中的关键问题:   
 * 操作系统管理并发
 * 操作系统代码必须是高效的, 低耗能，安全可靠
@@ -56,13 +55,11 @@
 * AIoT 系统: 走向设备，走向网络，新的挑战 (不可靠/大数据)
 
 ### 操作系统结构
-1. 简单结构 : 在这种结构下, __常驻系统程序就是操作系统__,它在最小的空间, 设计用于提供大部分功能,没有拆分为模块,主要用汇编编写,没有安全保护.   
-    ![simple structure](figure/1.5.png)   
+1. 简单结构 : 在这种结构下, __常驻系统程序就是操作系统__,它在最小的空间, 设计用于提供大部分功能,没有拆分为模块,主要用汇编编写,没有安全保护. <div align=center><img src="https://i.imgur.com/OLIs8RX.png" width="60%"/></div>  
 2. 单体分层结构:到了Unix/Linux系统, 就出现了.将单体操作系统 (Monolithic OS) 划分为多层 (levels): 
     * 每层建立在低层之上
     * 最底层(layer 0),是硬件驱动 最高层(layer N)是用户界面
-    * 每一层仅使用更低一层的功能和服务   
-    ![Monolithic OS](figure/1.6.png)
+    * 每一层仅使用更低一层的功能和服务<div align=center><img src="https://i.imgur.com/QZqXaEn.png" width="80%"/></div>
 3. 微内核结构: 
     * 尽可能把内核功能移到用户空间
     * 用户模块间的通信使用消息传递
@@ -78,7 +75,7 @@
 * 运行的程序通常是是隔离的单元
 * 防止程序 X 破坏或监视程序 Y, 防止进程干扰操作系统,错误的过程可能会试图欺骗硬件或内核
 
-<font size=4> 主要的隔离方法</font>
+#### 主要的隔离方法
 1. 地址空间 (虚拟内存)
     * 程序只允许访问自己的内存
     * 每个程序如果没有许可, 则不允许访问不属于自己的内存
@@ -90,9 +87,9 @@
         * 调用中断处理程序，当中断处理程序完成后，它将控制返回给下一条本来要执行 的指令。
 
 ### 从 OS 角度看 RISC-V CPU
-![](figure/2.1.png) ![](figure/2.2.png)   
+相对所见即所得的系统，现代计算的实现和应用间有非常大的 GAP:<div align=center><img src="https://i.imgur.com/ehLw2vi.png" width="80%"/></div>  
 
-<font size=4> RISC-V 中断机制: </font>
+**RISC-V 中断机制:**
 也可由高特权模式下的软件授权低特权模式软件处理中断.
 
 ### Rust 语言与系统编程
@@ -104,55 +101,39 @@ Rust的主要特性:
 * 成熟的工具链
 * 友好的助教 + 社区（OS 示例代码 + 文档）生态
 * 学习 Rust 的入门门槛比较高, 在实验中对减少 bug 有好处
-
-```Rust
-fn sum_to(n:i32)->i32{
-    let mut acc = 0;
-    for i in 0..n{
-        acc += i;
+    ```Rust
+    fn sum_to(n:i32)->i32{
+        let mut acc = 0;
+        for i in 0..n{
+            acc += i;
+        }
+        return acc
     }
-    return acc
-}
-```
+    ```
 
-为了支持混合编程, 我们最好遵循下面这种约定:
-
-![](figure/2.3.png)
-
-![](figure/2.4.png)
+为了支持混合编程, 我们最好遵循下面这种约定:<div align=center><img src="https://i.imgur.com/OVi3zTg.png" width="70%"/><img src="https://i.imgur.com/RRVzJud.png" width="50%"/></div>
 
 想理解函数调用需要理解函数调用栈, 通过回溯栈理解函数调用关系. 
 
 ### RISC-V CPU 启动
 需要从 QEMU 模拟器中看相关的信息, RISC-V CPU 启动过程:
-1. 初始化 CPU/寄存器
-   
-   ![](figure/2.5.png)
-2. 初始化内存
-   
-   ![](figure/2.6.png)
-3. 初始化基本外设
-   
-   ![](figure/2.7.png)
-4. 执行 ROM 中固化的代码(指定我们写的第一条指令的位置)
-   
-   ![](figure/2.8.png)
+1. 初始化 CPU/寄存器<div align=center><img src="https://i.imgur.com/AW299lA.png" width="70%"/></div>
+2. 初始化内存<div align=center><img src="https://i.imgur.com/GTazmGi.png" width="70%"/></div>
+3. 初始化基本外设<div align=center><img src="https://i.imgur.com/kTz8JA1.png" width="70%"/></div>
+4. 执行 ROM 中固化的代码(指定我们写的第一条指令的位置)<div align=center><img src="https://i.imgur.com/CglMmYd.png" width="70%"/></div>
    
 ## 第 3 讲 : 中断, 异常 和 系统调用
 ### 基本概念与原理
-**系统调用**(System Call): 应用程序 **主动** 向操作系统发出的服务请求. (和函数调用之间一个很大的区别是应用程序跑在用户态, 而操作系统跑在内核态).
-
-异常(exception): 非法指令或者其他原因导致 **当前指令执行失败**(如内存出错) 后的处理请求. (也可能在操作系统中出现, 此时可能导致整个系统崩溃)
-
-中断: 来自硬件设备(外设/device) 的处理请求. 
+**系统调用**(System Call): 应用程序 **主动** 向操作系统发出的服务请求. (和函数调用之间一个很大的区别是应用程序跑在用户态, 而操作系统跑在内核态).  
+**异常**(exception): 非法指令或者其他原因导致 **当前指令执行失败**(如内存出错) 后的处理请求. (也可能在操作系统中出现, 此时可能导致整个系统崩溃)  
+**中断**: 来自硬件设备(外设/device) 的处理请求. 
 
 三者都是由操作系统进行统一的管理, 为什么需要中断/异常和系统调用:
 * OS 内核是被信任的第三方
 * OS 内核可以执行特权指令, 管理硬件
 * OS 内核提供了各种 Service
 
-如果没有中断, CPU 需要不停地去查询外设的状态. 异常希望解决当应用处理意想不到的行为, 系统调用是提供一系列的服务, 使得应用程序可以简单完成很多很重要的额功能. 
-
+如果没有中断, CPU 需要不停地去查询外设的状态. 异常希望解决当应用处理意想不到的行为, 系统调用是提供一系列的服务, 使得应用程序可以简单完成很多很重要的额功能.   
 响应方式
 * 中断: 异步(什么时候打断我们并不知道)
 * 异常: 同步
@@ -175,7 +156,7 @@ RISC-V FU540 手册上可以看到, 它有两个层次的中断处理机制:
 
 ### 中断处理机制
 #### OverView
-![](figure/3.1.png)
+<div align=center><img src="https://i.imgur.com/LLFTwmq.png" width="70%"/></div>
 
 OS 运行在 S 态, 用户应用程序运行在 U 态,建立中断机制:
 * 建立中断服务例程
@@ -200,10 +181,9 @@ OS 运行在 S 态, 用户应用程序运行在 U 态,建立中断机制:
 * 初始化: 设置 sie 的 TI 使能 STIE 位
 * 服务例程: 调用 OpenSBI 提供的接口设置下次时钟中断触发时间
 
-![](figure/3.2.png)
+<div align=center><img src="https://i.imgur.com/hOvJqkR.png" width="80%"/></div>
 
-在这种架构下, OS 并没有直接控制硬件, 使得 OS 可以更加简化. 
-
+在这种架构下, OS 并没有直接控制硬件, 使得 OS 可以更加简化.  
 怎样保存/恢复现场:
 * 还需要为被中断的程序保存和恢复当时程序运行时的上下文:
 * SAVE_ALL 寄存器
@@ -213,7 +193,7 @@ OS 运行在 S 态, 用户应用程序运行在 U 态,建立中断机制:
   * scause: 指示发生异常/中断的种类
   * stval: 保存了发生异常/中断的附加信息
 
-![](figure/3.3.png)
+<div align=center><img src="https://i.imgur.com/R29IGFh.png" width="70%"/></div>
 
 总的而言, 就是下面五个过程:
 * 硬件设置
@@ -246,15 +226,12 @@ OS 运行在 S 态, 用户应用程序运行在 U 态,建立中断机制:
 * 可能切换页表
 * 需要拷贝数据(不能简单传指针)
 
-![](figure/3.4.png)
+<div align=center><img src="https://i.imgur.com/DRARVUf.png" width="60%"/></div>
 
 ## 第 4 讲: 物理内存管理与连续内存分配
 ### 计算机体系结构/内存层次
-![](figure/4.1.png)
-
-做操作系统的管理的时候需要准确地理解对应体系结构的存储情况,从层次结构上看, 不同层次的内存访问速度差别非常大:
-
-![](figure/4.2.png)
+<div align=center><img src="https://i.imgur.com/GTTxOTk.png" width="70%"/></div>
+做操作系统的管理的时候需要准确地理解对应体系结构的存储情况,从层次结构上看, 不同层次的内存访问速度差别非常大:<div align=center><img src="https://i.imgur.com/3BBsS6J.png" width="70%"/></div>
 
 存储管理单元将逻辑的虚拟地址空间转换成为物理地址空间:
 * 抽象: 逻辑地址空间
@@ -278,7 +255,7 @@ OS 运行在 S 态, 用户应用程序运行在 U 态,建立中断机制:
 后面我们一直会遇到的问题就是逻辑地址和物理地址是什么, 它们的转换关系是怎样的.
 
 #### 逻辑地址生成和检查
-![](figure/4.3.png)
+<div align=center><img src="https://i.imgur.com/wq7HHzW.png" width="70%"/></div>
 
 地址生成实际和限制
 * 编译时
@@ -291,11 +268,9 @@ OS 运行在 S 态, 用户应用程序运行在 U 态,建立中断机制:
   * 执行时代码可移动
   * 需要地址转换(映射)硬件支持
 
-![](figure/4.4.png)
+<div align=center><img src="https://i.imgur.com/iaUGbzn.png" width="70%"/></div>
 
-此外还要有地址检查:
-
-![](figure/4.5.png)
+此外还要有地址检查:<div align=center><img src="https://i.imgur.com/VRcAiUn.png" width="70%"/></div>
 
 ### 连续内存分配
 计算机体系结构/内存层次
