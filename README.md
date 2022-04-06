@@ -28,8 +28,8 @@
 
 * 看陈姥姥视频的笔记在这里: [数据结构与算法 浙江大学](Algorithms/DataStructure-ZJU/DataStructure.md)
 * 普林斯顿的 Algorithms 算法课讲的真好
-  * [part I](Algorithms/Alogrithm4ed/AlgorithmOCW.md)
-  * [part II](Algorithms/Alogrithm4ed/AlgorithmOCW.2nd.md)
+  * [part I](Algorithms/Algorithm4ed/AlgorithmOCW.md)
+  * [part II](Algorithms/Algorithm4ed/AlgorithmOCW.2nd.md)
 * 这些东西太理论, 为了更好的写 leetcode 题目, 我又看了[剑指Offer](Algorithms/剑指Offer/剑指Offer.md),后续笔记停了将刷题的题解放到[仓库中](https://gitee.com/Haitau1996/leetcode)
 
 :memo: TODO:
