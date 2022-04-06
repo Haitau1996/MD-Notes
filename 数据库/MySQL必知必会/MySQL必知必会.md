@@ -294,3 +294,30 @@ ORDER BY vend_name, prod_name;
             AND order_num = 20005;
     ```
 ## Chap 16: 创建高级联结
+* **使用表别名**: 在之前我们可以为列输出定义别名， 而为了缩短 SQL 语句， 并且在单条 `SELECT` 语句中多次使用相同的表， **SQL 允许给表起别名**：
+    ```sql
+    SELECT cust_name, cust_contact
+    FROM customers AS c, orders AS o, orderitems AS oi
+    WHERE c.cust_id = o.cust_id
+        AND oi.order_num = o.order_num
+        AND prod_id = 'TNT2';
+    ```
+    * **表别名只在查询执行中使用, 并没有返回到客户端**
+
+### 其他联结类型
+在上章讨论了等值联结， 从两列的笛卡尔积中筛选出很小的部分， 这里讨论其他三种联结：**自联结，自然联结和外部联结**。
+* **自联结**：单条 `SELECT` 语句中不止一次引用相同的表
+    ```sql
+    # 使用子查询找出 DTNTR 的供应商，列出其他物品
+    SELECT prod_id, prod_name
+    FROM products
+    WHERE vend_id = (SELECT vend_id
+                    FROM products
+                    WHERE prod_id = 'DTNTR');
+    # 自联结实现
+    SELECT p1.prod_id, p1.prod_name
+    FROM products AS p1, products AS p2
+    WHERE p1.vend_id = p2.vend_id
+        AND p2.prod_id = 'DTNTR';
+    ```
+    * 这时候在 自联结中使用别名是为了**避免 MySQL 不知道查询的是哪一列**
