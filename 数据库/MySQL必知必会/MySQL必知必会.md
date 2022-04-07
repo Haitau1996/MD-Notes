@@ -321,6 +321,37 @@ ORDER BY vend_name, prod_name;
         AND p2.prod_id = 'DTNTR';
     ```
     * 这时候在 自联结中使用别名是为了**避免 MySQL 不知道查询的是哪一列**
-* **自然联结**：单条 `SELECT` 语句中引用相同的表，标准的联结返回所有数据，甚至相同的列多次出现。自然联结 **排除多次出现，使每个列只返回一次**。
+* **自然联结**：单条 `SELECT` 语句中引用相同的表，标准的联结返回所有数据，甚至相同的列多次出现。自然联结 **排除多次出现，使每个列只返回一次**。系统不会自动排除重复的列， 我们必须自己手动实现,下面就是一个非自然联结的例子:<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220407224352.png" width="30%"/></div>
     ```sql
-    
+    # 等值联结， 非自然
+    SELECT c.cust_id, o.cust_id
+    FROM customers AS c, orders as o
+    WHERE c.cust_id = o.cust_id;
+    # 自然联结
+    SELECT c.cust_id
+    FROM customers AS c, orders as o
+    WHERE c.cust_id = o.cust_id;
+    ```
+* **外部联结**：许多联结将一个表中的行与另一个表中的行相关联，但有时候会需要包含没有关联行的那些行。
+    ```sql
+    # inner join: 检索所有客户以及其订单
+    SELECT customers.cust_id, orders.order_num
+    FROM customers INNER JOIN orders
+        ON customers.cust_id = orders.cust_id;
+    # outer join: 检索所有客户以及其订单，包括没有订单的客户
+    SELECT customers.cust_id, orders.order_num
+    FROM customers LEFT OUTER JOIN orders
+        ON customers.cust_id = orders.cust_id;
+    ```
+    <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220407231432.png" width="50%"/></div>
+
+### 聚集函数与联结
+实际上， 聚集函数也可以和联结配合使用， 如检索每个客户的订单数：
+```sql
+SELECT customers.cust_name,
+       customers.cust_id,
+       COUNT(orders.order_num) AS num_ord
+FROM customers INNER JOIN orders
+ON customers.cust_id = orders.cust_id
+GROUP BY customers.cust_id;
+```
