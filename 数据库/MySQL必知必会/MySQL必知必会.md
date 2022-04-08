@@ -355,3 +355,34 @@ FROM customers INNER JOIN orders
 ON customers.cust_id = orders.cust_id
 GROUP BY customers.cust_id;
 ```
+
+## Chap 17: 组合查询
+**组合查询**：MySQL也允许执行多个查询（多条SELECT 语句），并将结果作为单个查询结果集返回。基本有两种使用情况：
+* 在单个查询中从不同的表返回类似结构的数据；
+* 对单个表执行多个查询，按单个查询返回数据。
+
+MySQL 中使用 `UNION` 操作符来组合数条 SQL 查询，例如我们可以使用两条 `SELECT` 分别检索两种条件,使用 `UNION` 可以组合符合两个条件的结果：
+```sql 
+# 普通的 SELECT 操作
+SELECT vend_id, prod_id, prod_price
+FROM products
+WHERE prod_price <= 5
+    OR vend_id IN (1001,1002);
+# 使用 Union 操作符
+SELECT vend_id, prod_id, prod_price
+FROM products
+WHERE prod_price <= 5
+UNION
+SELECT vend_id, prod_id, prod_price
+FROM products
+WHERE vend_id IN (1001,1002);
+```
+
+UNION 的规则：
+* `UNION` 必须由两条或两条以上的SELECT 语句组成，语句之间用关键字 `UNION` 分隔
+* `UNION` 中的每个查询必须包含相同的列、表达式或聚集函数
+* 列数据类型必须兼容
+
+**UNION 默认会去除重复行， 而更改默认行为可以使用 `ALL` 关键字**。
+
+对组合查询的结果进行排序： 智能使用一条 `ORDER BY`  语句， 并且出现在最后一个 `SELECT` 语句中。因为**结果集，不存在用一种方式排序一部分，而又用另一种方式排序另一部分的情况**。
