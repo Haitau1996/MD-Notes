@@ -422,4 +422,37 @@ MySQL 两个最常使用的引擎为 MyISAM 和 InnoDB，前者支持全文本�
     WHERE Match(note_text) 
         Against('+safe +(<combination)' IN BOOLEANMODE);
     ```
-    
+
+## Chap 19: 插入数据
+`INSERT` 是用来插入（或添加）行到数据库表的,包括插入完整的行，插入行的一部分，插入多行 和 插入某些查询的结果。  
+* 插入完整的行， 可以使用默认的顺序和**指定列顺序**（优先使用， 默认的顺序不安全）：
+    ```SQL
+    INSERT INTO Customers
+    VALUES(NULL,'Pep E. LaPew','100 Main Street','Los Angeles','CA','90046','USA',NULL,NULL);
+    # 指定列顺序
+    INSERT INTO customers(cust_name,cust_address,cust_city,cust_state,
+                          cust_zip,cust_country,cust_contact,cust_email)
+    VALUES('Pep E. LaPew','100 Main Street','Los Angeles','CA','90046','USA',NULL,NULL);
+    ```
+* 使用括号分割插入多行数据：
+    ```sql
+    INSERT INTO customers(cust_name,cust_address,cust_city,cust_state,cust_zip,cust_country)
+    VALUES(
+        'Pep E. LaPew',
+        '100 Main Street',
+        'Los Angeles',
+        'CA',
+        '90046',
+        'USA'
+    ),
+    (
+        'M. Martian',
+        '42 Galaxy Way',
+        'New York',
+        'NY',
+        '11213',
+        'USA'
+    );
+    ```
+* `INSERT` 可以和 `SELECT` 配合使用
+
