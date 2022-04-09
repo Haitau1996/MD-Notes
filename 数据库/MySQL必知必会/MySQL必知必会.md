@@ -386,3 +386,40 @@ UNION 的规则：
 **UNION 默认会去除重复行， 而更改默认行为可以使用 `ALL` 关键字**。
 
 对组合查询的结果进行排序： 智能使用一条 `ORDER BY`  语句， 并且出现在最后一个 `SELECT` 语句中。因为**结果集，不存在用一种方式排序一部分，而又用另一种方式排序另一部分的情况**。
+
+## Chap 18: 全文本搜索
+MySQL 两个最常使用的引擎为 MyISAM 和 InnoDB，前者支持全文本搜索，而后者不支持。  
+为了进行全文本搜索，必须索引被搜索的列，而且要随着数据的改变不断地重新索引。在索引之后， 在 `SELECT` 语句中可与 `Match()` 和 `Against()` 函数配合进行搜索。  
+* 启用全文搜索支持： 一般是在创建表的时候启用,这里给 note_id 进行索引
+    ```sql
+    CREATE TABLE productnotes
+    (
+        note_id    int           NOT NULL AUTO_INCREMENT,
+        prod_id    char(10)      NOT NULL,
+        note_date datetime       NOT NULL,
+        note_text  text          NULL ,
+        PRIMARY KEY(note_id),
+        FULLTEXT(note_text)
+    ) ENGINE=MyISAM;
+    ```
+* 进行全文搜索：Match() 指定被搜索的列，Against() 指定要使用的搜索表达式。
+    ```sql
+    SELECT note_text
+    FROM productnotes
+    WHERE Match(note_text) Against('rabbit');
+    ```
+    * 如果单独列出他们返回的结果：发现 match 失败之后返回的是0， 成功时候返回的 rk 等级由MySQL根据行中词的数目、唯一词的数目、整个索引中词的总数以及包含该词的行的数目计算出来。<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220409095708.png" width="90%"/></div>
+* 使用查询扩展：第一行是包含 _anvils_ 的， 后面是包含第一行的词
+    ```sql
+    SELECT note_text
+    FROM productnotes
+    WHERE Match(note_text) Against('anvils' WITH QUERY EXPANSION);
+    ```
+* **使用布尔搜索**（即使没有 FULLTEXT 索引也可以使用）： 可以提供更多细节， 要匹配的词，要排斥的词（如果某行包含这个词，则不返回该行，即使它包含其他指定的词也是如此），排列提示，表达式分组等。<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220409100826.png" width="70%"/></div>
+    ```sql
+    SELECT note_text
+    FROM productnotes
+    WHERE Match(note_text) 
+        Against('+safe +(<combination)' IN BOOLEANMODE);
+    ```
+    
