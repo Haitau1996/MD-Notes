@@ -456,3 +456,33 @@ MySQL 两个最常使用的引擎为 MyISAM 和 InnoDB，前者支持全文本�
     ```
 * `INSERT` 可以和 `SELECT` 配合使用
 
+## Chap 20: 更新和删除数据
+使用 `UPDATE` 和 `DELETE` 更新和删除数据。
+### 更新数据
+`UPDATE` 包含三个部分：**需要更新的表， 列名和新值， 过滤语句**。需要主义， 更新的时候**不要省略WHERE 子句**， 否则会更新表中的所有行。
+```sql
+UPDATE customers
+SET cust_email = 'elmer@fudd.com'
+WHERE cust_id = 10005;
+# 更新多个列， 只需要使用单个 set 指令
+UPDATE customers
+SET cust_name = 'The Fudds',
+    cust_email = 'elmer@fudd.com'
+WHERE cust_id = 10005;
+```
+使用 `IGNORE` 使得及时发生错误， 也会继续操作。 而默认的行为是， 一行或者多行出现作物， 整个更新操作都会被取消。
+
+### 删除数据
+`DELETE FROM` 要求指定从中删除数据的表名，`WHERE` 子句过滤要删除的行。
+```sql
+DELETE FROM customers
+WHERE cust_id = 10006;
+```
+如果想从表中删除所有行，不要使用DELETE 。可使用TRUNCATE TABLE 语句，它完成相同的工作，但速度更快。
+
+### 使用准则
+省略了WHERE 子句，则UPDATE 或DELETE 将被应用到表中所有的行， 非常容易出错， 因此要遵循一些准则：
+* 除非确实打算更新和删除每一行，否则绝对不要使用不带 `WHERE` 子句的 `UPDATE` 或 `DELETE` 语句。
+* 保证每个表都有主键, 尽可能像 `WHERE` 子句那样使用它（可以指定各主键、多个值或值的范围）
+* 在对 `UPDATE` 或 `DELETE` 语句使用 `WHERE` 子句前，应该先用 `SELECT` 进行测试
+* 使用强制实施引用完整性的数据库，这样MySQL将不允许删除具有与其他表相关联的数据的行。
