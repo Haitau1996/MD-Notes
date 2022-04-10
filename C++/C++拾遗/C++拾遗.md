@@ -213,7 +213,7 @@
   * 用于代码块内部的变量声明, 作用是修改变量的储存类型, 变量的链接属性和作用域不受影响
 
 ## 语句
-* `break` 和 `continue` 的区别<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210708135318.png"/></div>
+* `break` 和 `continue` 的区别<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210708135318.png"/></div>
 * `switch` 语句中的**标签必须是常量表达式**(可以在编译期间求职的表达式), 不可以是任何变量, 同时要注意每个标签的 `break` 和最后的 `default` 语句
   
 ## 操作符和表达式
