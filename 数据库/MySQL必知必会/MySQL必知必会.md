@@ -485,4 +485,46 @@ WHERE cust_id = 10006;
 * 除非确实打算更新和删除每一行，否则绝对不要使用不带 `WHERE` 子句的 `UPDATE` 或 `DELETE` 语句。
 * 保证每个表都有主键, 尽可能像 `WHERE` 子句那样使用它（可以指定各主键、多个值或值的范围）
 * 在对 `UPDATE` 或 `DELETE` 语句使用 `WHERE` 子句前，应该先用 `SELECT` 进行测试
-* 使用强制实施引用完整性的数据库，这样MySQL将不允许删除具有与其他表相关联的数据的行。
+* 使用强制实施[引用完整性的数据库](http://www.nowamagic.net/librarys/veda/detail/907)，这样MySQL将不允许删除具有与其他表相关联的数据的行。
+
+## Chap 21: 创建和操纵表
+* 表创建：使用 `CREATE TABLE` 语句， 后面跟着新表的名字， 表列的名字和定义放在圆括号中并且使用逗号隔开。
+    ```sql
+    CREATE TABLE customers
+    (
+        cust_id      int       NOT NULL AUTO_INCREMENT,
+        cust_name    char(50)  NOT NULL ,
+        cust_address char(50)  NULL ,
+        cust_city    char(50)  NULL ,
+        cust_state   char(5)   NULL ,
+        cust_zip     char(10)  NULL ,
+        cust_country char(50)  NULL ,
+        cust_contact char(50)  NULL ,
+        cust_email   char(255) NULL ,
+        PRIMARY KEY (cust_id)
+    ) ENGINE=InnoDB;
+    ```
+    * 表的主键使用 `PRIMARY KEY` 指定
+      * 主键可以由多个列一起组成: `PRIMARY KEY (order_num, order_item)`
+    * 允许 NULL 值意味着允许插入行时不给出该列的值 
+    * 用户 id 这种编号除了唯一外没有特殊的意义， 使用的最简单的编号是下一个编号， 而使用 `SELECT` 语句得出最大值并不可靠（SELECT 和 INSERT 两条语句之间可能有别的插入行）， 这时候就可以使用 `AUTO_INCREMENT`, 并且可以获取这个值：
+        ```sql
+        SELECT last_insert_id();
+        ```
+    * `DEFAULT` 关键字可以指定行的默认值
+* 但MySQL与其他DBMS不一样，它具有多种引擎， 它们具有各自不同的功能和特性，为不同的任务选择正确的引擎能获得良好的功能和灵活性。引擎类型可以混用， 但是**外键不能跨引擎**。
+* `ALTER TABLE` 语句可以更新表。但是，理想状态下，当表中存储数据以后，该表就不应该再被更新。
+  * 添加列
+    ```sql
+    ALTER TABLE vendors
+    ADD vend_phone CHAR(20);
+    ```
+  * 删除列
+    ```sql
+    ALTER TABLE Vendors
+    DROP COLUMN vend_phone;
+    ```
+  * 定义外键
+* `DROP TABLE` 语句删除列
+* `REAME TABLE old_name TO new_name` 重命名表
+
