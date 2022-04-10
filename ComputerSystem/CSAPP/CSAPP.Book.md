@@ -354,7 +354,7 @@ addq $8, %rsp
 
 ### 算术和逻辑操作
 大多数操作都分成了指令类, 对不同的操作数有不同的变种(b for byte, w for word, l for double words, q for quad words).  
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210421150524.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210421150524.png"/></div>
 
 #### 加载有效地址
 加载有效地址(load effective address, `leaq`) 实际上就是 `movq` 指令的变形.  它的指令形式是从内存读数据到寄存器，但实际上它根本就没有引用内存. 指令将有效地址写入目标的操作数中,实际上就是为后面内存引用产生指针.此外, **`leaq` 指令能执行加法和有限形式的乘法**. 我们用下面做一个简单得例子:，如果寄存器 `%rdx` 的值为x, 那么指令`leaq 7 (%rdx, %rdx , 4), %rax` 将设置寄存器`%rax` 的值为 5x+7. 

@@ -79,7 +79,7 @@
 What is this cource?  
 **Algorithm** : method for solving a problem  
 **Data Structure** ： methods to store information 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210630184506.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210630184506.png"/></div>
 
 ## 动态链接问题
 for a given set of N-Objects,支持以下的操作  
@@ -94,16 +94,16 @@ Connect 具备的性质
 我们设计的类需要支持下
 
 面的接口:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210701164312.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210701164312.png"/></div>
 
 ### Quick Find [eager approach]
 具体实现的示意图如下： 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210701141351.png"/></div>  
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210701141351.png"/></div>  
 
 :arrow_forward: 使用一个size为n的array，id[]  
 :arrow_forward: 如果两者id一样的话，那么就认为是connected
 
-优缺点： find query非常快，但是 ==union需要消耗太多资源==, 如果对N个对象做 N 次 Union, 那么就需要 $N^2$ 次操作<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210701161948.png"/></div>
+优缺点： find query非常快，但是 ==union需要消耗太多资源==, 如果对N个对象做 N 次 Union, 那么就需要 $N^2$ 次操作<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210701161948.png"/></div>
 
 具体实现过程中需要注意的地方：
 * 初始构造函数需要给id[i]赋值为i
@@ -113,7 +113,7 @@ Connect 具备的性质
 具体的数据结构：
 - 使用一个size为n的array
 - interpretation: `id[i]` 为 i 的parent, root of i is `id[id[...]]`
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210701162342.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210701162342.png"/></div>
 
 使用的方法：
 - find：只要检测是否为同一个 root
@@ -127,17 +127,17 @@ Connect 具备的性质
 * weighting
   * 记录每棵树的 size(元素数量), 这需要一个新的 array, `sz[]`,用于记录
   * 每次 union 时将小的树挂在大树的树根下
-  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210701163049.png"/></div>
+  <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210701163049.png"/></div>
 
 * path compression
-  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210701163710.png"/></div>
+  <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210701163710.png"/></div>
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210701163833.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210701163833.png"/></div>
 
 `lg* N` 意味着要做多少次 lg 才能到 1, 如 lg* 2 = 1, lg* 4 = 2, lg* 16 = 3... 它一般是小于 5 的($N = 2^{65536}$), 因此实际上可以理解线性算法.
 ## Analysis of Algorithms
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210701214743.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210701214743.png"/></div>
 一般而言,有四个角度去理解程序,作为学生,我们必须全部了解他们.为何去分析算法:
 
 * 预测 performance
@@ -169,15 +169,15 @@ public static int count(int[] a)
 运行时间在 log-log plot 中是一条斜线, 斜率大概为 3.  
 ### mathematical models
 **cost of basic opeartion**: 大多数的 ==primitive operations== 只需要常量时间.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210701221332.png"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210701221526.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210701221332.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210701221526.png"/></div>
 
 很多时候可以把离散的求和近似成连续的积分,去评估一个算法的复杂度:  
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210701222039.png"/></div>  
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210701222039.png"/></div>  
 
 ### order-of-growth classifications
 **常见算法的复杂度**:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210701222407.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210701222407.png"/></div>
 
 **3-Sum 的 $N^2 \log N$ 解法**
 
@@ -201,27 +201,27 @@ public static int count(int[] a)
 在涉及对算法的评估时, 我们往往会采取下面三个角度:
 * Best case: Lower bound on cost.
 * Worst case: Upper bound on cost.
-* Average case: Expected cost for random input <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210701223900.png"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210701224409.png"/></div>
+* Average case: Expected cost for random input <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210701223900.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210701224409.png"/></div>
   
 在实际上, 人们常常先给出一个实现, 确定算法的上届. 然后尝试给出一个证明, 确定算法的下界. 不断减小其中的 Gap, 即便如此, 很多问题都无法得到一个 Optimal algorithm(上下界相同).  
 ### 内存使用的定量分析
 过去的 32 位系统指针大小是 4 Byte, 64 位系统的指针是 8 Byte, 在过渡期间这个问题比较痛苦.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210701224809.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210701224809.png"/></div>
 
 此外, 还需要注意三点:
 * Object overhead. 16 bytes.
 * Reference: 8 Bytes
-* 内存对齐: Each object uses a multiple of 8 bytes<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210701225057.png"/></div>
+* 内存对齐: Each object uses a multiple of 8 bytes<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210701225057.png"/></div>
 
 
 ## Stacks and queues
 
 面向对象编程的基本思想，分离interface和implementation.  
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702091457.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702091457.png"/></div>
 
 ### Stacks
-Stack 需要实现下面的接口:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702091631.png"/></div>
+Stack 需要实现下面的接口:<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702091631.png"/></div>
 
 #### 链表实现
 ```Java
@@ -252,8 +252,8 @@ public class LinkedStackOfStrings
     }
 }
 ```
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702092340.png"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702092255.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702092340.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702092255.png"/></div>
 
 不需要构造函数， 然后有一个指向node的reference,初始值为null.分析它的performance:
 
@@ -326,9 +326,9 @@ private void resize(int capacity)
     ```
 
 ### Linkde-List Queue
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702095106.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702095106.png"/></div>
 这个时候我们需要 Maintain 两个 pointer,分别对应 first 和 Last Node.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702095205.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702095205.png"/></div>
 
 ```Java
 public class LinkedQueueOfStrings
@@ -379,9 +379,9 @@ Orange b = new Orange();
 s.push(a);
 s.push(b); // Compile-time Errors: type dismatch
 ```
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702095947.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702095947.png"/></div>
 
-注: java 不允许Generic的array, 只能是用casting将Object的转为Item[ ]: <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702100106.png"/></div>
+注: java 不允许Generic的array, 只能是用casting将Object的转为Item[ ]: <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702100106.png"/></div>
 
 ```Java
 S = (Item[]) new Object[capacity];
@@ -389,7 +389,7 @@ S = (Item[]) new Object[capacity];
 
 ### 迭代器
 在 Java 中实现 iteration over some container, 只需要让这个 container 实现 `java.lang.Iterable` 接口. 实现之后就可以有非常 elegant 的客户端代码:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702105313.png"/></div> 
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702105313.png"/></div> 
 
 ```Java
 import java.util.Iterator;
@@ -421,7 +421,7 @@ public class Stack<Item> implements Iterable<Item>
 用define的key将数据排成一个有序的,data可能是 _Double_, _String_ 或者 _java.io.File_ , 具体的做法是实现 _Callbacks_(**reference to executable code**), 在不同的语言中具体的实现可能不同:
 * C: function pointers
 * C++ : class-type functions
-* Java : interfaces  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702152246.png"/></div>
+* Java : interfaces  <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702152246.png"/></div>
 
 对于传入的数据类型, 它必须通过 `compareTo()` 方法实现一个全序关系:
 * 自反性，对于所有的 v，v=v；
@@ -456,7 +456,7 @@ public class Date implements Comparable<Data>{ //尖括号说明只允许和Data
 
 它有两个不变量:
 * index i(包括 i) 的左边已经排好序
-* index i 右边的元素没有排序, 但是可以确定左边的值不大于右边任何一个<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702154842.png"/></div>
+* index i 右边的元素没有排序, 但是可以确定左边的值不大于右边任何一个<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702154842.png"/></div>
     ```Java
     ...
     private static void exch(Comparable[] a; int i,int j){
@@ -481,7 +481,7 @@ public class Date implements Comparable<Data>{ //尖括号说明只允许和Data
 ### Insertion Sort
 前面部分是有序的, 每次迭代中将后面的第一个元素(下标为i)插入前面有序的部分, 和交换排序略微有点区别, 它也有两个不变量:
 * 下标 i 的左边部分(包括 i) 是已经排好的
-* 下标 i 的右边部分没有被看见<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702154328.png"/></div> 
+* 下标 i 的右边部分没有被看见<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702154328.png"/></div> 
 ```Java
 public class Insertion
 {
@@ -503,7 +503,7 @@ public class Insertion
 insertion sort 每次只移动一个位置, 翻转一个逆序对. 一个提升思路是每次都 move 多个位置, 这样的话一次可能就不止改变一个逆序对:
 * 间隔非常大的时候, 是处理一个小的subarray
 * 间隔不大的时候, 实际上array基本已经有排好序了
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702155528.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702155528.png"/></div>
 
 间隔的序列
 * Powers of two: 这个效率非常差, 因为奇数和偶数的之间的交换只有在最后一个1-sort的时候才会发生
@@ -531,7 +531,7 @@ insertion sort 每次只移动一个位置, 翻转一个逆序对. 一个提升�
         ...
     }
     ```
-实际上如果使用  3x+1 的序列, 最坏情况下的对比次数是  $N^{\frac{3}{2}}$.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702160642.png"/></div>
+实际上如果使用  3x+1 的序列, 最坏情况下的对比次数是  $N^{\frac{3}{2}}$.<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702160642.png"/></div>
 
 ### Shuffle
 Knuth Shuffle:
@@ -603,7 +603,7 @@ Merge sort最多使用 $N \log N$ 次 compare 和 $6 N \log N$次 array acesses 
 * 在 `aux[]` 和 `a[]` 之间来回倒腾, 省去元素拷贝的时间
 
 ### bottom-up mergesort
-自底向上的 mergesort 丢弃了递归, 而是使用每次对指数递增的 subarray 做 merge:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702211821.png"/></div>
+自底向上的 mergesort 丢弃了递归, 而是使用每次对指数递增的 subarray 做 merge:<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702211821.png"/></div>
 
 ```Java
 public static void sort(Comparable[] a)
@@ -617,7 +617,7 @@ public static void sort(Comparable[] a)
 ```
 
 ### sorting complexity
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702212217.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702212217.png"/></div>
 
 Proposition: Any compare-based sorting algorithm must use at least $\log( N ! ) \sim N \log N$ compares in the worst-case. 证明如下:
 * 假设有一个包含 $a_1$ 到 $a_N$ N个不同值的 array
@@ -625,15 +625,15 @@ Proposition: Any compare-based sorting algorithm must use at least $\log( N ! ) 
 * 高度为 h 的二叉树最多有 $2^h$ 个树叶
 * 一共有 $N!$ 种排列 $\Rightarrow$ 至少要有 $N!$ 个树叶
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702212947.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702212947.png"/></div>
 
 因此, Optimal algorithm = mergesort.
 
 ### comparators
-Comparator interface: sort using an **alternate order**.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702213337.png"/></div>
+Comparator interface: sort using an **alternate order**.<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702213337.png"/></div>
 
 我们在之前的实现中, 使用的是默认的 `compareTo()` 方法, 实际上, `sort` 可以定义第二个参数:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210702213433.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210702213433.png"/></div>
 
 ```Java
 public static void sort(Object[] a, Comparator comparator)
@@ -681,9 +681,9 @@ Quick Sort 也是一种递归的算法, 它和 merge sort 的一个很大的区�
 2. pertition the array, 对于一个某个 index j:
    1. Entry `a[j]` is in place
    2. No larger entry to the left of j & No smaller entry to the right of j
-3. Sort each subarray recursively <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704194944.png"/></div>
+3. Sort each subarray recursively <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210704194944.png"/></div>
 
-置换位置的过程, 我们首先设置头和尾指针, 然后向中间挪动, 两个指针发现合适的元素 i 和 j 的时候, 交换 `a[i]` 和 `a[j]`, 如果两个指针越界的, 就交换 `a[lo]` 和 `a[j]`:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704195459.png"/></div>
+置换位置的过程, 我们首先设置头和尾指针, 然后向中间挪动, 两个指针发现合适的元素 i 和 j 的时候, 交换 `a[i]` 和 `a[j]`, 如果两个指针越界的, 就交换 `a[lo]` 和 `a[j]`:<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210704195459.png"/></div>
 
 ```Java
 private static int partition(Comparable[] a, int lo, int hi)
@@ -702,7 +702,7 @@ private static int partition(Comparable[] a, int lo, int hi)
     return j;
 }
 ```
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704195825.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210704195825.png"/></div>
 
 _partition_ 这个最重要的过程实现之后, 我们就可以使用递归的方式去实现整个 快排:
 ```Java
@@ -731,10 +731,10 @@ public class Quick
 4. 我们要使用随机洗牌提供性能保证
    * 在 subarray 中使用随机方式选择标兵可以实现相同的效果
    
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704200703.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210704200703.png"/></div>
 
-从概率的分析看, 比较的期望是 $\sim 2n\log n$, 交换的期望是$\sim \frac{1}{3}n\log n$:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704201119.png"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704201146.png"/></div>
+从概率的分析看, 比较的期望是 $\sim 2n\log n$, 交换的期望是$\sim \frac{1}{3}n\log n$:<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210704201119.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210704201146.png"/></div>
 
 性能总结:
 1. Quick Sort 谁一种随机化的算法
@@ -783,7 +783,7 @@ Quick-select:
 \]
 
 ### duplicate keys
-对于重复元素非常多的情况下, 如果每次都将重复的元素放在标兵的一侧, 那么使用的时候就会发现很容易出现复杂度 $\sim \frac{1}{2}n^2$ 的情况. 解决的一个思路被称为 **3-way partitioning**: <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704211726.png"/></div>
+对于重复元素非常多的情况下, 如果每次都将重复的元素放在标兵的一侧, 那么使用的时候就会发现很容易出现复杂度 $\sim \frac{1}{2}n^2$ 的情况. 解决的一个思路被称为 **3-way partitioning**: <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210704211726.png"/></div>
 
 其具体的做法如下:
 * Let v be partitioning item `a[lo]`
@@ -809,8 +809,8 @@ Quick-select:
         sort(a, gt + 1, hi);
     }
     ```
-    <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704212402.png"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704212707.png"/></div>
+    <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210704212402.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210704212707.png"/></div>
 
 ## 优先队列
 ### _API and elementary implementations_
@@ -820,7 +820,7 @@ Quick-select:
 * _Randomized queue_: Remove a random item
 * _Priority queue_: Remove the ==largest (or smallest) item==
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704214710.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210704214710.png"/></div>
 
 其使用接口的方式如下:
 ```Java
@@ -835,8 +835,8 @@ while (StdIn.hasNextLine())
 }
 ```
 我们可以用array(unordered) 和 linked-list(ordered)实现:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704215343.png"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210704215506.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210704215343.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210704215506.png"/></div>
 
 ### _Binary Heap_
 Binary heap 是一个 heap-ordered 完全二叉树的数组实现, 它要求:
@@ -849,7 +849,7 @@ Binary heap 是一个 heap-ordered 完全二叉树的数组实现, 它要求:
 * k元素的父节点就是 [k/2]
 * k的子节点就是 2k 和 2k+1
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705091955.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705091955.png"/></div>
 
 接下来看各种相关的操作是如何实现:
 1. swim: 当一个 node 的 key 比它的 parent's key 大的时候, 只需要将 child 和 parent 对换, 直到依旧满足 heap order
@@ -919,7 +919,7 @@ public class MaxPQ<Key extends Comparable<Key>>
     { Key t = pq[i]; pq[i] = pq[j]; pq[j] = t; }
 }
 ```
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705093713.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705093713.png"/></div>
 
 此外我们需要考虑一些东西:
 * 下溢和上溢
@@ -935,7 +935,7 @@ public class MaxPQ<Key extends Comparable<Key>>
 ### Heap Sort
 Heap Sort 的基本思路如下:
 * 首先将 input array 看成是一个完全的二叉树
-* 然后使用 n 个key 构建一个 max-heap(using **bottom-up method**)<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705095259.png"/></div>
+* 然后使用 n 个key 构建一个 max-heap(using **bottom-up method**)<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705095259.png"/></div>
     ```Java
     for (int k = n/2; k >= 1; k--)
         sink(a, k, n);
@@ -949,7 +949,7 @@ Heap Sort 的基本思路如下:
     }
     ```
 
-Heap construction makes ≤ n exchanges and ≤ 2n compares, uses ≤ $2n\lg n$ compares and exchanges.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705095710.png"/></div>
+Heap construction makes ≤ n exchanges and ≤ 2n compares, uses ≤ $2n\lg n$ compares and exchanges.<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705095710.png"/></div>
 
 ### event-driven simulation
 Change state only when something interesting happens:
@@ -980,7 +980,7 @@ public class Particle
     public void bounceOffHorizontalWall() { }
 }
 ```
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705100852.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705100852.png"/></div>
 
 ## 符号表
 ### API
@@ -988,7 +988,7 @@ public class Particle
 * Insert a value with specified key.
 * Given a key, search for the corresponding value.
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705101954.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705101954.png"/></div>
 
 下面是实现中的几个约定:
 * Values are not `null`.
@@ -997,7 +997,7 @@ public class Particle
 
 Key 和 value 的要求:  
 * Value 类型: 任意的 generic 类型
-* Key 类型则需要满足下面的假设<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705104400.png"/></div>
+* Key 类型则需要满足下面的假设<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705104400.png"/></div>
 * 一个最佳实践是使用 immutable 类型作为符号表的 key
 
 在Java 中的 Equality test(继承 method `equals()`), 对于自定义的类型, 要注意它的实现:
@@ -1019,21 +1019,21 @@ if (y.getClass() != this.getClass())
 
 ### elementary implementations
 #### 简单链表实现
-使用一个链表, 每个节点维护一个 key-value 对, 查找只需要对整个链表做扫描, 插入时同样, 如果发现了 key 的话就更新值, 没发现就插入到头节点. <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705105926.png"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705110100.png"/></div>
+使用一个链表, 每个节点维护一个 key-value 对, 查找只需要对整个链表做扫描, 插入时同样, 如果发现了 key 的话就更新值, 没发现就插入到头节点. <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705105926.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705110100.png"/></div>
 
 #### ordered array
-使用一个有序的 array 存储 key-value 对.这时候我们可以使用二分法查找, 问题在于插入的时候需要挪动一大堆的元素. <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705110333.png"/></div>
+使用一个有序的 array 存储 key-value 对.这时候我们可以使用二分法查找, 问题在于插入的时候需要挪动一大堆的元素. <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705110333.png"/></div>
 
 #### ordered operations
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705110750.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705110750.png"/></div>
 
 ### BSTs
 A BST is a binary tree in **symmetric order**.
 * 二叉树: 一个二叉树要么是空的, 要么只有两个不相交的子树
 * Symmetric order: Each node has a key; a node’s key is both 
   * Larger than all keys in its left subtree.
-  * Smaller than all keys in its right subtree<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705111332.png"/></div>
+  * Smaller than all keys in its right subtree<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705111332.png"/></div>
 
 在 Java 中, 一个 BST 就是**对根节点的引用**, 每个节点都有四个 field:
 * A key and a Value
@@ -1093,7 +1093,7 @@ private Node put(Node x, Key key, Value val)
     return x;
 }
 ```
-二叉树的很多操作的复杂度都和其深度有关, 因此它的不同形状对性能的影响很大:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705112700.png"/></div>
+二叉树的很多操作的复杂度都和其深度有关, 因此它的不同形状对性能的影响很大:<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705112700.png"/></div>
 
 如果 N 个不同 key 随机插入 BST, 预期 search/insert 操作的对比次 $\sim 2\ln N$(和 [quick sort](#selection) 很像).
 
@@ -1202,14 +1202,14 @@ private Node delete(Node x, Key key) {
     return x;
 }
 ```
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705124139.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705124139.png"/></div>
 
 
 ## Balanced Search Tree
 ### 2-3 search trees
 这种 2-3 树允许每个 node 有 1 个或者两个 key:
 * 2-node: one key, two children
-* 3-node: two keys, three children<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705142323.png"/></div>
+* 3-node: two keys, three children<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705142323.png"/></div>
 
 有了上面的性质, 在 2-3 tree 中查找就十分方便:
 * Compare search key against keys in node.
@@ -1226,15 +1226,15 @@ Insertion into a 2-3 tree:
 
 2-3 tree 有两个很好的性质:**Maintains symmetric order** and **perfect balance**.因为每次 transformation 都没有改变这两个性质, 故一直可以保持.因此其性能如下:
 * Wrost Case: $\lg N$(全部为 2-Nodes)
-* Base Case: $\log_3 N$(全部为 3-Nodes)<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705143816.png"/></div>
+* Base Case: $\log_3 N$(全部为 3-Nodes)<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705143816.png"/></div>
 
 ### red-black BSTs
-有了前面的基础, 我们需要考虑如何更好地用二叉树来表示上面的 2-3 tree, 一种实现就是使用 "internal" left-leaning links 作为 3-node 的胶水:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705151031.png"/></div>
+有了前面的基础, 我们需要考虑如何更好地用二叉树来表示上面的 2-3 tree, 一种实现就是使用 "internal" left-leaning links 作为 3-node 的胶水:<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705151031.png"/></div>
 
 于是, 就有了一个等价的定义:  
 * No node has two red links connected to it.
 * Every path from root to null link has the same number of black links.(perfect black balanced)
-* Red links lean left<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705151304.png"/></div>
+* Red links lean left<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705151304.png"/></div>
 
 #### Red-black BST representation
 我们新添加一个 color bit 标志红黑树中节点和 parent 连接的颜色:
@@ -1267,9 +1267,9 @@ private Node rotateLeft(Node h)
     return x;
 }
 ```
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705152024.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705152024.png"/></div>
 
-**Right rotation**: Orient a left-leaning red link to (temporarily) lean right.  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705154529.png"/></div>
+**Right rotation**: Orient a left-leaning red link to (temporarily) lean right.  <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705154529.png"/></div>
 
 ```Java
 private Node rotateRight(Node h)
@@ -1295,7 +1295,7 @@ private void flipColors(Node h)
     h.right.color = BLACK;
 }
 ```
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705152441.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705152441.png"/></div>
 
 #### Insertion in a LLRB tree: overview
 我们在插入的时候, 和 2-3 Tree 保持一致就可以:
@@ -1305,18 +1305,18 @@ private void flipColors(Node h)
 * warmup 2: insert into a tree with excatly 2 nodes:
   * larger: 在右边插入, 建立一个新的 red link(相当于4 node), 然后分裂(将两个红色改成黑色)
   * smaller: 将它插入左边, 然后做一个 rotate, 之后再改变颜色
-  * in-between: 先插入子节点的右手边(red link), 然后做一个 left rotate, 然后 right rotate, 最后 flip color<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705154244.png"/></div>
+  * in-between: 先插入子节点的右手边(red link), 然后做一个 left rotate, 然后 right rotate, 最后 flip color<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705154244.png"/></div>
 * Insert into a 3-node at the bottom.
   1. 做正常的 BST 插入, link 为红色
   2. Rotate to balance the 4-node (if needed).
   3. Flip colors to **pass red link up one level**.
-  4. Rotate to make lean left (if needed).<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705155010.png"/></div>
-  5. Repeat case 1 or case 2 up the tree (if needed)<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705155131.png"/></div>
+  4. Rotate to make lean left (if needed).<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705155010.png"/></div>
+  5. Repeat case 1 or case 2 up the tree (if needed)<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705155131.png"/></div>
 
 总的来说, 我们就需要做三个事情:
 * 右边的子树是红的, 左边是黑的: rotate left
 * 左 child 和 左-左 grand child 是红的, 需要 rotate right
-* 两个 childern 都是红的: flip color<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705160327.png"/></div>
+* 两个 childern 都是红的: flip color<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705160327.png"/></div>
     ```Java
     private Node put(Node h, Key key, Value val)
     {
@@ -1335,26 +1335,26 @@ private void flipColors(Node h)
 
 在最坏的情况下, 树的高度 $\leq 2\lg N$.
 * Every path from root to null link has same number of black links
-* Never two red links in-a-row<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705160827.png"/></div>
+* Never two red links in-a-row<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705160827.png"/></div>
 
 ### B-trees
 Generalize 2-3 trees by allowing up to M - 1 key-link pairs per node:
 * At least 2 key-link pairs at root
 * At least M / 2 key-link pairs in other nodes.
 * External nodes contain client keys.
-* Internal nodes contain copies of keys to guide search.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705161400.png"/></div>
+* Internal nodes contain copies of keys to guide search.<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705161400.png"/></div>
 
 它的插入过程可以理解为 2-3 树的一种拓展:  
 * Search for new key.
 * Insert at bottom.
-* Split nodes with M key-link pairs on the way up the tree.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705161751.png"/></div>
+* Split nodes with M key-link pairs on the way up the tree.<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705161751.png"/></div>
 
 ## GEOMETRIC APPLICATIONS OF BSTS
 ### line segment intersection
 我们只需要从左向右扫描:
 * x 坐标(左端点)就将它插入 y-坐标的 BST
 * x 坐标(右端点)就将它移除 y-坐标的 BST
-* 遇到垂直的线段, 就在 BST 中左 range search<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705163235.png"/></div>
+* 遇到垂直的线段, 就在 BST 中左 range search<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705163235.png"/></div>
 
 ### kd trees
 这里我们要做的是将 range search 拓展到 2d keys.
@@ -1423,7 +1423,7 @@ private int hash(Key key) // has 1-in-a-billion bug(for -2^{31})
 private int hash(Key key) // correct
 { return (key.hashCode() & 0x7fffffff) % M; }
 ```
-对于一个良好的哈希函数:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210705185652.png"/></div>
+对于一个良好的哈希函数:<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210705185652.png"/></div>
 
 ### separate chaining
 **碰撞**发生在两个不同的 key hashing 到了相同的 Index时候, 除非我们可以有平方增长的内存空间, 否则这将不可避免.为了应对碰撞, 一个做法是分离链接法, 使用一个 M 大小的 linked-list array:
@@ -1490,18 +1490,18 @@ public class LinearProbingHashST<Key, Value>
 <font color=blue>Observation</font>: New keys likely to hash into middle of big clusters.  
 
 #### Knuth's parking problem
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210706094710.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210706094710.png"/></div>
 <font color=blue>Half-full</font>:   
 With M/2 cars, mean displacement is ~ 3/2.
 
 <font color=blue>Full</font>: 
 With M cars, mean displacement is $\sim \sqrt{\pi M/8}$.  
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210706095155.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210706095155.png"/></div>
 
 ### context
 在实际的实现中, uniform hashing 假设的实现可能十分重要:
 * 在一些关键的领域: 航空器控制系统/核反应堆/...
-* 要应对 DoS 攻击<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210706095805.png"/></div>
+* 要应对 DoS 攻击<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210706095805.png"/></div>
 
 哈希还有很多变种:  
 Two-probe hashing. [ separate-chaining variant ]
@@ -1520,7 +1520,7 @@ Cuckoo hashing. [ linear-probing variant ]
 
 ### 应用
 #### Set
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210706100456.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210706100456.png"/></div>
 
 实现 set 只需要将 val 去掉只保留 key, 应用包括 spell check.
 ```Java
@@ -1542,10 +1542,10 @@ public class BlackList
 }
 ```
 #### indexing clients
-Given a list of files, create an index so that you can efficiently find all files containing a given query string:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210706101334.png"/></div>
+Given a list of files, create an index so that you can efficiently find all files containing a given query string:<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210706101334.png"/></div>
 
 #### sparse vectors
 Sparse matrix-vector multiplication, assumming that Matrix dimension is 10,000; average nonzeros per row ~ 10.  
 我们使用符号表只表示 non-zero index:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210706101731.png"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210706101842.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210706101731.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210706101842.png"/></div>

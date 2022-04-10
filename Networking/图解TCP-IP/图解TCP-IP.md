@@ -5,7 +5,7 @@
 <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220406184606.png" width="70%"/><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220406184638.png" width="70%"/></div>
 
 计算机网络发展的 7 个阶段,互联网是由许多独立发展的网络通信技术融合而成, 能够使他们不断融合并实现统一的正是 TCP/IP 技术
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/计算机与网络的发展阶段.png" width="70%"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/计算机与网络的发展阶段.png" width="70%"/></div>
 
 简单而言, 协议就是**计算机与计算机之间通过网络实现通信时事先达成的一种约定**,计算机从物理连接层面到应用程序软件层面, 各个组件都必须严格遵循者事先达成的约定才能实现真正的通信.分组交换就是将大的数据块分割成为一个个叫做包的较小单位进行传输的办法.<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220406184913.png" width="60%"/></div>
 

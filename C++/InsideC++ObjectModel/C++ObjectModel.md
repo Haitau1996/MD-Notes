@@ -25,7 +25,7 @@ protected:
 };
 ```
 <p align="center">
-<img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210331123916.jpg"/>
+<img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210331123916.jpg"/>
 </p>
 
 上面是一个简单模型, **以空间和执行效率为代价降低编译器复杂度**,一个对象是一系列slot(位置,狭槽), 每个指向一个成员, 因此一个对象的大小就是指针大小乘以 member 个数, 这个模型没有用到实际的编译器中, 但是该观念影响后面的设计.

@@ -87,15 +87,15 @@
 ### UG:Intro
 Graph. Set of <font color=blue>vertices</font>(顶点) connected pairwise by <font color=blue>edges</font>(边).  
 * <font color=blue>Path</font>: Sequence of vertices connected by edges.
-* <font color=blue>Cycle</font>: Path whose first and last vertices are the same<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210707093508.png"/></div>
+* <font color=blue>Cycle</font>: Path whose first and last vertices are the same<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210707093508.png"/></div>
 
 ### graph API
 #### Graph representation
 我们可以将图画出来, 直观地表示图的结构, 但是它**提供的 intuition 可能 misleading**, 同一个图可以画得差别很大.  
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210707094211.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210707094211.png"/></div>
 
 #### Set-of-edges graph representation
-这种表示形式, 维护一个由边构成的 list(可能是链表或者数组):<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210707094708.png"/></div>
+这种表示形式, 维护一个由边构成的 list(可能是链表或者数组):<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210707094708.png"/></div>
 
 #### Adjacency-matrix graph representation
 **邻接矩阵**维护一个 V-By-V 二维 boolean 矩阵, 其中的每个元素, `adj[v][w] == adj[w][v]`.
@@ -125,7 +125,7 @@ public class Graph
 ```
 In practice. Use adjacency-lists representation.
 * Algorithms based on iterating over vertices adjacent to v.
-* Real-world graphs tend to be sparse.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210707095410.png"/></div>
+* Real-world graphs tend to be sparse.<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210707095410.png"/></div>
 
 ### depth-first search
 #### Trémaux maze exploration
@@ -136,13 +136,13 @@ In practice. Use adjacency-lists representation.
 这个算法最重要的是**不要重复路经同一个点**.
 
 #### 深度优先查找
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709101217.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210709101217.png"/></div>
 
 #### graph 处理的设计模式
 **<font color=blue> Goal</font>**: 在 graph 数据和 graph processing 之间解耦:
 * 创建一个 Graph 对象
 * 将它传给一个 graph-processing 例程
-* 向例程查询想要的数据<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709101557.png"/></div>
+* 向例程查询想要的数据<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210709101557.png"/></div>
 
 #### DFS: 数据结构
 * Boolean array `marked[]` to mark visited vertices.
@@ -191,7 +191,7 @@ public class DepthFirstPaths
 ### breadth-first search
 Repeat until queue is empty:
 * Remove vertex v from queue
-* Add to queue all unmarked vertices adjacent to v and mark them.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709103405.png"/></div>
+* Add to queue all unmarked vertices adjacent to v and mark them.<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210709103405.png"/></div>
 
 #### BFS:特性
 In any connected graph G, BFS computes shortest paths from s to all other vertices in time proportional to E + V.
@@ -223,9 +223,9 @@ public class BreadthFirstPaths
 ```
 ### connected components
 定义: Vertices v and w are connected if there is a path between them.  
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709104159.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210709104159.png"/></div>
 
-定义: A connected component is a maximal set of connected vertices.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709104539.png"/></div>
+定义: A connected component is a maximal set of connected vertices.<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210709104539.png"/></div>
 
 实现方式很简单. To visit a vertex v :
 * Mark vertex v as visited.
@@ -266,14 +266,14 @@ public class CC
     }
 }
 ```
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709110507.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210709110507.png"/></div>
 
 ## 有向图
 ### DG:Intro
-<font color=blue>Digraph</font>: Set of vertices connected pairwise by directed edges.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709111609.png"/></div>
+<font color=blue>Digraph</font>: Set of vertices connected pairwise by directed edges.<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210709111609.png"/></div>
 
 ### DG:API
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709142448.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210709142448.png"/></div>
 
 ```Java
 public class DiGraph
@@ -300,10 +300,10 @@ public class DiGraph
 ### DG:Search
 #### Depth-first search in digraphs
 可以看到, 这个 DFS 算法和无向图是完全一致的, Every undirected graph is a digraph (with edges in both directions).
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709143051.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210709143051.png"/></div>
 
 #### Breadth-first search in digraphs
-广度优先算法在有向图和无向图中也是相同的.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709143919.png"/></div>
+广度优先算法在有向图和无向图中也是相同的.<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210709143919.png"/></div>
 
 ### topological sort
 #### Precedence scheduling
@@ -316,7 +316,7 @@ DAG: Directed acyclic(没有环) graph.
 Topological sort: Redraw DAG so all edges point upwards.  
 具体的实现:
 1. 首先运行 DFS
-2. 然后用 post-order 返回节点<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709145051.png"/></div>
+2. 然后用 post-order 返回节点<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210709145051.png"/></div>
 
 ```Java
 public class DepthFirstOrder
@@ -346,17 +346,17 @@ public class DepthFirstOrder
 ### strong components
 定义: 
 * Vertices v and w are **strongly connected** if there is both a directed pathfrom v to w and a directed path from w to v.  
-* A strong component is a **maximal subset** of strongly-connected vertices<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709145835.png"/></div>
+* A strong component is a **maximal subset** of strongly-connected vertices<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210709145835.png"/></div>
 
 #### Kosaraju-Sharir algorithm
 
 Reverse graph: Strong components in G are same as in $G^R$.  
 Kernel DAG: Contract each strong component into a single vertex.  
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709150159.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210709150159.png"/></div>
 
 该算法的核心思想:
-* 计算 $G^R$ kernal DAG 中的拓扑序<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709150820.png"/></div>
-* Run DFS, considering vertices in reverse topological order.<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709150852.png"/></div>
+* 计算 $G^R$ kernal DAG 中的拓扑序<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210709150820.png"/></div>
+* Run DFS, considering vertices in reverse topological order.<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210709150852.png"/></div>
 
 ```Java
 public class KosarajuSharirSCC
@@ -390,7 +390,7 @@ public class KosarajuSharirSCC
     { return id[v] == id[w]; }
 }
 ```
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210709151134.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210709151134.png"/></div>
 
 ## 最小生成树
 ### MST: Intro
@@ -416,7 +416,7 @@ Efficient implementations: Choose cut? Find min-weight edge?
 * Prim's algorithm
 
 ### Weighted edge API
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210713094808.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210713094808.png"/></div>
 
 ```Java
 public class Edge implements Comparable<Edge>
@@ -444,9 +444,9 @@ public class Edge implements Comparable<Edge>
   }
 }
 ```
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210713095123.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210713095123.png"/></div>
 
-在此基础上, 其实现的示意图如下:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210713095239.png"/></div>
+在此基础上, 其实现的示意图如下:<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210713095239.png"/></div>
 
 ```Java
 public class EdgeWeightedGraph
@@ -471,7 +471,7 @@ public class EdgeWeightedGraph
 }
 ```
 MST 的 API 如下:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210713095442.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210713095442.png"/></div>
 
 使用方式:
 ```Java
@@ -487,7 +487,7 @@ public static void main(String[] args)
 ```
 ### Kruskal's algorithm
 按照边的权重顺序（从小到大）处理, 将它加入最小生成树中, 加入的边不会与已经加入的构成环, 直到树中包含 V-1 条边为止.  
-$\color{Olive}Challenge:$ 怎样检验加入的 v-w 边产生一个环, 其实现复杂度如何:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210713141840.png"/></div>
+$\color{Olive}Challenge:$ 怎样检验加入的 v-w 边产生一个环, 其实现复杂度如何:<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210713141840.png"/></div>
 
 $\color{Green}{Efeective\ Solution:}$ 使用 union-fine 数据结构:
 * 对每个 connected component 维护一个 set
@@ -518,7 +518,7 @@ public class KruskalMST
     { return mst; }
 }
 ```
-$\color{Green}{复杂度分析:}$ Kruskal 算法的计算一幅含有 V 个顶点和 E 条边的连通加权无向图的最小生成树所需的空间和 E 成正比，所需的时间和 $E\log E$ 成正比（最坏情况, 就是排序需要的）。<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210713143032.png"/></div>  
+$\color{Green}{复杂度分析:}$ Kruskal 算法的计算一幅含有 V 个顶点和 E 条边的连通加权无向图的最小生成树所需的空间和 E 成正比，所需的时间和 $E\log E$ 成正比（最坏情况, 就是排序需要的）。<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210713143032.png"/></div>  
 
 $\color{Olive}{特殊情况}$: If edges are already sorted, order of growth is $E \log* V$(通常$\log* V \leq 5$).
 ### Prim's algorithm
@@ -824,9 +824,9 @@ String 是字符的序列,而字符在不同的变成语言中是不同的.
 * Indexing
 * Substring 
 * Concatenation(连接)
-    <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210723101319.png"/></div>
+    <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210723101319.png"/></div>
 
-除此以外, Java 中还有一个 `StringBuilder` 数据类型做客可变的字符序列, 内部是使用变长的 `char[]` 数组和长度实现的:<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210723111104.png"/></div>
+除此以外, Java 中还有一个 `StringBuilder` 数据类型做客可变的字符序列, 内部是使用变长的 `char[]` 数组和长度实现的:<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210723111104.png"/></div>
 
 此外还有和它类似的 `StringBuffer`, 它更慢但是是线程安全的.
 

@@ -62,7 +62,7 @@ concurrency 指代一系列的问题, 他们在同时处理很多事情时出现
 * 就绪: 进程已经准备好运行, 但是操作系统选择不在此时运行
 * 阻塞: 一个进程执行了某种操作(例如IO), 直到发生其他事件的时候才会准备运行
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506165134.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210506165134.png"/></div>
 
 ### 数据结构
 操作系统也有一些关键的数据结构来跟踪各种相关的信息. 例如 xv6 使用一个 context 的结构体来保存寄存器的内容, 用于上下文切换. 
@@ -130,7 +130,7 @@ else{
 构建操作系统的一个主要挑战就是**在保持控制权的同时获得高性能**.
 ### 基本技巧: 受限直接执行
 直接执行的概念很好理解: 只需直接在 CPU 上运行程序即可.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210519092134.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210519092134.png"/></div>
 
 但是这在我们虚拟化 CPU 时产生了一些问题:
 * 如果我们只运行一个程序, 操作系统怎么确保程序不做任何我们不希望它做的事同时依然高效运行

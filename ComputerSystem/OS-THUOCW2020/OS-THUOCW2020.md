@@ -354,14 +354,14 @@ rCore 中的物理内存管理接口如下:
 <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210524132508.png"/></div>
 
 如果前面我们介绍了伙伴系统, 其最小的单元可能是一个页面(4K), 而如果需要分配更小的内存, 使用伙伴系统就会有很大的浪费. 我们使用 Slab 分配器, 充当中间商, 从页分配器器获得资源, 充当一个中间商. 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524133032.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210524133032.png"/></div>
 
 SLAB 分配器源于 Solaris 2.4 的分配算法, 工作于内存的物理页分配算法之上, **管理特定大小对象的缓存**, 进行快速高效的物理内存分配, 其引入想解决下列问题:
 * 内核对象远小于页的大小
 * 内核对象会被频繁地申请和释放
 * 内核对象初始化时间超过分配和释放内存的总时间
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524134907.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210524134907.png"/></div>
 
 其基本的特征如下:
 * 为每种使用的内核对象建立单独的缓存区
@@ -371,15 +371,15 @@ SLAB 分配器源于 Solaris 2.4 的分配算法, 工作于内存的物理页分
 * 优先从 partial 队列中分配对象
 * 缓存区为每个处理器维护一个本地缓存(避免锁的问题)
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/lecture04.jpg"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/lecture04.jpg"/></div>
 
 #### CPU 缓存着色与 SLAB
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524135858.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210524135858.png"/></div>
 
 #### SLAB 的数据结构
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/slab_data_structure.jpg"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/slab_data_structure.jpg"/></div>
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/Single Slab.jpg"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/Single Slab.jpg"/></div>
 
 #### SLOB 的数据结构
 针对嵌入式系统 SLAB 的简化版本
@@ -387,7 +387,7 @@ SLAB 分配器源于 Solaris 2.4 的分配算法, 工作于内存的物理页分
 * 只存在三哥全局 partial free 链表
 * 链表按照对象大小划分
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/slob data.jpg"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/slob data.jpg"/></div>
 
 #### SLUB 分配器
 目标
@@ -398,8 +398,8 @@ SLAB 分配器源于 Solaris 2.4 的分配算法, 工作于内存的物理页分
 * 将元数据存储在页面相关的页结构
 * 没有单独的Empty SLAB 队列
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/Single_Slub.jpg"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/slub_data_structure.jpg"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/Single_Slub.jpg"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/slub_data_structure.jpg"/></div>
 
 ## 第 5 讲: 物理内存管理 非连续内存分配
 ### 需求背景
@@ -431,7 +431,7 @@ SLAB 分配器源于 Solaris 2.4 的分配算法, 工作于内存的物理页分
 * ...
 
 这样就可以用**更细粒度和灵活**的方式分离与共享.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524143118.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210524143118.png"/></div>
 
 #### 段的访问机制
 段的概念
@@ -442,10 +442,10 @@ SLAB 分配器源于 Solaris 2.4 的分配算法, 工作于内存的物理页分
 段访问: 逻辑地址由二元组表示
 * s - 段号
 * addr - 段内偏移
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524143512.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210524143512.png"/></div>
 
 段访问的硬件实现:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524143656.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210524143656.png"/></div>
 
 ### 页式存储管理
 * 页帧(Frame,物理页面)
@@ -479,7 +479,7 @@ SLAB 分配器源于 Solaris 2.4 的分配算法, 工作于内存的物理页分
 
 #### 页表
 页表保存了逻辑地址 - 物理地址之间的映射关系. 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524145458.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210524145458.png"/></div>
 
 ### 页表
 #### 结构
@@ -487,7 +487,7 @@ SLAB 分配器源于 Solaris 2.4 的分配算法, 工作于内存的物理页分
 * 每个也变对应一个也表项
 * 随着进程运行状态而动态变化
 * 叶表基址寄存器(Page Table Base Register, PTBR)
-  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524151705.png"/></div>
+  <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210524151705.png"/></div>
 
 #### 页式存储管理机制的问题
 * 内存访问性能问题
@@ -507,23 +507,23 @@ SLAB 分配器源于 Solaris 2.4 的分配算法, 工作于内存的物理页分
 * 如果 TLB 命中, 物理页号可以很快被获取
 * 如果 TLB 不命中, 对应的表项可被更新到 TLB 中
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524152957.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210524152957.png"/></div>
 
 多级页表: 通过间接引用将页号分成 K 级:
 * 建立页表树
 * 减小每一级页表的长度
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524153245.png"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524153439.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210524153245.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210524153439.png"/></div>
 
 ### RISC-V 的页映射机制
 RISC-V 对页表的硬件支持
 * 64 的 Sv39 虚地址与物理地址(虚地址比物理地址短)
-  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524154154.png"/></div>
+  <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210524154154.png"/></div>
 
 * 页表基址(放在 stap 寄存器中)
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524154647.png"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/rv64.jpg"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210524154607.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210524154647.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/rv64.jpg"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210524154607.png"/></div>
 
 #### RISC-V 地址转换
 * Sv32 in RV32
@@ -535,7 +535,7 @@ RISC-V 对页表的硬件支持
   * 1. 叶节点页表项的PPN 字段和页内偏移(原始虚址的最低12 个有效位) 组成了最终结果: 物理地址就是(LeafPTE. PPN × 4096+ VA[11: 0])
   
 ### 使能 RISC-V 页表
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/lecture05_enable.jpg"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/lecture05_enable.jpg"/></div>
 
 页表也是放在内存中, 于是 OS 配置页表的流程如下:
 * 为页表分配物理内存
@@ -564,7 +564,7 @@ RISC-V 对页表的硬件支持
     * 可选部分: 不常用功能放在其他程序模块中, 只在需要用到时装入内存
     * 不存在调用关系的模块可能相互覆盖, 共用同一块内存区域
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/202105250xbbfdg.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/202105250xbbfdg.png"/></div>
 
 覆盖技术可以解决一些问题, 但是有一些不足:
 * 增加编程困难
@@ -589,12 +589,12 @@ RISC-V 对页表的硬件支持
   * 采用动态地址映射的方法
 
 两者之间的比较:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210525160316.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210525160316.png"/></div>
 
 ### 局部性原理
 
 虚拟存储的技术的目标:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210525164230.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210525164230.png"/></div>
 
 * 只把部分程序放到内存中, 从而运行比物理内存更大的程序
   * 由操作系统自动完成, 无需程序员的干涉
@@ -641,7 +641,7 @@ RISC-V 对页表的硬件支持
   * 进程在系统运行中发现有需要的代码或者数据不在内存时, 则向系统发出缺页异常请求
   * 操作系统在处理缺页异常时, 将外存中相应的页面调入内存, 使得进程能够继续运行
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210526092403.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210526092403.png"/></div>
 
 这个时候对页表项结构就会有不同, 在逻辑页号和物理页帧之间加入了:修改位, 保护位, 驻留位, 访问位:
 * 驻留位:表示该页是否在内存中
@@ -652,7 +652,7 @@ RISC-V 对页表的硬件支持
 当然, 实际的 x86 结构中还有额外的信息.
 
 ### 缺页异常
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210526093912.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210526093912.png"/></div>
 
 #### 虚拟页式存储中的外存管理
 如何保存未被映射的页
@@ -673,10 +673,10 @@ RISC-V 对页表的硬件支持
 
 ### RISC-V 中的缺页异常
 #### RISC-V 内核态中断处理机制
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210526xhihqchui.jpg"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210526xhihqchui.jpg"/></div>
 
 中断原因寄存器:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210526hoajkfkbrihbrjh6.jpg"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210526hoajkfkbrihbrjh6.jpg"/></div>
 
 rCore 的缺页异常处理:
 * 缺页异常只会在MMU 启用后，虚拟地址翻译失败时产生，这时候根据是取址还是访存，分别触发不同的缺页异常。
@@ -685,7 +685,7 @@ rCore 的缺页异常处理:
 * 出处：rCore (Commit ID [cd81f4c](https://github.com/rcore-os/rCore/tree/cd81f4cc73ea3302ed0356398525b0b56c4fca92))
 
 rCore 中的缺页处理函数`handle_page_fault`:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210526101101.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210526101101.png"/></div>
 
 ```Rust
 fn handle_page_fault(&self, pt: &mut dyn PageTable, addr: VirtAddr) -> bool

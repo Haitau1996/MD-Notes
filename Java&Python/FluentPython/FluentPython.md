@@ -246,8 +246,8 @@ for card in sorted(deck, key=spades_high): # doctest: +ELLIPSIS
 Python 内置函数 `repr` 能把一个对象用字符串的形式表达出来以便辨认, 交互式控制台和调试程序（debugger）用 `repr` 函数来获取字符串表示形式, 此外还有一个`__str__`,在调用 `str()` 函数被使用，或是在用`print` 函数打印一个对象的时候才被调用的，并且它返回的字符串对终端用户更友好.  
 只想实现这两个特殊方法中的一个，`__repr__` 是更好的选择.  
 下表是 Python 的特殊方法总览:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210601110750.png"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210601110814.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210601110750.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210601110814.png"/></div>
 
 ### len 不是普通方法
 len 之所以不是一个普通方法，是为了让Python 自带的数据结构可以走后门，abs 也是同理.这种处理方式在**保持内置类型的效率和保证语言的一致性之间找到了一个平衡点**.
@@ -264,7 +264,7 @@ Python 标准库用 C 实现了丰富的序列类型:
 * 可变序列:list、bytearray、array.array、collections.deque 和 memoryview
 * 不可变序列: tuple、str 和 bytes。
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210601144206.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210601144206.png"/></div>
 
 上图显示可变序列和不可变序列的差异,最重要也最基础的序列类型应该就是列表（list）, 它是可变的, 同时可以存放不同类型的元素.  
 
@@ -296,7 +296,7 @@ filter 和map 合起来能做的事情，列表推导也可以做，而且还不
 ```
 
 #### 笛卡尔积
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210601150534.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210601150534.png"/></div>
 
 上面展示的就是四种花色和三种牌面的笛卡尔积, 结果是一个包含 12 个元素的列表, 可以这样实现:
 ```shell
@@ -352,8 +352,8 @@ City(name='Tokyo', country='JP', population=36.933, coordinates=(35.689722,139.6
 
 #### 作为不可变列表的元组
 除了跟增减元素相关的方法之外，元组支持列表的其他所有方法, 此外, 元组没有`__reversed__` 方法，但是这个方法只是个针对 list 的优化而已，reversed(my_tuple) 这个用法在没有`__reversed__` 的情况下也是合法的。
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210601153905.png"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210601153936.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210601153905.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210601153936.png"/></div>
 
 ### 切片
 所有的序列类型都支持切片操作，但是实际上切片操作比人们所想象的要强大很多.  
@@ -403,7 +403,7 @@ weird_board[1][2] = 'O' # [['_', '_', 'O'], ['_', '_', 'O'], ['_', '_', 'O']]
 += 背后的特殊方法是`__iadd__`(in-place addition), 如果一个类没有实现 `__iadd__`, 就会退一步调用 `__add__`: 如果 a 实现了 `__iadd__`, 对可变序列, a 会就地改动，就像调用了`a.extend(b)` 一样; 如果没有实现, 就和 `a = a+b`(首先计算a + b，**得到一个新的对象**，然后赋值给a).  
 因此, 对于一个 Immutable 的对象, 重复拼接操作效率会很低. 
 #### 一个关于 += 的谜题
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210601163931.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210601163931.png"/></div>
 
 这给我们三个教训:
 * 不要把可变对象放在元组里面
@@ -435,7 +435,7 @@ bisect(haystack, needle) 在haystack（干草垛）里搜索needle（针）的�
 >>> floats = array('d', (random() for i in range(10**7)))
 # 创建列表用 listcom, 这是一个array, 要用 genexp
 ```
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210602hfhahf.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210602hfhahf.png"/></div>
 
 #### 内存视图
 memoryview 是一个内置类，它能让用户在不复制内容的情况下操作同一个数组的不同切片。memoryview.cast 的概念跟数组模块类似，能用不同的方式读写同一块内存数据(有点类似于C的类型转换, 用不同的编码,如 unsigned/signed 去读同样的数据)，而且内容字节不会随意移动。  
@@ -445,7 +445,7 @@ NumPy 和SciPy 提供的高阶数组和矩阵操作,都是异常强大的库，�
 
 #### 双向队列和其他形式的队列
 `collections.deque` 类（双向队列）是一个线程安全、可以快速从两端添加或者删除元素的数据类型。
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210602jkfljkijfoiahf.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210602jkfljkijfoiahf.png"/></div>
 
 除了 deque, Python标准库还有下面的队列实现：
 * queue：提供了同步（线程安全）类Queue、LifoQueue 和PriorityQueue，不同的线程可以利用这些数据类型来交换信息。
@@ -456,7 +456,7 @@ NumPy 和SciPy 提供的高阶数组和矩阵操作,都是异常强大的库，�
 ## Chap 3: 字典和集合
 dict 类型不但在各种程序里广泛使用，它也是Python 语言的基石。
 ### 泛映射类型
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210602100251.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210602100251.png"/></div>
 
 `collections.abc` 模块中有 `Mapping` 和 `MutableMapping` 这两个抽象基类，它们的作用是为dict 和其他类似的类型定义形式接口.  
 所有映射类型都是利用dict 来实现的，因此它们有个共同的限制，即只有可散列的数据类型才能用作这些映射里的键(value 则不受此限制).  
@@ -471,7 +471,7 @@ dict 类型不但在各种程序里广泛使用，它也是Python 语言的基�
 >>> {code: country.upper() for country, code in country_code.items() 
 ... if code > 66}
 ```
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210602102238.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210602102238.png"/></div>
 
 #### 用setdefault处理找不到的键
 当字典 `dict[key]` 不能找到正确的键的时候，Python 会抛出异常, 可以用 `d.get(k, default)` 来代替d[k]，给找不到的键一个默认的返回值,[使用 setdefault 是一个更好的做法](https://github.com/fluentpython/example-code/blob/master/03-dict-set/index.py), 其中的:
@@ -549,7 +549,7 @@ frozenset({0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
 ```
 
 #### 集合的操作
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210602161905.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210602161905.png"/></div>
 
 * 集合的数学运算：这些方法或者会生成新集合，或者会在条件允许的情况下就地修改集合
 * 集合的比较运算符，返回值是布尔类型
@@ -561,7 +561,7 @@ dict/set 背后的散列表其实是一个**稀疏数组** (总是有空白元�
 #### 散列值和相等性
 自定义对象调用hash() 的话，实际上运行的是自定义的 `__hash__`。如果两个对象在比较的时候是相等的，那它们的散列值必须相等，否则散列表就不能正常运行. 在最理想的状况下，越是相似但不相等的对象，它们散列值的差别应该越大。
 #### 散列表算法
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210602163143.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210602163143.png"/></div>
 
 `my_dict[search_key]` 的背后 Python 首先会调用hash(search_key) 来计算search_key 的散列值，把这个值最低的几位数字当作偏移量，在散列表里查找表元.  
 若不是空的，则表元里会有一对`found_key:found_value`。这时候Python 会检验`search_key ==found_key` 是否为真，如果它们相等的话，就会返回 found_value。 
@@ -654,7 +654,7 @@ BOM，即字节序标记（byte-order mark），指明编码时使用Intel CPU �
 
 ### 处理文本文件
 处理文本的最佳实践是“Unicode 三明治”, 要尽早把输入（例如读取文件时）的字节序列解码成字符串。对输出来说，则要尽量晚地把字符串编码成字节序列。
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210603145234.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210603145234.png"/></div>
 
 处理文本很简单, 但是如果依赖默认编码, 就会遇到麻烦:`locale.getpreferredencoding()` 返回的编码是最重要的, 这是打开文件的默认编码，也是重定向到文件的sys.stdout/stdin/stderr 的默认编码。
 * 没有指定 encoding 参数，默认值由 `locale.getpreferredencoding()` 提供
@@ -746,7 +746,7 @@ Python 简单的句法限制了lambda 函数的定义体**只能使用纯表达�
 >>> def func(): pass 
 >>> sorted(set(dir(func)) - set(dir(obj))) 
 ```
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210607095236.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210607095236.png"/></div>
 
 ### 从定位参数到仅限关键字参数
 Python 3 进一步提供了仅限关键字参数, 调用函数时使用 `*` 和 `**` “展开” 可迭代对象，映射到单个参数。一个用于生成关HTML标签的[函数](https://github.com/fluentpython/example-code/blob/master/05-1class-func/tagger.py)使用起来就有很多方式:
@@ -814,7 +814,7 @@ Norvig 建议在有一等函数的语言中**重新审视“策略”“命令�
 ### 案例分析：重构“策略”模式
 如果合理利用作为一等对象的函数，某些设计模式可以简化，“策略”模式就是其中一个很好的例子。
 #### 经典的策略模式
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210607110800.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210607110800.png"/></div>
 
 “策略”模式的定义如下:
 > 定义一系列算法，把它们一一封装起来，并且使它们可以相互替换。本模式使得算法可以独立于使用它的客户而变化。
@@ -854,7 +854,7 @@ promos = [func for name, func in
 
 ### 命令模式
 “命令”设计模式也可以通过把函数作为参数传递而简化。
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210607113111.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210607113111.png"/></div>
 
 > “命令”模式的目的是 **解耦调用操作的对象（调用者）和提供实现的对象（接收者）**
 
@@ -933,7 +933,7 @@ Python 不要求声明变量，但是假定**在函数定义体中赋值的变�
 ### 闭包
 人们有时会把闭包和匿名函数弄混, 因为**在函数内部定义函数不常见，直到开始使用匿名函数才会这样做**。闭包指延伸了作用域的函数，其中包含函数定义体中引用、不在定义体中定义的非全局变量。  
 对比一个 avg 的 [OO实现](https://github.com/fluentpython/example-code/blob/master/07-closure-deco/average_oo.py) 和 [高阶函数实现](https://github.com/fluentpython/example-code/blob/master/07-closure-deco/average.py), 前者的历史值存在 `self.series` 属性中, 而高阶函数中, 看上去调用avg(10) 时，`make_averager` 函数已经返回了，而它的本地作用域也一去不复返。实际上, averager 函数中，series 是自由变量（free variable）。这是一个技术术语，指未在本地作用域中绑定的变量:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210607143835.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210607143835.png"/></div>
 
 闭包是一种函数，它会保留**定义函数时存在的自由变量的绑定**，这样调用函数时，虽然定义作用域不可用了，但是仍能使用那些绑定。只有嵌套在其他函数中的函数才可能需要处理不在全局作用域中的外部变量。
 ### nonlocal声明
@@ -1003,12 +1003,12 @@ lru_cache 使用字典存储结果，而且键根据调用时传入的定位参�
 本章的主题是对象与对象名称之间的区别。名称不是对象，而是单独的东西。**变量是标注，而不是盒子**。  
 ### 变量不是盒子
 人们经常使用“变量是盒子”这样的比喻，但是这有碍于理解面向对象语言中的引用式变量。**最好把它们理解为附加在对象上的标注**:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210607160328.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210607160328.png"/></div>
 
 如上图所示, 如果理解为盒子, 就无法解释 Python 中的赋值. 对引用式变量来说，说把变量分配给对象更合理，反过来说就有问题(或者说是**变量绑定到对象上,就像为对象贴上标注**).
 
 ### 标识、相等性和别名
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210607160929.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210607160929.png"/></div>
 
 ```Python
 >>> alex == charles 
@@ -1036,7 +1036,7 @@ a == b 是语法糖，等同于`a.__eq__(b)`。继承自object 的`__eq__`方法
 
 ### 默认做浅复制
 复制列表（或多数内置的可变集合）最简单的方式是使用内置的类型构造方法, 构造方法或`[:]` 做的是浅复制（即**复制了最外层容器，副本中的元素是源容器中元素的引用**,例如, 如果是一个 list of list, 那么复制时候是复制的最外层list, 新旧两个list id 依旧不同）。
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210608094936.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210608094936.png"/></div>
 
 #### 为任意对象做深复制和浅复制
 copy模块提供的`deepcopy` 和`copy` 函数能为任意对象做深复制和浅复制。一般来说，深复制不是件简单的事。如果对象有循环引用，那么这个朴素的算法会进入无限循环。deepcopy 函数会记住已经复制的对象，因此能优雅地处理循环引用.当然, 我们可以实现特殊方法`__copy__()` 和`__deepcopy__()`，控制copy 和deepcopy 的行为.  
@@ -1250,7 +1250,7 @@ def __eq__(self, other):
 我们把协议定义为**非正式的接口**，是让Python 这种动态类型语言实现多态的方式, 具体的实现是，Python 语言没有interface 关键字，而且除了抽象基类，每个类都有接口：类实现或继承的公开属性, 包括特殊方法.  
 **受保护的属性和私有属性不在接口中**, 接口的一个补充定义是: 对象公开方法的子集，让对象在系统中扮演特定的角色. 而协议是接口，但不是正式的（只由文档和约定定义），因此**协议不能像正式接口那样施加限制**.
 ### Python喜欢序列
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210610095419.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210610095419.png"/></div>
 
 鉴于序列协议的重要性，如果没有`__iter__` 和`__contains__` 方法，Python 会**调用`__getitem__` 方法，设法让迭代和`in` 运算符可用**。这意味着Python 中的迭代是鸭子类型的一种极端形式：**为了迭代对象，解释器会尝试调用两个不同的方法**。  
 ### 使用猴子补丁在运行时实现协议
@@ -1272,12 +1272,12 @@ def __eq__(self, other):
 * 继承MutableSequence 的类必须实现`__delitem__` 方法和 `insert`
 
 需要注意的是, 导入时Python 不会检查抽象方法的实现，在运行时实例化FrenchDeck2 类时才会真正检查。
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210610144006.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210610144006.png"/></div>
 
 ### 标准库中的抽象基类
 #### collections.abc模块中的抽象基类
 Python 3.4 在collections.abc 模块中定义了16 个抽象基类，下面是简要的 UML 类图:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210610144216.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210610144216.png"/></div>
 
 * Iterable、Container 和Sized: 各个集合都应该继承这三个抽象基类, 或者至少实现兼容的协议
 * Sequence、Mapping 和Set: 这三个是主要的不可变集合类型，而且各自都有可变的子类。
@@ -1316,7 +1316,7 @@ Python 3.4 在collections.abc 模块中定义了16 个抽象基类，下面是�
 从上面的例子中可以看到, `__init__` 和 `update` 方法都没有使用我们 override 的`__setitem__` 方法.内置类型的方法调用的其他类的方法，如果被覆盖了，也不会被调用。  
 如果使用 `collections.UserDict`, 那么就不存在这种问题. 
 ### 多重继承和方法解析顺序
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210611094641.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210611094641.png"/></div>
 
 任何实现多重继承的语言都要处理潜在的命名冲突, 在C++ 中，程序员必须使用类名限定方法调用来避免这种歧义(在 D 中`using B::pong()`), Python 也可以这么做:
 ```Python
@@ -1334,7 +1334,7 @@ Python 会按照特定的顺序遍历继承图,这个顺序叫方法解析顺序
 过方法解析顺序，直接调用某个超类的方法 —— 这样做有时更方便。这时候必须显式传入 `self` 参数. 
 ### 多重继承的真实应用
 多重继承能发挥积极作用,GoF 一书中的适配器模式用的就是多重继承, 它在GUI 工具包Tkinter中被广泛使用. 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210611100911.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210611100911.png"/></div>
 
 ### 处理多重继承
 多重继承容易得出令人费解和脆弱的设计, 我们给出了一些建议:
@@ -1351,7 +1351,7 @@ Python 会按照特定的顺序遍历继承图,这个顺序叫方法解析顺序
 
 ### Django通用视图中的混入
 Django 中视图是可调用的对象, 参数是表示HTTP 请求的对象，返回值是一个表示HTTP 响应的对象。我们要关注的是这些响应对象。最初的通用视图是函数，不能扩展, Django 1.3 引入了基于类的视图，而且还通过基类、混入和拿来即用的具体类提供了一些通用视图类。
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210611111744.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210611111744.png"/></div>
 
 View 的具体子类应该实现处理方法，但它们为什么不在View 接口中呢？原因是：**子类只需实现它们想支持的处理方法**。Django 基于类的视图API 是多重继承更好的示例。尤其是，Django 的混入类易于理解：各个混入的目的明确，而且名称的后缀都是 _...Mixin_。
 
@@ -1369,7 +1369,7 @@ Python 对运算符重载施加了一些限制:
 一般 `x == +x` 总是成立的, 但是有两个特例, 一是涉及精度的时候, 新实例和老的精度不同, 故不相等. 一是从使用角度出发, 在`Collection.Counter`中新实例会将负值和零相应的计数去除. 
 ### 重载向量加法运算符`+`
 序列应该支持+ 运算符（用于拼接），以及* 运算符（用于重复复制）。我们[定义了`+`之后](https://github.com/fluentpython/example-code/blob/master/13-op-overloading/vector_v7.py),原则上可以使用向量去加任何元素可迭代的对象, 但是, 如果对调操作数, 混合类型的加法就会失败, 为此我们需要实现 “右向”（right）特殊方法`__radd__`, 实现后调用过程就如此:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210616152324.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210616152324.png"/></div>
 
 ### 重载标量乘法运算符`*`
 涉及 _vector_ 操作数的积有很多种, 我们依旧可以实现最简单可用的 `__mul__`/`__rmul__`,但是提供不兼容的操作数时会出问题, 我们可以使用白鹅类型检查, 并且提供更好的错误提示:
@@ -1412,7 +1412,7 @@ Python 3.5 引入了[matrix multiplication](https://github.com/fluentpython/exam
     标准的迭代器接口有两个方法:
     * `__next__`
     * `__iter__`: 返回self
-  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210617100606.png"/></div>
+  <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210617100606.png"/></div>
 
 * **迭代器** 迭代器是这样的对象：实现了无参数的`__next__` 方法，返回序列中的下一个元素；如果没有元素了，那么抛出 _StopIteration_ 异常, Python 中的迭代器实现了 `__iter__`, 因此是可迭代的
 
@@ -1449,21 +1449,21 @@ Python 3.5 引入了[matrix multiplication](https://github.com/fluentpython/exam
 标准库提供了很多生成器，从用于逐行迭代纯文本文件的对象，到出色的`os.walk` 函数.  
 第一组是用于过滤的生成器函数：从输入的可迭代对象中产出元素的子集，而且不修改元
 素本身。
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210617105408.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210617105408.png"/></div>
 
 下一组是用于映射的生成器函数：在输入的单个可迭代对象（map 和starmap 函数处理多
 个可迭代的对象）中的各个元素上做计算，然后返回结果。
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210617105518.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210617105518.png"/></div>
 
 接下来这一组是用于合并的生成器函数，这些函数都从输入的多个可迭代对象中产出元
 素:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210617105602.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210617105602.png"/></div>
 
 有些生成器函数会从一个元素中产出多个值，扩展输入的可迭代对象:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210617105644.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210617105644.png"/></div>
 
 最后一组生成器函数用于产出输入的可迭代对象中的全部元素，不过会以某种方式重新排列。
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210617105734.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210617105734.png"/></div>
 
 ### yield from
 如果生成器函数需要产出另一个生成器生成的值，传统的解决方法是使用嵌套的for 循环:
@@ -1489,7 +1489,7 @@ Since Python 3.3:
 ```
 
 ### 可迭代的归约函数
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210617110143.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210617110143.png"/></div>
 
 上图函数都接受一个可迭代的对象，然后返回单个结果。这些函数叫“归约”函数、“合拢”函数或“累加”函数。
 
@@ -1631,7 +1631,7 @@ Result(count=3, average=15.5)
 * 子生成器:从`yield from` 表达式中`<iterable>` 部分获取的生成器
 * 调用方: PEP 380 使用“调用方”这个术语指代调用委派生成器的客户端代码
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210621150549.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210621150549.png"/></div>
 
 // TODO: 不是很理解 yield from
 

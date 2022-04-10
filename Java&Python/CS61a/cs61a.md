@@ -1230,7 +1230,7 @@ class <namme>(<base class>):
     <suite>
 ```
 Base Class 的 attribute 并没有拷贝到 subclasses 中
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428113839.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210428113839.png"/></div>
 
 ### 面向对象设计
 继承设计的几点原则:
@@ -1244,7 +1244,7 @@ Base Class 的 attribute 并没有拷贝到 subclasses 中
 
 ### 多继承
 在 python 中是可以有多继承的(C++ 中可以, 但是 Java 中只能用单继承+实现多个接口).可能在这种情况下会有歧义, 我们只需要记住先从subclass 查找再从 base class 查找.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428142311.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210428142311.png"/></div>
 
 ## Lecture 17: Representation
 ### String Representation
@@ -1254,7 +1254,7 @@ Base Class 的 attribute 并没有拷贝到 subclasses 中
 
 很多时候两者是一样的, 但不完全是.使用 `repr`函数可以返回一个 string , 大多数时候就是这个对象的经典表示, 对于大多数对象类型, `eval(repr(object)) == object`, 也是在命令行中输入后显示的样子<br>
 而使用`str` 函数返回的一般就是 print 出来的样子, 更加有利于我们去理解
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428144913.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210428144913.png"/></div>
 
 ### polymorphic(多态的) Functions
 多态的含税值得是一个函数可以应用于多个(ploy)不同形式(morph)类型.上面的 `str` 和 `repr` 就是这样的, 他们两可以应用于任何对象身上.其中的 `repr` 就是调用它参数的一个零参数方法 `__repr__`.<br>
@@ -1270,7 +1270,7 @@ def repr(x):
 
 ### 特殊的方法
 有个 Name 很特别, 因为他们有 built-in 行为, 一般用两个下划线开头和结束.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428151105.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210428151105.png"/></div>
 
 ## Lecture 18: Growth
 ### Measuring Efficiency
@@ -1292,7 +1292,7 @@ def count(f):
 
 ### Memoizaiton
 一个加速软间运行的办法, 具体想法是, 记住之前已经计算过的结果.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428153807.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210428153807.png"/></div>
 
 ### Space
 The Comsumption of Space: 在任何时候都有一系列的 active environment, Value 和 Frames in active environment 都要消耗内存, 而被其他 value 和 frame 利用的内存可以被回收.<br>
@@ -1300,9 +1300,9 @@ The Comsumption of Space: 在任何时候都有一系列的 active environment, 
 * 任何现在在被求值的函数调用的环境
 * 当前 active environment 的 parent environment
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428155924.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210428155924.png"/></div>
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428160028.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210428160028.png"/></div>
 
 从中可以发现, 实际上用内存最多的是调用 Tree 中最常的一个 chain.
 
@@ -1311,18 +1311,18 @@ The Comsumption of Space: 在任何时候都有一系列的 active environment, 
 
 ### Order Of Growth
 A method for bounding the resources used by a function by the "size" of a problem.<br>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428161349.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210428161349.png"/></div>
 
 ### 不同增长率的比较
 * 常数项不影响
 * log 的底数项也不影响
 * 对于 nesting, 将内外层的 order 相乘
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428162451.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210428162451.png"/></div>
 
 ## Lecture 19 : Composition
 ### 链表
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428163012.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210428163012.png"/></div>
 
 ```Python
 class Link:
@@ -1335,13 +1335,13 @@ class Link:
 ```
 ### Property Methods
 有的时候, 我们希望某个 instance attribute 的值只在需要的时候计算.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428163758.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210428163758.png"/></div>
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428163928.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210428163928.png"/></div>
 
 ### Tree
 树中的一些定义如下:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210428164202.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210428164202.png"/></div>
 
 ```Python
 class Tree:
@@ -1378,13 +1378,13 @@ Set 是一种内建的容器类型:
 同样 set 元素不能是 list(不能被 hash).
 
 ### Set as Linked List
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429093505.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210429093505.png"/></div>
 
 ### Set Operations
 我们如果使用已经排序的 LinkList, 很多操作可能更加简单.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429093852.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210429093852.png"/></div>
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429094054.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210429094054.png"/></div>
 
 上面这两个操作的时间复杂度都是 $\Theta(n)$.
 
@@ -1400,7 +1400,7 @@ def add(s, v):
         add(s.rest,v)
     return s
 ```
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429094810.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210429094810.png"/></div>
 
 ## Lecture 21: Tree Sets
 ### 二叉树
@@ -1408,7 +1408,7 @@ def add(s, v):
 * 我们要用 empty 将missing left branch 填好.
 * 对于 leaf, 我们也要讲它的两个子树填上 empty
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429095915.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210429095915.png"/></div>
 
 ### 二叉搜索树
 这个做法来自于在sorted list 中的查找, 检查中间的元素然后消除一半的元素.($\Theta(\log N)$)<br>
@@ -1427,17 +1427,17 @@ Scheme 是 Lisp 的一种方言, Scheme 程序由表达式构成, 它们可能�
 * 组合:(quotient 10, 2), (not true)
 
 数字是 self-evaluating, 符号 are bound to values, 调用表达式包含括号内的一个符号加上零个或者多个参数.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429153852.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210429153852.png"/></div>
 
 ### Special Forms
 A combination that is not a call expression is a **special form**.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429154552.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210429154552.png"/></div>
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429154850.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210429154850.png"/></div>
 
 ### lambda 表达式
 Lambda 表达式是一个匿名函数
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210429155053.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210429155053.png"/></div>
 
 ## Lecture 25: Exceptions
 Handling Errors:Sometimes, Computer programs behave in non-standard ways.
@@ -1463,11 +1463,11 @@ assert <expression>,<string>
 ```
 这时候使用 `-O`(optimized) 可以忽略.<br>
 更多时候是使用 Raise 语句, `raise <expression>`, 需要注意的是, 其中的表达式求指后必须是一个 subclass of BaseException 或者一个它的实例.下面是内置的一些异常类型:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506105625.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210506105625.png"/></div>
 
 ### 异常处理
 使用 try 局域处理异常, 其基本的形式如下:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506105904.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210506105904.png"/></div>
 
 1. 首先运行 try 语句, 如果没有异常的话就略过异常处理语句
 2. 如果有异常, 异常是 exception class 的子类或者子类实例, 就会执行对应的 except 语句, 执行的时候异常绑定到 name 上
@@ -1481,34 +1481,34 @@ except ZeroDivisionError as e:
 ```
 此外, 我们可以有 mutiple nested try statements:**控制流会跳转到最近那个可以 handle 这种类型的 except suite 中**. 
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506110904.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210506110904.png"/></div>
 
 ## Lecture 26: Calculator
 ### 解释器
 Scheme 的解释器首先要求我们使用递归将读入的数据解释为我们希望的形状:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506112437.png"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506112747.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210506112437.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210506112747.png"/></div>
 
 ### 语法分析
 一个语义分析器将 text 转化为表达式:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506113220.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210506113220.png"/></div>
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506113646.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210506113646.png"/></div>
 
 ### Calculator
 我们之前的工作依赖于一个 pair 类, 它用于表示 Scheme 中的 pairs 和 lists:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506114141.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210506114141.png"/></div>
 
 Calaulator Syntax: 这个计算语言有基本表达式和call语句
 * A Primitive expression is a number
 * a call expression is a combination that begins with an operator followed by 0 or more expressions
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506114651.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210506114651.png"/></div>
 
 ### The eval function
 The eval function computes the value of an expression, which is always a number. 它是一个和表达式类型无关的通用函数.
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506133415.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210506133415.png"/></div>
 
 接下来我们要实现 `cala_apply`:
 ```python
@@ -1529,12 +1529,12 @@ def calc_apply(operator, args):
 * if any errors occur, report thoese errors.
 * otherwise print the value of the expression and repeat
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506134330.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210506134330.png"/></div>
 
 ## Lecture 27: interpreters
 
 解释器的结构:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210506135429.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210506135429.png"/></div>
 
 ### Special Form
 scheme_eval 函数 dispatches on expression form:
@@ -1542,21 +1542,21 @@ scheme_eval 函数 dispatches on expression form:
 * Self-evaluating expressions are returned
 * all other legal expressions are represented as Scheme lists, called combinations
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507093550.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210507093550.png"/></div>
 
 ### Logical Special Forms
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507094327.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210507094327.png"/></div>
 需要注意的是这些逻辑表达式不一定会全部 evaluate, 如果 if 是 true , alternative 那里就算有异常也不会被抛出.
 
 ### Quotation
 quote special form evaluates to the quoted expression , which is not evaluated.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507094719.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210507094719.png"/></div>
 
 可以使用 `'<expression>` 作为缩写.
 
 ### lambda 表达式
 lambda expressions evaluate to user-defined procedures.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507095129.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210507095129.png"/></div>
 
 ### Define Expression
 Define binds a symbol to a value in the first frame of the current environment.
@@ -1564,10 +1564,10 @@ Define binds a symbol to a value in the first frame of the current environment.
 2. Bind name to its value in the current frame
 
 过程定义和 lambda 表达式定义带来的结果是一样的:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507095549.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210507095549.png"/></div>
 
 我们接下来考虑下面一个调用的 frame:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507095903.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210507095903.png"/></div>
 
 ## Lecture 28 : Tail Call
 ### Dynamic Scope
@@ -1575,16 +1575,16 @@ Define binds a symbol to a value in the first frame of the current environment.
 * 在lexical scope 中 the parent of a frame is the environment in which a procedure was **defined**
 * 在 Dynamic scope 中, the parent of a frame is the environment in which a procedure was **called**
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507104008.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210507104008.png"/></div>
 
 ### Tail Recursion
 函数式编程基于下面的假设, 并且在很多方面有着自己的优势:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507104305.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210507104305.png"/></div>
 
 在 Python 中, 递归调用总是创建一个新的活动帧.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507104521.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210507104521.png"/></div>
 但是 Scheme 对这个有要求:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507104757.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210507104757.png"/></div>
 
 ### Tail Call
 A tail call is a call expression in a tail context:
@@ -1601,7 +1601,7 @@ A tail call is a call expression in a tail context:
 * the last sub-expression in a tail context _begin_
 
 在调用中依旧要做更多计算的 Call expression 不是 Tail Call, 例如:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210507110034.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210507110034.png"/></div>
 
 但是我们通常可以重写以变成 tail call:
 ```Scheme
@@ -1622,13 +1622,13 @@ Tail Call 的返回值就是当前过程的返回值, 因此Tail Call 不应该�
                 (procedure start (cars)))))
 ```
 例如, `(reduce * '( 3 4 5) 2) -> (reduce * '(4 5) 6) -> (reduce * '(5) 24)-> 120`.需要注意的是, 最后一行 `procedure ...` 并不一定是 Tail Call, 取决于它的过程具体是什么.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210510155121.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210510155121.png"/></div>
 
 Map 是对一个过程和list操作, 结果是过程对 list 中的每个结果分别做一遍, 返回.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210510155326.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210510155326.png"/></div>
 
 下面是一个尾递归的实现:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210510155705.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210510155705.png"/></div>
 
 ## Lecture 29: Macros
 ### Program as Data
@@ -1639,7 +1639,7 @@ Scheme 的内置 list 数据结构(实际上是一个链表) 可以表示 combin
     (if (= n 0) 1
         (list '* n (fac-expression(- n 1)))))
 ```
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210510161212.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210510161212.png"/></div>
 
 上面就是一个程序生成了程序, eval 之后才是一个值. 
 
@@ -1656,7 +1656,7 @@ Evaluation macro call expression 的步骤:
 2. 然后对 operand 表达式调用宏 procedure , **without evaluating them first**
 3. Evaluate 宏过程返回的表达式
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511095818.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210511095818.png"/></div>
 
 实际上, 我们使用 define 也可以实现类似的效果, 但是要十分注意引号的使用.使用 macro 的一个好处就是 quotation 和 evaluation 自动帮我们做好了.
 ```Scheme
@@ -1667,14 +1667,14 @@ Evaluation macro call expression 的步骤:
 
 ### For Macro
 我们可以定义一种展开后表达式作用于 sequence 中每个值的宏. 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511100910.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210511100910.png"/></div>
 
 ### Quasi-Quotaition
 Quasi-Quotation 相对 Quotation 而言, 它意味着 part of the expression can be evaluated.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511101453.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210511101453.png"/></div>
 
 有了这个工具后, 我们可以将之前的check 简化:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511101704.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210511101704.png"/></div>
 
 ## Lecture 30 Iterator
 ### 数据处理
@@ -1684,38 +1684,38 @@ Quasi-Quotation 相对 Quotation 而言, 它意味着 part of the expression can
 
 ### 迭代器
 A container can provide an iterator that provides access to its element in some order.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511144006.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210511144006.png"/></div>
 
 迭代器总是 ordered, 即使产生他们的容器不是 ordered container. 但是它实际上是一个 non-random 的顺序, 具体和 Python 的实现有关, 并且如果在两次使用时候分别用 key 和 value 去遍历字典且没有修改 dictionary, 其 order 应该是一致的.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511144550.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210511144550.png"/></div>
 
 在到达容器末尾之后, 使用会抛出 `StopIteration` 异常, 同时在修改了容器之后, 需要重新获取迭代器.
 
 ### For statement
 在我们执行一个 for 语句的时候,实际结果和使用 iter 和 next 实现相同:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511145246.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210511145246.png"/></div>
 
 for 语句配合迭代器可以很方便地使用:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511145609.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210511145609.png"/></div>
 
 ### Built-In Iterator Functions
 很多内置的 Python 序列操作返回一个 lazy-evaluation 的迭代器:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511145925.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210511145925.png"/></div>
 
 为了看迭代器的内容, 可以将元素放到一个容器中:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511150010.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210511150010.png"/></div>
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511150338.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210511150338.png"/></div>
 此外我们需要注意, 不要将一个 Interator 对象和一个 list 做对比, 这会返回一个 false.
 
 ### Generator
 Generator 是一种特殊的 iterator.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511150842.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210511150842.png"/></div>
 
 ### Generators & Iterators
 * Generators and Yield from iterators
-  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511151216.png"/></div>
-  <div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210511151334.png"/></div>
+  <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210511151216.png"/></div>
+  <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210511151334.png"/></div>
 
 ## Lecture 31 : Streams
 ### Sequence Operation
@@ -1726,10 +1726,10 @@ Map, filter and reduce express sequence manipulation using compact expressions.
 
 ### Stream
 A stream is a list, but the rest of the list is computed only when needed.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210512092426.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210512092426.png"/></div>
 
 只有在表达式求值的时候才会 raise exception.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210512092837.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210512092837.png"/></div>
 这时候就相当于我们将一个 list 分解成为了 first + rest, 等同于 python 中的 iterator.
 
 ### Integer Stream
@@ -1760,7 +1760,7 @@ An interger stream is a stream of consecutive integers, the rest of the stream i
     (define ints (cons-stream 1 (add-stream ones ints)))
     ```
 ### Higher-Order Functions
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210512100535.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210512100535.png"/></div>
 同样的我们可以定义 stream 的高阶函数:
 ```Scheme
 ;; Map f over s.
@@ -1810,12 +1810,12 @@ A promise is an expression, along with an environment in which to evaluate it:
 * Delaying an expression creates a promise to evaluate it later in the current environment
 * Forcing a promise returns its value in the environment in which it was defined
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210512101106.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210512101106.png"/></div>
 
 ## Lecture 32: Declarative Languages
 ### Database Management Systems
 A table is a collection of records, which are rows that have a value for each column.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210512104907.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210512104907.png"/></div>
 
 数据库中使用的 SQL 语言是一种 declarative(声明式) languages:
 * A program is description of the desired result
@@ -1839,28 +1839,28 @@ SQL 语言有 ANSI 和 ISO 标准, 但有不同的变种, DBMS 有他们自己�
 select [expression] as [name], [expression2] as [name2];
 ```
 Selecting literals creates a one-row table, The union of two select statements is a table containing the rows of both of their results:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513141303.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210513141303.png"/></div>
 
 SQL 经常是一种 interactive(交互式) 语言, 使用 `select` 语句的结果向用户显示, 但是没有存储, 使用 `create table` 语句给结果赋予一个值:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513141629.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210513141629.png"/></div>
 
 ### Projecting Tables
 * Select 语句可以使用 `from` 子句来自定义一个 Input Table,
 * 可以使用 `where` 子句来选择 input table rows 的一个子集.  
 * 可以使用 `order by` 子句来对剩余的 row 排序
 * 列描述确定每个输入行如何投影到结果行
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513142432.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210513142432.png"/></div>
 
 ### Arithmetic
 * 在 select 语句中, colum names 求值得到 row values
 * 算术表达式可以作用于  row values 和常量
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513142913.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210513142913.png"/></div>
 
 ## Lecture 33: Table
 ### Joining Tables
 两个Table, A 和 B 使用逗号 Join 意味着 所有的 A 的 row & B 的 row 混合:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513151042.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210513151042.png"/></div>
 
 ### Aliases and Dot Expressions
 两个 table 可能有相同的 column 名字, dot 表达式和别名可以解除 column 的歧义, 例如下面语句中选 siblings pair:
@@ -1869,7 +1869,7 @@ select a.child as first, b.child as second
   from parents as a, parents as b
     where a.parent = b.parent and a.child < b.child;
 ```
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513152048.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210513152048.png"/></div>
 
 同样地, 我们可以 Joining 多个表,例如我们 join 多个表:
 ```SQL
@@ -1886,7 +1886,7 @@ select grandog from grandparents, dogs as c,  dogs as d
 
 ### Numerical Expressions
 SQL 中的表达式可以包含函数调用和算术运算符:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513152957.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210513152957.png"/></div>
 
 ```SQL
 CREATE TABLE cities AS
@@ -1909,7 +1909,7 @@ SELECT second FROM distances WHERE first="Minneapolis" ORDER BY -distance;
 
 ### String Expressions
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513153511.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210513153511.png"/></div>
 
 ```SQL
 CREATE TABLE nouns AS
@@ -1924,32 +1924,32 @@ SELECT subject.phrase || " chased " || object.phrase
 
 ## Lecture 34 : Aggregation(聚合操作)
 在之前的语句中, 我们都是使用一个 single row 的数据, 而 An aggregate function in the [columns] clause computes a value from **a group of rows**.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514141850.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210514141850.png"/></div>
 
 可以看到, 上面的 max 就是一个聚合操作. 此外, 可以有 `min`,`weight`,`count`等操作.此外, 聚合操作同样 selects a row in the table, which may be meaningful(也可能没有意义, 如`avg`):
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514142341.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210514142341.png"/></div>
 
 ### Group
 Rows in a table can be grouped, and aggregation is performed on each group.
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514142716.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210514142716.png"/></div>
 
 #### selecting Groups
 此外, 我们可以使用 having 从句选择一个 group:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514143101.png"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514143257.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210514143101.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210514143257.png"/></div>
 
 ## Lecture 35 : Data Base
 我们可以 create / drop table.
 ### Modifying Tables
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514143959.png"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514144050.png"/></div>
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514144123.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210514143959.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210514144050.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210514144123.png"/></div>
 
 ### Python and SQL
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514144435.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210514144435.png"/></div>
 
 ### SQL 注入攻击
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210514144646.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210514144646.png"/></div>
 
 ## Lecture 36 : Distributed Data
 ### Computer Systems
@@ -1969,7 +1969,7 @@ Essential features of the Unix operating system (and variants):
 * Modularity: Small tools are composed flexibly via pipes
 
 其中的 pipes 有点像 python 中的函数, 其中的标准流有点像 python 中的迭代器:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513155026.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210513155026.png"/></div>
 
 ```Shell
 ls *.pdf | cut -f 1 -d - | sort -r | uniq -c
@@ -1996,10 +1996,10 @@ Processing is defined centrally but executed remotely:
 
 <div align=center><img src="https://i.loli.net/2021/05/13/FgZUnaPyD5MoTJv.png"/></div>
 
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513163350.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210513163350.png"/></div>
 
 Spark 提供下面的服务:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210513163522.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210513163522.png"/></div>
 
 ### MapReduce
 An important early distributed processing system was MapReduce, developed at Google, 用通用的应用结构 capture 很多共同的 data processing tasks:

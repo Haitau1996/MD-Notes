@@ -285,10 +285,10 @@ Go 语言的数据类型分成四类: 基础类型, 复合类型(包括数组和
 Go 中的整数包括有符号和无符号,并有 4 种大小 , 8 位/ 16位/ 32 位 和 64位.`int8`/`uint8`..., rune 类型是 `int32` 的同义词, 用于指明一个值是 _Unicode_ 码点, `byte` 是 `int8` 的同义词, 表明一个值是原始数据不是量值.   
 `uintptr` 用于完整存放指针, 仅用于低层编程. (这种设计和 RUST 很像, 不过 RUST 缩写更多).  
 同样的, 它支持算术\逻辑和比较等运算, 优先级降序排列如下:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210517164555.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210517164555.png"/></div>
 
 此外也具备位运算:
-<div align=center><img src="https://gitee.com/Haitau1996/picture-hosting/raw/master/img/20210517164740.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210517164740.png"/></div>
 
 和 C 语言一样, 做右移的时候, 对于有符号数是用 sign bit 填充高位, 对于无符号数是以 0 填充高位(CSAPP 中的算术右移和逻辑右移), 因此相关处理的时候须使用无符号整型.   
 还有需要注意的是, 不同的整数类型之间的操作需要使用强制类型转换, 而文字符号(Rune literals) 形式的字符是写在一对单引号内, 可以是 ASCII 字符或者直接使用 Unicode 码点或者码值转义. 
