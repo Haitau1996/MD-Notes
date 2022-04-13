@@ -541,3 +541,70 @@ WHERE cust_id = 10006;
 * 视图可以嵌套，即可以利用从其他视图中检索数据的查询来构造一个视图。但是不能索引， 也不能触发关联的触发器或者默认值。
 * 视图可以和表一起使用。
 
+### 使用视图
+* 视图使用 `CREATE VIEW` 创建
+  * 更新可以先 `DROP` 再 `CREATE`, 也可以使用 `CREATE OR REPLACE VIEW`
+* 使用 `SHOW CREATE VIEW view_name;` 查看视图的定义
+* 使用 `DROP VIEW view_name;` 删除视图
+
+#### Case 1: 简化联结
+视图最常见的应用是隐藏复杂的 `SQL`, 这通常涉及联结：
+```sql
+# 创建视图
+CREATE VIEW productcustomers AS
+SELECT cust_name, cust_contact, prod_id
+FROM customers, orders, orderitems
+WHERE customers.cust_id = orders.cust_id
+    AND orderitems.order_num = orders.order_num;
+# 使用 SELECT 查询
+SELECT cust_name, cust_contact
+FROM productcustomers
+WHERE prod_id = 'TNT2';
+```
+#### Case 2: 重新格式化检索出的数据
+视图的另一常见用途是重新格式化检索出的数据， 如果我们经常要某个格式化的数据， 就可以创建一个视图， 然后在需要的时候使用它：
+```sql
+CREATE VIEW vendorlocations AS
+SELECT Concat(RTrim(vend_name), ' (', RTrim(vend_country), ')')
+       AS vend_title
+FROM vendors
+ORDER BY vend_name;
+## 使用
+SELECT *
+FROM vendorlocations;
+```
+#### Case 3: 使用视图过滤数据
+如果我们经常需要过滤没有电子邮件的客户， 这时候就可以创建一个视图，其中包含有电子邮件的客户的查询：
+```sql
+CREATE VIEW customeremaillist AS
+SELECT cust_id, cust_name, cust_email
+FROM customers
+WHERE cust_email IS NOT NULL;
+# 使用
+SELECT *
+FROM customeremaillist;
+```
+#### Case 4: 使用视图与计算字段
+视图对于简化计算字段的使用特别有用：
+```sql
+CREATE VIEW orderitemsexpanded AS
+SELECT order_num,
+       prod_id,
+       quantity,
+       item_price,
+       quantity*item_price AS expanded_price
+FROM orderitems;
+# 使用
+SELECT *
+FROM orderitemsexpanded
+WHERE order_num = 20005;
+```
+### 更新视图
+通常，视图是可更新的， 并非所有视图都是可更新的。基本上可以说，如果MySQL不能正确地确定被更新的基数据，则不允许更新（包括插入和删除）。如果视图中有以下操作， 则不能进行视图更新：
+1. 分组(使用 GROUP BY 和 HAVING)
+2. 联结
+3. 子查询
+4. 并
+5. 聚集函数
+6. DISTINCT
+7. 导出(计算)列
