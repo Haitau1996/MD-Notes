@@ -153,3 +153,17 @@ Host 的发送功能：
 
 这通常取决于链路的瓶颈，在这里， 就是 $min(R_c, R_s, R/N)$,通常网络的瓶颈在于网络边缘：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220421113129.png" width="40%"/></div>
 
+## 分层，封装和服务模型
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220421131032.png" width="70%"/></div>
+
+分层：每个层级实现一个服务
+* 在这个层级执行了某些动作
+* 直接使用下层的服务
+
+分层是设计复杂系统的一种方式， 它有两个明显的优点：
+1. 清晰的结构让我们可以很好地定位系统的组成部分， 理解它们之间的关系
+2. 模块化帮助简化系统的维护和更新
+
+### 协议分层
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220421132219.png" width="80%"/></div>
+//todo: 补充协议的细节
