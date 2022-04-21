@@ -167,3 +167,19 @@ Host 的发送功能：
 ### 协议分层
 <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220421132219.png" width="80%"/></div>
 //todo: 补充协议的细节
+
+### 安全
+在不同的 layer 中都需要考虑安全问题， 其中两点是最需要关注的：
+1. 有怎样的安全问题
+2. 应该如何应对
+
+分组嗅探：<div align=center><img src="https://i.imgur.com/XtkECX1.png" width="60%"/></div>
+IP 哄骗： <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220421195646.png" width="60%"/></div>
+拒绝服务攻击（Denial of Service attack):<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220421195803.png" width="40%"/></div>
+
+常见的保护手段：
+1. 认证： proving you are who you say you are
+2. 保密： 通过加密实现
+3. 完整性验证： 使用数字签名验证数据的完整性
+4. 访问限制： 密码保护的虚拟私有网络
+5. 防火墙
