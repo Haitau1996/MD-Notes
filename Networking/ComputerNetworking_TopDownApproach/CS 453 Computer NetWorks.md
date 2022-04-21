@@ -4,8 +4,8 @@ by Jim Kurose
 # Introduction
 - [x] 什么是因特网， 什么是协议
 - [x] **网络边缘**， 接入互联网， 物理媒介
-- [ ] **网络核心**： 分组交换， 电路交换， 网络结构
-- [ ] 性能：丢失， 延迟， 吞吐量
+- [x] **网络核心**： 分组交换， 电路交换， 网络结构
+- [x] 性能：丢失， 延迟， 吞吐量
 - [ ] 协议分层，服务模型
 - [ ] 安全，历史。。。
 
@@ -122,8 +122,34 @@ Host 的发送功能：
 * 分组交换适用于突发式的数据
 * 但是分组交换可能出现过度拥堵
 
-因此很重要的一个事情就是让分组交换有和电路交换类似的行为。
+因此一个很自然的思路就是让分组交换实现电路交换类似的行为。
 
 ### Internet 结构： 网络的网络
 <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220420203010.png" width="50%"/></div>
 今天的因特网是一个网络的网络， 其中包括 ISP(网络服务提供商)网络，IPX(因特网交换点)和内容提供商网络(CPN)。
+
+## 性能： 分组交换中的时延，丢包和吞吐量
+### 时延
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220421100716.png" width="70%"/></div>
+
+从上图看出， 时延有四个来源：
+* **节点处理时延**：检查比特差错， 决定输出链路等， 通常是微秒量级或者更少
+* **排队时延**：取决于路由器的拥挤程度
+* **传输时延**：将所有的比特推向链路需要时间，链路的传输速度是有限的， 这个时延取决于套接字长度(L)和 链路的传输速度(R),$d_{trans} = L/R$
+* **传播时延**： 取决于路程和链路长度，$d_{prop}=d/s$
+
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220421111108.png" width="60%"/></div>
+
+我们使用一个汽车过收费站的例子理解传输时延河传播时延的区别， 如果这个收费站处理车的速度是 12秒一辆， 那么整个车队的传输时延就是 12 * 10 = 120秒， 而传播时延就是就是距离除以时间， 差不多是 1 个小时。  
+### 排队时延和丢包
+我们定义一个流量强度 $\frac{L\cdot a}{R}$, 其中 a 是平均到达速率， L 为分组长度， R 为链路的传输速度。， 那么它和时延的有一个很符合直觉的关系：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220421111850.png" width="30%"/></div>
+
+当分组到达一个已经满的队列时，路由器就会丢弃（drop）这个分组， 丢失的分组可能会被前一个节点重新传输， 或者从源端系统重新发送， 也可能什么都不做。
+
+### 吞吐量
+吞吐量: 从发送者到接受者之间传输bit 的比特率(bit/time unit) 。
+* 瞬时吞吐量: 某个时间， 从发送者到接受者之间传输的bit 的比特率。
+* 平均吞吐量：某个时间段的平均值
+
+这通常取决于链路的瓶颈，在这里， 就是 $min(R_c, R_s, R/N)$,通常网络的瓶颈在于网络边缘：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220421113129.png" width="40%"/></div>
+
