@@ -1,5 +1,5 @@
 # CS 453 Computer Networks
-by Jim Kurose
+[Jim Kurose](https://gaia.cs.umass.edu/kurose_ross/index.php) 所开[课程](https://gaia.cs.umass.edu/kurose_ross/lectures.php)的笔记
 
 # Introduction
 - [x] 什么是因特网， 什么是协议
@@ -236,10 +236,95 @@ P2P 模型（如p2p 文件共享）：
 
 传输端有两种常见的服务协议：
 | TCP 服务  | UDP 服务  |
-| :----: | :----: |
+| :----------------------: | :----------------------------------------------------: |
 | 可靠的数据传输  | 不可靠的数据传输  |
 | 流控制： 发送端不会压垮接收端| 不提供可靠性，流控制， 拥堵控制，timing/吞吐量 保证，安全和 连接setup |
 |拥堵控制| |
 |面向连接： 传输之前需要 set up|   | 
 |不提供：timing/最小吞吐保证, 安全|  | 
 
+## Web 和 HTTP
+网页由一系列对象构成， 每个都存放在不同的服务器上：
+* 对象可以死 html 文件， jpeg 图片， 音频等
+* 多数网页由基础的 html 文件组成，它坑你包含多个指向的对象， 每个都由 URL 寻址<div align=center><img src="https://i.imgur.com/Lm824gE.png" width="60%"/></div>
+
+### HTTP 概况
+HTTP， 超文本传输协议，是应用层协议， 采用客户端-服务器模型：
+* client: 提出请求、接收数据和显示网页对象的浏览器(也可能内置于系统中)
+* server: 响应请求，发送网页对象
+
+HTTP 使用 TCP 作为其支撑运输协议，是一个无状态协议（服务器不保存客户请求历史） ，通常有以下步骤：
+* 客户初始化连接到服务器的 80 端口
+* 服务器同意客户的 TCP 连接请求
+* 客户端和服务器交换 HTTP 报文
+* 连接结束
+
+HTTP 连接有两种：**持续连接**和**非持续连接**
+| 非持续连接 | 持续连接 |
+| :------------------: | :------------------: |
+| TCP connection opened| TCP connection opened to a server|
+| **最多一个对象**可以通过TCP连接发送| 多个对象可以通过客户端和服务器的**同一个 TCP 连接**发送|
+|TCP 连接关闭   | TCP 连接关闭   |
+
+非持续连接流程示意：<div align=center><img src="https://i.imgur.com/KTLOvw7.png" width="70%"/></div>
+
+* 如果知道了往返时间(RTT), 每个对象都需要 2 个 RTT<div align=center><img src="https://i.imgur.com/7SUBVK6.png" width="40%"/></div>
+* 在持续连接中， 服务器在发送响应后保持该 TCP 连接打开，后续的请求和响应报文能够通过相同的连接进行传送
+
+### HTTP 报文格式
+* 请求报文
+    ```http
+    GET /somedir/page.html HTTP/1.1
+    Host: www.someschool.edu
+    Connection: close
+    User-agent: Mozilla/5.0
+    Accept-language: fr
+    ```
+
+//todo: 完善报文格式
+
+### Web 缓存
+Web 缓存器也叫代理服务器， 目标是在没有牵涉源服务器的情况下满足客户需求。
+* 用户配置浏览器指向一个(可能在本地)的 web cache
+* 浏览器的请求都发送给 Cache
+  * 如果对象在 cache 中， 返回
+  * 否则 cache 向源服务器发送请求，并且缓存源服务器返回对象， 然后返回给客户<div align=center><img src="https://i.imgur.com/yIZkK7n.png" width="40%"/></div>
+
+在这里， Web 缓存器即作为源服务器的客户端， 也作为实际发出请求的客户端的服务端。 服务器可以在响应的头部中告知缓存器允许的缓存类型， 如<div align=center><img src="https://i.imgur.com/Je6JLJR.png" width="40%"/></div>
+
+使用缓存器能带来很多好处：
+1. 减小客户请求的响应时间
+2. 减少机构接入链路的拥堵
+3. 有了缓存器， 因特网更加稠密
+
+### Conditional GET
+缓存引入了新的问题： **存放在缓存器中的副本可能是陈旧的**。HTTP 有一种**条件GET**机制
+* 客户端在使用 GET 的时候包含 IF-MODIFIED-SINCE 首部行
+* 如果缓存已经是最新的， 服务器返回状态码 304 (Not Modified)并且不反悔对象, 否则返回对象<div align=center><img src="https://i.imgur.com/LzgrZI4.png" width="50%"/></div>
+
+### HTTP/2 
+核心目标是减少多对象 http 请求的延迟
+* 请求对象的传输顺序可以基于客户端定义的优先级顺序(不一定要 FCFS)
+* 可以将没有请求的对象(将来可能需要)发送给客户
+* 可以将对象分成帧(Frames)， 并且调度帧以避免 HOL blocking
+
+例如：
+* HTTP 1.1:<div align=center><img src="https://i.imgur.com/0j5dmxu.png" width="60%"/></div>
+* HTTP/2: <div align=center><img src="https://i.imgur.com/sjAcYjl.png" width="60%"/></div>
+
+## 电子邮件
+电子邮件系统有 3 个主要部分： 用户代理(user agent), 邮件服务器(mail server) 和简单邮件传输协议(SMTP)。  
+SMTP 使用 TCP 的可靠数据传输通过端口 25 将用户消息从客户端发送给服务器, 传输的三个阶段
+* SMTP 握手
+* SMTP 传输数据
+* SMTP 关闭
+
+它的命令和响应行为有点像 HTTP:
+* commands: ASCII 文本
+* 响应： 状态码和短语
+
+|  SMTP   | HTTP  |
+|:---:|:---:|
+| 推协议  | 拉协议  |
+| 多个对象可以放在消息的不同部分 | 每个对象被封装在它自己的响应消息中|
+|使用持续性连接| 持续性、非 持续性连接 |
