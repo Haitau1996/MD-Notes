@@ -48,4 +48,11 @@ MySQL 监视器这个客户端程序以用于操作 MySQL 的 CUI 为基础：
     ```
 * `SELECT` 可以显示选中列的数据， 还可以用于显示与数据库无关的值
 
-## Chap 6: 修改表
+## Chap 5:  数据类型和数据输入
+数据库中的表中只能输入各个列指定格式的数据， 数据类型可以降低错误数据输入的可能性, MySQL 数据输入检查相对宽松。
+* 数值类型：<div align=center><img src="https://i.imgur.com/xlwLUJ9.png" width="70%"/></div>
+  * 数值类型可以加正负号以及科学输入法
+* 字符串类型：<div align=center><img src="https://i.imgur.com/QSKVUFh.png" width="70%"/></div>
+  * 在 4.0 以前 VARCHAR/ CHAR 的位数单位为字节， 4.1 之后变成了字符数
+  * 字符串数据在输入的时候要使用单括号或者双括号括起来， 实际的 `'` 则需要转义
+* 日期与时间：<div align=center><img src="https://i.imgur.com/owQa6wk.png" width="70%"/></div>
