@@ -328,3 +328,23 @@ SMTP 使用 TCP 的可靠数据传输通过端口 25 将用户消息从客户端
 | 推协议  | 拉协议  |
 | 多个对象可以放在消息的不同部分 | 每个对象被封装在它自己的响应消息中|
 |使用持续性连接| 持续性、非 持续性连接 |
+
+## DNS(Domain Name System)
+网络上的主机有两个标识： 域名 和 IP地址。DNS 服务的作用就是在两者之间提供翻译：
+* 一个由分层的 DNS 服务器提供的分布式数据库
+* 是一个应用层协议：
+  * 反映了网络设计的哲学： 保持核心简单， 在边缘添加复杂性
+
+除了域名到 IP地址的转换， 还提供以下服务：
+* 主机别名
+* 邮件服务器别名
+* 负载分配
+
+DNS 没有采用集中式设计， 因为它包含很多问题：**单点故障**， **通信容量**，**远距离的集中式数据库** 和维护问题。  
+DNS 服务器大致有三种类型：<div align=center><img src="https://i.imgur.com/jxy6FsJ.png" width="70%"/></div>
+
+在 engineering.nyu.edu 的主机想要知道 gaia.cs.umass.edu 的地址， 需要经历复杂的查询过程：
+* 递归查询：<div align=center><img src="https://i.imgur.com/bNj0HLg.png" width="70%"/></div>
+* **迭代查询**：<div align=center><img src="https://i.imgur.com/wueLJP5.png" width="70%"/></div>
+
+为了改善时延性能并且减少 DNS报文数量，DNS缓存让本地DNS 服务器能将收到的一个 DNS回答缓存并在一段时间后丢弃信息。
