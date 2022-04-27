@@ -348,3 +348,27 @@ DNS 服务器大致有三种类型：<div align=center><img src="https://i.imgur
 * **迭代查询**：<div align=center><img src="https://i.imgur.com/wueLJP5.png" width="70%"/></div>
 
 为了改善时延性能并且减少 DNS报文数量，DNS缓存让本地DNS 服务器能将收到的一个 DNS回答缓存并在一段时间后丢弃信息。
+
+## 视频流， 内容分发网络
+预先录制的视频现在是住宅 ISP 流量的主体，这种服务面临两个重大问题：
+* scale: 怎样触及 10亿级别的用户
+* 多样性： 不同的用户有不同的能力，有线 vs 无线， 高带宽 vs 低带宽
+
+解决的办法就是：分布式应用层的基础设施。视频的编码率有的是固定的(CBR)，有的是可变的(VBR)。而因特网视频的传输又面临两个问题： 用户-服务器之间的带宽随着时间变化， 并且拥堵会引发丢包和延迟问题。
+* 使用缓存可以部分解决后一个问题：  
+  * 在没有缓存的情况下， 获得帧的timing 和源不同， 时快时慢：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220427135903.png" width="70%"/></div>
+  * 添加了视频缓存：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220427140050.png" width="70%"/></div>
+* 经 HTTP 的动态适应流（DASH）是应对第一个问题的办法
+  * 视频被分解成不同的块
+  * 每个块以不同的比特率编码
+  * 不同的编码块存放在不同的文件中，并且在每个 CDN 节点中都有文件的副本
+  * 告示文件提供了不同块的 URL
+  * 在客户端周期性检查到服务端的带宽， 向告示文件请求块的 URL, 根据带宽选择最大的比特率
+    * 在不同的时间可以选择不同的比特率和不同的服务器
+
+内容分发网络（CDN） 管理多个地理位置上的服务器， 在服务器上存储有视频的副本。
+* 深入
+* 邀请做客
+
+## 套接字编程
+套接字是应用层和传输层之间的唯一 API。
