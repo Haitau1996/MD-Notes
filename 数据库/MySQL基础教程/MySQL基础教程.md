@@ -56,3 +56,33 @@ MySQL 监视器这个客户端程序以用于操作 MySQL 的 CUI 为基础：
   * 在 4.0 以前 VARCHAR/ CHAR 的位数单位为字节， 4.1 之后变成了字符数
   * 字符串数据在输入的时候要使用单括号或者双括号括起来， 实际的 `'` 则需要转义
 * 日期与时间：<div align=center><img src="https://i.imgur.com/owQa6wk.png" width="70%"/></div>
+
+## Chap 6: 修改表
+第四章中的 INSERT INTO 语句是修改表中的数据， 而这里使用的 `ALTER` 语句则是修改表的结构。
+* 当修改列的定义时：`ALTER TABLE … MODIFY …`
+  * 新旧类型必须具有兼容性
+  * 也可用于修改列的顺序， 将某个列放到前面
+    ```sql
+    ALTER TABLE tb1C MODIFY birth DATETIME FIRST;
+    ```
+* 当添加列时：`ALTER TABLE … ADD …`
+  * 可以使用 `FIRST` 或 `AFTER` 来指定添加列的位置
+    ```sql
+    ALTER TABLE tb1D ADD birth DATETIME FIRST;
+    ALTER TABLE tb1E ADD birth DATETIME AFTER empid;
+    ```
+* 当修改列名和定义时：`ALTER TABLE … CHANGE …`
+* 当删除列时：`ALTER TABLE … DROP …`
+
+> 在英语中 modify 和 change 意思稍微有点区别， 前者的意思更多是 **调整，稍作修改使更加适合**， 后者含义更多是 **改变**。 所以前者只是更改列的数据类型， 而后者改变了名和定义
+
+### 设置主键
+在创建了数据库之后， 需要从大量数据中**唯一确定**符合条件的记录， 这种“只会确定一个”的独一无二状态称为唯一（_unique_）。  
+创建唯一记录， 会给列设置一个用于和其他列进行区分的特殊属性， 这种情况就要用到**主键**(PRIMARY KEY)。
+* 没有重复的值
+* 不允许输入空值 `NULL`
+
+在创建表的时候设置主键:
+```sql
+CREATE TABLE 表名( 列名 数据类型 PRIMARY KEY …);
+```
