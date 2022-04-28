@@ -1,5 +1,5 @@
 # CS 453 Computer Networks
-[Jim Kurose](https://gaia.cs.umass.edu/kurose_ross/index.php) 所开[课程](https://gaia.cs.umass.edu/kurose_ross/lectures.php)的笔记
+看 [Jim Kurose](https://gaia.cs.umass.edu/kurose_ross/index.php) 所开[课程](https://gaia.cs.umass.edu/kurose_ross/lectures.php)的笔记
 
 # Introduction
 - [x] 什么是因特网， 什么是协议
