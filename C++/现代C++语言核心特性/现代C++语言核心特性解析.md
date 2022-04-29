@@ -85,3 +85,55 @@ C++98 中 `auto` 用来声明自动变量，这显然是多余的， C++11标准
 1. 当一眼就能看出声明变量的初始化类型的时候可以使用
 2. 对于复杂的类型，例如 lambda 表达式、bind 等直接使用
 
+## Chap 4: decltype 说明符
+C++ 标准提供了 typeid 云算法获取目标操作数类型相关的信息， 返回一个 `std::type_info` 对象, 可以调用其 `name()` 成员函数获取类型名称：
+```C++
+int x1 = 0;
+std::cout << typeid(x1).name() << std::endl;
+```
+1. 返回值是一个左值， 且其生命周期一直被扩展到程序生命周期结束
+2. `std::type_info` 删除了复制构造函数，若想保存 `std::type_info`，只能获取其引用或者指针
+3. `typeid` 的返回值总是忽略类型的 cv 限定符
+
+### 使用 decltype 说明符
+C++11标准引入了 `decltype` 说明符，使用 `decltype` 说明符可以获取对象或者表达式的类型，其语法与GCC 的 typeof 类似， 讨论其优势需要用到返回类型后置的例子：
+```C++
+template<class T1, class T2>
+auto sum(T1 a1, T2 a2)->decltype(a1 + a2)
+{
+  return a1 + a2;
+}
+auto x4 = sum(5, 10.5);
+```
+**相对于 auto , decltype 会同步类型的 cv 限定符**：
+```C++
+template<class T>
+auto return_ref(T& t)
+{
+  return t;
+}
+
+int x1 = 0;
+static_assert(
+    std::is_reference_v<decltype(return_ref(x1))>// 编译错误，返回值不为引用类型
+    );
+
+template<class T>
+auto return_ref(T& t)->decltype(t)
+{
+  return t;
+}
+
+int x1 = 0;
+static_assert(
+    std::is_reference_v<decltype(return_ref(x1))>    // 编译成功
+    );
+```
+
+### 推导规则
+`decltype(e)`（其中e的类型为T）的推导规则有5条
+1. 如果 e 是一个未加括号的标识符表达式（结构化绑定除外）或者未加括号的类成员访问，则 decltype(e) 推断出的类型是e的类型T。如果并不存在这样的类型，或者e是一组重载函数，则无法进行推导。
+2. 如果 e 是一个函数调用或者仿函数调用，那么 decltype(e) 推断出的类型是其返回值的类型。
+3. 如果 e 是一个类型为 T 的左值，则 decltype(e) 是 T&
+4. 如果 e 是一个类型为 T 的将亡值，则 decltype(e) 是 T&&
+5. 除去以上情况，则 decltype(e) 是 T
