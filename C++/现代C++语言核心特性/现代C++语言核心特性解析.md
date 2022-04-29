@@ -178,3 +178,32 @@ static_assert(
     std::is_reference_v<decltype(return_ref(x1))>    // 编译成功
     );
 ```
+
+## Chap 5: 函数返回类型后置
+C++11 引入了函数返回类型后置的方法，其中 auto 是一个占位符，函数名后 -> 紧跟的类型才是真正的返回类型。在返回类型比较复杂的时候，比如返回一个函数指针类型，返回类型后置可能会是一个不错的选择：
+```C++
+int bar_impl(int x)
+{
+  return x;
+}
+// 使用 typedef 给函数指针类型创建别名，然后用于函数的返回类型
+typedef int(*bar)(int);
+bar foo1()
+{
+  return bar_impl;
+}
+// 返回类型后置， 直接写出返回类型
+auto foo2()->int(*)(int)
+{
+  return bar_impl;
+}
+```
+### 推导函数模板返回类型
+C++11标准中函数返回类型后置的作用之一是推导函数模板的返回类型，当然前提是需要用到decltype说明符,在这种情况下decltype(t1 + t2)不能写在函数声明前，**编译器在解析返回类型的时候还没解析到参数部分**:
+```C++
+template<class T1, class T2>
+auto sum1(T1 t1, T2 t2)->decltype(t1 + t2)
+{
+  return t1 + t2;
+}
+```
