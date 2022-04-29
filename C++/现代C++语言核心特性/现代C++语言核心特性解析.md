@@ -41,3 +41,33 @@
     }
     ```
 
+## Chap 3: `auto` 占位符
+C++98 中 `auto` 用来声明自动变量，这显然是多余的， C++11标准赋予了 `auto` 新的含义：声明变量时根据初始化表达式**自动推断该变量的类型**、**声明函数时函数返回值的占位符**。使用的时候需要注意4点：
+1. 声明多个变量的时候，编译器遵从由左往右的推导规则
+2. 当使用条件表达式初始化auto声明的变量时，编译器总是使用表达能力更强的类型： 
+    ```C++
+    auto i = true ? 5 : 8.0;    // i的数据类型为double
+    ```
+3. `auto` 无法在类中声明非静态成员变量， C++11 中静态成员变量的声明要可以使用, 但是必须使用 `const` 限定符, 在 C++17 标准中可以在没有 `const` 限定符的情况下声明静态成员变量：
+    ```C++
+    struct sometype {
+        static const auto i = 5;     // C++ 11
+        static inline auto j = 5;    // C++17
+    };
+    ```
+4. C++20 之前无法使用 `auto` 声明形参, C++14 中可以使用 `auto` 为 _lambda_ 表达式声明形参
+   ```C++
+   void echo(auto str) {…} // C++20之前编译失败，C++20编译成功
+   auto cmp = [](auto& a, auto& b) { return a < b; }; // since C++14
+   ```
+
+### 推导规则
+1. 如果 `auto` 声明的变量是按值初始化，则推导出的类型会忽略 `cv` 限定符: 如果吗声明变量**没有使用引用和指针**， 编译器在推导的时候会忽略 const 和 volatile 限定符。
+    ```C++
+    const int i = 5;
+    auto j = i;        // auto推导类型为int，而非const int
+    auto &m = i;       // auto推导类型为const int，m推导类型为const int&
+    auto *k = i;       // auto推导类型为const int，k推导类型为const int*
+    ```
+2. 使用 `auto` 声明变量初始化时，目标对象如果是引用，则引用属性会被忽略
+3. 
