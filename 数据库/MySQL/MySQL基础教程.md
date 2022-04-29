@@ -103,3 +103,19 @@ CREATE TABLE 表名( 列名 INT PRIMARY KEY AUTO_INCREMENT, 其他列 …);
 * 在所有记录都删除掉之后， 可以以下面的方式进行初始化：`ALTER TABLE 表名 AUTO_INCREMENT=1;`
   * 当表中存在数据时，如果设置的编号值比已经存在的值大，也可以通过上面的语句重新设置编号的初始值 1
 
+## Chap 7: 复制、删除表和记录
+需要用到很多表，每次输入记录又很麻烦，所以为了能重复利用之前创建过的表，我们要掌握表的各种复制方法。
+* 复制表的列结构和记录
+* 仅复制表的列结构
+* 仅复制记录
+
+### 将表的列结构和记录整个复制
+* 使用 `SELECT` 的结果复制列的结构和记录， 然后创建新的表。这种复制方法**不复制 `AUTO_INCREMENT` 等属性**， 它们需要复制之后进行设置。
+  * 这种方法可能会改变列的属性。例如在某些 MySQL 的版本中，VARCHAR(100) 可能会变成 CHAR(100)
+    ```sql
+    CREATE TABLE 新表名 SELECT * FROM 元表名；
+    ```
+    执行`CREATE TABLE tb1_bk SELECT * FROM tb1;` 实际上就是执行下面的过程：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220429204537.png" width="80%"/></div>
+
+### 仅复制表的列结构
+在 `CREATE TABLE` 命令的表名后面加上 `LIKE` 指定复制的元表。这种做法**不会复制表中的记录，但是会复制 `AUTO_INCREMENT` 和 `PRIMARY KEY` 等列的属性。**  
