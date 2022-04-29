@@ -132,8 +132,49 @@ static_assert(
 
 ### 推导规则
 `decltype(e)`（其中e的类型为T）的推导规则有5条
-1. 如果 e 是一个未加括号的标识符表达式（结构化绑定除外）或者未加括号的类成员访问，则 decltype(e) 推断出的类型是e的类型T。如果并不存在这样的类型，或者e是一组重载函数，则无法进行推导。
+1. 如果 e 是一个**未加括号**的标识符表达式（结构化绑定除外）或者**未加括号**的类成员访问，则 decltype(e) 推断出的类型是e的类型T。如果并不存在这样的类型，或者e是一组重载函数，则无法进行推导。
 2. 如果 e 是一个函数调用或者仿函数调用，那么 decltype(e) 推断出的类型是其返回值的类型。
+
+下面三点其实是**加了括号**情况下的类型推导：
+
 3. 如果 e 是一个类型为 T 的左值，则 decltype(e) 是 T&
 4. 如果 e 是一个类型为 T 的将亡值，则 decltype(e) 是 T&&
-5. 除去以上情况，则 decltype(e) 是 T
+5. 除去以上情况，则 decltype(e) 是 T(cppreference 网站提供的推导规则， 如果类型是 pvalue, 推导类型是 T)
+    ```C++
+    const int&& foo();
+    int i;
+    struct A {
+        double x;
+    };
+    const A* a = new A();
+    decltype(foo());         // 函数调用： decltype(foo())推导类型为const int&&
+    decltype(i);             // 未加括号的表达式： decltype(i)推导类型为int
+    decltype(a->x);          // 未加括号的表达式：decltype(a->x)推导类型为double
+    decltype((a->x));        // 加了括号， 括号内为左值： decltype((a->x))推导类型为const double&
+    ```
+### cv 限定符的推导
+通常情况下，decltype(e)所推导的类型会同步e的cv限定符， 当e是**未加括号的成员变量**时，**父对象**表达式的cv限定符会被忽略，不能同步到推导结果
+```C++
+struct A {
+    double x;
+};
+const A* a = new A();
+decltype(a->x);    // decltype(a->x)推导类型为double, const属性被忽略
+decltype((a->x));    // decltype((a->x))推导类型为const double&
+```
+
+### decltype(auto)
+告诉编译器用decltype的推导表达式规则来推导auto。另外需要注意的是，decltype(auto)**必须单独声明，也就是它不能结合指针、引用以及cv限定符**。  
+有了这个组合之后， 可以消除返回类型后置的语法：
+```C++
+template<class T>
+decltype(auto) return_ref(T& t)
+{
+  return t;
+}
+
+int x1 = 0;
+static_assert(
+    std::is_reference_v<decltype(return_ref(x1))>    // 编译成功
+    );
+```
