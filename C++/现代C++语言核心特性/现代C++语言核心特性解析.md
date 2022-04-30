@@ -221,3 +221,48 @@ int *q = &++x;  // 编译成功
 通常的 Best Practice 会建议我们尽可能使用了常量左值引用，但这就表示我们无法在函数内修改该对象的内容（强制类型转换(const_cast)去除常量性除外）。    
 右值引用是一种**引用右值且只能引用右值的方法**。 在语法方面右值引用可以对比左值引用，在左值引用声明中，需要在类型后添加`&`，而右值引用则是在类型后添加`&&`。  
 右值引用的特点之一是可以延长右值的生命周期, 更重要的作用是**减少对象复制，提升程序性能**。
+我们知道右值都存放在临时对象中， 当右值被使用后， 程序会马上销毁对象并且释放内存， 这样在关闭了返回值优化或者无法做返回值优化的时候， 函数在返回时， **使用临时对象调用拷贝构造函数， 然后析构临时对象**，从正确性看这么做毫无问题， 但是**从运行性能的角度上看却还有巨大的优化空间**。  
+
+### 移动语义
+C++11标准中引入了移动语义，它可以帮助我们**将临时对象的内存移动到对象中**，以避免内存数据的复制。
+```C++
+class BigMemoryPool{
+    ...
+    BigMemoryPool(BigMemoryPool&& other)
+    {
+        std::cout << "move big memory pool." << std::endl;
+        pool_ = other.pool_;
+        other.pool_ = nullptr;
+    }
+
+    BigMemoryPool(const BigMemoryPool& other) : pool_(new char[PoolSize])
+    {
+        std::cout << "copy big memory pool." << std::endl;
+        memcpy(pool_, other.pool_, PoolSize);
+    }
+private:
+    char *pool_;
+}
+```
+上面这两个构造函数的实现就有明显的区别：
+* 复制构造函数而言形参是一个左值引用，也就是说函数的实参**必须是一个具名的左值**，在复制构造函数中往往**进行深复制**，即在不能破坏实参对象的前提下复制目标对象。
+* 而移动构造函数恰恰相反，它接受的是一个右值，其核心思想是**通过转移实参对象的数据以达成构造目标对象的目的**，也就是说实参对象是会被修改的。
+
+除移动构造函数能实现移动语义以外，**移动赋值运算符函数也能完成移动操作**：
+```C++
+BigMemoryPool& operator=(BigMemoryPool&& other)
+{
+    std::cout << "move(operator=) big memory pool." << std::endl;
+    if (pool_ != nullptr) {
+        delete[] pool_;
+    }
+    pool_ = other.pool_;
+    other.pool_ = nullptr;
+    return *this;
+}
+```
+需要注意虽然使用移动语义在性能上有很大收益，但是却也有一些风险，这些风险来自异常，在编写移动语义的函数时建议确保函数不会抛出异常。
+
+// todo: 移动语义的剩下部分有点困难， 白天清醒的时候看
+
+## Chap 7: lambda表达式
