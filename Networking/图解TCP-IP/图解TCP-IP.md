@@ -11,3 +11,7 @@
 
 ### 协议分层与OSI参考模型
 OSI所定义的协议虽然并没有得到普及，但是在OSI协议设计之初作为其指导方针的OSI参考模型却常被用于网络协议的制定当中。OSI 模型将通信协议中必要功能分成了7层, 通过这些分层, 那些比较复杂的网络协议更加简单化. **其中每一层都接收来自下一层提供的特定服务, 并且负责为自己的上一层提供特定的服务**, 使得比较复杂的网络协议更加简单化. <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220406190243.png" width="40%"/></div> 
+
+OSI 参考模型将复杂的协议整理并且分解成易于理解的 7 层模型.<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220430163310.png" width="60%"/></div>
+
+OSI 参考模型只是对各层的作用做了一系列**粗略的界定， 并没有对协议和接口进行详细的定义**， 想要了解更多协议的细节， 需要参考每个协议的具体规范。<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220430163646.png" width="70%"/></div>  

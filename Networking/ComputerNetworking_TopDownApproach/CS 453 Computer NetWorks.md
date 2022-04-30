@@ -371,4 +371,9 @@ DNS 服务器大致有三种类型：<div align=center><img src="https://i.imgur
 * 邀请做客
 
 ## 套接字编程
-套接字是应用层和传输层之间的唯一 API。
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220429235130.png" width="70%"/></div>套接字是应用层和传输层之间的唯一 API。 
+
+运输层提供两种 Socket 服务：
+* TCP: 可靠的、面向字符串流的服务
+* UDP: 不可靠的数据报
+
