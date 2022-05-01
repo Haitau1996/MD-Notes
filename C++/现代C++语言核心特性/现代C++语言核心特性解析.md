@@ -319,6 +319,8 @@ C++14 标准中定义了广义捕获，包括前文提到的**简单捕获** 和
     auto foo = [x = std::move(x)]{ return x + "world"; };
     ```
 2. 异步调用时复制 this 对象，防止 lambda 表达式被调用时因原始 this 对象被析构造成未定义的行为
+    * C++17 标准对捕获 `*this` 做了增强， 具体来说就是在捕获列表中直接添加 `[*this]`，然后在 lambda 表达式函数体内直接使用 this 指向对象的成员,[*this]的语法让程序生成了一个*this对象的副本并存储在lambda表达式内。
+    * C++20标准中引入了`[=, this]` 捕获 this 指针的语法，它实际上表达的意思和`[=]`相同，目的是让程序员们区分它与`[=,*this]`的不同：
     ```C++
     class Work{
     private:
@@ -330,7 +332,14 @@ C++14 标准中定义了广义捕获，包括前文提到的**简单捕获** 和
         {
             return std::async([=, tmp = *this]() -> int { return tmp.value; });
         }
+        // since C++ 17 
+        std::future<int> spawn()
+        {
+            return std::async([=, *this]() -> int { return value; });
+        }
     };
     ```
 
-C++14 标准让 lambda 表达式具备了模版函数的能力，我们称它为泛型 lambda 表达式。
+C++14 标准让 lambda 表达式具备了模版函数的能力，我们称它为泛型 lambda 表达式。  
+
+### 模板语法的泛型 lambda 表达式
