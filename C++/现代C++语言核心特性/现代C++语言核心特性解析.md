@@ -343,3 +343,50 @@ C++14 标准中定义了广义捕获，包括前文提到的**简单捕获** 和
 C++14 标准让 lambda 表达式具备了模版函数的能力，我们称它为泛型 lambda 表达式。  
 
 ### 模板语法的泛型 lambda 表达式
+C++14 标准 lambda 表达式通过支持 auto 来实现泛型， 这让我们难以与类型互动， 对类型的操作变得异常复杂。
+```C++
+template <typename T> struct is_std_vector : std::false_type { };
+template <typename T> struct is_std_vector<std::vector<T>> : std::true_type { };
+auto f = [](auto vector) {
+    static_assert(is_std_vector<decltype(vector)>::value, "");
+};
+```
+普通函数模板可以轻松通过形参匹配一个实参为 vector 的容器对象， 但是 auto 不具备这种能力， 只能先实现 `is_std_vector` 模板类， 然后通过断言来辅助实现。  
+此外这样的语法获取 vector 存储对象的类型也变得十分复杂：
+```C++
+auto f = [](auto vector) {
+    using T = typename decltype(vector)::value_type;
+    // …
+};
+```
+此外也可能出现推导出来的类型并不是 `vector` 而是 `const vector&`,使用 STL的 decay，这样就可以将类型的cv以及引用属性删除：
+```C++
+auto f = [](const auto& x) {
+    using T = std::decay_t<decltype(x)>;
+    T copy = x;
+    using Iterator = typename T::iterator;
+};
+```
+C++委员会决定在 **C++20中添加模板对lambda的支持**，语法非常简单：
+```C++
+[]<typename T>(T t) {}
+```
+这时候上面的例子就可以改写为：
+```C++
+auto f = []<typename T>(std::vector<T> vector) {
+// …
+};
+auto f = []<typename T>(T const& x) {
+    T copy = x;
+    using Iterator = typename T::iterator;
+};
+```
+
+### 可构造和可赋值的无状态 lambda 表达式
+无状态 lambda 表达式可以转换为函数指针，但遗憾的是，在 C++20 标准之前无状态的 lambda 表达式类型既不能构造也无法赋值。这时候如果比较函数对象需要通过模板参数来实现， 如：
+```C++
+auto greater = [](auto x, auto y) { return x > y; };
+std::map<std::string, int, decltype(greater)> mymap1, mymap2;
+mymap1 = mymap2;
+```
+decltype(greater) 获取其类型作为模板实参传入模板。这个想法非常好，但是在C++17标准中是不可行的，因为lambda表达式类型无法构造, 那么久无法去做 decltype。 同样的无状态的 lambda 表达式无法赋值，上面第三行的也无法实现。 **C++20标准允许了无状态 lambda表达式类型的构造和赋值**，所以使用C++20标准的编译环境来编译上面的代码是可行的。 
