@@ -586,5 +586,27 @@ for ( range_declaration : range_expression ) loop_statement
 1. 对象类型定义了 begin 和 end 成员函数
 2. 定义了以对象类型为参数的 begin 和 end 普通函数
 
-通常为了**避免数据复制， 在循环中使用引用， 如果不会修改引用对象， 加上 const 限定符以生成更高效的代码**。
-
+通常为了**避免数据复制， 在循环中使用引用， 如果不会修改引用对象， 加上 const 限定符以生成更高效的代码**。  
+**begin 和 end 函数不必返回相同类型**:C++ 11 标准中基于范围的 for loop 基于下面的伪代码：
+```C++
+auto && __range = range_expression;
+  for (auto __begin = begin_expr, __end = end_expr; __begin != __end; ++__begin) {
+       range_declaration = *__begin;
+       loop_statement
+  }
+```
+这里 begin 和 end 使用同一个 auto , 要求两者返回同一个类型， **这种约束是完全没有必要的**， 只要 `__begin != __end` 能返回一个 bool 类型就行， C++17 标准进行了改进：
+```C++
+auto && __range = range_expression;
+auto __begin = begin_expr;
+auto __end = end_expr;
+for (; __begin != __end; ++__begin) {
+    range_declaration = *__begin;
+    loop_statement
+}
+```
+这将 begin 和 end 分离到不同的语句， 不再要求它们是相同类型。  
+需要注意的是这两者都是从一个 `auto &&` 开始的， 如果 range_expression 是一个纯右值， 那么右值引用会拓展其生命周期， 如果它是一个泛左值， 结果就可能不确定。[例](code/17-1.cxx) 中使用一个 `std::vectorMint>&`,右值引用无法扩展其生命周期, 导致循环访问一个无效的对象， 一个解决的办法是将数据复制出来， 而 C++20 提供了对基于范围的 for 循环初始化语句的支持：
+```C++
+for (T thing = foo(); auto & x :thing.items()) {}
+```
