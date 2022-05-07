@@ -610,3 +610,16 @@ for (; __begin != __end; ++__begin) {
 ```C++
 for (T thing = foo(); auto & x :thing.items()) {}
 ```
+
+## Chap 18: 支持初始化语句的 if 和 switch
+if 控制结构可以在执行条件语句之前先执行一个初始化语句:
+```C++
+if (init; condition) {}
+```
+* if 初始化语句中声明的变量拥有和整个 if 结构一样长的声明周期
+* 在 else if 条件语句之前也可以使用初始化语句
+  * 在 if 的变量生命周期会贯穿整个if结构（包括else if）
+  * else if 中初始化的变量，生命周期只存在于 else if 以及后续存在的 else if 和 else 语句
+
+switch 在通过条件判断确定执行的代码分支之前也可以接受一个初始化语句，switch初始化语句声明的变量的生命周期会贯穿整个switch结构。  
+因为在 if 和 switch 中初始化的变量可以贯穿整个结构， 所以可以利用该特性对整个结构[加锁](code/18-1.cxx)。
