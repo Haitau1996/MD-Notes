@@ -117,5 +117,34 @@ CREATE TABLE 表名( 列名 INT PRIMARY KEY AUTO_INCREMENT, 其他列 …);
     ```
     执行`CREATE TABLE tb1_bk SELECT * FROM tb1;` 实际上就是执行下面的过程：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220429204537.png" width="80%"/></div>
 
-### 仅复制表的列结构
+### 复制表的列结构&使用 select 复制表 记录
 在 `CREATE TABLE` 命令的表名后面加上 `LIKE` 指定复制的元表。这种做法**不会复制表中的记录，但是会复制 `AUTO_INCREMENT` 和 `PRIMARY KEY` 等列的属性。**  
+```sql
+CREATE TABLE tb1_bkc LIKE tb1;
+```
+这样复制表的结构之后， 可以使用 `INSERT INTO` 命令来插入记录。
+* 复制所有列
+    ```sql
+    INSERT INTO tb1_bkc SELECT * FROM tb1;
+    ```
+* 也可以复制列的一部分
+    ```sql
+    INSERT INTO tb1_bkc(name) SELECT empid FROM tb1;
+    ```
+
+### 删除表、数据库、记录
+* 删除表
+    ```sql
+    DROP TABLE tb1;
+    ```
+  * 如不确定表一定存在，可以在表名前面加上 `IF EXISTS`
+* 删除数据库
+    ```sql
+    DROP DATABASE db1;
+    ```
+* 也可以不删除表本身而直接删除其所有记录
+    ```sql
+    DELETE FROM table_name;
+    ```
+
+# PART III: 熟练使用 MySQL
