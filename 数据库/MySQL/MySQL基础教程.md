@@ -148,3 +148,22 @@ CREATE TABLE tb1_bkc LIKE tb1;
     ```
 
 # PART III: 熟练使用 MySQL
+## Chap 8: 使用各种条件进行提取
+### 使用 SELECT 时设计列的显示
+* 使用 `*` 通配符显示所有列
+* 指定多个列的时候使用`,`分隔
+* 同一个列可以显示多次
+    ```sql
+    SELECT * FROM tb;
+    SELECT sales,empid FROM tb;
+    SELECT sales,empid,sales,empid,sales, empid FROM tb;
+    ```
+* 选择的时候可以使用 `AS` 语句指定别名
+    ```sql
+    SELECT empid AS 员工号,sales AS 销售额 FROM tb;
+    ```
+
+### 计算列值或者处理字符串后显示列
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220509211527.png" width="70%"/></div>
+
+可以对列中的数据自由地使用上图所示的运算符，也可以使用函数。 需要注意的是， 有的函数是[汇总某列的所有数据](./MySQL必知必会.md#chap-12-汇总数据)，有的函数是[处理单个数据](MySQL必知必会.md#chap-11-使用数据处理函数)。
