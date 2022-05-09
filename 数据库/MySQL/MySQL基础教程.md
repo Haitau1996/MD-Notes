@@ -166,4 +166,20 @@ CREATE TABLE tb1_bkc LIKE tb1;
 ### 计算列值或者处理字符串后显示列
 <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220509211527.png" width="70%"/></div>
 
-可以对列中的数据自由地使用上图所示的运算符，也可以使用函数。 需要注意的是， 有的函数是[汇总某列的所有数据](./MySQL必知必会.md#chap-12-汇总数据)，有的函数是[处理单个数据](MySQL必知必会.md#chap-11-使用数据处理函数)。
+* 可以对列中的数据自由地使用上图所示的运算符，
+* 也可以使用函数。 需要注意的是， 有的函数是[汇总某列的所有数据](MySQL必知必会.md#chap-12-汇总数据)，有的函数是[处理单个数据](MySQL必知必会.md#chap-11-使用数据处理函数)
+* 还有一些和表无关的函数，如 `SELECT PI();`, `SELECT VERSION();`
+
+####  字符串处理函数
+* `CONCAT()` 函数，用于拼接字符串<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220509213443.png" width="70%"/></div>
+* 从左/右取出：LEFT/RIGHT 函数,可以指定 列和字符数
+* 从第×个字符开始截取△个字符：SUBSTRING 函数
+* 重复显示：REPEAT 函数
+    ```sql
+    SELECT REPEAT('.',age) FROM tb1; # 简易的年龄直方图
+    ```
+* 反转显示：REVERSE 函数
+
+#### 日期和时间函数
+* NOW 是用于返回当前日期和时间的函数
+* 
