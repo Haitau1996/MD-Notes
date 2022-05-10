@@ -170,16 +170,20 @@ CREATE TABLE tb1_bkc LIKE tb1;
 * 也可以使用函数。 需要注意的是， 有的函数是[汇总某列的所有数据](MySQL必知必会.md#chap-12-汇总数据)，有的函数是[处理单个数据](MySQL必知必会.md#chap-11-使用数据处理函数)
 * 还有一些和表无关的函数，如 `SELECT PI();`, `SELECT VERSION();`
 
-####  字符串处理函数
-* `CONCAT()` 函数，用于拼接字符串<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220509213443.png" width="70%"/></div>
-* 从左/右取出：LEFT/RIGHT 函数,可以指定 列和字符数
-* 从第×个字符开始截取△个字符：SUBSTRING 函数
-* 重复显示：REPEAT 函数
-    ```sql
-    SELECT REPEAT('.',age) FROM tb1; # 简易的年龄直方图
-    ```
-* 反转显示：REVERSE 函数
+*  字符串处理函数
+   * `CONCAT()` 函数，用于拼接字符串<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220509213443.png" width="70%"/></div>
+   * 从左/右取出：LEFT/RIGHT 函数,可以指定 列和字符数
+   * 从第×个字符开始截取△个字符：SUBSTRING 函数
+   * 重复显示：REPEAT 函数
+       ```sql
+       SELECT REPEAT('.',age) FROM tb1; # 简易的年龄直方图
+       ```
+   * 反转显示：REVERSE 函数
 
-#### 日期和时间函数
-* NOW 是用于返回当前日期和时间的函数
-* 
+* 日期和时间函数
+  * NOW 是用于返回当前日期和时间的函数
+
+### 设置条件进行显示
+* 可以使用 `LIMIT` 和 `OFFSET` 函数来设置起始位置和显示的记录数
+* 使用 `WHERE` 子句提取记录的方法
+  * 在 `WHERE` 子语句中可以适应比较运算符<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220510102038.png" width="70%"/></div>
