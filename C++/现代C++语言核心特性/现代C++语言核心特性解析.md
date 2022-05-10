@@ -262,7 +262,10 @@ BigMemoryPool& operator=(BigMemoryPool&& other)
     return *this;
 }
 ```
-需要注意虽然使用移动语义在性能上有很大收益，但是却也有一些风险，这些风险来自异常，在编写移动语义的函数时建议确保函数不会抛出异常。
+需要注意虽然使用移动语义在性能上有很大收益，但是却也有一些风险，这些风险来自异常，在编写移动语义的函数时建议确保函数不会抛出异常。  
+### 值类别
+值类别在C++11标准中新引入，它是表达式的一种属性，该属性将表达式分为3个类别：左值（lvalue）、纯右值（prvalue）和将亡值（xvalue）。 它们之间有很复杂的关系： <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220510200744.png" width="30%"/></div>   
+理解这些概念的关键在于区别泛左值、纯右值和将亡值。
 
 // todo: 移动语义的剩下部分有点困难， 白天清醒的时候看
 
