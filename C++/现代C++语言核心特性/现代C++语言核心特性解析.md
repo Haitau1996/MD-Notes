@@ -1,7 +1,7 @@
 # 现代 C++ 语言核心特性解析<!-- omit in toc -->
 读谢丙堃所著《[现代C++语言核心特性](https://book.douban.com/subject/35602582/)》时候做的笔记
 ## Chap 1: 新基础类型
-* `long long`(since C++11)表示**至少 64位长度**的整数，过去 long 通常表示 32 bit 整型(标准要求不小于 int,clang 13/gcc 11.2 在 64 位WSL2 中实际 long 是 64bit)
+* `long long`(since C++11)表示**至少 64 位长度**的整数，过去 long 通常表示 32 bit 整型(标准要求不小于 int,clang 13/gcc 11.2 在 64 位WSL2 中实际 long 是 64bit)
     * 可以使用后缀`LL`, 如 `long long x1 = 65536 << 16 ` 产生的 x1 为 0 而 
 `long long x2 = 65536LL << 16` 为 `0x10000000`. 
     * 在C++中应该尽量少使用宏，用模板取而代之是明智的选择，取得最值也有特化的类模板`numeric_limits<long long>::`
@@ -51,7 +51,7 @@ C++98 中 `auto` 用来声明自动变量，这显然是多余的， C++11标准
     ```
 3. `auto` 无法在类中声明非静态成员变量， C++11 中静态成员变量的声明要可以使用, 但是必须使用 `const` 限定符, 在 C++17 标准中可以在没有 `const` 限定符的情况下声明静态成员变量：
     ```C++
-    struct sometype {
+    struct some_type {
         static const auto i = 5;     // C++ 11
         static inline auto j = 5;    // C++17
     };
@@ -264,7 +264,7 @@ BigMemoryPool& operator=(BigMemoryPool&& other)
 ```
 需要注意虽然使用移动语义在性能上有很大收益，但是却也有一些风险，这些风险来自异常，在编写移动语义的函数时建议确保函数不会抛出异常。  
 ### 值类别
-值类别在C++11标准中新引入，它是表达式的一种属性，该属性将表达式分为3个类别：左值（lvalue）、纯右值（prvalue）和将亡值（xvalue）。 它们之间有很复杂的关系： <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220510200744.png" width="30%"/></div>   
+值类别在C++11标准中新引入，它是表达式的一种属性，该[属性](https://en.cppreference.com/w/cpp/language/value_category)将表达式分为3个类别：左值（lvalue）、纯右值（prvalue）和将亡值（xvalue）。 它们之间有很复杂的关系： <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220510200744.png" width="50%"/></div>   
 理解这些概念的关键在于区别泛左值、纯右值和将亡值。
 
 // todo: 移动语义的剩下部分有点困难， 白天清醒的时候看
@@ -661,3 +661,13 @@ aliasname y = _anonymous.b
 ### 结构化绑定的三种类型
 结构化绑定可以作用于3种类型： 原生数组、结构体和类对象、元组和类元组的对象。
 1. 绑定到原生数组： 需要小心数组的退化，因为在绑定的过程中**编译器必须知道原生数组的元素个数**，退化将失去这个特性
+2. 绑定到结构体和类对象, [限制条件](code/20-4.cxx)复杂得多：
+   1. 类或者结构体中的非静态数据成员个数必须和标识符列表中的别名的个数相同
+   2. 这些数据成员必须是公有的
+      * C++20标准规定结构化绑定的限制不再强调必须为公开数据成员，编译器会根据当前操作的上下文来判断是否允许结构化绑定。
+   3. 这些数据成员必须是在同一个类或者基类中
+   4. 绑定的类和结构体中不能存在匿名联合体
+3. 绑定元组合类元组的对象
+   1. `std::tuple_size<T>::value` 符合语法并且结果和别名个数相同
+   2. `std::tuple_element<i, T>::type` 符合语法并且代表 T 中第 i 个元素的类型
+   3. 必须存在合法的成员函数模板 `get<i>()`或者函数模板`get<i>(t)`
