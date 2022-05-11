@@ -187,3 +187,15 @@ CREATE TABLE tb1_bkc LIKE tb1;
 * 可以使用 `LIMIT` 和 `OFFSET` 函数来设置起始位置和显示的记录数
 * 使用 `WHERE` 子句提取记录的方法
   * 在 `WHERE` 子语句中可以适应比较运算符<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220510102038.png" width="70%"/></div>
+  * 可以使用字符串作为比较条件
+    * 字符一样可以使用比较运算符
+    * `LIKE` 可以吧字符串所有内容当成查询对象执行**模糊查询**
+      * `%` 任意字符串
+      * `-` 任意一个字符
+      * `NOT LIKE` 可以提取不包含模式的记录
+  * 使用 `NULL` 作为条件
+    * `IS NULL` 提取列值为 NULL 的记录
+    * `IS NOT NULL` 提取非空的记录
+  * 给 `SELECT` 后加上 `DISTINCT` 可以提取不重复的记录
+
+### 指定多个条件进行选择
