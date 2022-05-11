@@ -199,3 +199,39 @@ CREATE TABLE tb1_bkc LIKE tb1;
   * 给 `SELECT` 后加上 `DISTINCT` 可以提取不重复的记录
 
 ### 指定多个条件进行选择
+* 使用 `AND` 将多个条件连接， 表示限定条件的布尔和关系
+* 使用 `OR`  将多个条件连接， 表示限定条件的布尔或关系
+* 可以设置任意次数的 `AND` 和 `OR`
+  * 当 `AND` 和 `OR` 混合使用的时候， 会**优先处理AND**
+  * 为了使得优先顺序符合预期， 可以使用括号
+* `CASE WHEN` 语句可以**根据条件改变输入值**
+    ```sql
+    mysql> SELECT
+        -> CASE
+        ->     WHEN sales>=100 THEN '高'
+        ->     WHEN sales>=50 THEN '中等'
+        ->     ELSE '低'
+        -> END
+        -> FROM tb;
+    ```
+
+### 排序和分组
+* 使用 `ORDER BY` 子句指定排序规则
+  * 给命令加入 `DESC` 可以指定倒序
+  * 使用 `LIMIT` 和 `OFFSET` 可以指定起始位置和显示的记录数
+* 使用 `GROUP BY` 命令指定分组，并且可以使用聚合函数
+  * `COUNT(x)` 计算除了 NULL 意外值为 x 的条目数
+  * `AVG(col_name)` 和 `SUM(col_name)` 计算列中不同分组的平均值和最大值
+
+### 设置条件分组显示
+`GROUP BY` 分组的时候， 可以使用 `HAVING` 子句来提取分组的条件
+  * `HAVING` 子句中可以使用比较运算符<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220511143358.png" width="70%"/></div>
+    ```sql
+    SELECT
+        empid,SUM(sales)
+    FROM tb
+        GROUP BY empid
+    HAVING SUM(sales)>=200;
+    ```
+  * `WHERE` 可以执行**分组之前的提取操作**
+  * **分组之后的个结果也可以重新排序再显示**
