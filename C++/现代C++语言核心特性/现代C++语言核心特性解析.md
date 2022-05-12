@@ -716,3 +716,49 @@ int main()
 }
 ```
 C++17标准将异常规范引入了类型系统。这样一来，`fp = &foo` 就无法通过编译了，因为 fp 和 &foo变成了不同的类型。虽然 noexcept 声明的函数指针无法接受没有 noexcept 声明的函数，但是反过来却是被允许的，[虚函数的重写](code/21-4.cxx)也遵守这个规则:这个设定可以保证现有代码的兼容性,在语义上也是可以接受的，因为函数指针既没有保证会抛出异常，也没有保证不会抛出异常，所以接受一个保证不会抛出异常的函数也合情合理。
+
+## Chap 22: 类型别名和别名模板
+在过去， 使用 typedef 和定义变量一样定义一个别名：
+```C++
+typedef std::map<int, std::string>::const_iterator map_const_iter;
+map_const_iter iter;
+```
+C++11 中提供了使用 using 关键字的新的类型别名定义方法：`using identifier = type-id`。 这很像是一个赋值表达式并且更符合直觉。  
+使用typedef定义函数类型别名和定义其他类型别名是有所区别的，而使用using则不存在这种区别：
+```C++
+typedef void(*func1)(int, int);
+using func2 = void(*)(int, int);
+```
+
+### 别名模板
+定义别名模板的语法和定义类型别名并没有太大差异，只是多了模板形参列表：
+```C++
+template < template-parameter-list >
+using identifier = type-id;
+```
+很多时候使用 typedef 可以做到类似的事情， 但是在有带决定的类型， 还需要在变量声明前加上 typename 关键字：
+```C++
+template<class T>
+struct int_map {
+    typedef std::map<int, T> type;
+};
+
+template<class T>
+struct X {
+    typename int_map<T>::type int2other;  // 必须带有typename关键字，否则编译错误
+};
+```
+类模板X没有确定模板形参T的类型, `int_map<T>::type` 是一个未决类型:
+* 它可能是一个类型
+* **也可能是静态成员变量**
+
+名模板不会有`::type`的困扰，当然也不会有这样的问题:
+```C++
+template<class T>
+using int_map = std::map<int, T>;
+
+template<class T>
+struct X {
+    int_map<T> int2other;      // 编译成功，别名模板不会有任何问题
+};
+```
