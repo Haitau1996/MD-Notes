@@ -762,3 +762,32 @@ struct X {
     int_map<T> int2other;      // 编译成功，别名模板不会有任何问题
 };
 ```
+## Chap 23: 指针字面量 nullptr
+C++标准中， 0既是一个整型常量，又是一个空指针常量。0作为空指针常量还能隐式地转换为各种指针类型。  
+```C++
+#ifndef NULL
+    #ifdef __cplusplus
+        #define NULL 0
+    #else
+        #define NULL ((void *)0)
+    #endif
+#endif
+```
+也就是说， C++将NULL定义为0，而C语言将NULL定义为 `(void *)0`。这个时候， 隐式类型转换就可能带来[二义性](code/23-1.cxx)等未预期的问题。  
+C++标准委员会在C++11中添加关键字 nullptr 表示空指针的字面量，它是一个 std::nullptr_t 类型的纯右值：
+* 不允许运用在算术表达式中或者与非指针类型进行比较（除了空指针常量0）
+* 可以隐式转换为各种指针类型，但是无法隐式转换到非指针类型
+
+nullptr 的类型 std::nullptr_t，它并不是一个关键字，而是使用 decltype 将 nullptr 的类型定义在代码中：
+```C++
+namespace std
+{
+    using nullptr_t = decltype(nullptr);
+    // 等价于
+    typedef decltype(nullptr) nullptr_t;
+}
+static_assert(sizeof(std::nullptr_t) == sizeof(void *));
+```
+
+还可以使用 std::nullptr_t 去创建自己的 nullptr，并且有与 nullptr 相同的功能, 并且这些新的变量时左值，可以取地址， nullptr 是纯右值， 和对字面量常数取地址一样死没有意义的。  
+有了 nullptr 之后还有一个好处，在函数模板中可以设计一些空指针类型的[特化版本](code/23-2.cxx)。
