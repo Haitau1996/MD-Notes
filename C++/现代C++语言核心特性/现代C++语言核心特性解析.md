@@ -791,3 +791,14 @@ static_assert(sizeof(std::nullptr_t) == sizeof(void *));
 
 还可以使用 std::nullptr_t 去创建自己的 nullptr，并且有与 nullptr 相同的功能, 并且这些新的变量时左值，可以取地址， nullptr 是纯右值， 和对字面量常数取地址一样死没有意义的。  
 有了 nullptr 之后还有一个好处，在函数模板中可以设计一些空指针类型的[特化版本](code/23-2.cxx)。
+
+## Chap 24: 三向比较符
+C++20 标准新引入了一个名为“太空飞船”（spaceship）的运算符`<=>`,两个比较的操作数lhs和rhs通过<=>比较可能产生3种结果，该结果可以和0比较，小于0、等于0或者大于0分别对应lhs < rhs、lhs == rhs 和 lhs > rhs。  
+运算符`<=>`的返回值只能与0和自身类型来比较, 因为返回值不是普通类型而是三种之一，分别为`std::strong_ordering`、`std::weak_ordering`以及`std:: partial_ordering`。  
+* strong_ordering 类型有三种比较结果：`std::strong_ ordering::less`、`std::strong_ordering::equal`以及`std::strong_ ordering::greater`, 结果强调的是strong的含义，表达的是一种**可替换性**，简单来说，若lhs == rhs，那么在任何情况下rhs和lhs都可以相互替换
+* weak_ordering 同样有三种结果， 含义正好与 `std::strong_ordering`相对，表达的是**不可替换性**
+* partial_ordering 类型有四种比较结果， 分别为`std::partial_ordering::less`、`std::partial_ordering::equivalent`、`std::partial_ordering::greater`以及`std::partial_ordering::unordered`, 它的约束力比 weak_ordering 更弱， 除了其他三个结果中的不能相互替换外， 第四个加过表示**两个操作数没有关系**： 如浮点类型， 除了正常的的浮点数， 还存在 `NaN`:
+    ```C++
+    std::cout << ((0.0 / 0.0 <=> 1.0) == std::partial_ordering::unordered);
+    ```
+
