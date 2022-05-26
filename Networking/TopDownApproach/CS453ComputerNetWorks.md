@@ -166,7 +166,7 @@ Host 的发送功能：
 
 ### 协议分层
 <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220421132219.png" width="80%"/></div>
-//todo: 补充协议的细节
+
 
 ### 安全
 在不同的 layer 中都需要考虑安全问题， 其中两点是最需要关注的：
