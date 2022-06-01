@@ -130,7 +130,7 @@ else{
 构建操作系统的一个主要挑战就是**在保持控制权的同时获得高性能**.
 ### 基本技巧: 受限直接执行
 直接执行的概念很好理解: 只需直接在 CPU 上运行程序即可.
-<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/backups/20210519092134.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220601234921.png" width="70%"/></div>
 
 但是这在我们虚拟化 CPU 时产生了一些问题:
 * 如果我们只运行一个程序, 操作系统怎么确保程序不做任何我们不希望它做的事同时依然高效运行
@@ -142,7 +142,7 @@ else{
 现代操作系统提供了用户程序执行系统调用的能力, 允许内核小心地向用户程序暴露某些关键功能(文件访问, 创建销毁进程, 进程间通信, 分配内存 etc.). 执行陷阱时, 硬件要小心, 必须保存足够的调用者寄存器, 以便在操作系统发出从陷阱返回指令时能正确返回.   
 系统调用看起来像是过程调用, 是因为它是一个过程调用, 但是隐藏在过程调用的内部是著名的陷阱指令. 剩下的问题就是陷进如何知道在 OS 内运行哪些代码, **内核通过在启动时设置陷阱表来实现**. 机器启动时, 在特权模式下执行, 告诉硬件在发生某些异常时间时需要运行哪些代码, 发生异常时通过特殊的指令通知硬件这些处理程序的位置. 一旦硬件被通知, 他就会记住这些处理程序的位置, 直到下次一重新启动机器.  
 能够执行特权指令告诉硬件缺陷表位置是一个非常强大的功能, 这也是一项特权操作, 硬件会阻止用户模式下执行. 
-<div align=center><img src="https://i.loli.net/2021/05/19/oz39teKy61Ans52.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220601235054.png" width="90%"/></div>
 
 ### 进程之间的切换
 有一个关键的问题是 : 操作系统如何重新获取 CPU 的控制权, 以便它可以在进程之间切换.
@@ -155,42 +155,11 @@ else{
 
 #### 保存和恢复上下文
 无论通过系统调用协作还是时钟中断强制执行, 都必须决定是继续运行当前程序还是切换到另一个进程, 决定由调度程序(scheduler)作出. 决定进行切换, OS 就会执行一些低层代码(上下文切换, context switch): 系统为当前正在执行的进程保存一些寄存器值, 并且为即将执行的进程恢复一些寄存器的值, 并且切换内核栈. 
-<div align=center><img src="https://i.loli.net/2021/05/19/n4GxYWIbdCLaHOZ.png"/></div>
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220601235147.png" width="90%"/></div>
 
-需要注意的是由两种类型的寄存器保存/恢复:
+需要注意的是由两种类型的[寄存器保存/恢复](code/TEP-6/context_switch.s):
 * 发生时钟中段的时候, 运行几次呢很难过的用户寄存器由硬件隐式保存, 使用该今晨的内核栈
 * 操作系统决定从 A 切换到 B, 内核寄存器被软件明确保存, 但是这种刚好被存储在该进程结构的内存中
-
-```x86asm
-# void swt ch ( struct context ** old, st ruct context *new)
-#
-# Save current register context in old
-# and then load register context from new.
-.globl swtch
-swtch:
-# Save old registers
-movl 4(%esp), %eax # put old ptr into eax
-popl 0 (%eax)   # save the old IP
-movl %esp, 4 (:%eax) # and stack
-movl %ebx, 8 (:%eax) # and other registers
-movl %ecx, 12 (%eax)
-movl %edx, 16( %eax)
-movl %esi, 20(%eax)
-movl %edi, 24(%eax)
-movl %ebp, 28(%eax)
-
-# Load new registers
-movl 4 (%esp), %eax # put new ptr into eax
-movl 28 ( %eax) , :%ebp # restore other registers
-movl 24(%eax), %edi
-movl 20(%eax), %esi
-movl 16(%eax), %edx
-movl 12(%eax), %ecx
-movl 8(%eax), %ebx
-movl 4 (%eax), %esp # stack is switched here
-pushl 0 (%e = z)   # return addr put in place
-ret   # finally return into new ctxt
-```
 
 ### 担心并发吗
 操作系统可能简单决定, 在中断处理时禁用中断, 但是这可能丢失中断, 在技术上是不好的. 操作系统开发了很多复杂的家锁方案, 以保护内部数据结构的并发访问, 使得多个活动可以同时在内核中进行. 这可能导致各种有趣并且难以发现的错误. 
@@ -202,7 +171,7 @@ ret   # finally return into new ctxt
 我们应该如何考虑调度策略的基本框架?
 * 什么是关键假设
 * 哪些指标非常重要
-* 哪些基本方法已经在早起系统中使用
+* 哪些基本方法已经在早期系统中使用
 ### 调度指标
 我们在这里考虑任务周转时间: 任务完成的时间减去任务到达的时间.即
 $$
@@ -464,10 +433,9 @@ VM 系统有很多目标:
 ## Chap 15: 机制 地址转换
 在实现虚拟化时, 我们一般的准则被称为直接受限访问(Limited Direct Execution, LDE), 其背后的想法很简单, 让程序运行的大部分指令直接访问硬件, 只有在一些关键点由操作系统介入来确保在正肚饿的时间,正确的地点做正确的事情.  
 我们利用一种通用技术, 基于硬件的地址转换(hardware-based address translation, address translation), **硬件对每次内存访问进行处理, 将指令中的虚拟地址转换为实际存储的物理地址**.这时候使用的介入(interposition)是一种常见的技术, 在虚拟内存中, 硬件可以介入每次内存访问中, 将进程提供的虚拟地址转换为数据实际存储的物理地址. 几户所有良好定义的接口都应该提供功能介入机制, 其优点是透明, 接入完成时通常不需要改动接口的客户端.   
-为了方便理解, 我们需要先假设用户的地址空间必须连续地放在物理内存中, 并且不是很大, 每个地址空间的大小完全一样.  
-<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210521151602.png"width="60%"/></div>
+为了方便理解, 我们需要先假设用户的地址空间必须连续地放在物理内存中, 并且不是很大, 每个地址空间的大小完全一样.
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20210521151602.png"width="40%"/></div>
 
-//todo: 后面再回过头来看内存虚拟化， 先跟着 CS162 学习并发
 
 # 第二部分： 并发
 ## Chap 26: 并发 - 介绍
