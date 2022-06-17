@@ -1,8 +1,8 @@
-# More Effective C++ by Scott Meyers
+# More Effective C++
+读 Scott Meyers 的经典图书时候留下的笔记
+# Basics
 
-## Basics
-
-### Item 1 仔细区别pointers 和 references
+## Item 1 仔细区别pointers 和 references
 
 Pointer和reference的接口看起来差别巨大,(pointer使用`*`和`->` operator,reference使用.),而他们具体在什么时候使用?  
 1. 首先, reference **必须代表某个对象,没有空引用**，这样使用起来比pointer更有效率,因为使用reference之前不需要检验其有效性:
@@ -27,20 +27,21 @@ Pointer和reference的接口看起来差别巨大,(pointer使用`*`和`->` opera
     ```
 因此,当你需要指向某个东西,而且绝不会指向其他东西或者当你实现一个操作符而其语法需求无法由pointer完成时,应该使用reference,其他时候使用pointer。
 
-### Item 2 最好使用C++的转型操作符
+## Item 2 最好使用C++的转型操作符
 
 新的cast形式十分容易被辨识出来, **_static\_cast_ 基本与 C 旧式转型有相同的威力和限制**, 比如我们不能够用 _static\_cast_ 将一个 _struct_ 转型为一个 _int_,或者将一个double转型为一个指针, 不能移除表达式的常量性.  
-其他转型操作符更适用于范围狭窄的目的, 如 _const\_cast_ 最常见的目的就是将常量性移除,_dynamic\_cast_ 用来执行继承体系下的安全向下转型或者是跨系转型动作。  
-我们可以用 _dynamic\_cast_ 将指向 base class 对象的 pointer 或者 reference 转型为指向 derived 或者 sibling 的 pointer 和 reference. 它无法应用于缺乏虚函数的类型上,也不能改变类型的常量性.  
-reinterpret_cast最常见的用途是 **转换函数指针类型,函数指针的转型动作,并不具备可移植性**.  
+其他转型操作符更适用于范围狭窄的目的:
+* _const\_cast_ 最常见的目的就是将常量性移除,
+* _dynamic\_cast_ 用来执行继承体系下的安全向下转型或者是跨系转型动作。我们可以用 _dynamic\_cast_ 将指向基类对象的 pointer 或者 reference 转型为指向 derived 或者 sibling 的 pointer 和 reference. 它无法应用于缺乏虚函数的类型上,也不能改变类型的常量性.  
+* _reinterpret\_cast_ 最常见的用途是 **转换函数指针类型,函数指针的转型动作,并不具备可移植性**.  
 
-### Item 3 绝对不要以多态的方式处理数组
+## Item 3 绝对不要以多态的方式处理数组
 
 C++允许以base class的pointer和reference来操作"derived class object 所形成的数组"。如果有继承至BST的BalancedBST, 用BST的指针去便利BalancedBST, 就会出问题:
 ```C++
 class BST { ... };
 class BalancedBST: public BST { ... };
-void printBSTArray(ostream& s,
+void printBSTArray( ostream& s,
                     const BST array[],
                     int numElements){
     for (int i = 0; i < numElements; ++i) {
@@ -51,7 +52,7 @@ BalancedBST bBSTArray[10];
 ...
 printBSTArray(cout, bBSTArray, 10);
 ```
-bBSTArray[i]实际是一个指针运算表达式的缩写, 代表*(bBSTArray+i),相距$i \times sizeof(ArrElemNum)$ ,  编译器将它视为 $i \times sizeof(BST)$, 但是 derived class 对象通常比 base class 对象大, 这样就会出现问题.  
+bBSTArray[i]实际是一个指针运算表达式的缩写, 代表*(bBSTArray+i),距离 bBSTArray下标为0的位置 $i \times sizeof(ArrElement)$ , 但是 derived class 对象通常比 base class 对象大, 这时候大小不匹配就会出现未定义行为。    
 此外, 如用base 指针删除derived class object组成的数组, 编译器看到`delete[] array`的句子, 通常理解为:
 ```C++
 for (int i = the number of elements in the array - 1;i >= 0;--i){
@@ -60,7 +61,7 @@ for (int i = the number of elements in the array - 1;i >= 0;--i){
 ```
 而**通过base pointer删除一个derived classes object构成的数组, 其结果是未定义的**.
 
-### Item 4 非必要不提供default constructor
+## Item 4 非必要不提供default constructor
 
 默认构造函数(i.e, 一个可以无参数调用的构造器)使用时有下面的要求: **必须要有某些外来信息才能生成对象的 classes, 则不必要拥有默认的构造函数**.  
 ```C++
@@ -86,8 +87,20 @@ public:
         for (int i = 0； i < 10； ++i)
             bestPieces[i] = new EquipmentPiece( ID_Number);
         ```
-    使用指针数组依旧是有问题的, <font color=red> 第一是必须记得将指针所指的所有对象删除, 第二是如果内存总量很大, 需要一些空间来放置指针,还需要一些空间来放 _EquipmentPiece_ 对象 </font> 过度使用内存的问题可以避免, 方法是先为此数组分配 raw memory, 然后使用 _placement new_ 在这块内存上构造 _EquipmentPiece_ 对象.这种做法要求你在数组内对象生命周期结束时, 以手动的方式调用其析构函数, 再调用 _operator delete[]_ (因为rawMemory不是用 _new_ 操作符得到的, 一般的数组删除操作作用在它上的结果是未定义的).
-
+        使用指针数组依旧是有问题的, <font color=red> 第一是必须记得将指针所指的所有对象删除, 第二是如果内存总量很大, 需要一些空间来放置指针,还需要一些空间来放 _EquipmentPiece_ 对象 </font> 过度使用内存的问题可以避免, 
+    * 第三种方法是先为此数组分配 raw memory, 然后使用 _placement new_ 在这块内存上构造 _EquipmentPiece_ 对象.这种做法要求你在数组内对象生命周期结束时, 以手动的方式调用其析构函数, 再调用 _operator delete[]_ (因为rawMemory不是用 _new_ 操作符得到的, 一般的数组删除操作作用在它上的结果是未定义的).
+        ```C++
+        void *rawMemory =
+                    operator new[](10*sizeof(EquipmentPiece));//  调用 operator new[] 分配一块内存， 后面需要转化称为特定类型的指针
+        EquipmentPiece *bestPieces = static_cast<EquipmentPiece*>(rawMemory);
+        // using "placement new" (see Item 8)
+        for (int i = 0; i < 10; ++i)
+            new (bestPieces+i) EquipmentPiece( ID Number );
+        // 销毁的时候先调用析构函数， 再调用 operator delete[]
+        for (int i = 9; i >= 0; --i)
+            bestPieces[i].~EquipmentPiece();
+        operator delete[](rawMemory);
+        ```
 2. 它将不适用于很多 template-based container classes, 因为他们的实例化目标类型必须要有一个默认构造器. **因为在这些template内部几乎总是产生一个以 template类型参数 作为类型而架构起来的数组.**  
     ```C++
     template<class T> 
@@ -108,8 +121,8 @@ public:
 
 如果类构造函数可以确保对象的所有fields都会被正确地初始化, 添加无意义的默认构造函数的效率/复杂性成本可以免除, 如果无法保证, 最好避免让 _default constructor_ 出现.
 
-## 操作符
-### Item 5 : 对定制的"类型转换函数"保持警觉
+# 操作符
+## Item 5 : 对定制的"类型转换函数"保持警觉
 对于user define type, 我们可以选择是否提供某些函数, 供编译器拿来实现隐式类型转换.两种函数允许编译器执行这样的转换, **单参数构造器和隐式类型转换操作符.**  
 1. 单参数构造器:
     ```C++
@@ -147,7 +160,7 @@ for (int i = 0；i < 10； ++i) {
     if (a == b[i]) { // oops! "a" should be "a[i]"
         // do something when a[i] and b[i] are equal
     } else { 
-        // do somethingwhen they're not；
+        // do something when they're not；
     }
 }
 ```
@@ -159,7 +172,7 @@ for (int i = 0；i < 10； ++i) {
 `a == b[i]` : 编译器不能考虑将int转为一个临时性的ArraySize对象, 然后根据这个临时对象产生Array<int> 对象, **那将调用两个用户定制的转换行为**.   
 这种做法其实是proxy技术的一个特殊实例.
 
-### Item 6: 区别 increment/decrement 操作符的前置和后置形式
+## Item 6: 区别 increment/decrement 操作符的前置和后置形式
 
 前置和后置操作符increment/decrement, 都没有参数, 这个语言学的漏洞只好让后置式有一个int作为参数.
 ```C++
@@ -191,7 +204,7 @@ const UPInt UPInt::operator++(int){
 两者都是会改变 _UPInt_ 的值, 所以不能声明为const成员函数, 而将后置形式的函数的返回值声明为const UPInt, 那么这个动作 `i++++` 就是非法的(返回的一个oldValue无法再被修改), 这是因为, 内置的int就不允许后置的两个 `++`, 因为第二个 `operator++` 所改变的对象是第一个 `++` 操作符所返回的对象,而不是原对象. 因此设计为const, 返回的对象是一个const对象, 不能调用 `operator++` 这种 non-const的成员函数.  
 单从效率的角度, 用户也更应该喜欢前置式的increment, 除非需要后置increment的行为. 如何保证两者的行为一致, 具体的做法是: **后置的操作应该以其前置的兄弟为基础, 这样的话我们只需要维护前置式的版本**, 后置的版本会自动调整为一致的行为.
 
-### Item 7: 千万不要重载 &&, || 和 , 操作符
+## Item 7: 千万不要重载 &&, || 和 , 操作符
 C++对布尔表达式采用骤死式评估方式, 但是C++允许用户为自定义的类型定制 `&&` 和 `||` 操作符, 这样的话函数调用语义将取代骤死式语义, 从根本层面改变规则.   
 如果重载 operator&&, 那么下面的式子将会被理解为后面两者之一:
 ```C++
@@ -213,7 +226,7 @@ if (operator&&(expression1, expression2)) ...
 ![figure](figure/7.2.png)  
 即便如此, 如果没有好的理由要去重载某个操作符, 那就不要这样做.
 
-### Item 8: 了解不同意义的new和delete
+## Item 8: 了解不同意义的new和delete
 new opetator是语言内建的, 不能改变其意义只能做相同的事情,无论如何都无法改变其行为 它的动作分成两个方面:
 1. 分配足够多的内存,用来放置某种类型的对象
 2. 调用一个构造器, 为刚分配的内存中的那个对象设定初值
@@ -226,7 +239,7 @@ call string::string("memory management") on memory;
 string *ps = static_cast<string*>(memory); 
 ```
 
-#### Placement new
+### Placement new
 偶尔会有一些分配好的内存, 我们需要在上面构建对象, 有个特殊版本的 operator new, 称为placement new,允许我们这么做. 
 ```C++
 class Widget {
@@ -248,7 +261,7 @@ void * operator new(size_t, void *location){
 * 打算在heap对象产生时候自己决定内存分配方式, 使用 new operator并且调用自己写的operator new.
 * 打算在已经分配内存(拥有指针)上构造对象, 使用placement new
 
-#### 删除与内存释放
+### 删除与内存释放
 内存释放是由函数opearator delete执行,通常的声明类似于 `void operator delete(void *memoryToBeDeallocated)`, 于是 `delete ps` 会造成编译器产生类似于下面的代码:
 ```C++
 ps->~string(); // 调用析构函数
@@ -256,7 +269,7 @@ operator delete(ps); // 释放对象所占用的内存
 ```
 于是打算处理原始的未设置初值的内存, 应该避免使用 new operator和 delete operator, 改调用operator new 获得内存 和 operator delete归还系统.(相当于在C++中调用`malloc`和`free`).
 
-#### Arrays
+### Arrays
 1. 如果面对尚未支持 `new[]` 的编译器, 定制数组内存管理行为往往不是一个理想的决定
 2. 数组版本与单一对象版的区别是, 他所调用的构造器的数量, array new必须针对数组中的每一个对象调用一个构造器
     ```C++
@@ -269,11 +282,11 @@ operator delete(ps); // 释放对象所占用的内存
 我们也可以重载 operator new[] 不过两者的重载有着相同的限制.  
 总的来说, **_new / delete operator_ 的任务已经被语言规范限制死了, 但是我们可以修改它完成任务的方式**.
 
-## 异常
+# 异常
 C++增加了异常特性之后, 深远而根本地改变了很多事情, 原始指针如今成了一种高风险的事情,我们必须更加小心, 防止程序在执行时候突然中止. 而程序之所以在异常出现的时候仍然有良好的行为, 不是因为碰巧如此, 而他们加入的异常的考虑.   
 使用返回错误码的方式发出异常信号, **无法保证此函数的调用者会检查那个变量或者那个错误码**,  于是程序可能会一直运行下去, 远离错误发生地点. 如果是以抛出exception的方式发出异常信号, 如果异常未被捕捉, 程序便会立刻终止.  
 
-### Item 9: 利用destructors避免资源泄漏
+## Item 9: 利用destructors避免资源泄漏
 使用指针可能会有很大的问题, 如果我们在下图所示的类结构中, 一次次处理不同的类的实例:  
 ![class heri](figure/9.1.png)  
 ```C++
@@ -298,7 +311,7 @@ void processAdoptions(istream& dataSource) {
 ```
 只要坚持这个原则, 将资源封装在对象中, 通常便可以在 exceptions 出现的时候避免资源泄漏, 但是如果异常是在你正在取得资源的过程中抛出的, 需要其他的特殊设计.  
 
-### Item 10 : 在constructor内阻止资源泄露
+## Item 10 : 在constructor内阻止资源泄露
 ```C++
 BookEntry::BookEntry(const string& name, 
                      const string& address, 
@@ -375,7 +388,7 @@ BookEntry::BookEntry (  const string& name,
     };
     ```
 
-### Item 11: 禁止异常( _exceptions_)流出析构函数(_destructprs_)之外
+## Item 11: 禁止异常( _exceptions_)流出析构函数(_destructprs_)之外
 两种情况下析构函数会被调用,我们无法在析构函数内区分这些状态:
 * 对象正常情况下被销毁(离开自己的生命周期或者被明确地销毁)
 * 对象被 exceptions的处理机制(传播过程中的 stack-unwinding,栈展开机制) 销毁
@@ -408,7 +421,7 @@ Session::~Session(){
 这样取代的办法就是, 如果logDestruction函数抛出一个异常, 我们便把忘记记录析构这个任务.  
 如果exception从析构函数中抛出, 而且没有在当地捕捉, 那么析构函数便是执行不全, 没有完成析构函数应该做完的所有事情,可能造成资源泄漏, 因此我们应该 **全力阻止exception传出析构函数外**. 
 
-### Item 12 : 了解抛出一个异常 与 传递一个参数 或者调用一个虚函数之间的差异
+## Item 12 : 了解抛出一个异常 与 传递一个参数 或者调用一个虚函数之间的差异
 
 函数参数声明的语法与catch 子句声明的语法相同(可以 by-value, by-ref, by-pointer),但是 **从抛出端传递一个exception到catch语句 和 从函数调用端传递一个自变量到函数参数** 两者之间有重大的不同点.  
 当我们调用一个函数, 除非函数失败以至于无法返回, 控制权最终还是会回到调用端, 但是当我们抛出一个exception, 控制权不会再回到抛出端. 
@@ -445,7 +458,7 @@ catch (Widget& w) {
 一般而言， 我们只有使用`throw;`才能重新抛出当前的exception, 同时也比较有效率. 如果最初的异常类型是 _SpecialWidget_, 第二个语句块抛出一个新的异常, 类型是 _Widget_, 因为那是`w`的静态类型. 下面三种catch语句, 都可以捕捉 _passAndThrowWidget_ 抛出的 _Widget exception_, 于是抛出异常和传参之间的另一个区别, 一个被抛出的对象(必定为临时对象) 可以简单用 by-reference捕捉, 但是 **函数调用过程中将一个临时变量传递一个 `non-const reference` 参数是不允许的, 但是对 exception是合法的**.  
 抛出exceptions和函数传递参数相比, 会多构造一个 "被抛出物" 的副本, 如果是 `by-value` 的方式传递异常, 还要将临时对象再拷贝到 `w` 上.  
 throw exception `by-pointer` 有一个很大的问题, 是传出一个局部对象的指针, 在异常的的时候离开局部对象的 scope, 对象被销毁, 因此 catch 子句会获得一个指向"已被销毁的对象"的指针, 这是义务性复制规则设计下要避免的情况.  
-#### exception 与 catch 子句相匹配
+### exception 与 catch 子句相匹配
 这个过程中只有两种类型转换是可以允许的, 不同于函数传参中可以发生各种类型转换:
 1. **继承构架中的类转换**: 一个针对 base class exception 而编写的 catch子句, 是可以处理类型为 derived class 的 exceptions. 
     ![exception inheritance](figure/12.1.png)  
@@ -453,13 +466,13 @@ throw exception `by-pointer` 有一个很大的问题, 是传出一个局部对�
 
 此外, catch语句总是依出现的顺序做匹配尝试, try语句中同时有针对 base class 和 derived class 设计的catch语句时候, derived class exception依旧可能被 针对 base class 设计的catch 子句处理掉,就是**相当于采用first fit的策略. 而我们调用虚函数的时候, 采用的是 best fit 的策略**,因此我们绝对不要将base 的 catch放在derived之前.
 
-### Item 13: 用by-reference 的方式捕捉异常
+## Item 13: 用by-reference 的方式捕捉异常
 首先我们考虑 by-pointer的方式, 如果是在栈上的对象, 异常对象再控制器离开了那个抛出指针的函数之后就被销毁了, 如果是使用 heap-base object, catch语句将面临一个更大的问题: 是否应该删除他们获得的指针.  
 四个标准的exceptions: `bad_alloc`, `bad_cast`, `bad_typeid` 和`bad_exception` 统统都是对象, 不是对象指针, 我们要用 `by-value` 或者 `by-reference` 的方式捕捉他们.  
 `by-value` 的方式捕捉异常, 他们要复制两次, 而且也会引起对象切割的问题, 如果在derived class exception中重新定义了虚函数, 对象切割的行为几乎不可能和我们的想要的一致.  
 by-reference是一个很好的折衷, 不会发生slicing的问题, 也不会发生对象删除的问题, 异常对象也只会被复制一次, 唯一需要我们做的就是在catch中加入一个`&`.  
 
-### Item 14: 明智地使用 exception specification
+## Item 14: 明智地使用 exception specification
 
 expection specification 明确地指出一个函数可能抛出怎样的异常, 让代码更容易理解,编译器在编译的时候也能检测到和specification不一致的行为.  
 unexpected 的默认行为是 terminate, terminate的默认行为是调用 abort, 局部变量便不会获得销毁的机会, 而编译器只会对 exception specifications 做局部性检验, 没检验的事情也很简单: **调用某个函数, 而该函数可能违反吊用端函数本身的exception specification**,带有exception specification的新代码和不带的旧代码整合的话这种弹性十分必要.  
@@ -511,7 +524,7 @@ unexpected 的默认行为是 terminate, terminate的默认行为是调用 abort
     exception specification还有一个问题, 当一个较高层次的调用者准备处理发生的异常时, unexpected函数却被调用, 对应这种问题的做法就是将unexpected函数用上面的技术取代它.
     
 
-### Item 15: 了解异常处理的成本
+## Item 15: 了解异常处理的成本
 为了能在运行时处理exceptions, 程序必须做大量的簿记工作.即使从未使用关键词try, throw 或者 catch, 我们也必须付出某些成本.  
 程序是由多个独立完成的Object file构成, 其中一个不做任何和exception相关的事情, 不代表其他的也都如此.   
 大部分编译器允许你自行决定是否要在它们产生的代码上放置exception支持能力,如果我们决定不使用exceptions, 并且让编译器知道, 编译器可以适度完成某些性能优化.  
@@ -519,17 +532,17 @@ unexpected 的默认行为是 terminate, terminate的默认行为是调用 abort
 和正常的函数返回动作相比, 抛出异常而导致的函数返回, 其速度可能比正常情况下慢三个数量级.  
 了解到这些后, 我们的做法是将 try语句块 和exception specification使用限制在非用不可的地点, 并且在真正异常的情况下才抛出异常.
 
-## 效率
+# 效率
 C++有可能对原已存在的性能问题无能为力,一个角度与语言无关, 相关讨论适合任意的编程语言.有的思考角度和C++本身有强烈的关系, 比如产生和销毁过多的对象. 
 
-### Item 16: 谨记80-20法则
+## Item 16: 谨记80-20法则
 一个程序80%的资源用于20%的代码上,软件的整体性能几乎总是由其构成要素的一小部分决定的. 如果性能上有问题, 我们不只需要找出造成问题的那一小段瓶颈所在, 还必须找出大幅度提升其性能的办法. 其中最麻烦的还是在于找出瓶颈所在.   
 大部分人采用的方法是猜, 但是他们对于程序的性能特质, 都有错误的直觉, 因为程序的性能特质倾向于高度的非直觉性.  
 辨别之道应该是借助某个程序的分析器, 并且是可以直接测量你所在意的资源的分析器.而分析器在某次特定执行过程中的行为可能是无法重现的, 应该用尽可能多的数据来分析你的软件, 并且确保每一组数据对于所有用户(至少是重要的客户)而言都是可重制(representative)的.
 
-### Item 17: 考虑使用缓式评估
+## Item 17: 考虑使用缓式评估
 拖延战术有个非常高贵的名称: 缓式评估,就意味着用某种方式撰写你的class, 是他们延缓运算, 知道那些运算结果刻不容缓地需要为止.  
-#### Reference counting
+### Reference counting
 ```C++
 class String{...};
 String s1 = "hello";
@@ -537,7 +550,7 @@ String S2 = s1;
 ```
 这时候我们做一些簿记工作, 直到s1或者s2被改变的时候才为内容做一个副本, 因为在某些应用领域我们可能永远都不需要这样的副本.
 
-#### 区分读和写
+### 区分读和写
 如果s已经是一个reference counting 的字符串, 那么下面两行代码:
 ```C
 cout << s[3];
@@ -545,7 +558,7 @@ s[3] = 'x';
 ```
 对于s的读,代价非常低廉, 但是对于写入的操作, 可能需要先为s做出一个副本. 而问题在于, **我们无法得知 operator[]是在怎样的环境下被调用的**.如果使用lazy-evaluation加上proxy classes,我们可以延缓决定到底是读还是写, 知道能确认这个问题的答案再做动作.
 
-#### lazy-fetching
+### lazy-fetching
 如果使用的大型对象, 其中包含很多constituent fields, 为了保持在执行前后的一致性与连贯性, 他们必须存储在一个数据库中, 用对象识别码从中取出对象.  
 这时候, 如果取出对象的所有数据, 成本可能极高. 这个问题的lazy做法是, 我们产生一个 LargeObject对象的时候, 只产生该对象的外壳, 只有其中的某个字段被需要了, 才从数据库中取回相应的数据. 
 ```C++
@@ -579,7 +592,7 @@ const string& LargeObject::field1() const {
 ```
 上面这些代码的意思是, 对象负责指向某个字段的指针都是初始化为 `null`, 在通过指针访问数据前, 先检查指针是否为空, 是的话必须先从数据库读入, 然后才能操作这个数据.
 
-#### lazy expression evaluation
+### lazy expression evaluation
 这个例子来源于数值上的应用:
 ```C++
 template<class T> class Matrix { ... };
@@ -590,11 +603,11 @@ Matrix<int> m3 = m1 + m2; // add m1 and m2
 ```
 正常的operator+ 采用 eager evaluation, 但是这个是大规模的计算, 成本非常高, lazy-evaluation的策略是, 先设立一个数据结构在 m3 中, 表示 m3 为前两者之和, 这种数据结构可能只是包含两个指针(指向前两个矩阵)和一个 enmu(表示加法), 然后采用拖延战术, 这是很多矩阵库采用的策略, 这背后可能需要维护一些数据结构以存储数值\相依关系,还需要重载各种操作符, 但是能节省大量的时间.
 
-#### 总结
+### 总结
 如果计算是必要的, 那么lazy-evaluation不会节省任何时间, 在绝对必要的情况下使程序更缓慢, 增加内存使用(除了必要计算之外还要处理为了lazy-evaluation而设计的数据结构), 只有当 **软件被要求执行某些运算,而那些计算其实可以在很大程度上避免的时候, lazy-evaluation才有用处** .  
 几乎所有的数据流语言已经接受这种观念成为语言的一个部分, 但是主流语言如 C++ 依旧采用 eager evaluation, 但是因为它支持封装性质, 我们可能把 lazy-evaluation加入某个class内而不必让客户知道详情.
 
-### Item 18: 分期摊还预期的计算成本
+## Item 18: 分期摊还预期的计算成本
 另一个该改善软件性能的办法是, **令它超前进度地做要求以外的更多工作(over-eager evaluation)**.  
 这背后的思想是, 如果预期程序常常会用到某个计算, 你可以通过设计一个数据结构以便高效处理需求,从而降低每次计算的平均成本.  
 1. 最简单的做法就是将计算好而有可能再被需要的数值保留下来(caching).
@@ -632,7 +645,7 @@ Matrix<int> m3 = m1 + m2; // add m1 and m2
 
 需要注意的是, 较佳的速度往往导致较大的内存成本.
 
-### Item 19: 了解临时对象的来源
+## Item 19: 了解临时对象的来源
 不同于临时变量, C++ 中真正所谓临时对象是不可见的, 只要产生一个 non-heap 对象并且没有给他命名, 便诞生了一个临时对象. 他们通常在下面两种场景中发生:
 * 当隐式类型转换实施以便函数调用能够成功
 * 函数返回对象的时候
@@ -668,7 +681,7 @@ const Number operator+( const Number& lhs,
 ```
 任何只要看到一个 reference-to-const 参数, 极有可能会有一个临时对象被产生出来绑定到该参数上. 任何时候看到函数返回一个对象, 就会产生临时对象(并稍后销毁).
 
-### Item 20: 协助完成 RVO
+## Item 20: 协助完成 RVO
 很多时候我们必须返回一个对象, 尽管我们努力寻找消除它的办法. 
 * 一个拙略的办法是返回指针,这种做法非常不自然
     ```C++
@@ -714,7 +727,7 @@ inline const Rational operator*(const Rational& lhs,
 }
 ```
 
-### Item 21: 利用重载技术避免隐式类型转换
+## Item 21: 利用重载技术避免隐式类型转换
 如果我们有个用于无限精密的整数类:
 ```C++
 class UPInt {
@@ -745,7 +758,7 @@ upi3 = 10 + upi2; // fine, no temporary for
 但是我们无法定义两个参数都是 int 的重载版本, 因为**C++ 要求重载操作符必须获得至少一个用户自定义的自变量**, 不然两个 Int 相加的结果既是 int 又是 UPInt, 会带来很大的混乱.  
 总的而言, 增加一大堆重载函数不见得是件好事, 要综合来看, 如果我们在瓶颈处使用重载函数后能整体提高效率, 那么重载是值得的.
 
-### Item 22: 考虑以操作符复合形式(`op=`)取代其独身形式(`op`)
+## Item 22: 考虑以操作符复合形式(`op=`)取代其独身形式(`op`)
 到目前为止C++并不考虑在 opetator+, operator= 和 opetator+= 之间设定任何互动形式, 如果希望有符合自身期望的互动关系, 我们必须自己实现. 一个好的方法就是以 `op=`为基础实现 `op`:
 ```C++
 class Rational {
@@ -812,10 +825,10 @@ const T operator-(const T& lhs, const T& rhs)
     ```
 `return T(lhs) += rhs`可能超出了很多编译器RVO 的能力范围,于是可能会带来函数中的 _temporary object_, 但是对比两个版本, 匿名对象总是比命名对象更容易消除, 于是我们最好选临时对象.
 
-### Item 23: 考虑使用其他程序库
+## Item 23: 考虑使用其他程序库
 程序库的设计是一种折中态度的练习, 例如 iostream 和 stdio, 前者有类型安全的特性而且可扩充, 然而效率比后者低: 不同的程序库即使提供相似的机能, 也往往表现出不同的性能取舍策略. 一旦找出程序的瓶颈, 我们应该思考是否有可能改用灵异程序库从而移除那些瓶颈. 
 
-### Item 24: 了解虚函数/多继承/虚基类/运行时类型鉴定的成本
+## Item 24: 了解虚函数/多继承/虚基类/运行时类型鉴定的成本
 当一个虚函数被调用, 执行的代码必须对应于调用者的动态类型, 对象为 pointer 或者 reference 时候, 其类型是无形的, 大部分编译器是使用所谓的 virtual tables 和 virtual table pointers 来提供这种行为.  
 vtbl 通常是一个由函数指针构成的数组(有的编译器会用链表), 每个 class 凡声明(或者继承)虚函数, 都会有自己的 vtbl, 而其中的条目(entries) 就是各个虚函数实现体的指针. 
 ```C++
@@ -872,8 +885,8 @@ class D: public B, public C { ... };
 ![](figure/24.6.png)  
 如果我们要这些性质提供的机能, 我们就必须忍受相应成本.
 
-## Techniques, Idioms, Patterns
-### Item 25: 将 constructor 和 non-member function 虚化
+# Techniques, Idioms, Patterns
+## Item 25: 将 constructor 和 non-member function 虚化
 _virtual constructor_ 似乎有点荒谬, 但是它们很有用.例如我们在下面的结构中, 如果想要根据 stream 的数据决定创建对象的种类, 就称为一个 virtual constructor.  
 ![](figure/25.1.png)  
 还有一种特别的 virtual constructor, 所谓的 virtual copy constructor, 返回一个指针,指向其调用着的一个新副本:
@@ -925,7 +938,7 @@ NewsLetter::NewsLetter(const NewsLetter& rhs)
 }
 ```
 
-#### 将 _Non-Member Functions_ 虚化
+### 将 _Non-Member Functions_ 虚化
 就像我们可以为某个函数构造出不同类型的新对象一样, 我们也应该可以让 non-member 的行为视其参数的动态类型而不同.例如我们想要为上面的 textBlock 和 Graphic 实现不同的输出, 如果是使用in-class 的虚函数, 客户习惯将 stream 对象放在操作符 `<<` 的右手端, 和这种实现矛盾了:
 ```C++
 class NLComponent {
@@ -978,8 +991,8 @@ ostream& operator<<(ostream& s, const NLComponent& c)
 }
 ```
 
-### Item 26: 限制某个 class 能产生的对象数量
-#### 允许零个或者一个对象
+## Item 26: 限制某个 class 能产生的对象数量
+### 允许零个或者一个对象
 阻止某个clsss产生的最简单方式是将 constructor 声明为 private(or public delete since C++11).  
 如果我们需要只能存在一台打印机, 这时候可以将打印机对象封装在一个函数中:
 ```C++
@@ -1097,7 +1110,7 @@ Printer::~Printer()
     --numObjects;
 }
 ```
-#### 不同的对象构造状态
+### 不同的对象构造状态
 Printer对象可以在三种状态下生存, 它自己, 派生出来的 base class 成分 或者 内嵌于较大的对象之中. 这些状态把前面的追踪弄浑了.   
 如果没有声明任何 friend 的话, 带有 private constructor 的 class 不能被继承, 也不能内嵌于其他的对象中. 如果我们希望允许任意数量的 FSA 对象产生, 但确保没有对象继承自 FSA, 就可以用伪构造器加私有构造器的方式:
 ```C++
@@ -1119,7 +1132,7 @@ FSA * FSA::makeFSA(const FSA& rhs)
 ```
 这里的每个 makeFSA 都返回一个指针, 区别于之前返回一个唯一对象的 reference.而且使用智能指针防止资源泄漏.
 
-#### 允许对象生生灭灭
+### 允许对象生生灭灭
 我们的最后一项观察是, 如果如果程序在不同时间使用不同的 Printer 对象并且及时销毁, 并未违反只有一个打印机的条件, 如何让这种行为也违法? **将对象计数 和 伪构造函数结合起来**:
 ```C++
 class Printer {
@@ -1157,7 +1170,7 @@ Printer::makePrinter(); // fine, indirectly calls default ctor
 ```
 如果需要将最大的数量改为其他数值, 可以用一个 static const size_t 取代 1, 编译器不支持的话就用 enum hack.
 
-#### 一个用于计算对象个数的 Base Class
+### 一个用于计算对象个数的 Base Class
 有很多对象都有计数的需求, 我们可以将它封装在一个 class 中, 然后让需要的累继承它.
 ```C++
 template<class BeingCounted>
@@ -1213,8 +1226,8 @@ const size_t Counted<FileDescriptor>::maxObjects = 16;
 ```
 如果这些用户没有这么做, 就会得到一个链接错误, maxObjects 未定义.
 
-### Item 27: 要求/禁止 对象产生于堆中
-#### Heap Based Object
+## Item 27: 要求/禁止 对象产生于堆中
+### Heap Based Object
 这个要求是不得使用 new 以外的方法产生对象, 只要那些被隐式调用的构造动作和析构动作不合法就行了,比较好的做法是 **让 destructor 称为 private, constructor 为 public 并且导入一个 pseudo destructor**:
 ```C++
 class UPNumber {
@@ -1242,7 +1255,7 @@ p->destroy(); // fine
 * 领 UPNumber 的析构函数成为 protected , 解决继承问题
 * 内含对象转为内含指针
   
-#### 判断某个对象是否位于 Heap 中
+### 判断某个对象是否位于 Heap 中
 没有任何办法可以让编译器检测下面的两种状态有什么不同:
 ```C++
 NonNegativeUPNumber *n1 =
@@ -1353,7 +1366,7 @@ bool HeapTracked::isOnHeap() const
 ```
 其中的`const void *rawAddress = dynamic_cast<const void*>(this)` 需要额外说明一下, 因为多种继承或者虚拟基类的对象, 会拥有多个地址, 我们需要用`dynamic_cast` 来消除这个问题.
 
-#### 禁止对象产生于 Heap 中
+### 禁止对象产生于 Heap 中
 new operator 总是调用 operator new, 我们可以将 operator new 声明为 private:
 ```C++
 class UPNumber {
@@ -1380,7 +1393,7 @@ Asset *pa = new Asset(100);
 // ::operator new, not UPNumber::operator new
 ```
 
-### Item 28: smart pointers
+## Item 28: smart pointers
 smart pointer 由template 产生出来, 并且有强烈的类型性, 它内含一个 dump pointer-to-T ,看起来是这样的:
 ```C++
 template<class T> // template for smart
@@ -1400,7 +1413,7 @@ private:
 };
 ```
 使用 smart pointer 和使用 dumb pointer 两者没有太大差别. 
-#### Smart Pointer 的构造\赋值\析构
+### Smart Pointer 的构造\赋值\析构
 * 构造行为非常好理解: 确定一个目标物, 然后让内部的 dumb pointer 指向它, 如果没有决定目标物, 就将内部指针设为 0
 * 拷贝构造/拷贝赋值和析构的实现因为所有权而变得复杂: 如果只是复制 dump pointer, 可能导致 double delete; 如果产生一个新的副本, 这中新对象的诞生形成无法接受的性能冲击
 
