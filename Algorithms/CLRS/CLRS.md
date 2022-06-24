@@ -57,3 +57,13 @@ $$
 
 ### 动态规划原理
 适合应用动态规划求解的最优化问题应该具备两个要素：**最优子结构** 和 **子问题重叠**。
+
+## Chap 32: 字符串匹配
+处理的文本是一个长度为 n 的数组 $T[1\cdots n]$， 模式是长度为 m 的数组 $P[1\cdots m]$, P、T 中的元素都来自有限的的字母集 $\Sigma$。除了朴素算法， 其他匹配算法都基于模式进行了预处理， 因此总的运行时间是预处理时间和匹配时间的和。下面是常见的匹配算法的时间复杂度：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220624110844.png" width="70%"/></div>  
+x 的长度记为 $|x|$, w 是字符串 x 的前缀记为 $w \sqsubset x$, 后缀记为 $w \sqsupset x$, 这两者都有传递关系。  
+**后缀重叠引理**：假设 x,y,z 是满足 $x\sqsupset z$ 和 $y \sqsupset z$ 的字符串， 如果 $|x| \leq |y|$, 那么 $x \sqsupset y$, 如果 $|x| = |y|$, 那么 $x = y$。   
+这时候计 T 的 k 个字符的前缀为 $T_k$, 则字符串匹配表述为找到所有的偏移量 s($0\leq s \leq n-m$),使得 $P \sqsupset T_{s+m}$。  
+### 朴素字符串匹配算法
+通过循环对 n-m+1 个可能的 s 进行检测， 看是否满足 $p[1\cdots m] = T[s+1 \cdots s+m]$。<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220624113506.png" width="50%"/></div><div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220624113613.png" width="70%"/></div>
+这种算法匹配的效率不高的原因是：**当其他无效的 s 值存在时， 我们也只关心有效的 s, 而完全忽略了检测无效 s 值时候获得的文本信息， 然而这样的信息可能非常有用**。
+

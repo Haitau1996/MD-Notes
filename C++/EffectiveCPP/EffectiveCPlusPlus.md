@@ -758,7 +758,7 @@ namespace std {
 namespace std {
 template<> // this is a specialized version of std::swap for when T is Widget
 void swap<Widget>(Widget& a, Widget& b) {
-    swap(a.pImpl, b.pImpl); // to swap Widgets, swap their pImpl pointers; this won’t compile
+        swap(a.pImpl, b.pImpl); // to swap Widgets, swap their pImpl pointers; this won’t compile
     } 
 } 
 ```
