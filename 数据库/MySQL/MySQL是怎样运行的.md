@@ -38,3 +38,22 @@ MySQL 服务器把数据存储和提取操作都封装到了存储引擎模块�
     ) ENGINE=存储引擎名称;
     ```
 * 修改表的引擎`ALTER TABLE 表名 ENGINE=存储引擎名`
+
+## Chap 2: MySQL 控制按钮 - 启动项和系统变量
+MySQL 的设置选项一般都有默认值， 可以在启动的时候修改这些默认值， 这些设置项被称为启动选项（start option）。
+* 在命令行中指定： `--启动选项1[=值1] --启动选项2[=值2] ...`
+* 在配置文件中使用选项： 配置文件启动选项被划分为若干个组， 每个组有一个组名<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220629145930.png" width="70%"/></div>
+  * MySQL 按照一定的顺序依次读取各个配置文件(如果存在)，重复的选项以最后一个配置文件中的为准
+  * 同一个配置文件的多个组中以最后一个出现的组的选项为准
+  * 如果不想使用默认的配置文件， 可以使用 --defaults-file=/temp/myconfig.txt 手动指定
+
+MySQL 服务程序在运行中会有很多影响程序行为的变量， 被称为系统变量。使用`SHOW VARIABLES [LIKE pattern]` 查看：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220629151818.png" width="60%"/></div>
+设置系统变量：
+1. 通过启动选项设置： 命令行、配置文件
+2. 大部分系统变量， 值可以在服务器运行过程中动态修改
+   1. 系统变量有不同的作用范围： 有的系统变量不是针对单个用户的，因此作用范围分两种
+   2. GLOBAL(全局范围) 和 SESSION(对话范围)
+   3. 设置和查看的时候也是 `SET [GLOBAL|SESSION] 系统变量名=值/ SHOW [GLOBAL|SESSION] VARIABLES LIKE`
+3. 注意事项： 并不是所有的变量都具有 GLOBAL 和 SESSION 的作用范围， 有的只有前者、有的只有后者、有的兼而有之； 有的系统变量是只读的，无法修改
+
+状态变量： 帮助我们更好地了解服务器的运行状态。通过 `SHOW [GLOBAL|SESSION] STATUS [LIKE 模式]` 查看<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220629153936.png" width="50%"/></div>
