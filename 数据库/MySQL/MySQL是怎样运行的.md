@@ -17,7 +17,7 @@ MySQL 的运行分为客户端和服务端
 **客户端与服务器的连接**：
 1. TCP/IP 数据库服务器进程和客户端进程运行在不同的主机中， 它们之间必须通过网络通信
 2. 同一台 windows 主机中可以使用进程间通信，包括**命名通道**(服务器启动 --enable-named-pipe,客户端启动 --pipe)和**共享内存**(服务端 --shared-memory, 客户端 --protocol=memory)
-3. 同一台类 Unix 系统中可以使用 **Unix域套接字**, 服务器默认监听 `/tmp/mysql.sock`， 也可执行指定
+3. 同一台类 Unix 系统中可以使用 **Unix域套接字**, 服务器默认监听 `/tmp/mysql.sock`， 也可自行指定
 
 ### 服务器处理客户请求
 不管连接方式， 最后效果都是客户端进程向服务器发送一段文本（SQL语句）， 服务器处理后再向客户端返回一段文本（处理结果）。<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220628152414.png" width="60%"/></div>  
@@ -57,3 +57,15 @@ MySQL 服务程序在运行中会有很多影响程序行为的变量， 被称�
 3. 注意事项： 并不是所有的变量都具有 GLOBAL 和 SESSION 的作用范围， 有的只有前者、有的只有后者、有的兼而有之； 有的系统变量是只读的，无法修改
 
 状态变量： 帮助我们更好地了解服务器的运行状态。通过 `SHOW [GLOBAL|SESSION] STATUS [LIKE 模式]` 查看<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220629153936.png" width="50%"/></div>
+
+## Chap 3: 字符集和比较规则
+**字符集**：字符与二进制数据的映射关系。简单的比较可以是二进制数据的直接比较， 如果有不区分大小写之类的规则， 可以转为大写或小写之后再比较。  
+### MySQL 中支持的字符集和比较关系
+UTF-8 是可边长的编码， 表示一个字符时候需要 1-4 个字节， 但是最常用的字符是 1-3 个字节就可以表示。MySQL 中的 utf8 是阉割到三个字节的字符集， 完整的名为 utf8mb4。
+MySQL 比较规则的命名十分规律：
+* 比较规则的名称都是以字符集开头
+* 紧跟着就是规则应用的语言
+* 然后后缀表示区分重音、大小写等
+
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/20220705151453.png" width="70%"/></div>
+
