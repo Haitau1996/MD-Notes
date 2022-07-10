@@ -139,7 +139,7 @@ public:
 ...
 };
 ```
-实际使用的过程中，为了避免no-const operator[]递归调用自己，先将*this从原始的TextBlock& 做static_cast成为const TextBlock&，然后从const operator[]的返回值中移除const。但是，反过来做是不建议的，因为使用const_cast去掉了const的性质之后，操作十分不安全。
+实际使用的过程中，**no-const 版本可以在类型转换后调用 const 版本的成员函数**， 为了避免no-const operator[]递归调用自己，先将 `*this` 从原始的 TextBlock& 做static_cast成为const TextBlock&，然后从const operator[]的返回值中移除const。但是，**反过来做是不建议的，因为使用const_cast去掉了const的性质之后，操作十分不安全**。
 
 ### Item 4 确定对象使用前已经被初始化
 C++初始化问题：
@@ -234,7 +234,7 @@ class HomeForSale{
 更好的做法是将这种东西放到一个base类中，然后HomeForSale用private的方式继承该类，这样任何人，<font color=red>甚至是member函数或者friend函数</font>都无法尝试拷贝该对象。使用该方法可能会引发多继承的问题，涉及的empty base class optimization，这将在Item 39、40中讨论。
 
 ### Item 7 为多态基类声明virtual析构函数
-在很多时候，我们使用指针得到一个derived class对象，而那个对象却经过一个base class的指针被删除，带来的问题是诡异的“局部销毁”，而derived class的析构函数没有被调用。解决该问题的方法十分简单，<font color=red>给base class一个virtual析构函数</font>.
+在很多时候，我们使用指针**得到一个derived class对象，而那个对象却经过一个base class的指针被删除，带来的问题是诡异的“局部销毁”**，而derived class的析构函数没有被调用。解决该问题的方法十分简单，<font color=red>给base class一个virtual析构函数</font>.
 ```C++
 class TimeKeeper{
     public:
@@ -256,7 +256,7 @@ class AMOV{
 }
 AMOV::~AMOV(){ }  // 必须为这个pure virtual析构函数提供一份定义
 ```
-当然，这些性质的讨论都是适用于<font color=red>polymorohic base class</font>, 但是并非所有的base class设计都是为了多态用途，他们不需要virtual析构函数。
+当然，这些性质的讨论都是适用于<font color=red>polymorphic base class</font>, 但是并非所有的base class设计都是为了多态用途，那些不为多态设计的类不需要virtual析构函数。
 
 ### Item 8 别让异常逃离析构函数
 ```C++
