@@ -44,7 +44,7 @@ class GamePlayer{
         ...
 };
 ```
-对这种trick，我们需要了解，该行为比较像`#define`而不是const，给const取地址是合法的，但是给enum和define取通常都是不合法的。<br>
+对这种trick，我们需要了解，该行为比较像`#define`而不是const，给const取地址是合法的，但是给enum和define取通常都是不合法的。  
 预处理会带来一些问题，如
 ```C++
 #define CALL_WITH_MAX(a,b) f(((a)>(b)) ? (a) :(b))
@@ -60,7 +60,7 @@ inline void callWithMax(const T&a, const T&b){
 - 对于单纯的常量，最好用const和enum替换#define
 - 对于函数的宏，最好用inline函数替换#define
 
-### Item 3 Use const whenever possiable
+### Item 3 Use const whenever possible
 const允许语义约束，指定变量不可更改，编译器会强制试试这项约束，只要这是事实，就应该明确要求，让编译器保证该约束不会被违反。对于顶层指针和底层指针，只要记住：如果const出现在*左边，则被指向的对象是一个常量，而右边则表示指针本身是一个常量。
 ```C++
 void f1(const Widget* pw);
@@ -78,7 +78,7 @@ Rational a,b,c;
 ...
 (a*b) = c; // 用c给a*b的结果赋值，加了const之后返回一个const Rational那么就会找出这个错误
 ```
-#### Const menber function
+#### Const member function
 将成员函数声明为const的一个很大的作用是，使得该函数可以操作const对象。pass by reference-to-const的一个前提就是可以用const修饰成员函数，<font color=red>否则一般的函数操作const对象，编译器无法得知它是否会改变对象的值，因此报错。</font>
 ```C++
 class TextBlock {
@@ -94,10 +94,10 @@ private:
 ```
 值得注意的的是，函数返回的是一个reference to char，如果只是返回char，那么它是local变量，对它赋值没有意义。成员函数为const有两个流行概念，物理const 和 逻辑const:
 
-- menber function只有在不改变对象的任何成员变量时候才可以说是const，但是实际上，通过指针可能可以改变对象成员的值。（编译器强制）
+- member function只有在不改变对象的任何成员变量时候才可以说是const，但是实际上，通过指针可能可以改变对象成员的值。（编译器强制）
 - 逻辑const:const成员函数可以修改对象的某些bits，但是只有在客户端侦测不出时候才可以如此（写程序遵循的守则）
 
-C++中有个与const相关的wiggle room叫做mutable, 它将释放掉non-static成员变量的bitwise constness,
+C++中有个与const相关的回旋余地， mutable, 它将释放掉 non-static 成员变量的 bitwise 常量性,
 ```C++
 class CTextBlock {
 public:
@@ -111,8 +111,8 @@ private:
 std::size_t CTextBlock::length() const
 {
     if (!lengthIsValid) {
-    textLength = std::strlen(pText); // now fine
-    lengthIsValid = true; // also fine
+        textLength = std::strlen(pText); // now fine
+        lengthIsValid = true; // also fine
     }
     return textLength;
 }
@@ -151,8 +151,8 @@ class Point{
 ...
 Point p;// 数据成员x,y没有被初始化
 ```
-一般而言，C part of C++初始化可能导致运行期成本，不保证发生初始化，non-C parts of C++，规则就相反。内置类型在使用之前将它初始化，对于内置类型之外的类型，初始化<font color=red>由构造函数负责，确保构造函数将对象的每一个成员都初始化。</font>构造函数比较好的写法是member initialization list替换赋值动作.<br>
-目前我们奉行的规则是: **确保每一个构造函数都将对象的每一个成员初始化** , 这需要我们不要混淆赋值和初始化,他们之间的区别在于, 赋值是在对象创建之后给他们的值,而初始化是在对象创建的时候给予初值:<br>
+一般而言，C part of C++初始化可能导致运行期成本，不保证发生初始化，non-C parts of C++，规则就相反。内置类型在使用之前将它初始化，对于内置类型之外的类型，初始化<font color=red>由构造函数负责，确保构造函数将对象的每一个成员都初始化。</font>构造函数比较好的写法是member initialization list替换赋值动作.  
+目前我们奉行的规则是: **确保每一个构造函数都将对象的每一个成员初始化** , 这需要我们不要混淆赋值和初始化,他们之间的区别在于, 赋值是在对象创建之后给他们的值,而初始化是在对象创建的时候给予初值:  
 ```C++
 ABEntry::ABEntry(const std::string& name, 
                  const std::string& address,
@@ -172,7 +172,7 @@ ABEntry::ABEntry()
     numTimesConsulted(0) // but explicitly initialize numTimesConsulted to zero
 {} // 
 ```
-有些情况下,面对的成员变量是`const`或者 _reference_, **他们就一定要初值,并且不能被赋值**,必须在成员初值列中赋值,此外要注意成员初值列中条列各个成员,最好按照以其声次序排列.<br>
+有些情况下,面对的成员变量是`const`或者 _reference_, **他们就一定要初值,并且不能被赋值**,必须在成员初值列中赋值,此外要注意成员初值列中条列各个成员,最好按照以其声次序排列.  
 不同编译单元内non-local static对象的初始化顺序:
 * static对象, 寿命是沟造出来到程序结束为止, 包括global对象,定义在namespace作用域之内的对象,以及各种作用域中声明为static的对象.
 * 编译单元, 就是产出单一目标文件的哪些源代码, 基本就是一个源代码文件加入其所含入头文件
@@ -215,13 +215,12 @@ Empty e1;       // default constructor;
 Empty e2(e1); // copy constructor
 e2 = e1;      // copy assignment operator
 ```
-需要注意的是，编译器自身产生的destructor是一个non-virtual的析构函数，除非base class自己声明有virtual的析构函数。<br>
-当我们写了一个构造函数的时候，编译器不会生成默认沟赵函数，但是因为没有copy构造函数和copy赋值operator，编译器依旧会自己默认一个。<br>
-编译器生成的copy 构造函数将传入的object每个data member为初值设定新object的值。万一有条件不符合，编译器拒绝给class生成operator=.<br>
-例如，我们有一个class包含两个data member，一个referce to string，一个const T，那么使用这个class实例化两个实例，a,b，令a = b 就会出问题，因为reference自身不可变动，而const T也不能再赋值，这种情况下编译器不知道如何生成一个copy assignment operator。
+需要注意的是，编译器自身产生的destructor是一个non-virtual的析构函数，除非base class自己声明有virtual的析构函数。    
+当我们写了一个构造函数的时候，编译器不会生成默认沟赵函数，但是因为没有copy构造函数和copy赋值operator，编译器依旧会自己默认一个。  
+编译器生成的copy 构造函数将传入的object每个data member为初值设定新object的值。万一有条件不符合，编译器拒绝给class生成operator=.  
+例如，我们有一个class包含两个data member，一个reference to string，一个const T，那么使用这个class实例化两个实例，a,b，令a = b 就会出问题，因为reference自身不可变动，而const T也不能再赋值，这种情况下编译器不知道如何生成一个copy assignment operator。
 
 ### Item 6 如果不想用编译器自动生成的函数，就应该明确拒绝
-
 有的使用场景中，不允许拷贝赋值和拷贝assignment operator，我们不主动拒绝的话，编译器会声明我们不想要的函数。这种时候一个常见的做法是将copy constructor和copy assignment operator声明为private，这样的话member function和friend function还可以调用他们，如果足够聪明，只声明不调用的话不慎调用会得到一个linkage error.
 ```C++
 class HomeForSale{
@@ -247,8 +246,8 @@ TimeKeeper* ptk= getTimeKeeper();
 ...
 delete ptk;
 ```
-这并不意味着virtual函数很好，对于不作为base class的情况，virtual析构函数会带来一系列的问题，没有virtual析构函数的情况下，一个自己定义的Point2D对象可以作为一个64-bit的量传给c/fortran,对于virtual函数，对象必须携带某些信息，用于决定哪个virtual函数会被调用，这种事由virtual table pointer(vptr) 的机制实现。因此，一般而言，只有带class内至少有一个virtual函数的的时候，才为它声明virtual析构函数。<br>
-同样的，对于不带virtual析构函数的class，包括所有的STL容器（vector,list,set,unordered_map)和std::string，不要从他们那里继承。<br>
+这并不意味着virtual函数很好，对于不作为base class的情况，virtual析构函数会带来一系列的问题，没有virtual析构函数的情况下，一个自己定义的Point2D对象可以作为一个64-bit的量传给c/fortran,对于virtual函数，对象必须携带某些信息，用于决定哪个virtual函数会被调用，这种事由virtual table pointer(vptr) 的机制实现。因此，一般而言，只有带class内至少有一个virtual函数的的时候，才为它声明virtual析构函数。  
+同样的，对于不带virtual析构函数的class，包括所有的STL容器（vector,list,set,unordered_map)和std::string，不要从他们那里继承。  
 class带一个pure virtual析构函数，pure virtual函数导致抽象class，不能被实例化。如果希望得到类似的class又没有其他的纯虚函数，可以给class声明一个纯虚的析构函数：
 ```C++
 class AMOV{
@@ -271,7 +270,7 @@ void doSomething(){
     ...
 }                           // v is automatically destroyed here
 ```
-只要析构函数突出异常，即使并非使用容器或者vector，程序也可能过早结束或者出现不明确的行为。如果析构函数必须执行某个动作，而该动作可能在失败时抛出异常，这种情况该怎么办？<br>
+只要析构函数突出异常，即使并非使用容器或者vector，程序也可能过早结束或者出现不明确的行为。如果析构函数必须执行某个动作，而该动作可能在失败时抛出异常，这种情况该怎么办？  
 ```C++
 class DBConnection {
     public:
@@ -324,9 +323,9 @@ class DBConn {
 };
 ```
 ### Item 9 不要在构造和析构函数中调用virtual函数
-**Java /C#在这方面和C++不同** derived的构造函数调用之前，base的构造函数一定会更早调用。这个时候，我们在derived class构造函数中调用virtual的函数，先构造base class期间virtual函数不会到derived class的那层，<font color=red>这时候构造期间的virtual函数就不是virtual函数（没有多态）</font>。就是在base class构造期间，对象的类型是base class 而不是derived class。<br>
-同样的道理，derived class进入base析构函数中就成了一个base对象，C++的任何部分，virtual 函数、dynamic_cast等等也将它视为是一个base class。<br>
-避免此类问题的做法是:**确定构造函数和析构函数都没有调用virtual函数，并且它们调用的函数也服从这个约束。**<br>
+**Java /C#在这方面和C++不同** derived的构造函数调用之前，base的构造函数一定会更早调用。这个时候，我们在derived class构造函数中调用virtual的函数，先构造base class期间virtual函数不会到derived class的那层，<font color=red>这时候构造期间的virtual函数就不是virtual函数（没有多态）</font>。就是在base class构造期间，对象的类型是base class 而不是derived class。  
+同样的道理，derived class进入base析构函数中就成了一个base对象，C++的任何部分，virtual 函数、dynamic_cast等等也将它视为是一个base class。  
+避免此类问题的做法是:**确定构造函数和析构函数都没有调用virtual函数，并且它们调用的函数也服从这个约束。**  
 此外还有其他方案：在base class中的log函数改成non-virtual，然后要求derived class传递必要的信息给base class的构造函数，之后构造函数就可以安全的调用non-virtual版本的log函数同时在不同的derived class中Log不同。
 
 ### Item 10 令operator=返回一个reference to *this
@@ -374,7 +373,7 @@ Widget::operator=(const Widget& rhs){ // unsafe impl. of operator=
     return *this; // operator = 返回一个 reference to *this
 }
 ```
-在上面的代码里，这个delete不但销毁了当前对象的bitmap，传入rhs的bitmap也被销毁了。传统的解决办法：<font color=red>在operator=最前面加一个证同测试。</font><br>
+在上面的代码里，这个delete不但销毁了当前对象的bitmap，传入rhs的bitmap也被销毁了。传统的解决办法：<font color=red>在operator=最前面加一个证同测试。</font>  
 ```C++
 Widget& Widget::operator=(const Widget& rhs) {
     if (this == &rhs) return *this; // identity test: if a self-assignment do nothing
@@ -383,7 +382,7 @@ Widget& Widget::operator=(const Widget& rhs) {
     return *this; 
 }
 ```
-这个新版本依旧存在异常方面的麻烦，在new Bitmap时候出现异常的话，对象会持有一个指向被删除Bitmap的指针。下面的做法会**在new Bitmap之后再删除原来的Bitmap，出现异常后，原来Bitmap没有丢失**：<br>
+这个新版本依旧存在异常方面的麻烦，在new Bitmap时候出现异常的话，对象会持有一个指向被删除Bitmap的指针。下面的做法会**在new Bitmap之后再删除原来的Bitmap，出现异常后，原来Bitmap没有丢失**：  
 ```C++
 Widget& Widget::operator=(const Widget& rhs) { 
     Bitmap *pOrig = pb; // remember original pb
@@ -408,7 +407,7 @@ Widget& Widget::operator=(const Widget& rhs){
 
 ### Item 12 复制对象的时候别忘了它的每一个部分
 
-当我们自己声明copying函数，实现的代码几乎必然出错编译器并不会告诉你。一个典型的例子是，给一个class写好copying函数之后，随着需求的变化**加入了新的data member**，但是copying 函数没有随之变化。<br>
+当我们自己声明copying函数，实现的代码几乎必然出错编译器并不会告诉你。一个典型的例子是，给一个class写好copying函数之后，随着需求的变化**加入了新的data member**，但是copying 函数没有随之变化。  
 更极端的情况是，随着该类被继承，我们在继承类的copying函数中更加难以发现base class的data member没有被拷贝的情况。此外，我们必须小心地复制base class成分，而这些成分往往是private的，无法直接访问，因此我们要**让derived class的copying函数调用相应的base class copying 函数**。
 ```C++
 PriorityCustomer::PriorityCustomer(const PriorityCustomer& rhs)
@@ -425,7 +424,7 @@ copy构造函数和copy assignment operator有相近的代码，但是**不应�
 ***
 
 ## 资源管理
-C++中最常用的资源就是动态内存分配，除此之外，其他常见资源包括文件描述器、互斥锁、数据库连接以及网络sockets。**无论什么资源，重要的是，当你不再使用它，必须将它归还给操作系统**。<br>
+C++中最常用的资源就是动态内存分配，除此之外，其他常见资源包括文件描述器、互斥锁、数据库连接以及网络sockets。**无论什么资源，重要的是，当你不再使用它，必须将它归还给操作系统**。  
 
 ### Item 13 以对象管理资源
 ```C++
@@ -446,9 +445,9 @@ void f(){
 * 获得资源后立即放入管理对象内(Resource Acquisition Is Initialization,RAII)
 * 管理对象应用析构函数确保资源释放
 
-此外需要注意的是，智能指针被销毁会删除所指之物，不要让多个智能指针指向同一对象。通过copy构造函数和copy assignment operator复制他们后，自己会变成null。<br>
-替代方案是"引用计数型指针"，会追踪多少对象指向某个资源，并且在无人指向他们时候自动删除（类似于垃圾回收），但是无法打破环引用（如两个互相指但是不被使用的对象，处于“被使用状态”）。<br>
-auto_ptr 和 shared_ptr 析构函数用的是delete而不是delete[],**不要对动态分配得到的array**使用。<br>
+此外需要注意的是，智能指针被销毁会删除所指之物，不要让多个智能指针指向同一对象。通过copy构造函数和copy assignment operator复制他们后，自己会变成null。  
+替代方案是"引用计数型指针"，会追踪多少对象指向某个资源，并且在无人指向他们时候自动删除（类似于垃圾回收），但是无法打破环引用（如两个互相指但是不被使用的对象，处于“被使用状态”）。  
+auto_ptr 和 shared_ptr 析构函数用的是delete而不是delete[],**不要对动态分配得到的array**使用。  
 
 ### Item 14 在资源管理类中小心copying行为
 
@@ -535,7 +534,7 @@ FontHandle f2 = FRAII.get();
 具体在使用的时候是添加显式的转换函数还是提供隐式类型转换 **取决于 _RAII class_ 被设计执行的工作, 以及其使用情况, 一般 get 是比较受欢迎的, 但是如果隐式类型转换带来的 "自然用法" 也会引发天秤的倾斜**. RAII classes 并不是为了封装某物而存在的, 他们是为了确保某一类特殊的行为,<font color=red> 资源释放, 会发生</font>.
 ### Item 16 成对使用new和delete时采取相同的形式
 
-new的时候，两件事情发生：内存被分配出来，然后对这片内存做一个或者多个的构造函数。同样的，delete的时候，先对此内存做一个或者多个析构函数，再释放内存。最大的问题在于：**即将删除的内存究竟有多少个对象**，数组内存通常还包括数组大小的记录，因此我们需要清楚删除的是一个对象还是一个数组。<br>
+new的时候，两件事情发生：内存被分配出来，然后对这片内存做一个或者多个的构造函数。同样的，delete的时候，先对此内存做一个或者多个析构函数，再释放内存。最大的问题在于：**即将删除的内存究竟有多少个对象**，数组内存通常还包括数组大小的记录，因此我们需要清楚删除的是一个对象还是一个数组。  
 规则十分简单，调用new时候使用[ ]，那么在delete的时候也使用[ ],反之亦然。但是如果经常使用typedef，new的时候[ ]被typedef掩盖了，那么就要十分注意。**最好尽量不要对数组形式做typedef动作**。
 ```C++
 typedef std::string AddressLines[4]; // a person’s address has 4 lines, 
@@ -598,7 +597,7 @@ private:
 };
 Date d(Month::Mar(), Day(30), Year(1995));
 ```
-另一个常见的做法是，限制类型内什么可以做什么不能做，常见的限制是加上const.还有一种常见的问题，就是需要客户自行使用智能指针指向想要的资源，而客户常常会做两件事情：没有删除指针，不止一次删除同一指针。好的接口设计者应该先发制人，直接返回一个智能指针。<br>
+另一个常见的做法是，限制类型内什么可以做什么不能做，常见的限制是加上const.还有一种常见的问题，就是需要客户自行使用智能指针指向想要的资源，而客户常常会做两件事情：没有删除指针，不止一次删除同一指针。好的接口设计者应该先发制人，直接返回一个智能指针。  
 ```C++
 std::shared_ptr<Investment> createInvestment();// return a smart pointer
 ```
@@ -620,7 +619,7 @@ std::shared_ptr<Investment> createInvestment();// return a smart pointer
 
 ### Item 20 用 pass by reference to const 替换 By value
 
-在default的情况下C++以by value的方式传递对象到函数，而这些对象的副本由<font color=red>对象的拷贝构造函数产出，使得pass-by-value成为昂贵的操作</font>.<br>
+在default的情况下C++以by value的方式传递对象到函数，而这些对象的副本由<font color=red>对象的拷贝构造函数产出，使得pass-by-value成为昂贵的操作</font>.  
 ```C++
     class Person {
     public:
@@ -641,12 +640,12 @@ std::shared_ptr<Investment> createInvestment();// return a smart pointer
         std::string schoolAddress;
     };
 ```
-例如书中的案例，by value的方式传递一次student对象会调用一次student copy构造函数、一次person copy 构造函数，四次string的copy 构造函数。<br>
+例如书中的案例，by value的方式传递一次student对象会调用一次student copy构造函数、一次person copy 构造函数，四次string的copy 构造函数。  
 pass by reference-to-const:
 ```C++
 bool validateStudent(const Student& s);
 ```
-同时可以避免slicing问题: derived class 对象 by value 方式传递并且被视为base class 对象, base class的构造函数被调用,derived class的特性化性质完全被切割掉.<br>
+同时可以避免slicing问题: derived class 对象 by value 方式传递并且被视为base class 对象, base class的构造函数被调用,derived class的特性化性质完全被切割掉.  
 一般而言,可以合理假设pass-by-value不昂贵的唯一对象是**内置类型和STL的迭代器和函数对象**.
 
 ### Item 21 必须返回对象时,不要返回reference
@@ -658,7 +657,7 @@ Rational b(3, 5); // b = 3/5
 Rational c = a * b; // c should be 3/10
 ```
 
-在c中希望原来就有一个value为3/10的对象是不合理的, 如果operator *要返回一个reference 指向该对象, 那么必须要自己创建一个Rational对象并且赋值为3/10,而**创建一个local对象并且返回它的reference是一个未定义的行为**.<br>
+在c中希望原来就有一个value为3/10的对象是不合理的, 如果operator *要返回一个reference 指向该对象, 那么必须要自己创建一个Rational对象并且赋值为3/10,而**创建一个local对象并且返回它的reference是一个未定义的行为**.  
 那么考虑一个Heap-Based operator*:
 ```C++
 const Rational& operator*(const Rational& lhs,const Rational& rhs){ // warning! more bad code!
@@ -666,7 +665,7 @@ Rational *result = new Rational(lhs.n * rhs.n, lhs.d * rhs.d);
 return *result;
 }
 ```
-Heap-Based 又出现了一个新的问题: **谁该为new的对象实施delete**?<br>
+Heap-Based 又出现了一个新的问题: **谁该为new的对象实施delete**?  
 这时候可能会想起operator* return 一个reference 指向被定义在函数内部的static Rational对象, 这会立刻造成对于**多线程安全性的疑问**, 此外还有更深的瑕疵:
 ```C++
 bool operator==(const Rational& lhs,const Rational& rhs); // an operator==for Rationals
@@ -677,12 +676,12 @@ if ((a * b) == (c * d)) {
 }
 if (operator==(operator*(a, b), operator*(c, d)))//等价形式
 ```
-==被要求将"operation* 中的static Rational对象值"拿来和"operation* 中的static Rational对象值"比较, 那么恒为true.<br>
+==被要求将"operation* 中的static Rational对象值"拿来和"operation* 中的static Rational对象值"比较, 那么恒为true.  
 这种情况下,operator* 返回值得构造和析构成本相对不是一个大的代价时,这种代价是可以接受的.
 
 ### Item 22 将成员变量声明为private
 
-使用函数可以使得对成员变量的处理有更精确的控制,同时方便封装:<br>
+使用函数可以使得对成员变量的处理有更精确的控制,同时方便封装:  
 考虑一个使用场景, 写一个自动测速程序, 汽车通过的时候计算速度放到速度搜集器中,需要一个`averageSoFar`的member function, 有两种做法:
 
 - 设计一个成员变量记录平均值,调用时候只要返回该值
@@ -692,13 +691,13 @@ if (operator==(operator*(a, b), operator*(c, d)))//等价形式
 
 ### Item 23 宁以 non-member / non-friend 替换 member 函数
 
-**member函数clearEverything带来的封装性比non-member版本低**, 同时non-member函数可允许对WebBrowser相关技能有较大的包裹弹性,在许多方面non-member比较好.<br>
+**member函数clearEverything带来的封装性比non-member版本低**, 同时non-member函数可允许对WebBrowser相关技能有较大的包裹弹性,在许多方面non-member比较好.  
 封装的原因在于: **使我们能够改变事物而影响有限客户**. 考虑对象内的数据, 越少的代码可以访问数据, 越多的数据可以被封装. 作为一个粗糙的测量, 越多函数可以访问某块数据, 数据的封装性就越低.因此, 较大封装性的是non-member non-friend函数, 另外需要注意两点:
 
 - friend 函数对class private 成员访问权力和member函数相同,从封装的角度区别不大
 - 成为class的non-menber, 也可以是另一个class的member, 如 我们可以让clearBrowser成为某个工具类(unility class)的一个static member函数, 只要不是Browser的一部分.
 
-在C++中的一个常见做法是将clearBrowser成为一个non-member函数并且和WebBrowser处在同一个namespace中, 它和class不同, 可以跨越多个源代码去实现而classes 只能在一个文件中实现. 如一个WebBrowser的类别可能有大量的便利函数,有的与打印有关,有的与书签有关,大多客户只对某些部分有兴趣, 因此相关的部分放在同一个头文件中, 而这种切割机制不适用于class成员函数,他们必须整体定义.<br>
+在C++中的一个常见做法是将clearBrowser成为一个non-member函数并且和WebBrowser处在同一个namespace中, 它和class不同, 可以跨越多个源代码去实现而classes 只能在一个文件中实现. 如一个WebBrowser的类别可能有大量的便利函数,有的与打印有关,有的与书签有关,大多客户只对某些部分有兴趣, 因此相关的部分放在同一个头文件中, 而这种切割机制不适用于class成员函数,他们必须整体定义.  
 
 ### Item 24 若所有参数都需要类型转换, 请为此采用non-member 函数
 
@@ -728,7 +727,7 @@ result = oneHalf * 2; // fine, 相当于 oneHalf.operator*(2);
 result = 2 * oneHalf; // error!, 相当于 2.operator*(oneHalf)
                       // int 的 operator * 不接受一个作为 Rational 的参数
 ```
-问题就出在第二句中 2作为 `this` 本身, 不是隐式类型转换的合格参与者. 此外, 编译器也会试图在全局查找一个 non-member 的 operator*, `result = operator*(2, oneHalf)`, 再这里没有定义, 于是最终无法通过编译. 此外, 如果 Rational 的构造函数y有 `explicit` 声明, 连上面那个 OK 的表达式也无法通过编译. <br>
+问题就出在第二句中 2作为 `this` 本身, 不是隐式类型转换的合格参与者. 此外, 编译器也会试图在全局查找一个 non-member 的 operator*, `result = operator*(2, oneHalf)`, 再这里没有定义, 于是最终无法通过编译. 此外, 如果 Rational 的构造函数y有 `explicit` 声明, 连上面那个 OK 的表达式也无法通过编译.   
 可行之道就是, <font color=red> 让 _operator*_ 称为一个 non-member 的函数, 同时允许编译器在每个实参身上执行隐式类型转换</font>, 同时不需要将这个函数声明为 friend, member 反面是 non-member, 不是 friend, 可以避免 friend 就尽量避免:
 
 ```C++
@@ -740,7 +739,7 @@ const Rational operator*(const Rational& lhs, const Rational& rhs) {
 这个条款意味着, 当为某个函数的所有参数 (**包括 this 指针所指向的隐喻参数**) 进行类型转换的时候, 这个函数必须是 non-member.
 ### Item 25 考虑写出一个不抛异常的 _swap_ 函数
 
-swap 是一个有趣的函数, 原来是 STL 的一部分, 后来成为异常安全性编程的脊柱, 是用来处理自我赋值可能性的常见机制, 典型的实现十分简单: <br>
+swap 是一个有趣的函数, 原来是 STL 的一部分, 后来成为异常安全性编程的脊柱, 是用来处理自我赋值可能性的常见机制, 典型的实现十分简单:   
 
 ```C++
 namespace std {
@@ -837,8 +836,8 @@ encrypt(encrypted);
 return encrypted;
 }
 ```
-因此我们所谓的延后,是指的延后到非得使用该变量前的一刻为止, 甚至是直到能够给它初值实参为止.在loop中怎么办,有两个方式定义对象:<br>
-![loop case](figure/26.1.png)<br>
+因此我们所谓的延后,是指的延后到非得使用该变量前的一刻为止, 甚至是直到能够给它初值实参为止.在loop中怎么办,有两个方式定义对象:  
+![loop case](figure/26.1.png)  
 上面两种做法的成本如下:
 
 - A: 1个构造+1个析构函数+n个赋值操作
@@ -848,7 +847,7 @@ return encrypted;
 
 ### Item 27 尽量少做casting
 
-C++设计目标之一是保证"类型错误"绝不可能发生, 不幸的是转型破坏了类型系统, 可能导致任何种类的麻烦, 传统的C/Java/C# 中的转型比较必要而且无法避免,相对C++也没那么危险, 但是C++的类型转换要十分慎重.C++的四种新式cast:<br>
+C++设计目标之一是保证"类型错误"绝不可能发生, 不幸的是转型破坏了类型系统, 可能导致任何种类的麻烦, 传统的C/Java/C# 中的转型比较必要而且无法避免,相对C++也没那么危险, 但是C++的类型转换要十分慎重.C++的四种新式cast:  
 - const_cast\<Type> ( expression ) 用来将对象的常量性移除
 - dynamic_cast\<T> ( expression ) 执行安全的向下转型, 用于决定某对象是否归属于继承体系的某个类型(运行成本重大), 无法由旧式转换替代
 - reinterpret_cast\<T> ( expression ) 低级转型,结果可能取决于编译器,不可移植, 如 将point to int转为 int, 在低级代码外很少见
@@ -864,7 +863,7 @@ class Derived: public Base { ... };
 Derived d;
 Base *pb = &d; // implicitly convert Derived* ⇒ Base*
 ```
-在这种情况下, 使用base的指针和derived的指针, 他们的值不一定相等,这时候有个偏移量(offset) 放置于derived* 指针上, 用去取得正确的base* 指针数值: **单一对象可能拥有一个以上的地址**, 在C/Java/C#中都不可能发生这个事情, 将对象地址转型为char*指针然后做算术运算, 几乎都会导致无定义行为. <br>
+在这种情况下, 使用base的指针和derived的指针, 他们的值不一定相等,这时候有个偏移量(offset) 放置于derived* 指针上, 用去取得正确的base* 指针数值: **单一对象可能拥有一个以上的地址**, 在C/Java/C#中都不可能发生这个事情, 将对象地址转型为char*指针然后做算术运算, 几乎都会导致无定义行为.   
 转型还有一个问题，就是我们调用基类的函数时，
 ```C++
 class Window { // base class
@@ -882,7 +881,7 @@ public:
     ...
 };
 ```
-这个地方的转型是有很大问题的，我们想让SpecialWindow在运行onResize() 前先运行Window的onResize，实际上调用的并不是当前对象的函数，而是<font color=red>转型动作所建立的一个" *this对象之base成分"的暂时副本上的onResize()</font>,该对象调用成员函数时候会有隐含参数 *this指针，可以在当前对象身上执行SpecialWindow的专属动作， 使得当前对象进入一个伤残状态。<br>
+这个地方的转型是有很大问题的，我们想让SpecialWindow在运行onResize() 前先运行Window的onResize，实际上调用的并不是当前对象的函数，而是<font color=red>转型动作所建立的一个" *this对象之base成分"的暂时副本上的onResize()</font>,该对象调用成员函数时候会有隐含参数 *this指针，可以在当前对象身上执行SpecialWindow的专属动作， 使得当前对象进入一个伤残状态。  
 实际中使用请这么写：
 ```C++
 class SpecialWindow: public Window {
@@ -983,7 +982,7 @@ rec.upperLeft().setX(100);
 两个教训:
     1. 成员变量的封装最多只等于"返回其reference"函数的访问级别, 数据封装为private,但是本质上是public的
     2. const成员函数传出一个reference, 所指数据对象自身有关联\又被存储于对象之外,那么函数的调用者可以修改那个数据.
-如果返回的不是reference,而是指针或者迭代器(他们统统称为handles),随之而来的就是降低对象封装性的风险.<br>
+如果返回的不是reference,而是指针或者迭代器(他们统统称为handles),随之而来的就是降低对象封装性的风险.  
 我们遭遇的两个问题可以通过将他们的返回类型加上const解决:
 ```C++
 class Rectangle{
@@ -1066,11 +1065,11 @@ void PrettyMenu::changeBackground(std::istream& imgSrc){
     // release the mutex
 } 
 ```
-即便如此, 函数依旧不保证有强烈的异常安全性, 问题出现在 side-effect, 如果函数只操作局部性状态, 相对容易提供强烈的保证, 但是对非局部性数据有连带影响的时候, 提供强烈保证就困难很多. 这意味着必须为每一个即将改动的对象做出一份副本, 那可能耗用无法供应的空间和时间<br>
+即便如此, 函数依旧不保证有强烈的异常安全性, 问题出现在 side-effect, 如果函数只操作局部性状态, 相对容易提供强烈的保证, 但是对非局部性数据有连带影响的时候, 提供强烈保证就困难很多. 这意味着必须为每一个即将改动的对象做出一份副本, 那可能耗用无法供应的空间和时间  
 如果系统内有一个函数不具备异常安全性, 整个系统就不具备异常安全性, 因为调用哪个函数可能导致资源泄露或者数据结构败坏(如一个 sorted array 实际上不再处于 sorted 状态).
 
 ### Item 30 透彻了解inlining的里里外外
-不恰当的inline造成代码膨胀会导致额外的换页行为,降低高速缓存装置的击中率,以及伴随而来的效率损失,它只是对编译器的一个申请,并不是强制命令. inlining 在大多数程序中都是编译时行为,某些环境可以在链接时候 inlining,少量建置环境如 .NET CLI的托管环境可以在运行期完成 inlining. 大多数编译器拒绝将过于复杂的函数 inlining, 并且对所有virtual函数的调用也都会使得 inlining 落空.<br>
+不恰当的inline造成代码膨胀会导致额外的换页行为,降低高速缓存装置的击中率,以及伴随而来的效率损失,它只是对编译器的一个申请,并不是强制命令. inlining 在大多数程序中都是编译时行为,某些环境可以在链接时候 inlining,少量建置环境如 .NET CLI的托管环境可以在运行期完成 inlining. 大多数编译器拒绝将过于复杂的函数 inlining, 并且对所有virtual函数的调用也都会使得 inlining 落空.  
 除此之外，还有可能编译器将某个函数inline，但是还可能生成一个outlined的主体，例如，想要通过function ptr调用函数， 不生成主体的话将无可调用：
 ```C++
 inline void f() {...} // assume compilers are willing to inline calls to f
@@ -1079,7 +1078,7 @@ void (*pf )() = f; // pf points to f
 f(); // this call will be inlined, because it’s a “normal” call
 pf(); // this call probably won’t be, because it’s through a function pointer
 ```
-此外，构造函数和析构函数往往是 inlining 的糟糕候选人，原因如下：<br>
+此外，构造函数和析构函数往往是 inlining 的糟糕候选人，原因如下：  
 C++对构造对象和销毁对象做了保证， 但是具体的实现依赖于编译器的实现者，编译为空的构造函数析构函数产生的代码一定存放于某个地方，有时候就放在构造函数和析构函数内，
 ```C++
 class Base {
@@ -1151,7 +1150,7 @@ private:
 C++中的inheritance有非常多dirty的细节问题, 如virtual函数意味着"接口必须被继承",non-virtual函数意味"接口和实现都必须被继承",我们希望在这个部分仔细区分这些意义.
 
 ### Item 32 确定你的public继承塑模出is-a关系
-C++ OOP中最重要的一条规则是: **pubic inheritance意味"is-a"的关系**, 如果derived class D 用 public形式继承了base class B, 就是类型D的对象同时也是一个类型B的对象,反之不成立, 如每个学生都是人,但是不意味每个人都是学生,base更加一般化,而derived是base的一种特殊形式.<br>
+C++ OOP中最重要的一条规则是: **pubic inheritance意味"is-a"的关系**, 如果derived class D 用 public形式继承了base class B, 就是类型D的对象同时也是一个类型B的对象,反之不成立, 如每个学生都是人,但是不意味每个人都是学生,base更加一般化,而derived是base的一种特殊形式.  
 这个论点只在public继承时候才成立,有时候直觉会误导人,比如:企鹅是一种鸟,一般的鸟可以飞,但是如果直接用直觉写出C++程序,企鹅继承鸟类飞的member function,就会出现事实性的错误,这时候我们应该用双继承体系:
 ```C++
 class Bird {
@@ -1175,13 +1174,13 @@ public:
     ...
 };
 ```
-这两者的差异在于前者是一个 **编译时**强制实施的限制,后者是 **运行时**才能显示出来. Item 18中提起过,**好的接口可以防止无效的代码通过编译**,因此宁愿采取前面那个做法.<br>
+这两者的差异在于前者是一个 **编译时**强制实施的限制,后者是 **运行时**才能显示出来. Item 18中提起过,**好的接口可以防止无效的代码通过编译**,因此宁愿采取前面那个做法.  
 此外,在别的地方,直觉也可能是错的.Square用public的方式继承Rectangle,直觉上看没有问题,但是某些在矩形上能做的事情,如"宽度可以独立于其高度被外界修改",却不能施加于正方形上.public inheritance要求, **所有能够施加于base class身上的事情,都可以施加于derived class对象身上**,发展经年的直觉在面向对象程序设计中可能会导致错误,我们必须为直觉添加新的洞察力.class之间还有两种常见的关系 **has-a** 和 **is-implemented-in-terms-of**,这两者很可能会被错误的塑造成public inheritance.
 
 ### Item 33 避免遮掩继承而来的名称
 
 在处理继承的名称时， 实际的操作是将derived class的scope嵌套在base class中，如果在mf4中要调用mf2()，就要具体分析调用的是哪个：<bt>
-![nested scope](figure/33-1.png)<br>
+![nested scope](figure/33-1.png)  
 ```C++
 void Derived::mf4()
 {
@@ -1190,8 +1189,8 @@ void Derived::mf4()
     ...
 }
 ```
-编译器的做法是，先查找local作用域，看有没有mf2()的声明式，没有找到的话就向外找，看base class作用域中有没有，之后在包含base的namespace中查找，最后在global的全域中查找。<br>
-![scope](figure/33-2.png)<br>
+编译器的做法是，先查找local作用域，看有没有mf2()的声明式，没有找到的话就向外找，看base class作用域中有没有，之后在包含base的namespace中查找，最后在global的全域中查找。  
+![scope](figure/33-2.png)  
 在这里，base class的mf1()和mf3()都被derived中的函数掩盖了，从名称查找的观点看，这两个函数没有被继承。这种规则，**无论base class和derived class的函数参数类型是否相同，无论是否virtual都适用**，这种遮掩可以通过using声明式取消,继承机制就可以正常运作：
 ```C++
 class Derived: public Base {
@@ -1345,7 +1344,7 @@ private:
 
 ### Item 38 通过复合塑模出has-a 或者 is-implemented-in-terms-of
 
-程序中某些对象相当于所塑造世界的的某些事物，如人、汽车，这些是**应用域**，其他可能是实现细节上的人工制品，如缓冲区、查找树，称为**实现域**。复合发生在前者，是has-a关系，后者常表现出 is-implementation-in-terms-of 的关系。<br>
+程序中某些对象相当于所塑造世界的的某些事物，如人、汽车，这些是**应用域**，其他可能是实现细节上的人工制品，如缓冲区、查找树，称为**实现域**。复合发生在前者，是has-a关系，后者常表现出 is-implementation-in-terms-of 的关系。  
 如一个set对象用list实现,不是is-a关系，public继承肯定是错的，应该使用复合：
 ```C++
 template<class T> // the right way to use list for Set
@@ -1366,7 +1365,7 @@ Private继承的两个特点：
 1. 编译器不会自动将derived对象转为一个base对象
 2. private base class继承的所有成员，在derived中都会变成private属性
 
-这意味着private继承是implementated-in-terms-of,是一种实现技术而不是B\D之间有观念上的关系，区别和复合之间的关系：能用复合尽量复合，当protected成员、virtual函数牵扯进来、或者空间方面的利害关系足以踢翻private继承支柱时候才用。<br>
+这意味着private继承是implementated-in-terms-of,是一种实现技术而不是B\D之间有观念上的关系，区别和复合之间的关系：能用复合尽量复合，当protected成员、virtual函数牵扯进来、或者空间方面的利害关系足以踢翻private继承支柱时候才用。  
 如我们需要Widget Class有Timer定时器，同时需要重新定义其中的onTick()虚函数， 就必须继承Timer，没有Is-a的关系，public继承不可行。
 ```C++
 class Widget: private Timer {
@@ -1377,12 +1376,12 @@ private:
 ```
 这时候，onTick同样需要在private中。此外，我们可以用复合的方式取代这种做法，
 ### Item 40 明智而审慎地使用多重继承
-当设计框架涉及多重继承的时候,程序可能从一个以上的base class _继承相同的名称_(如函数,typedef),会导致歧义,即使是private的域将其中之一隐藏无法调用,解决歧义的做法是 _指定_ 从哪个base class 调用`mp.BorrowableItem::checkOut()`, 涉及到钻石继承后, 事情变得更加不可控:<br>
-![diamond](figure/40.1.png)<br>
+当设计框架涉及多重继承的时候,程序可能从一个以上的base class _继承相同的名称_(如函数,typedef),会导致歧义,即使是private的域将其中之一隐藏无法调用,解决歧义的做法是 _指定_ 从哪个base class 调用`mp.BorrowableItem::checkOut()`, 涉及到钻石继承后, 事情变得更加不可控:  
+![diamond](figure/40.1.png)  
 某个base class和某个derived之间有多条相通的路线,base class的内部成员是否需要经由每一条路径被复制? 
 - 默认的做法是都执行复制,对象内有多份成员变量
 - 不想要的话,应该把带有这个数据的class成为一个virtual base class
-![virtual base](figure/40.2.png)<br>
+![virtual base](figure/40.2.png)  
 
 从正确行为上看, public 继承应该总是virtual,但是实际上 **virtual继承有性能上的代价**:
 - 非必要不使用virtual base
@@ -1442,7 +1441,7 @@ void print2nd(const C& container){
     ...
 }
 ```
-tempalte 内出现的名称如果依赖于某个 template 参数, 称之为从属名称, 如果从属名称在 class 内呈现嵌套装, 我们称之为嵌套从属名称(例如上面的 C::const_iterator).<br>
+tempalte 内出现的名称如果依赖于某个 template 参数, 称之为从属名称, 如果从属名称在 class 内呈现嵌套装, 我们称之为嵌套从属名称(例如上面的 C::const_iterator).  
 **嵌套从属名称容易导致解析困难**, 如果 C 类有个 static 成员变量恰巧被命名为 `const_iterator`,  或者在全局有变量 x, 这样的话上面的新例子就是一个乘法而不是声明一个 local 变量. C++ 用这样的规则来解析一个歧义状态: <font color=red> 如果解析器在template 中遭遇一个嵌套从属名称, 它便首先假设它不是一个类型, 除非程序告诉它是</font>, 于是我们需要使用 typename 告诉编译器:
 
 ```C++
@@ -1593,7 +1592,7 @@ zMsgSender.sendClearMsg(msgData); // error! won’t compile
 
 ### Item 44 将参数无关的代码抽离 templates
 
-**使用 template 可能导致代码膨胀, 生成的二进制代码带着重复的代码和数据** , 结果是源代码看看起来非常整齐但是目标代码(Object Code)却没有. 我们这时需要使用的工具是 **共性与变性分析** (commonality and variability analysis), 但是在 template 代码中, 重复是隐晦的, 我们必须训练自己感受当 template 被具现化多次时可能发生的重复.<br>
+**使用 template 可能导致代码膨胀, 生成的二进制代码带着重复的代码和数据** , 结果是源代码看看起来非常整齐但是目标代码(Object Code)却没有. 我们这时需要使用的工具是 **共性与变性分析** (commonality and variability analysis), 但是在 template 代码中, 重复是隐晦的, 我们必须训练自己感受当 template 被具现化多次时可能发生的重复.  
 例如为一个固定尺寸的方针编写模板:
 ```C++
 template<typename T,    // template for n x n matrices of
@@ -1712,7 +1711,7 @@ private: // built-in pointer held
     T *heldPtr; // by the SmartPtr
 };
 ```
-在构造函数的初始化列中, 要求了只有 U 型指针可以隐式类型转换成为 T 型号, 这个程序编译才得以通过. <br>
+在构造函数的初始化列中, 要求了只有 U 型指针可以隐式类型转换成为 T 型号, 这个程序编译才得以通过.   
 此外需要注意的是, **泛化的copy 构造函数(member template)并不会阻止编译器生成自己的 copy 构造函数(一个 non-template)**, 如果我们想要阻止默认的构造函数 和 赋值函数, 光声明泛化的 copy 构造函数还不够, 需要同时声明一个正常的 copy 构造函数. 
 
 ### Item 46 需要类型转换时请为模板定义非成员函数
@@ -1736,7 +1735,7 @@ const Rational<T>& rhs)
 Rational<int> oneHalf(1, 2);
 Rational<int> result = oneHalf * 2; // error! won’t compile
 ```
-为了完成具现化的过程, 编译器需要先知道 T 是什么, 如 operator* 的第一个参数 oneHalf 是一个 `Rational<int>`, 我们期待 non-explicit 构造函数将 2 转为 `Rational<int>`, 进而将 T 推导为 Int 调用具现化的 operator* , 但是 <font color=red> template 实参推导过程中从不将隐式类型转换函数纳入考虑</font>, 之前不涉及template part of C++ 中能做的事情现在无法实现.<br>
+为了完成具现化的过程, 编译器需要先知道 T 是什么, 如 operator* 的第一个参数 oneHalf 是一个 `Rational<int>`, 我们期待 non-explicit 构造函数将 2 转为 `Rational<int>`, 进而将 T 推导为 Int 调用具现化的 operator* , 但是 <font color=red> template 实参推导过程中从不将隐式类型转换函数纳入考虑</font>, 之前不涉及template part of C++ 中能做的事情现在无法实现.  
 利用一个事实: template class 内 friend 声明式可以指涉某个特定的函数, Class templates 并不倚赖 template 实参推导(它施行于 function templates 身上), **编译器总是能在 _class Rational\<T>_ 具现化时候知道 T 的类型**, 令 Rational\<T> class 声明适当的 operator* 为它的 friend 函数可以简化这个问题:
 ```C++
 template<typename T>
@@ -1752,7 +1751,7 @@ const Rational<T> operator*(const Rational<T>& lhs,
                             const Rational<T>& rhs)
 { ... }
 ```
-这时候对 operator* 的混合表达式调用就可以通过编译了, oneHalf 被声明为一个 `Rational<int>` , class Rational\<int> 被具现化出来, 作为过程的一部分, friend 函数 operator* 也就自动声明出来了, **后者是一个函数而不是函数模板, 编译器可以在调用它的时候使用隐式类型转换函数**, 这段代码可以通过编译, 但是无法连接.<br>
+这时候对 operator* 的混合表达式调用就可以通过编译了, oneHalf 被声明为一个 `Rational<int>` , class Rational\<int> 被具现化出来, 作为过程的一部分, friend 函数 operator* 也就自动声明出来了, **后者是一个函数而不是函数模板, 编译器可以在调用它的时候使用隐式类型转换函数**, 这段代码可以通过编译, 但是无法连接.  
 我们已经声明了一个函数, 就有责任定义那个函数, 既然没有提供定义式, 连接器自然无法找到, 简单的解决办法就是直接在声明后写出函数本体:
 ```C++
 template<typename T>
@@ -1805,7 +1804,7 @@ const Rational<T> doMultiply(const Rational<T>& lhs,
     struct random_access_iterator_tag: public bidirectional_iterator_tag {};
     ```
     
-这种情况下, 我们知道 STL 迭代器有不同的能力, 如果我们要利用 random access 迭代器随机访问的优化, 我们最好先要能判断一个迭代器到底是不是 random access iterator, 这就是 traits 做的事情 : **它允许你在编译期间得到某些类型信息**. <br>
+这种情况下, 我们知道 STL 迭代器有不同的能力, 如果我们要利用 random access 迭代器随机访问的优化, 我们最好先要能判断一个迭代器到底是不是 random access iterator, 这就是 traits 做的事情 : **它允许你在编译期间得到某些类型信息**.   
 Traits 并不是关键字或者预定义好的构件, 它是一种技术, 也是一个 C++ 程序员共同遵守的协议, 这个技术 **要求内置类型和用户自定义类型的表现必须一样好**: 这意味着 类型内嵌套信息这种东西出局, 因为无法将信息嵌套在原始指针内. **标准的技术是将它放入一个 _template_ 以及其一个或者多个特化的版本中**, 这样的模板在标准库中有若干个, 其中针对迭代器的实现命名为 _iterator\_traits_:
 ```C++
 template<typename IterT>    // template for information about
@@ -1958,7 +1957,7 @@ int main(){
     ...
 }
 ```
-其中的 new_handler 是一个函数指针, 指向的函数没有参数也没有返回值, 而 `set_new_hander` 就是一个设置这种指针的函数.<br>
+其中的 new_handler 是一个函数指针, 指向的函数没有参数也没有返回值, 而 `set_new_hander` 就是一个设置这种指针的函数.  
 设计良好的new-handler 函数特点:
 * **让更多内存可被使用**,如在程序运行开始就分配一大块内存, new-handler调用时候释放给程序使用
 * 安装另外一个new-handler, 无法取得更多内存的时候好调用更有能力的new-handler替换自己
@@ -2076,7 +2075,7 @@ void* operator new(std::size_t size) throw(std::bad_alloc)
     return static_cast<Byte*>(pMem) + sizeof(int);
 }
 ```
-上面的代码有个很大的问题就是齐位: 有的计算机体系结构要求指针的地址必须是 4 的倍数或者 double 的地址必须是 8 的倍数, 上面的 operator new 返回的不是一个 malloc 得到的指针而是 malloc 再偏移一个 int 的指针, 没有人能保证它的安全. <br>
+上面的代码有个很大的问题就是齐位: 有的计算机体系结构要求指针的地址必须是 4 的倍数或者 double 的地址必须是 8 的倍数, 上面的 operator new 返回的不是一个 malloc 得到的指针而是 malloc 再偏移一个 int 的指针, 没有人能保证它的安全.   
 我们对前面的强化效能做一定的拓展, 他具体可能是下面的情况
 * 增加分配和归还的速度:在此之前分析程序确定瓶颈的确发生在那些内存函数身上
 * 为了降低默认内存管理器带来的空间额外开销
@@ -2085,8 +2084,8 @@ void* operator new(std::size_t size) throw(std::bad_alloc)
 * 获得非传统的行为
 
 ### Item 51: 编写 new 和 delete 时候需固守常规
-一致性要求 opetrator new 必须返回正确的值, 内存不足的时候必须调用 new-handling 函数, 必须有对付 0 内存需求的准备, 还需要避免不慎掩盖正常形式的 new.<br>
-实际上 operator new 并不止一次分配内存, 失败后 new-handling 也许能够做某些动作将某些内存释放出来供 opetator new 分配, 只有当 new-handling 函数指针是 Null 的时候才会抛出异常.<br>
+一致性要求 opetrator new 必须返回正确的值, 内存不足的时候必须调用 new-handling 函数, 必须有对付 0 内存需求的准备, 还需要避免不慎掩盖正常形式的 new.  
+实际上 operator new 并不止一次分配内存, 失败后 new-handling 也许能够做某些动作将某些内存释放出来供 opetator new 分配, 只有当 new-handling 函数指针是 Null 的时候才会抛出异常.  
 C++ 还规定即使客户要求 0 bytes, operator new 也要返回一个合法的指针:
 ```C++
 void* operator new(std::size_t size) throw(std::bad_alloc)
@@ -2108,7 +2107,7 @@ void* operator new(std::size_t size) throw(std::bad_alloc)
     }
 }
 ```
-这里的trick 是将 0 byte 的申请变成 1 byte. 并且其中有一个无限循环, 退出的唯一办法是满足条款 49 要求做的事情. <br>
+这里的trick 是将 0 byte 的申请变成 1 byte. 并且其中有一个无限循环, 退出的唯一办法是满足条款 49 要求做的事情.   
 这里的行为可能被派生类继承, 如果派生类没有声明operator new,如下面的情况:
 ```C++
 class Base {
@@ -2129,7 +2128,7 @@ void* Base::operator new(std::size_t size) throw(std::bad_alloc)
     ... // otherwise handle the request here
 }
 ```
-如果还需要为 class 专属的 "array 内存分配行为", 就需要实现 operator new 的兄弟版本 `opetator new[]`, 写这个 array new 唯一需要做的事情就是分配一块未加工的内存(raw memory).此外 derived 类往往比 base 类大, 于是我们不能假设 array 元素的对象就是 申请的byte/sizeof(base), 传递给 operator new[] 的 size_t 参数可能比将来填充的内存数量更多. <br>
+如果还需要为 class 专属的 "array 内存分配行为", 就需要实现 operator new 的兄弟版本 `opetator new[]`, 写这个 array new 唯一需要做的事情就是分配一块未加工的内存(raw memory).此外 derived 类往往比 base 类大, 于是我们不能假设 array 元素的对象就是 申请的byte/sizeof(base), 传递给 operator new[] 的 size_t 参数可能比将来填充的内存数量更多.   
 opetator delete 需要做的事情就简单得多, 我们只要保证**删除空指针永远安全**:
 ```C++
 void operator delete(void *rawMemory) throw()
@@ -2162,7 +2161,7 @@ void Base::operator delete(void *rawMemory, std::size_t size) throw()
 
 ### Item 52: 写了 placement new 也要写 placement delete
 
-一个new 表达式背后是两个函数被调用, 一个是用于分配内存的 operator new ,一个是 Widget 的构造函数, 如果第一个函数调用成功, 第二个函数却抛出异常, 那么步骤一分配的内存就必须取消并且恢复旧观.  对于正常形式的 new 和 delete, 运行时系统可以找出相应的 delete, 否则 "究竟哪一个delete 伴随着这个new" 的问题就出现了. <br>
+一个new 表达式背后是两个函数被调用, 一个是用于分配内存的 operator new ,一个是 Widget 的构造函数, 如果第一个函数调用成功, 第二个函数却抛出异常, 那么步骤一分配的内存就必须取消并且恢复旧观.  对于正常形式的 new 和 delete, 运行时系统可以找出相应的 delete, 否则 "究竟哪一个delete 伴随着这个new" 的问题就出现了.   
 如果 operator new 接收的参数除了 size_t 还有其他的, 这就被称为 _**placement** new_, 其中一个典型就是接收一个指针指向对象应该被构造的地方(唯一额外实参是 `void*`):
 ```C++
 void* operator new(std::size_t, void *pMemory) throw(); // “placement  new”
@@ -2228,14 +2227,14 @@ public:
     virtual void f();
 };
 ```
-这里希望D::f重新定义virtual函数B::f,这里有个错误: B中的f为一个const成员函数,但是在D中没有将它声明为const.于是编译器会警告, B中的f并未在D中被重新声明,而是被遮掩了(const也是函数签名的一部分),忽略该警告可能会导致程序的错误行为. 因此在打发某个警告信息之前, 请确定自己了解它的精确意义.<br>
+这里希望D::f重新定义virtual函数B::f,这里有个错误: B中的f为一个const成员函数,但是在D中没有将它声明为const.于是编译器会警告, B中的f并未在D中被重新声明,而是被遮掩了(const也是函数签名的一部分),忽略该警告可能会导致程序的错误行为. 因此在打发某个警告信息之前, 请确定自己了解它的精确意义.  
 1. 严肃对待编译器的警告信息,并且努力在最高的警告级别争取无任何警告的荣誉.
 2. 不要过度依赖编译器的报警能力, 不同编译器对待事情的态度并不相同,移植到另一个编译器上,原本依赖的警告信息可能消失.
 
 ### Item 54 熟悉包括TR1在内的标准程序库
 
 C++ 2.0 可能会提供一些有趣的语言特性和语法糖, 但是大部分新机能将以标准程序库的形式体现.
-**Before C++ 11**, 标准程序库的部分:<br>
+**Before C++ 11**, 标准程序库的部分:  
 
 * STL, 包含容器\迭代器\算法\函数对象\函数适配器和函数对象适配器
 * iostream
