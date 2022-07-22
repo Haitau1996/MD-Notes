@@ -53,3 +53,25 @@ dict 在外界提供的接口， 里面放了ht两个 dictht<div align=center><i
 
 ### 有序集合
 跳表， 参考二叉树， 提高索引的效率：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/202207212329661.png" width="70%"/></div><div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/202207212337933.png" width="98%"/></div>
+
+## 持久化
+Redis 是内存数据库， 有较快的读取速度， 但是数据容易丢失， 断电后内存数据就会小时。持久化就是将内存的数据写入硬盘中, 保证断电后的非易失性。  
+Redis 中有两种常见做法： RDB(将所有数据写入硬盘)和 AOF(将数据修改命令写入硬盘)
+### RDB(Redis Data Base)
+把目前内存中的数据生成一个快照（RDB 文件）保存在硬盘中，是一个全量备份。<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/202207221550129.png" width="80%"/></div>  
+各种数据结构在 RDB 文件中的结构如下：<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/202207221552656.png" width="70%"/></div>  
+RDB 触发的条件：
+* 手动触发
+  * save: 主先测定执行 rdbSave 函数， 服务器进程阻塞
+  * bgsave: fork 一个子进程， 由子进程去执行 rdbSave 函数
+* 自动触发： 配置文件写入 save m n, 代表 m 秒内发生 n 次变化的时候会自动执行 bgsave
+
+### AOF
+AOF 记录之后所有对 Redis 数据进行修改的操作， 如果发生事故， Redis 可以通过 AOF 文件将数据修改命令全部执行一遍以恢复数据， 是一种增量备份。  
+随着时间的进程， AOF 文件会越来越大恢复起来就会变慢， 可以根据数据库状态生成新的 AOF， 再删掉老的 AOF 文件。  
+AOF 的触发条件：
+* 手动触发： bgrewriteaof
+* 自动触发： 配置文件设置 appendonly yes 开启
+    * 还要配置写汇策略： Always/Everysec(默认)/No
+<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/202207221602121.png" width="70%"/></div>
+
