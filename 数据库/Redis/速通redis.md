@@ -75,3 +75,30 @@ AOF 的触发条件：
     * 还要配置写汇策略： Always/Everysec(默认)/No
 <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/202207221602121.png" width="70%"/></div>
 
+## 缓存
+Redis 和缓存不是强相关， 只是在业务上会将 Redis 作为缓存使用。
+### 缓存淘汰
+缓存的空间是固定的， 但是数据量大于缓存空间， 就必须要选取某些数据进行淘汰。
+* FIFO:
+* LRU: 最近最少使用， 比较常见的实现是双向链表+哈希表
+* LFU: 最不经常使用， 需要记录被访问次数
+
+### 过期删除
+**主动删除**： 设置删除间隔时间， 指定时间后主动删除工作。在缓存实现比较忙的时候， 设置删除时间碰巧到期，增加服务器的负担。  
+**惰性删除**： 查看的时候检查是否已经过期， 如果没有则返回， 否则删除。缺点在于大量过期数据占用内存资源。  
+**定期删除**： 将两者结合起来， 每隔一定的时间主动删除， 其间执行惰性删除。  
+
+### 缓存一致
+缓存的数据和数据库中的数据是一样的， 并行的并发系统，如请求的数据从缓存中取得， 写入的数据直接写到数据库中， 可能导致缓存的老数据和数据库中的新数据不同。  
+我们的要求是在混乱的并发请求后， 缓存的数据和数据库中的数据保持一致。  
+模式 1： 删除缓存数据再修改数据库数据。<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/202207221623219.png" width="70%"/></div>
+* 问题： 数据库的写操作慢而读操作快， 在客户 2 很可能查询的是老数据。
+* 延时双删： <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/202207221625831.png" width="80%"/></div>  
+
+模式 2： 先更新数据库再删除缓存 <div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/202207221627539.png" width="80%"/></div> 
+* 如果查询数据库耗时比较长（如网络拥堵）， 删除缓存后依旧没有完成， 则老的数据依旧会保持下去
+
+Read/Write through: 把缓存作为主要的读取方式， 即避免缓存击穿<div align=center><img src="https://raw.githubusercontent.com/Haitau1996/picgo-hosting/master/img/202207221631485.png" width="90%"/></div>
+
+Write Behind: //todo: 看甲骨文的文档
+
